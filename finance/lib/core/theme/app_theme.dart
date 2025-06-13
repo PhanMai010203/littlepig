@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_colors.dart';
+import 'app_text_theme.dart';
 import '../settings/app_settings.dart';
 import 'material_you.dart';
 
 /// Main theme configuration class
 class AppTheme {
   /// Create light theme
-  static ThemeData lightTheme({Color? accentColor}) {
+  static ThemeData light({Color? accentColor}) {
     final accent = accentColor ?? MaterialYouManager.getAccentColor();
     
     final colorScheme = MaterialYouManager.createColorScheme(
@@ -19,14 +20,15 @@ class AppTheme {
       colorScheme: colorScheme,
       brightness: Brightness.light,
       useMaterial3: true,
+      textTheme: AppTextTheme.textTheme,
+      fontFamily: 'Inter',
       
       // App bar theme
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
-        centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        centerTitle: true,        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       
       // Card theme
@@ -43,12 +45,22 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       ),
       
       // Elevated button theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      
+      // Outlined button theme
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -65,13 +77,12 @@ class AppTheme {
           ),
         ),
       ),
-      
-      // Bottom navigation bar theme
+        // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
         backgroundColor: colorScheme.surface,
         selectedItemColor: accent,
-        unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
+        unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         elevation: 8,
       ),
     );
@@ -89,7 +100,7 @@ class AppTheme {
   }
 
   /// Create dark theme
-  static ThemeData darkTheme({Color? accentColor}) {
+  static ThemeData dark({Color? accentColor}) {
     final accent = accentColor ?? MaterialYouManager.getAccentColor();
     
     final colorScheme = MaterialYouManager.createColorScheme(
@@ -101,14 +112,15 @@ class AppTheme {
       colorScheme: colorScheme,
       brightness: Brightness.dark,
       useMaterial3: true,
+      textTheme: AppTextTheme.textTheme,
+      fontFamily: 'Inter',
       
       // App bar theme
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
-        centerTitle: true,
-        systemOverlayStyle: SystemUiOverlayStyle.light,
+        centerTitle: true,        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
       
       // Card theme
@@ -125,12 +137,22 @@ class AppTheme {
           borderRadius: BorderRadius.circular(12),
         ),
         filled: true,
-        fillColor: colorScheme.surfaceVariant.withOpacity(0.3),
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       ),
       
       // Elevated button theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+      
+      // Outlined button theme
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -150,10 +172,9 @@ class AppTheme {
       
       // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: colorScheme.surface,
+        type: BottomNavigationBarType.fixed,        backgroundColor: colorScheme.surface,
         selectedItemColor: accent,
-        unselectedItemColor: colorScheme.onSurface.withOpacity(0.6),
+        unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         elevation: 8,
       ),
     );
@@ -197,4 +218,4 @@ class AppTheme {
   static ColorScheme getColorScheme(BuildContext context) {
     return Theme.of(context).colorScheme;
   }
-} 
+}
