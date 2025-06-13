@@ -1,19 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:finance/pages/homePage/homePage.dart';
-void main() {
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:easy_localization/easy_localization.dart';
 
-  runApp(const MyApp());
-}
+import 'app/app.dart';
+import 'core/di/injection.dart';
+import 'core/utils/bloc_observer.dart';
+import 'core/settings/app_settings.dart';
+import 'core/theme/material_you.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: HomePage(),
-    );
-  }
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize EasyLocalization
+  await EasyLocalization.ensureInitialized();
+  
+  // Initialize app settings system
+  await AppSettings.initialize();
+  
+  // Initialize Material You system
+  await MaterialYouManager.initialize();
+  
+  // Initialize Hive for local storage
+  await Hive.initFlutter();
+  
+  // Configure dependency injection
+  await configureDependencies();
+  
+  // Set up Bloc observer for debugging
+  Bloc.observer = AppBlocObserver();
+  
+  // Set preferred orientations
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
+  
+  runApp(
+    EasyLocalization(
+      supportedLocales: const [
+        Locale('en'),
+        Locale('vi'),
+      ],
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en'),
+      child: const MainApp(),
+    ),
+  );
 }
