@@ -119,10 +119,9 @@ class MaterialYouManager {
   }) {
     if (isEnabledWithDynamicColors()) {
       final colorScheme = Theme.of(context).colorScheme;
-      
-      // Use Material You surface tones based on elevation
+        // Use Material You surface tones based on elevation
       if (elevation == 0) return colorScheme.surface;
-      if (elevation <= 1) return colorScheme.surfaceVariant;
+      if (elevation <= 1) return colorScheme.surfaceContainerHighest;
       if (elevation <= 3) return colorScheme.surfaceContainerLow;
       if (elevation <= 6) return colorScheme.surfaceContainer;
       return colorScheme.surfaceContainerHigh;
@@ -208,4 +207,4 @@ class MaterialYouManager {
       'statusMessage': getStatusMessage(),
     };
   }
-} 
+}
