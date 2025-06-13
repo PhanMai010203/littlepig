@@ -152,9 +152,8 @@ class AppSettings {
       return Colors.blue; // Fallback
     }
   }
-
   static Future<void> setAccentColor(Color color) async {
-    await set('accentColor', '0x${color.value.toRadixString(16).padLeft(8, '0').toUpperCase()}');
+    await set('accentColor', '0x${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}');
   }
 
   static Future<void> setThemeMode(ThemeMode mode) async {

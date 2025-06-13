@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import '../settings/app_settings.dart';
 
 /// Main color accessor function - use this throughout your app
@@ -17,7 +16,6 @@ AppColors getAppColors({
 }) {
   // Determine if using Material You theming
   bool useMaterialYou = AppSettings.get<bool>('materialYou') ?? false;
-  bool useSystemAccent = AppSettings.get<bool>('useSystemAccent') ?? false;
   bool increaseContrast = AppSettings.get<bool>('increaseTextContrast') ?? false;
 
   return brightness == Brightness.light
@@ -28,13 +26,12 @@ AppColors getAppColors({
             "black": Colors.black,
             
             // Text colors
-            "text": Colors.black,
-            "textLight": increaseContrast
-                ? Colors.black.withOpacity(0.7)
+            "text": Colors.black,            "textLight": increaseContrast
+                ? Colors.black.withValues(alpha: 0.7)
                 : useMaterialYou
-                    ? Colors.black.withOpacity(0.4)
+                    ? Colors.black.withValues(alpha: 0.4)
                     : const Color(0xFF888888),
-            "textSecondary": Colors.black.withOpacity(0.6),
+            "textSecondary": Colors.black.withValues(alpha: 0.6),
             
             // Background colors
             "background": Colors.white,
@@ -64,7 +61,7 @@ AppColors getAppColors({
             "shadowLight": const Color(0x2D5A5A5A),
             
             // Special purpose colors
-            "overlay": Colors.black.withOpacity(0.5),
+            "overlay": Colors.black.withValues(alpha: 0.5),
             "disabled": Colors.grey.shade400,
           },
         )
@@ -75,13 +72,12 @@ AppColors getAppColors({
             "black": Colors.white,
             
             // Text colors
-            "text": Colors.white,
-            "textLight": increaseContrast
-                ? Colors.white.withOpacity(0.65)
+            "text": Colors.white,            "textLight": increaseContrast
+                ? Colors.white.withValues(alpha: 0.65)
                 : useMaterialYou
-                    ? Colors.white.withOpacity(0.25)
+                    ? Colors.white.withValues(alpha: 0.25)
                     : const Color(0xFF494949),
-            "textSecondary": Colors.white.withOpacity(0.6),
+            "textSecondary": Colors.white.withValues(alpha: 0.6),
             
             // Background colors
             "background": const Color(0xFF121212),
@@ -113,7 +109,7 @@ AppColors getAppColors({
                 : const Color(0x28747474),
             
             // Special purpose colors
-            "overlay": Colors.white.withOpacity(0.1),
+            "overlay": Colors.white.withValues(alpha: 0.1),
             "disabled": Colors.grey.shade600,
           },
         );
@@ -153,31 +149,31 @@ class AppColors extends ThemeExtension<AppColors> {
 
 /// Helper functions for color manipulation
 Color _lightenColor(Color color, [double amount = 0.1]) {
-  assert(amount >= 0 && amount <= 1);
-  final hsl = HSLColor.fromColor(color);
-  final hslLight = hsl.withLightness((hsl.lightness + amount).clamp(0.0, 1.0));
-  return hslLight.toColor();
-}
-
-Color _darkenColor(Color color, [double amount = 0.1]) {
-  assert(amount >= 0 && amount <= 1);
-  final hsl = HSLColor.fromColor(color);
-  final hslDark = hsl.withLightness((hsl.lightness - amount).clamp(0.0, 1.0));
-  return hslDark.toColor();
-}
-
-/// Lighten color using alpha blending (pastel effect)
-Color lightenPastel(Color color, {double amount = 0.1}) {
   return Color.alphaBlend(
-    Colors.white.withOpacity(amount),
+    Colors.white.withValues(alpha: amount),
     color,
   );
 }
 
-/// Darken color using alpha blending
+Color _darkenColor(Color color, [double amount = 0.1]) {
+  return Color.alphaBlend(
+    Colors.black.withValues(alpha: amount),
+    color,
+  );
+}
+
+/// Generate a lighter pastel version of a color
+Color lightenPastel(Color color, {double amount = 0.2}) {
+  return Color.alphaBlend(
+    Colors.white.withValues(alpha: amount),
+    color,
+  );
+}
+
+/// Generate a darker pastel version of a color
 Color darkenPastel(Color color, {double amount = 0.1}) {
   return Color.alphaBlend(
-    Colors.black.withOpacity(amount),
+    Colors.black.withValues(alpha: amount),
     color,
   );
 }
@@ -206,34 +202,15 @@ Color dynamicPastel(
 
 /// Utility class for hex color conversion
 class HexColor extends Color {
-  static int _getColorFromHex(String? hexColor, Color? defaultColor) {
-    try {
-      if (hexColor == null) {
-        return defaultColor?.value ?? Colors.grey.value;
-      }
-      
-      hexColor = hexColor.replaceAll("#", "");
-      hexColor = hexColor.replaceAll("0x", "");
-      
-      if (hexColor.length == 6) {
-        hexColor = "FF$hexColor";
-      }
-      
-      return int.parse(hexColor, radix: 16);
-    } catch (e) {
-      return defaultColor?.value ?? Colors.grey.value;
+  static int _getColorFromHex(String hexColor) {
+    hexColor = hexColor.toUpperCase().replaceAll("#", "");
+    if (hexColor.length == 6) {
+      hexColor = "FF$hexColor";
     }
+    return int.parse(hexColor, radix: 16);
   }
 
-  HexColor(final String? hexColor, {final Color? defaultColor})
-      : super(_getColorFromHex(hexColor, defaultColor));
-}
-
-/// Convert color to hex string
-String? toHexString(Color? color) {
-  if (color == null) return null;
-  String valueString = color.value.toRadixString(16);
-  return "0x$valueString";
+  HexColor(final String hexColor) : super(_getColorFromHex(hexColor));
 }
 
 /// Predefined selectable colors for UI elements
@@ -254,4 +231,4 @@ List<Color> getSelectableColors() {
     Colors.yellow.shade400,
     Colors.blueGrey.shade400,
   ];
-} 
+}
