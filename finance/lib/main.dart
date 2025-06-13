@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'app/app.dart';
@@ -8,7 +9,6 @@ import 'core/di/injection.dart';
 import 'core/utils/bloc_observer.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/material_you.dart';
-import 'core/database/database_helper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
