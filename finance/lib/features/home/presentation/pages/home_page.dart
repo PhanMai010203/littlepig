@@ -1,19 +1,65 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:finance/shared/widgets/page_template.dart';
+import '../../widgets/home_page_username.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2000),
+    );
+    _scrollController = ScrollController();
+    _scrollController.addListener(() {
+      double percent = _scrollController.offset / 200;
+      if (percent <= 1) {
+        double offset = _scrollController.offset;
+        if (percent >= 1) offset = 0;
+        _animationController.value = 1 - offset / 200;
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return PageTemplate(
-      title: 'navigation.home'.tr(),
+      // title: 'navigation.home'.tr(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            ConstrainedBox(
+              constraints: BoxConstraints(minHeight: 200),
+              child: Container(
+                alignment: AlignmentDirectional.bottomStart,
+                padding:
+                    EdgeInsetsDirectional.only(start: 9, bottom: 17, end: 9),
+                child: HomePageUsername(
+                  animationController: _animationController,
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
             _WelcomeCard(),
             const SizedBox(height: 24),
             _QuickActions(),
@@ -37,7 +83,8 @@ class _WelcomeCard extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(            colors: [
+          gradient: LinearGradient(
+            colors: [
               Theme.of(context).colorScheme.primary,
               Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
             ],
@@ -51,15 +98,19 @@ class _WelcomeCard extends StatelessWidget {
             Text(
               'Welcome back!',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: Theme.of(context).colorScheme.onPrimary,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Here\'s an overview of your financial status',              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimary.withValues(alpha: 0.9),
-              ),
+              'Here\'s an overview of your financial status',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onPrimary
+                        .withValues(alpha: 0.9),
+                  ),
             ),
           ],
         ),
@@ -77,8 +128,8 @@ class _QuickActions extends StatelessWidget {
         Text(
           'Quick Actions',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         Row(
@@ -166,19 +217,21 @@ class _OverviewCards extends StatelessWidget {
         Text(
           'Overview',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         Row(
-          children: [            Expanded(
+          children: [
+            Expanded(
               child: const _OverviewCard(
                 title: 'Total Balance',
                 value: '\$12,345.67',
                 color: Colors.green,
               ),
             ),
-            const SizedBox(width: 12),            Expanded(
+            const SizedBox(width: 12),
+            Expanded(
               child: const _OverviewCard(
                 title: 'Monthly Spending',
                 value: '\$2,543.21',
@@ -212,17 +265,21 @@ class _OverviewCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              title,              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-              ),
+              title,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.7),
+                  ),
             ),
             const SizedBox(height: 8),
             Text(
               value,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.bold,
-              ),
+                    color: color,
+                    fontWeight: FontWeight.bold,
+                  ),
             ),
           ],
         ),
@@ -240,8 +297,8 @@ class _RecentActivity extends StatelessWidget {
         Text(
           'Recent Activity',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+                fontWeight: FontWeight.bold,
+              ),
         ),
         const SizedBox(height: 16),
         Card(
@@ -253,14 +310,16 @@ class _RecentActivity extends StatelessWidget {
             itemBuilder: (context, index) {
               return ListTile(
                 leading: CircleAvatar(
-                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  backgroundColor:
+                      Theme.of(context).colorScheme.primaryContainer,
                   child: Icon(
                     Icons.shopping_cart,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 title: Text('Transaction ${index + 1}'),
-                subtitle: Text('Category • ${DateTime.now().day}/${DateTime.now().month}'),
+                subtitle: Text(
+                    'Category • ${DateTime.now().day}/${DateTime.now().month}'),
                 trailing: Text(
                   '-\$${(index + 1) * 25}.00',
                   style: TextStyle(
@@ -275,4 +334,4 @@ class _RecentActivity extends StatelessWidget {
       ],
     );
   }
-} 
+}
