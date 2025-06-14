@@ -1,4 +1,3 @@
-import 'package:finance/widgets/app_text.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 
@@ -27,11 +26,12 @@ class HomePageUsername extends StatelessWidget {
         padding: const EdgeInsetsDirectional.symmetric(horizontal: 9),
         child: MediaQuery(
           data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
-          child: AppText(
-            "home".tr(),
-            fontWeight: FontWeight.bold,
-            fontSize: 33,
-            textColor: Theme.of(context).colorScheme.onPrimaryContainer,
+          child: Text(
+            "navigation.home".tr(),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 50,
+                ),
           ),
         ),
       ),
