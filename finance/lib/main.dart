@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'app/app.dart';
@@ -18,14 +17,10 @@ void main() async {
   
   // Initialize app settings system
   await AppSettings.initialize();
-  
-  // Initialize Material You system
+    // Initialize Material You system
   await MaterialYouManager.initialize();
   
-  // Initialize Hive for local storage
-  await Hive.initFlutter();
-  
-  // Configure dependency injection
+  // Configure dependency injection (includes database initialization)
   await configureDependencies();
   
   // Set up Bloc observer for debugging
