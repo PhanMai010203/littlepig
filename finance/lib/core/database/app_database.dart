@@ -11,6 +11,7 @@ import 'tables/categories_table.dart';
 import 'tables/budgets_table.dart';
 import 'tables/accounts_table.dart';
 import 'tables/sync_metadata_table.dart';
+import '../constants/default_categories.dart';
 
 part 'app_database.g.dart';
 
@@ -26,6 +27,9 @@ class AppDatabase extends _$AppDatabase {
   
   // Constructor for opening a specific file (used for sync merging)
   AppDatabase.fromFile(File file) : super(NativeDatabase(file));
+  
+  // Constructor for testing with in-memory database
+  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
   int get schemaVersion => 1;
@@ -45,89 +49,19 @@ class AppDatabase extends _$AppDatabase {
   Future<void> _insertDefaultData() async {
     final deviceId = 'default-device';
     
-    // Default expense categories
-    final expenseCategories = [
-      CategoriesTableCompanion.insert(
-        name: 'Food & Dining',
-        icon: 'restaurant',
-        color: 0xFFFF6B35,
-        isExpense: true,
-        deviceId: deviceId,
-        syncId: 'category-food-dining',
-      ),
-      CategoriesTableCompanion.insert(
-        name: 'Transportation',
-        icon: 'directions_car',
-        color: 0xFF4CAF50,
-        isExpense: true,
-        deviceId: deviceId,
-        syncId: 'category-transportation',
-      ),
-      CategoriesTableCompanion.insert(
-        name: 'Shopping',
-        icon: 'shopping_bag',
-        color: 0xFF9C27B0,
-        isExpense: true,
-        deviceId: deviceId,
-        syncId: 'category-shopping',
-      ),
-      CategoriesTableCompanion.insert(
-        name: 'Entertainment',
-        icon: 'movie',
-        color: 0xFFE91E63,
-        isExpense: true,
-        deviceId: deviceId,
-        syncId: 'category-entertainment',
-      ),
-      CategoriesTableCompanion.insert(
-        name: 'Healthcare',
-        icon: 'local_hospital',
-        color: 0xFFF44336,
-        isExpense: true,
-        deviceId: deviceId,
-        syncId: 'category-healthcare',
-      ),
-      CategoriesTableCompanion.insert(
-        name: 'Utilities',
-        icon: 'flash_on',
-        color: 0xFFFF9800,
-        isExpense: true,
-        deviceId: deviceId,
-        syncId: 'category-utilities',
-      ),
-    ];
-
-    // Default income categories
-    final incomeCategories = [
-      CategoriesTableCompanion.insert(
-        name: 'Salary',
-        icon: 'work',
-        color: 0xFF2196F3,
-        isExpense: false,
-        deviceId: deviceId,
-        syncId: 'category-salary',
-      ),
-      CategoriesTableCompanion.insert(
-        name: 'Freelance',
-        icon: 'laptop_mac',
-        color: 0xFF673AB7,
-        isExpense: false,
-        deviceId: deviceId,
-        syncId: 'category-freelance',
-      ),
-      CategoriesTableCompanion.insert(
-        name: 'Investment',
-        icon: 'trending_up',
-        color: 0xFF4CAF50,
-        isExpense: false,
-        deviceId: deviceId,
-        syncId: 'category-investment',
-      ),
-    ];
-
-    // Insert categories
-    for (final category in [...expenseCategories, ...incomeCategories]) {
-      await into(categoriesTable).insert(category);
+    // Insert all default categories using emoji icons
+    for (final defaultCategory in DefaultCategories.allCategories) {
+      await into(categoriesTable).insert(
+        CategoriesTableCompanion.insert(
+          name: defaultCategory.name,
+          icon: defaultCategory.emoji,
+          color: defaultCategory.color,
+          isExpense: defaultCategory.isExpense,
+          isDefault: const Value(true), // Mark as default categories
+          deviceId: deviceId,
+          syncId: defaultCategory.syncId,
+        ),
+      );
     }
 
     // Default account
