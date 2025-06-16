@@ -3,7 +3,9 @@ import '../features/transactions/domain/repositories/transaction_repository.dart
 import '../features/categories/domain/repositories/category_repository.dart';
 import '../features/accounts/domain/repositories/account_repository.dart';
 import '../features/budgets/domain/repositories/budget_repository.dart';
+
 import '../core/sync/sync_service.dart';
+import 'currency_service.dart';
 
 /// Example service demonstrating how to use the new repositories and sync system
 class FinanceService {
@@ -12,6 +14,7 @@ class FinanceService {
   late final AccountRepository _accountRepository;
   late final BudgetRepository _budgetRepository;
   late final SyncService _syncService;
+  late final CurrencyService _currencyService;
 
   FinanceService() {
     _transactionRepository = getIt<TransactionRepository>();
@@ -19,6 +22,7 @@ class FinanceService {
     _accountRepository = getIt<AccountRepository>();
     _budgetRepository = getIt<BudgetRepository>();
     _syncService = getIt<SyncService>();
+    _currencyService = getIt<CurrencyService>();
   }
 
   /// Example: Get all expense categories
@@ -75,11 +79,13 @@ class FinanceService {
     // Download remote changes
     final downloadResult = await _syncService.syncFromCloud();
     print('Download result: ${downloadResult.success ? 'Success' : 'Failed - ${downloadResult.error}'}');
-  }
-  /// Example: Listen to sync status changes
+  }  /// Example: Listen to sync status changes
   void listenToSyncStatus() {
     _syncService.syncStatusStream.listen((status) {
       print('Sync status changed: $status');
     });
   }
+
+  /// Get the currency service for currency operations
+  CurrencyService get currencyService => _currencyService;
 }

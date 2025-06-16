@@ -39,10 +39,10 @@ dependencies:
   googleapis: ^11.4.0
   googleapis_auth: ^1.4.1
   http: ^1.1.0
-  
-  # Utilities
+    # Utilities
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
+  intl: 0.20.2
   
   # Platform Integration
   device_info_plus: ^9.1.0
@@ -71,13 +71,13 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+assets:
+  - assets/icons/
+  - assets/images/
+  - assets/translations/
+  - assets/data/
   
-  assets:
-    - assets/icons/
-    - assets/images/
-    - assets/translations/
-  
-  fonts:
+fonts:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf

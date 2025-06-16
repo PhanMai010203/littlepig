@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
+import 'package:http/http.dart' as http;
 import 'dart:io';
 
 import 'injection.config.dart';
@@ -14,12 +15,26 @@ import '../../features/transactions/domain/repositories/transaction_repository.d
 import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../features/accounts/domain/repositories/account_repository.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
+import '../../features/currencies/domain/repositories/currency_repository.dart';
 
 // Repository implementations
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
 import '../../features/categories/data/repositories/category_repository_impl.dart';
 import '../../features/accounts/data/repositories/account_repository_impl.dart';
 import '../../features/budgets/data/repositories/budget_repository_impl.dart';
+import '../../features/currencies/data/repositories/currency_repository_impl.dart';
+
+// Currency data sources
+import '../../features/currencies/data/datasources/currency_local_data_source.dart';
+import '../../features/currencies/data/datasources/exchange_rate_remote_data_source.dart';
+import '../../features/currencies/data/datasources/exchange_rate_local_data_source.dart';
+
+// Currency use cases
+import '../../features/currencies/domain/usecases/get_currencies.dart';
+import '../../features/currencies/domain/usecases/exchange_rate_operations.dart';
+
+// Services
+import '../../services/currency_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -60,8 +75,7 @@ Future<void> configureDependencies() async {
   // Register Database Service with our custom implementation
   final databaseService = DatabaseService();
   getIt.registerSingleton<DatabaseService>(databaseService);
-  
-  // Register Repositories
+    // Register Repositories
   getIt.registerSingleton<TransactionRepository>(
     TransactionRepositoryImpl(databaseService.database, deviceId),
   );
@@ -73,6 +87,56 @@ Future<void> configureDependencies() async {
   );
   getIt.registerSingleton<BudgetRepository>(
     BudgetRepositoryImpl(databaseService.database),
+  );
+  
+  // Register Currency Data Sources
+  getIt.registerSingleton<CurrencyLocalDataSource>(
+    CurrencyLocalDataSourceImpl(),
+  );
+  getIt.registerSingleton<ExchangeRateRemoteDataSource>(
+    ExchangeRateRemoteDataSourceImpl(httpClient: http.Client()),
+  );
+  getIt.registerSingleton<ExchangeRateLocalDataSource>(
+    ExchangeRateLocalDataSourceImpl(),
+  );
+  
+  // Register Currency Repository
+  getIt.registerSingleton<CurrencyRepository>(
+    CurrencyRepositoryImpl(
+      getIt<CurrencyLocalDataSource>(),
+      getIt<ExchangeRateRemoteDataSource>(),
+      getIt<ExchangeRateLocalDataSource>(),
+    ),
+  );
+  
+  // Register Currency Use Cases
+  getIt.registerSingleton<GetAllCurrencies>(
+    GetAllCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<GetPopularCurrencies>(
+    GetPopularCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<SearchCurrencies>(
+    SearchCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<ConvertCurrency>(
+    ConvertCurrency(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<GetExchangeRates>(
+    GetExchangeRates(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<SetCustomExchangeRate>(
+    SetCustomExchangeRate(getIt<CurrencyRepository>()),
+  );  getIt.registerSingleton<RefreshExchangeRates>(
+    RefreshExchangeRates(getIt<CurrencyRepository>()),
+  );
+  
+  // Register Currency Service
+  getIt.registerSingleton<CurrencyService>(
+    CurrencyService(
+      getIt<CurrencyRepository>(),
+      getIt<AccountRepository>(),
+    ),
   );
   
   // Register Sync Service
