@@ -10,6 +10,7 @@ class TransactionsTable extends Table {
   
   TextColumn get title => text().withLength(min: 1, max: 255)();
   TextColumn get description => text().nullable()();
+  TextColumn get note => text().nullable()();
   RealColumn get amount => real()();
   
   IntColumn get categoryId => integer().references(CategoriesTable, #id)();

@@ -3,15 +3,18 @@ import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:io';
 
 import 'injection.config.dart';
 import '../services/database_service.dart';
+import '../services/file_picker_service.dart';
 import '../sync/sync_service.dart';
 import '../sync/google_drive_sync_service.dart';
 
 // Repository interfaces
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
+import '../../features/transactions/domain/repositories/attachment_repository.dart';
 import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../features/accounts/domain/repositories/account_repository.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
@@ -19,6 +22,7 @@ import '../../features/currencies/domain/repositories/currency_repository.dart';
 
 // Repository implementations
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart';
+import '../../features/transactions/data/repositories/attachment_repository_impl.dart';
 import '../../features/categories/data/repositories/category_repository_impl.dart';
 import '../../features/accounts/data/repositories/account_repository_impl.dart';
 import '../../features/budgets/data/repositories/budget_repository_impl.dart';
@@ -70,9 +74,19 @@ Future<void> configureDependencies() async {
   // Register Database Service with our custom implementation
   final databaseService = DatabaseService();
   getIt.registerSingleton<DatabaseService>(databaseService);
-    // Register Repositories
+  
+  // Register Google Sign In
+  final googleSignIn = GoogleSignIn(scopes: [
+    'https://www.googleapis.com/auth/drive.file',
+  ]);
+  getIt.registerSingleton<GoogleSignIn>(googleSignIn);
+  
+  // Register Repositories
   getIt.registerSingleton<TransactionRepository>(
     TransactionRepositoryImpl(databaseService.database, deviceId),
+  );
+  getIt.registerSingleton<AttachmentRepository>(
+    AttachmentRepositoryImpl(databaseService.database, googleSignIn),
   );
   getIt.registerSingleton<CategoryRepository>(
     CategoryRepositoryImpl(databaseService.database),
@@ -131,6 +145,14 @@ Future<void> configureDependencies() async {
     CurrencyService(
       getIt<CurrencyRepository>(),
       getIt<AccountRepository>(),
+    ),
+  );
+  
+  // Register File Picker Service
+  getIt.registerSingleton<FilePickerService>(
+    FilePickerService(
+      getIt<AttachmentRepository>(),
+      getIt<GoogleSignIn>(),
     ),
   );
   

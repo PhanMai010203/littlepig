@@ -11,6 +11,7 @@ import 'tables/categories_table.dart';
 import 'tables/budgets_table.dart';
 import 'tables/accounts_table.dart';
 import 'tables/sync_metadata_table.dart';
+import 'tables/attachments_table.dart';
 import '../constants/default_categories.dart';
 
 part 'app_database.g.dart';
@@ -21,6 +22,7 @@ part 'app_database.g.dart';
   BudgetsTable,
   AccountsTable,
   SyncMetadataTable,
+  AttachmentsTable,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -32,7 +34,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration {
@@ -42,7 +44,12 @@ class AppDatabase extends _$AppDatabase {
         await _insertDefaultData();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Handle future schema migrations here
+        if (from < 2) {
+          // Add note field to transactions table using raw SQL
+          await customStatement('ALTER TABLE transactions ADD COLUMN note TEXT');
+          // Create attachments table
+          await m.createTable(attachmentsTable);
+        }
       },
     );
   }  /// Insert default categories and accounts

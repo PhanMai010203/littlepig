@@ -1237,6 +1237,11 @@ class $TransactionsTableTable extends TransactionsTable
   late final GeneratedColumn<String> description = GeneratedColumn<String>(
       'description', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _noteMeta = const VerificationMeta('note');
+  @override
+  late final GeneratedColumn<String> note = GeneratedColumn<String>(
+      'note', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
@@ -1326,6 +1331,7 @@ class $TransactionsTableTable extends TransactionsTable
         id,
         title,
         description,
+        note,
         amount,
         categoryId,
         accountId,
@@ -1363,6 +1369,10 @@ class $TransactionsTableTable extends TransactionsTable
           _descriptionMeta,
           description.isAcceptableOrUnknown(
               data['description']!, _descriptionMeta));
+    }
+    if (data.containsKey('note')) {
+      context.handle(
+          _noteMeta, note.isAcceptableOrUnknown(data['note']!, _noteMeta));
     }
     if (data.containsKey('amount')) {
       context.handle(_amountMeta,
@@ -1439,6 +1449,8 @@ class $TransactionsTableTable extends TransactionsTable
           .read(DriftSqlType.string, data['${effectivePrefix}title'])!,
       description: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}description']),
+      note: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}note']),
       amount: attachedDatabase.typeMapping
           .read(DriftSqlType.double, data['${effectivePrefix}amount'])!,
       categoryId: attachedDatabase.typeMapping
@@ -1475,6 +1487,7 @@ class TransactionsTableData extends DataClass
   final int id;
   final String title;
   final String? description;
+  final String? note;
   final double amount;
   final int categoryId;
   final int accountId;
@@ -1490,6 +1503,7 @@ class TransactionsTableData extends DataClass
       {required this.id,
       required this.title,
       this.description,
+      this.note,
       required this.amount,
       required this.categoryId,
       required this.accountId,
@@ -1508,6 +1522,9 @@ class TransactionsTableData extends DataClass
     map['title'] = Variable<String>(title);
     if (!nullToAbsent || description != null) {
       map['description'] = Variable<String>(description);
+    }
+    if (!nullToAbsent || note != null) {
+      map['note'] = Variable<String>(note);
     }
     map['amount'] = Variable<double>(amount);
     map['category_id'] = Variable<int>(categoryId);
@@ -1532,6 +1549,7 @@ class TransactionsTableData extends DataClass
       description: description == null && nullToAbsent
           ? const Value.absent()
           : Value(description),
+      note: note == null && nullToAbsent ? const Value.absent() : Value(note),
       amount: Value(amount),
       categoryId: Value(categoryId),
       accountId: Value(accountId),
@@ -1555,6 +1573,7 @@ class TransactionsTableData extends DataClass
       id: serializer.fromJson<int>(json['id']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
+      note: serializer.fromJson<String?>(json['note']),
       amount: serializer.fromJson<double>(json['amount']),
       categoryId: serializer.fromJson<int>(json['categoryId']),
       accountId: serializer.fromJson<int>(json['accountId']),
@@ -1575,6 +1594,7 @@ class TransactionsTableData extends DataClass
       'id': serializer.toJson<int>(id),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
+      'note': serializer.toJson<String?>(note),
       'amount': serializer.toJson<double>(amount),
       'categoryId': serializer.toJson<int>(categoryId),
       'accountId': serializer.toJson<int>(accountId),
@@ -1593,6 +1613,7 @@ class TransactionsTableData extends DataClass
           {int? id,
           String? title,
           Value<String?> description = const Value.absent(),
+          Value<String?> note = const Value.absent(),
           double? amount,
           int? categoryId,
           int? accountId,
@@ -1608,6 +1629,7 @@ class TransactionsTableData extends DataClass
         id: id ?? this.id,
         title: title ?? this.title,
         description: description.present ? description.value : this.description,
+        note: note.present ? note.value : this.note,
         amount: amount ?? this.amount,
         categoryId: categoryId ?? this.categoryId,
         accountId: accountId ?? this.accountId,
@@ -1626,6 +1648,7 @@ class TransactionsTableData extends DataClass
       title: data.title.present ? data.title.value : this.title,
       description:
           data.description.present ? data.description.value : this.description,
+      note: data.note.present ? data.note.value : this.note,
       amount: data.amount.present ? data.amount.value : this.amount,
       categoryId:
           data.categoryId.present ? data.categoryId.value : this.categoryId,
@@ -1648,6 +1671,7 @@ class TransactionsTableData extends DataClass
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
+          ..write('note: $note, ')
           ..write('amount: $amount, ')
           ..write('categoryId: $categoryId, ')
           ..write('accountId: $accountId, ')
@@ -1668,6 +1692,7 @@ class TransactionsTableData extends DataClass
       id,
       title,
       description,
+      note,
       amount,
       categoryId,
       accountId,
@@ -1686,6 +1711,7 @@ class TransactionsTableData extends DataClass
           other.id == this.id &&
           other.title == this.title &&
           other.description == this.description &&
+          other.note == this.note &&
           other.amount == this.amount &&
           other.categoryId == this.categoryId &&
           other.accountId == this.accountId &&
@@ -1704,6 +1730,7 @@ class TransactionsTableCompanion
   final Value<int> id;
   final Value<String> title;
   final Value<String?> description;
+  final Value<String?> note;
   final Value<double> amount;
   final Value<int> categoryId;
   final Value<int> accountId;
@@ -1719,6 +1746,7 @@ class TransactionsTableCompanion
     this.id = const Value.absent(),
     this.title = const Value.absent(),
     this.description = const Value.absent(),
+    this.note = const Value.absent(),
     this.amount = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.accountId = const Value.absent(),
@@ -1735,6 +1763,7 @@ class TransactionsTableCompanion
     this.id = const Value.absent(),
     required String title,
     this.description = const Value.absent(),
+    this.note = const Value.absent(),
     required double amount,
     required int categoryId,
     required int accountId,
@@ -1757,6 +1786,7 @@ class TransactionsTableCompanion
     Expression<int>? id,
     Expression<String>? title,
     Expression<String>? description,
+    Expression<String>? note,
     Expression<double>? amount,
     Expression<int>? categoryId,
     Expression<int>? accountId,
@@ -1773,6 +1803,7 @@ class TransactionsTableCompanion
       if (id != null) 'id': id,
       if (title != null) 'title': title,
       if (description != null) 'description': description,
+      if (note != null) 'note': note,
       if (amount != null) 'amount': amount,
       if (categoryId != null) 'category_id': categoryId,
       if (accountId != null) 'account_id': accountId,
@@ -1791,6 +1822,7 @@ class TransactionsTableCompanion
       {Value<int>? id,
       Value<String>? title,
       Value<String?>? description,
+      Value<String?>? note,
       Value<double>? amount,
       Value<int>? categoryId,
       Value<int>? accountId,
@@ -1806,6 +1838,7 @@ class TransactionsTableCompanion
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
+      note: note ?? this.note,
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
       accountId: accountId ?? this.accountId,
@@ -1831,6 +1864,9 @@ class TransactionsTableCompanion
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
+    }
+    if (note.present) {
+      map['note'] = Variable<String>(note.value);
     }
     if (amount.present) {
       map['amount'] = Variable<double>(amount.value);
@@ -1874,6 +1910,7 @@ class TransactionsTableCompanion
           ..write('id: $id, ')
           ..write('title: $title, ')
           ..write('description: $description, ')
+          ..write('note: $note, ')
           ..write('amount: $amount, ')
           ..write('categoryId: $categoryId, ')
           ..write('accountId: $accountId, ')
@@ -2943,6 +2980,867 @@ class SyncMetadataTableCompanion
   }
 }
 
+class $AttachmentsTableTable extends AttachmentsTable
+    with TableInfo<$AttachmentsTableTable, AttachmentsTableData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $AttachmentsTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _transactionIdMeta =
+      const VerificationMeta('transactionId');
+  @override
+  late final GeneratedColumn<int> transactionId = GeneratedColumn<int>(
+      'transaction_id', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: true,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES transactions (id)'));
+  static const VerificationMeta _fileNameMeta =
+      const VerificationMeta('fileName');
+  @override
+  late final GeneratedColumn<String> fileName = GeneratedColumn<String>(
+      'file_name', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 255),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _filePathMeta =
+      const VerificationMeta('filePath');
+  @override
+  late final GeneratedColumn<String> filePath = GeneratedColumn<String>(
+      'file_path', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _googleDriveFileIdMeta =
+      const VerificationMeta('googleDriveFileId');
+  @override
+  late final GeneratedColumn<String> googleDriveFileId =
+      GeneratedColumn<String>('google_drive_file_id', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _googleDriveLinkMeta =
+      const VerificationMeta('googleDriveLink');
+  @override
+  late final GeneratedColumn<String> googleDriveLink = GeneratedColumn<String>(
+      'google_drive_link', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<int> type = GeneratedColumn<int>(
+      'type', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _mimeTypeMeta =
+      const VerificationMeta('mimeType');
+  @override
+  late final GeneratedColumn<String> mimeType = GeneratedColumn<String>(
+      'mime_type', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _fileSizeBytesMeta =
+      const VerificationMeta('fileSizeBytes');
+  @override
+  late final GeneratedColumn<int> fileSizeBytes = GeneratedColumn<int>(
+      'file_size_bytes', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _createdAtMeta =
+      const VerificationMeta('createdAt');
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+      'created_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _updatedAtMeta =
+      const VerificationMeta('updatedAt');
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+      'updated_at', aliasedName, false,
+      type: DriftSqlType.dateTime,
+      requiredDuringInsert: false,
+      defaultValue: currentDateAndTime);
+  static const VerificationMeta _isUploadedMeta =
+      const VerificationMeta('isUploaded');
+  @override
+  late final GeneratedColumn<bool> isUploaded = GeneratedColumn<bool>(
+      'is_uploaded', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_uploaded" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _isDeletedMeta =
+      const VerificationMeta('isDeleted');
+  @override
+  late final GeneratedColumn<bool> isDeleted = GeneratedColumn<bool>(
+      'is_deleted', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_deleted" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _deviceIdMeta =
+      const VerificationMeta('deviceId');
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+      'device_id', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
+      type: DriftSqlType.string,
+      requiredDuringInsert: true);
+  static const VerificationMeta _isSyncedMeta =
+      const VerificationMeta('isSynced');
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+      'is_synced', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _lastSyncAtMeta =
+      const VerificationMeta('lastSyncAt');
+  @override
+  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
+      'last_sync_at', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
+  @override
+  late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
+      'sync_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _versionMeta =
+      const VerificationMeta('version');
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+      'version', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        transactionId,
+        fileName,
+        filePath,
+        googleDriveFileId,
+        googleDriveLink,
+        type,
+        mimeType,
+        fileSizeBytes,
+        createdAt,
+        updatedAt,
+        isUploaded,
+        isDeleted,
+        deviceId,
+        isSynced,
+        lastSyncAt,
+        syncId,
+        version
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'attachments';
+  @override
+  VerificationContext validateIntegrity(
+      Insertable<AttachmentsTableData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+          _transactionIdMeta,
+          transactionId.isAcceptableOrUnknown(
+              data['transaction_id']!, _transactionIdMeta));
+    } else if (isInserting) {
+      context.missing(_transactionIdMeta);
+    }
+    if (data.containsKey('file_name')) {
+      context.handle(_fileNameMeta,
+          fileName.isAcceptableOrUnknown(data['file_name']!, _fileNameMeta));
+    } else if (isInserting) {
+      context.missing(_fileNameMeta);
+    }
+    if (data.containsKey('file_path')) {
+      context.handle(_filePathMeta,
+          filePath.isAcceptableOrUnknown(data['file_path']!, _filePathMeta));
+    }
+    if (data.containsKey('google_drive_file_id')) {
+      context.handle(
+          _googleDriveFileIdMeta,
+          googleDriveFileId.isAcceptableOrUnknown(
+              data['google_drive_file_id']!, _googleDriveFileIdMeta));
+    }
+    if (data.containsKey('google_drive_link')) {
+      context.handle(
+          _googleDriveLinkMeta,
+          googleDriveLink.isAcceptableOrUnknown(
+              data['google_drive_link']!, _googleDriveLinkMeta));
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+          _typeMeta, type.isAcceptableOrUnknown(data['type']!, _typeMeta));
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('mime_type')) {
+      context.handle(_mimeTypeMeta,
+          mimeType.isAcceptableOrUnknown(data['mime_type']!, _mimeTypeMeta));
+    }
+    if (data.containsKey('file_size_bytes')) {
+      context.handle(
+          _fileSizeBytesMeta,
+          fileSizeBytes.isAcceptableOrUnknown(
+              data['file_size_bytes']!, _fileSizeBytesMeta));
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(_createdAtMeta,
+          createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(_updatedAtMeta,
+          updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
+    }
+    if (data.containsKey('is_uploaded')) {
+      context.handle(
+          _isUploadedMeta,
+          isUploaded.isAcceptableOrUnknown(
+              data['is_uploaded']!, _isUploadedMeta));
+    }
+    if (data.containsKey('is_deleted')) {
+      context.handle(_isDeletedMeta,
+          isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta));
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(_deviceIdMeta,
+          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(_isSyncedMeta,
+          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
+    }
+    if (data.containsKey('last_sync_at')) {
+      context.handle(
+          _lastSyncAtMeta,
+          lastSyncAt.isAcceptableOrUnknown(
+              data['last_sync_at']!, _lastSyncAtMeta));
+    }
+    if (data.containsKey('sync_id')) {
+      context.handle(_syncIdMeta,
+          syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta));
+    } else if (isInserting) {
+      context.missing(_syncIdMeta);
+    }
+    if (data.containsKey('version')) {
+      context.handle(_versionMeta,
+          version.isAcceptableOrUnknown(data['version']!, _versionMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  AttachmentsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return AttachmentsTableData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      transactionId: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}transaction_id'])!,
+      fileName: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_name'])!,
+      filePath: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}file_path']),
+      googleDriveFileId: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}google_drive_file_id']),
+      googleDriveLink: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}google_drive_link']),
+      type: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}type'])!,
+      mimeType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}mime_type']),
+      fileSizeBytes: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}file_size_bytes']),
+      createdAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
+      updatedAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      isUploaded: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_uploaded'])!,
+      isDeleted: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_deleted'])!,
+      deviceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
+      isSynced: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
+      lastSyncAt: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_sync_at']),
+      syncId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
+      version: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
+    );
+  }
+
+  @override
+  $AttachmentsTableTable createAlias(String alias) {
+    return $AttachmentsTableTable(attachedDatabase, alias);
+  }
+}
+
+class AttachmentsTableData extends DataClass
+    implements Insertable<AttachmentsTableData> {
+  final int id;
+  final int transactionId;
+  final String fileName;
+  final String? filePath;
+  final String? googleDriveFileId;
+  final String? googleDriveLink;
+  final int type;
+  final String? mimeType;
+  final int? fileSizeBytes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final bool isUploaded;
+  final bool isDeleted;
+  final String deviceId;
+  final bool isSynced;
+  final DateTime? lastSyncAt;
+  final String syncId;
+  final int version;
+  const AttachmentsTableData(
+      {required this.id,
+      required this.transactionId,
+      required this.fileName,
+      this.filePath,
+      this.googleDriveFileId,
+      this.googleDriveLink,
+      required this.type,
+      this.mimeType,
+      this.fileSizeBytes,
+      required this.createdAt,
+      required this.updatedAt,
+      required this.isUploaded,
+      required this.isDeleted,
+      required this.deviceId,
+      required this.isSynced,
+      this.lastSyncAt,
+      required this.syncId,
+      required this.version});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['transaction_id'] = Variable<int>(transactionId);
+    map['file_name'] = Variable<String>(fileName);
+    if (!nullToAbsent || filePath != null) {
+      map['file_path'] = Variable<String>(filePath);
+    }
+    if (!nullToAbsent || googleDriveFileId != null) {
+      map['google_drive_file_id'] = Variable<String>(googleDriveFileId);
+    }
+    if (!nullToAbsent || googleDriveLink != null) {
+      map['google_drive_link'] = Variable<String>(googleDriveLink);
+    }
+    map['type'] = Variable<int>(type);
+    if (!nullToAbsent || mimeType != null) {
+      map['mime_type'] = Variable<String>(mimeType);
+    }
+    if (!nullToAbsent || fileSizeBytes != null) {
+      map['file_size_bytes'] = Variable<int>(fileSizeBytes);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['is_uploaded'] = Variable<bool>(isUploaded);
+    map['is_deleted'] = Variable<bool>(isDeleted);
+    map['device_id'] = Variable<String>(deviceId);
+    map['is_synced'] = Variable<bool>(isSynced);
+    if (!nullToAbsent || lastSyncAt != null) {
+      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
+    }
+    map['sync_id'] = Variable<String>(syncId);
+    map['version'] = Variable<int>(version);
+    return map;
+  }
+
+  AttachmentsTableCompanion toCompanion(bool nullToAbsent) {
+    return AttachmentsTableCompanion(
+      id: Value(id),
+      transactionId: Value(transactionId),
+      fileName: Value(fileName),
+      filePath: filePath == null && nullToAbsent
+          ? const Value.absent()
+          : Value(filePath),
+      googleDriveFileId: googleDriveFileId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(googleDriveFileId),
+      googleDriveLink: googleDriveLink == null && nullToAbsent
+          ? const Value.absent()
+          : Value(googleDriveLink),
+      type: Value(type),
+      mimeType: mimeType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(mimeType),
+      fileSizeBytes: fileSizeBytes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(fileSizeBytes),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      isUploaded: Value(isUploaded),
+      isDeleted: Value(isDeleted),
+      deviceId: Value(deviceId),
+      isSynced: Value(isSynced),
+      lastSyncAt: lastSyncAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastSyncAt),
+      syncId: Value(syncId),
+      version: Value(version),
+    );
+  }
+
+  factory AttachmentsTableData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return AttachmentsTableData(
+      id: serializer.fromJson<int>(json['id']),
+      transactionId: serializer.fromJson<int>(json['transactionId']),
+      fileName: serializer.fromJson<String>(json['fileName']),
+      filePath: serializer.fromJson<String?>(json['filePath']),
+      googleDriveFileId:
+          serializer.fromJson<String?>(json['googleDriveFileId']),
+      googleDriveLink: serializer.fromJson<String?>(json['googleDriveLink']),
+      type: serializer.fromJson<int>(json['type']),
+      mimeType: serializer.fromJson<String?>(json['mimeType']),
+      fileSizeBytes: serializer.fromJson<int?>(json['fileSizeBytes']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      isUploaded: serializer.fromJson<bool>(json['isUploaded']),
+      isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
+      syncId: serializer.fromJson<String>(json['syncId']),
+      version: serializer.fromJson<int>(json['version']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'transactionId': serializer.toJson<int>(transactionId),
+      'fileName': serializer.toJson<String>(fileName),
+      'filePath': serializer.toJson<String?>(filePath),
+      'googleDriveFileId': serializer.toJson<String?>(googleDriveFileId),
+      'googleDriveLink': serializer.toJson<String?>(googleDriveLink),
+      'type': serializer.toJson<int>(type),
+      'mimeType': serializer.toJson<String?>(mimeType),
+      'fileSizeBytes': serializer.toJson<int?>(fileSizeBytes),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'isUploaded': serializer.toJson<bool>(isUploaded),
+      'isDeleted': serializer.toJson<bool>(isDeleted),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'isSynced': serializer.toJson<bool>(isSynced),
+      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
+      'syncId': serializer.toJson<String>(syncId),
+      'version': serializer.toJson<int>(version),
+    };
+  }
+
+  AttachmentsTableData copyWith(
+          {int? id,
+          int? transactionId,
+          String? fileName,
+          Value<String?> filePath = const Value.absent(),
+          Value<String?> googleDriveFileId = const Value.absent(),
+          Value<String?> googleDriveLink = const Value.absent(),
+          int? type,
+          Value<String?> mimeType = const Value.absent(),
+          Value<int?> fileSizeBytes = const Value.absent(),
+          DateTime? createdAt,
+          DateTime? updatedAt,
+          bool? isUploaded,
+          bool? isDeleted,
+          String? deviceId,
+          bool? isSynced,
+          Value<DateTime?> lastSyncAt = const Value.absent(),
+          String? syncId,
+          int? version}) =>
+      AttachmentsTableData(
+        id: id ?? this.id,
+        transactionId: transactionId ?? this.transactionId,
+        fileName: fileName ?? this.fileName,
+        filePath: filePath.present ? filePath.value : this.filePath,
+        googleDriveFileId: googleDriveFileId.present
+            ? googleDriveFileId.value
+            : this.googleDriveFileId,
+        googleDriveLink: googleDriveLink.present
+            ? googleDriveLink.value
+            : this.googleDriveLink,
+        type: type ?? this.type,
+        mimeType: mimeType.present ? mimeType.value : this.mimeType,
+        fileSizeBytes:
+            fileSizeBytes.present ? fileSizeBytes.value : this.fileSizeBytes,
+        createdAt: createdAt ?? this.createdAt,
+        updatedAt: updatedAt ?? this.updatedAt,
+        isUploaded: isUploaded ?? this.isUploaded,
+        isDeleted: isDeleted ?? this.isDeleted,
+        deviceId: deviceId ?? this.deviceId,
+        isSynced: isSynced ?? this.isSynced,
+        lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
+        syncId: syncId ?? this.syncId,
+        version: version ?? this.version,
+      );
+  AttachmentsTableData copyWithCompanion(AttachmentsTableCompanion data) {
+    return AttachmentsTableData(
+      id: data.id.present ? data.id.value : this.id,
+      transactionId: data.transactionId.present
+          ? data.transactionId.value
+          : this.transactionId,
+      fileName: data.fileName.present ? data.fileName.value : this.fileName,
+      filePath: data.filePath.present ? data.filePath.value : this.filePath,
+      googleDriveFileId: data.googleDriveFileId.present
+          ? data.googleDriveFileId.value
+          : this.googleDriveFileId,
+      googleDriveLink: data.googleDriveLink.present
+          ? data.googleDriveLink.value
+          : this.googleDriveLink,
+      type: data.type.present ? data.type.value : this.type,
+      mimeType: data.mimeType.present ? data.mimeType.value : this.mimeType,
+      fileSizeBytes: data.fileSizeBytes.present
+          ? data.fileSizeBytes.value
+          : this.fileSizeBytes,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      isUploaded:
+          data.isUploaded.present ? data.isUploaded.value : this.isUploaded,
+      isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      lastSyncAt:
+          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
+      syncId: data.syncId.present ? data.syncId.value : this.syncId,
+      version: data.version.present ? data.version.value : this.version,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AttachmentsTableData(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('fileName: $fileName, ')
+          ..write('filePath: $filePath, ')
+          ..write('googleDriveFileId: $googleDriveFileId, ')
+          ..write('googleDriveLink: $googleDriveLink, ')
+          ..write('type: $type, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSizeBytes: $fileSizeBytes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isUploaded: $isUploaded, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('lastSyncAt: $lastSyncAt, ')
+          ..write('syncId: $syncId, ')
+          ..write('version: $version')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      id,
+      transactionId,
+      fileName,
+      filePath,
+      googleDriveFileId,
+      googleDriveLink,
+      type,
+      mimeType,
+      fileSizeBytes,
+      createdAt,
+      updatedAt,
+      isUploaded,
+      isDeleted,
+      deviceId,
+      isSynced,
+      lastSyncAt,
+      syncId,
+      version);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is AttachmentsTableData &&
+          other.id == this.id &&
+          other.transactionId == this.transactionId &&
+          other.fileName == this.fileName &&
+          other.filePath == this.filePath &&
+          other.googleDriveFileId == this.googleDriveFileId &&
+          other.googleDriveLink == this.googleDriveLink &&
+          other.type == this.type &&
+          other.mimeType == this.mimeType &&
+          other.fileSizeBytes == this.fileSizeBytes &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.isUploaded == this.isUploaded &&
+          other.isDeleted == this.isDeleted &&
+          other.deviceId == this.deviceId &&
+          other.isSynced == this.isSynced &&
+          other.lastSyncAt == this.lastSyncAt &&
+          other.syncId == this.syncId &&
+          other.version == this.version);
+}
+
+class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
+  final Value<int> id;
+  final Value<int> transactionId;
+  final Value<String> fileName;
+  final Value<String?> filePath;
+  final Value<String?> googleDriveFileId;
+  final Value<String?> googleDriveLink;
+  final Value<int> type;
+  final Value<String?> mimeType;
+  final Value<int?> fileSizeBytes;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<bool> isUploaded;
+  final Value<bool> isDeleted;
+  final Value<String> deviceId;
+  final Value<bool> isSynced;
+  final Value<DateTime?> lastSyncAt;
+  final Value<String> syncId;
+  final Value<int> version;
+  const AttachmentsTableCompanion({
+    this.id = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.fileName = const Value.absent(),
+    this.filePath = const Value.absent(),
+    this.googleDriveFileId = const Value.absent(),
+    this.googleDriveLink = const Value.absent(),
+    this.type = const Value.absent(),
+    this.mimeType = const Value.absent(),
+    this.fileSizeBytes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.isUploaded = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.lastSyncAt = const Value.absent(),
+    this.syncId = const Value.absent(),
+    this.version = const Value.absent(),
+  });
+  AttachmentsTableCompanion.insert({
+    this.id = const Value.absent(),
+    required int transactionId,
+    required String fileName,
+    this.filePath = const Value.absent(),
+    this.googleDriveFileId = const Value.absent(),
+    this.googleDriveLink = const Value.absent(),
+    required int type,
+    this.mimeType = const Value.absent(),
+    this.fileSizeBytes = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.isUploaded = const Value.absent(),
+    this.isDeleted = const Value.absent(),
+    required String deviceId,
+    this.isSynced = const Value.absent(),
+    this.lastSyncAt = const Value.absent(),
+    required String syncId,
+    this.version = const Value.absent(),
+  })  : transactionId = Value(transactionId),
+        fileName = Value(fileName),
+        type = Value(type),
+        deviceId = Value(deviceId),
+        syncId = Value(syncId);
+  static Insertable<AttachmentsTableData> custom({
+    Expression<int>? id,
+    Expression<int>? transactionId,
+    Expression<String>? fileName,
+    Expression<String>? filePath,
+    Expression<String>? googleDriveFileId,
+    Expression<String>? googleDriveLink,
+    Expression<int>? type,
+    Expression<String>? mimeType,
+    Expression<int>? fileSizeBytes,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<bool>? isUploaded,
+    Expression<bool>? isDeleted,
+    Expression<String>? deviceId,
+    Expression<bool>? isSynced,
+    Expression<DateTime>? lastSyncAt,
+    Expression<String>? syncId,
+    Expression<int>? version,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (fileName != null) 'file_name': fileName,
+      if (filePath != null) 'file_path': filePath,
+      if (googleDriveFileId != null) 'google_drive_file_id': googleDriveFileId,
+      if (googleDriveLink != null) 'google_drive_link': googleDriveLink,
+      if (type != null) 'type': type,
+      if (mimeType != null) 'mime_type': mimeType,
+      if (fileSizeBytes != null) 'file_size_bytes': fileSizeBytes,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (isUploaded != null) 'is_uploaded': isUploaded,
+      if (isDeleted != null) 'is_deleted': isDeleted,
+      if (deviceId != null) 'device_id': deviceId,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
+      if (syncId != null) 'sync_id': syncId,
+      if (version != null) 'version': version,
+    });
+  }
+
+  AttachmentsTableCompanion copyWith(
+      {Value<int>? id,
+      Value<int>? transactionId,
+      Value<String>? fileName,
+      Value<String?>? filePath,
+      Value<String?>? googleDriveFileId,
+      Value<String?>? googleDriveLink,
+      Value<int>? type,
+      Value<String?>? mimeType,
+      Value<int?>? fileSizeBytes,
+      Value<DateTime>? createdAt,
+      Value<DateTime>? updatedAt,
+      Value<bool>? isUploaded,
+      Value<bool>? isDeleted,
+      Value<String>? deviceId,
+      Value<bool>? isSynced,
+      Value<DateTime?>? lastSyncAt,
+      Value<String>? syncId,
+      Value<int>? version}) {
+    return AttachmentsTableCompanion(
+      id: id ?? this.id,
+      transactionId: transactionId ?? this.transactionId,
+      fileName: fileName ?? this.fileName,
+      filePath: filePath ?? this.filePath,
+      googleDriveFileId: googleDriveFileId ?? this.googleDriveFileId,
+      googleDriveLink: googleDriveLink ?? this.googleDriveLink,
+      type: type ?? this.type,
+      mimeType: mimeType ?? this.mimeType,
+      fileSizeBytes: fileSizeBytes ?? this.fileSizeBytes,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      isUploaded: isUploaded ?? this.isUploaded,
+      isDeleted: isDeleted ?? this.isDeleted,
+      deviceId: deviceId ?? this.deviceId,
+      isSynced: isSynced ?? this.isSynced,
+      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
+      syncId: syncId ?? this.syncId,
+      version: version ?? this.version,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<int>(transactionId.value);
+    }
+    if (fileName.present) {
+      map['file_name'] = Variable<String>(fileName.value);
+    }
+    if (filePath.present) {
+      map['file_path'] = Variable<String>(filePath.value);
+    }
+    if (googleDriveFileId.present) {
+      map['google_drive_file_id'] = Variable<String>(googleDriveFileId.value);
+    }
+    if (googleDriveLink.present) {
+      map['google_drive_link'] = Variable<String>(googleDriveLink.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<int>(type.value);
+    }
+    if (mimeType.present) {
+      map['mime_type'] = Variable<String>(mimeType.value);
+    }
+    if (fileSizeBytes.present) {
+      map['file_size_bytes'] = Variable<int>(fileSizeBytes.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (isUploaded.present) {
+      map['is_uploaded'] = Variable<bool>(isUploaded.value);
+    }
+    if (isDeleted.present) {
+      map['is_deleted'] = Variable<bool>(isDeleted.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (lastSyncAt.present) {
+      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
+    }
+    if (syncId.present) {
+      map['sync_id'] = Variable<String>(syncId.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('AttachmentsTableCompanion(')
+          ..write('id: $id, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('fileName: $fileName, ')
+          ..write('filePath: $filePath, ')
+          ..write('googleDriveFileId: $googleDriveFileId, ')
+          ..write('googleDriveLink: $googleDriveLink, ')
+          ..write('type: $type, ')
+          ..write('mimeType: $mimeType, ')
+          ..write('fileSizeBytes: $fileSizeBytes, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('isUploaded: $isUploaded, ')
+          ..write('isDeleted: $isDeleted, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('lastSyncAt: $lastSyncAt, ')
+          ..write('syncId: $syncId, ')
+          ..write('version: $version')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -2954,6 +3852,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $BudgetsTableTable budgetsTable = $BudgetsTableTable(this);
   late final $SyncMetadataTableTable syncMetadataTable =
       $SyncMetadataTableTable(this);
+  late final $AttachmentsTableTable attachmentsTable =
+      $AttachmentsTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2963,7 +3863,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         accountsTable,
         transactionsTable,
         budgetsTable,
-        syncMetadataTable
+        syncMetadataTable,
+        attachmentsTable
       ];
 }
 
@@ -3784,6 +4685,7 @@ typedef $$TransactionsTableTableCreateCompanionBuilder
   Value<int> id,
   required String title,
   Value<String?> description,
+  Value<String?> note,
   required double amount,
   required int categoryId,
   required int accountId,
@@ -3801,6 +4703,7 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder
   Value<int> id,
   Value<String> title,
   Value<String?> description,
+  Value<String?> note,
   Value<double> amount,
   Value<int> categoryId,
   Value<int> accountId,
@@ -3849,6 +4752,23 @@ final class $$TransactionsTableTableReferences extends BaseReferences<
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
   }
+
+  static MultiTypedResultKey<$AttachmentsTableTable, List<AttachmentsTableData>>
+      _attachmentsTableRefsTable(_$AppDatabase db) =>
+          MultiTypedResultKey.fromTable(db.attachmentsTable,
+              aliasName: $_aliasNameGenerator(
+                  db.transactionsTable.id, db.attachmentsTable.transactionId));
+
+  $$AttachmentsTableTableProcessedTableManager get attachmentsTableRefs {
+    final manager = $$AttachmentsTableTableTableManager(
+            $_db, $_db.attachmentsTable)
+        .filter((f) => f.transactionId.id.sqlEquals($_itemColumn<int>('id')!));
+
+    final cache =
+        $_typedResult.readTableOrNull(_attachmentsTableRefsTable($_db));
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: cache));
+  }
 }
 
 class $$TransactionsTableTableFilterComposer
@@ -3868,6 +4788,9 @@ class $$TransactionsTableTableFilterComposer
 
   ColumnFilters<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnFilters(column));
@@ -3935,6 +4858,27 @@ class $$TransactionsTableTableFilterComposer
             ));
     return composer;
   }
+
+  Expression<bool> attachmentsTableRefs(
+      Expression<bool> Function($$AttachmentsTableTableFilterComposer f) f) {
+    final $$AttachmentsTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.attachmentsTable,
+        getReferencedColumn: (t) => t.transactionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AttachmentsTableTableFilterComposer(
+              $db: $db,
+              $table: $db.attachmentsTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableOrderingComposer
@@ -3954,6 +4898,9 @@ class $$TransactionsTableTableOrderingComposer
 
   ColumnOrderings<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get note => $composableBuilder(
+      column: $table.note, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<double> get amount => $composableBuilder(
       column: $table.amount, builder: (column) => ColumnOrderings(column));
@@ -4041,6 +4988,9 @@ class $$TransactionsTableTableAnnotationComposer
   GeneratedColumn<String> get description => $composableBuilder(
       column: $table.description, builder: (column) => column);
 
+  GeneratedColumn<String> get note =>
+      $composableBuilder(column: $table.note, builder: (column) => column);
+
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
@@ -4107,6 +5057,27 @@ class $$TransactionsTableTableAnnotationComposer
             ));
     return composer;
   }
+
+  Expression<T> attachmentsTableRefs<T extends Object>(
+      Expression<T> Function($$AttachmentsTableTableAnnotationComposer a) f) {
+    final $$AttachmentsTableTableAnnotationComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.id,
+        referencedTable: $db.attachmentsTable,
+        getReferencedColumn: (t) => t.transactionId,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$AttachmentsTableTableAnnotationComposer(
+              $db: $db,
+              $table: $db.attachmentsTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return f(composer);
+  }
 }
 
 class $$TransactionsTableTableTableManager extends RootTableManager<
@@ -4120,7 +5091,8 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
     $$TransactionsTableTableUpdateCompanionBuilder,
     (TransactionsTableData, $$TransactionsTableTableReferences),
     TransactionsTableData,
-    PrefetchHooks Function({bool categoryId, bool accountId})> {
+    PrefetchHooks Function(
+        {bool categoryId, bool accountId, bool attachmentsTableRefs})> {
   $$TransactionsTableTableTableManager(
       _$AppDatabase db, $TransactionsTableTable table)
       : super(TableManagerState(
@@ -4137,6 +5109,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             Value<String> title = const Value.absent(),
             Value<String?> description = const Value.absent(),
+            Value<String?> note = const Value.absent(),
             Value<double> amount = const Value.absent(),
             Value<int> categoryId = const Value.absent(),
             Value<int> accountId = const Value.absent(),
@@ -4153,6 +5126,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             id: id,
             title: title,
             description: description,
+            note: note,
             amount: amount,
             categoryId: categoryId,
             accountId: accountId,
@@ -4169,6 +5143,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<int> id = const Value.absent(),
             required String title,
             Value<String?> description = const Value.absent(),
+            Value<String?> note = const Value.absent(),
             required double amount,
             required int categoryId,
             required int accountId,
@@ -4185,6 +5160,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             id: id,
             title: title,
             description: description,
+            note: note,
             amount: amount,
             categoryId: categoryId,
             accountId: accountId,
@@ -4203,10 +5179,15 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
                     $$TransactionsTableTableReferences(db, table, e)
                   ))
               .toList(),
-          prefetchHooksCallback: ({categoryId = false, accountId = false}) {
+          prefetchHooksCallback: (
+              {categoryId = false,
+              accountId = false,
+              attachmentsTableRefs = false}) {
             return PrefetchHooks(
               db: db,
-              explicitlyWatchedTables: [],
+              explicitlyWatchedTables: [
+                if (attachmentsTableRefs) db.attachmentsTable
+              ],
               addJoins: <
                   T extends TableManagerState<
                       dynamic,
@@ -4246,7 +5227,21 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
                 return state;
               },
               getPrefetchedDataCallback: (items) async {
-                return [];
+                return [
+                  if (attachmentsTableRefs)
+                    await $_getPrefetchedData<TransactionsTableData,
+                            $TransactionsTableTable, AttachmentsTableData>(
+                        currentTable: table,
+                        referencedTable: $$TransactionsTableTableReferences
+                            ._attachmentsTableRefsTable(db),
+                        managerFromTypedResult: (p0) =>
+                            $$TransactionsTableTableReferences(db, table, p0)
+                                .attachmentsTableRefs,
+                        referencedItemsForCurrentItem:
+                            (item, referencedItems) => referencedItems
+                                .where((e) => e.transactionId == item.id),
+                        typedResults: items)
+                ];
               },
             );
           },
@@ -4264,7 +5259,8 @@ typedef $$TransactionsTableTableProcessedTableManager = ProcessedTableManager<
     $$TransactionsTableTableUpdateCompanionBuilder,
     (TransactionsTableData, $$TransactionsTableTableReferences),
     TransactionsTableData,
-    PrefetchHooks Function({bool categoryId, bool accountId})>;
+    PrefetchHooks Function(
+        {bool categoryId, bool accountId, bool attachmentsTableRefs})>;
 typedef $$BudgetsTableTableCreateCompanionBuilder = BudgetsTableCompanion
     Function({
   Value<int> id,
@@ -4871,6 +5867,480 @@ typedef $$SyncMetadataTableTableProcessedTableManager = ProcessedTableManager<
     ),
     SyncMetadataTableData,
     PrefetchHooks Function()>;
+typedef $$AttachmentsTableTableCreateCompanionBuilder
+    = AttachmentsTableCompanion Function({
+  Value<int> id,
+  required int transactionId,
+  required String fileName,
+  Value<String?> filePath,
+  Value<String?> googleDriveFileId,
+  Value<String?> googleDriveLink,
+  required int type,
+  Value<String?> mimeType,
+  Value<int?> fileSizeBytes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<bool> isUploaded,
+  Value<bool> isDeleted,
+  required String deviceId,
+  Value<bool> isSynced,
+  Value<DateTime?> lastSyncAt,
+  required String syncId,
+  Value<int> version,
+});
+typedef $$AttachmentsTableTableUpdateCompanionBuilder
+    = AttachmentsTableCompanion Function({
+  Value<int> id,
+  Value<int> transactionId,
+  Value<String> fileName,
+  Value<String?> filePath,
+  Value<String?> googleDriveFileId,
+  Value<String?> googleDriveLink,
+  Value<int> type,
+  Value<String?> mimeType,
+  Value<int?> fileSizeBytes,
+  Value<DateTime> createdAt,
+  Value<DateTime> updatedAt,
+  Value<bool> isUploaded,
+  Value<bool> isDeleted,
+  Value<String> deviceId,
+  Value<bool> isSynced,
+  Value<DateTime?> lastSyncAt,
+  Value<String> syncId,
+  Value<int> version,
+});
+
+final class $$AttachmentsTableTableReferences extends BaseReferences<
+    _$AppDatabase, $AttachmentsTableTable, AttachmentsTableData> {
+  $$AttachmentsTableTableReferences(
+      super.$_db, super.$_table, super.$_typedResult);
+
+  static $TransactionsTableTable _transactionIdTable(_$AppDatabase db) =>
+      db.transactionsTable.createAlias($_aliasNameGenerator(
+          db.attachmentsTable.transactionId, db.transactionsTable.id));
+
+  $$TransactionsTableTableProcessedTableManager get transactionId {
+    final $_column = $_itemColumn<int>('transaction_id')!;
+
+    final manager =
+        $$TransactionsTableTableTableManager($_db, $_db.transactionsTable)
+            .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_transactionIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+}
+
+class $$AttachmentsTableTableFilterComposer
+    extends Composer<_$AppDatabase, $AttachmentsTableTable> {
+  $$AttachmentsTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fileName => $composableBuilder(
+      column: $table.fileName, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get googleDriveFileId => $composableBuilder(
+      column: $table.googleDriveFileId,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get googleDriveLink => $composableBuilder(
+      column: $table.googleDriveLink,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get mimeType => $composableBuilder(
+      column: $table.mimeType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get fileSizeBytes => $composableBuilder(
+      column: $table.fileSizeBytes, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isUploaded => $composableBuilder(
+      column: $table.isUploaded, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isDeleted => $composableBuilder(
+      column: $table.isDeleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+      column: $table.isSynced, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
+      column: $table.lastSyncAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get syncId => $composableBuilder(
+      column: $table.syncId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get version => $composableBuilder(
+      column: $table.version, builder: (column) => ColumnFilters(column));
+
+  $$TransactionsTableTableFilterComposer get transactionId {
+    final $$TransactionsTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactionsTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableTableFilterComposer(
+              $db: $db,
+              $table: $db.transactionsTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$AttachmentsTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $AttachmentsTableTable> {
+  $$AttachmentsTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fileName => $composableBuilder(
+      column: $table.fileName, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get filePath => $composableBuilder(
+      column: $table.filePath, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get googleDriveFileId => $composableBuilder(
+      column: $table.googleDriveFileId,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get googleDriveLink => $composableBuilder(
+      column: $table.googleDriveLink,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get type => $composableBuilder(
+      column: $table.type, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get mimeType => $composableBuilder(
+      column: $table.mimeType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get fileSizeBytes => $composableBuilder(
+      column: $table.fileSizeBytes,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+      column: $table.createdAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+      column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isUploaded => $composableBuilder(
+      column: $table.isUploaded, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isDeleted => $composableBuilder(
+      column: $table.isDeleted, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
+      column: $table.lastSyncAt, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get syncId => $composableBuilder(
+      column: $table.syncId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get version => $composableBuilder(
+      column: $table.version, builder: (column) => ColumnOrderings(column));
+
+  $$TransactionsTableTableOrderingComposer get transactionId {
+    final $$TransactionsTableTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.transactionId,
+        referencedTable: $db.transactionsTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableTableOrderingComposer(
+              $db: $db,
+              $table: $db.transactionsTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+}
+
+class $$AttachmentsTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $AttachmentsTableTable> {
+  $$AttachmentsTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get fileName =>
+      $composableBuilder(column: $table.fileName, builder: (column) => column);
+
+  GeneratedColumn<String> get filePath =>
+      $composableBuilder(column: $table.filePath, builder: (column) => column);
+
+  GeneratedColumn<String> get googleDriveFileId => $composableBuilder(
+      column: $table.googleDriveFileId, builder: (column) => column);
+
+  GeneratedColumn<String> get googleDriveLink => $composableBuilder(
+      column: $table.googleDriveLink, builder: (column) => column);
+
+  GeneratedColumn<int> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get mimeType =>
+      $composableBuilder(column: $table.mimeType, builder: (column) => column);
+
+  GeneratedColumn<int> get fileSizeBytes => $composableBuilder(
+      column: $table.fileSizeBytes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<bool> get isUploaded => $composableBuilder(
+      column: $table.isUploaded, builder: (column) => column);
+
+  GeneratedColumn<bool> get isDeleted =>
+      $composableBuilder(column: $table.isDeleted, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
+      column: $table.lastSyncAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncId =>
+      $composableBuilder(column: $table.syncId, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  $$TransactionsTableTableAnnotationComposer get transactionId {
+    final $$TransactionsTableTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.transactionId,
+            referencedTable: $db.transactionsTable,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$TransactionsTableTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.transactionsTable,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
+    return composer;
+  }
+}
+
+class $$AttachmentsTableTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $AttachmentsTableTable,
+    AttachmentsTableData,
+    $$AttachmentsTableTableFilterComposer,
+    $$AttachmentsTableTableOrderingComposer,
+    $$AttachmentsTableTableAnnotationComposer,
+    $$AttachmentsTableTableCreateCompanionBuilder,
+    $$AttachmentsTableTableUpdateCompanionBuilder,
+    (AttachmentsTableData, $$AttachmentsTableTableReferences),
+    AttachmentsTableData,
+    PrefetchHooks Function({bool transactionId})> {
+  $$AttachmentsTableTableTableManager(
+      _$AppDatabase db, $AttachmentsTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$AttachmentsTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$AttachmentsTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$AttachmentsTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<int> transactionId = const Value.absent(),
+            Value<String> fileName = const Value.absent(),
+            Value<String?> filePath = const Value.absent(),
+            Value<String?> googleDriveFileId = const Value.absent(),
+            Value<String?> googleDriveLink = const Value.absent(),
+            Value<int> type = const Value.absent(),
+            Value<String?> mimeType = const Value.absent(),
+            Value<int?> fileSizeBytes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<bool> isUploaded = const Value.absent(),
+            Value<bool> isDeleted = const Value.absent(),
+            Value<String> deviceId = const Value.absent(),
+            Value<bool> isSynced = const Value.absent(),
+            Value<DateTime?> lastSyncAt = const Value.absent(),
+            Value<String> syncId = const Value.absent(),
+            Value<int> version = const Value.absent(),
+          }) =>
+              AttachmentsTableCompanion(
+            id: id,
+            transactionId: transactionId,
+            fileName: fileName,
+            filePath: filePath,
+            googleDriveFileId: googleDriveFileId,
+            googleDriveLink: googleDriveLink,
+            type: type,
+            mimeType: mimeType,
+            fileSizeBytes: fileSizeBytes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            isUploaded: isUploaded,
+            isDeleted: isDeleted,
+            deviceId: deviceId,
+            isSynced: isSynced,
+            lastSyncAt: lastSyncAt,
+            syncId: syncId,
+            version: version,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required int transactionId,
+            required String fileName,
+            Value<String?> filePath = const Value.absent(),
+            Value<String?> googleDriveFileId = const Value.absent(),
+            Value<String?> googleDriveLink = const Value.absent(),
+            required int type,
+            Value<String?> mimeType = const Value.absent(),
+            Value<int?> fileSizeBytes = const Value.absent(),
+            Value<DateTime> createdAt = const Value.absent(),
+            Value<DateTime> updatedAt = const Value.absent(),
+            Value<bool> isUploaded = const Value.absent(),
+            Value<bool> isDeleted = const Value.absent(),
+            required String deviceId,
+            Value<bool> isSynced = const Value.absent(),
+            Value<DateTime?> lastSyncAt = const Value.absent(),
+            required String syncId,
+            Value<int> version = const Value.absent(),
+          }) =>
+              AttachmentsTableCompanion.insert(
+            id: id,
+            transactionId: transactionId,
+            fileName: fileName,
+            filePath: filePath,
+            googleDriveFileId: googleDriveFileId,
+            googleDriveLink: googleDriveLink,
+            type: type,
+            mimeType: mimeType,
+            fileSizeBytes: fileSizeBytes,
+            createdAt: createdAt,
+            updatedAt: updatedAt,
+            isUploaded: isUploaded,
+            isDeleted: isDeleted,
+            deviceId: deviceId,
+            isSynced: isSynced,
+            lastSyncAt: lastSyncAt,
+            syncId: syncId,
+            version: version,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (
+                    e.readTable(table),
+                    $$AttachmentsTableTableReferences(db, table, e)
+                  ))
+              .toList(),
+          prefetchHooksCallback: ({transactionId = false}) {
+            return PrefetchHooks(
+              db: db,
+              explicitlyWatchedTables: [],
+              addJoins: <
+                  T extends TableManagerState<
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic,
+                      dynamic>>(state) {
+                if (transactionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.transactionId,
+                    referencedTable: $$AttachmentsTableTableReferences
+                        ._transactionIdTable(db),
+                    referencedColumn: $$AttachmentsTableTableReferences
+                        ._transactionIdTable(db)
+                        .id,
+                  ) as T;
+                }
+
+                return state;
+              },
+              getPrefetchedDataCallback: (items) async {
+                return [];
+              },
+            );
+          },
+        ));
+}
+
+typedef $$AttachmentsTableTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $AttachmentsTableTable,
+    AttachmentsTableData,
+    $$AttachmentsTableTableFilterComposer,
+    $$AttachmentsTableTableOrderingComposer,
+    $$AttachmentsTableTableAnnotationComposer,
+    $$AttachmentsTableTableCreateCompanionBuilder,
+    $$AttachmentsTableTableUpdateCompanionBuilder,
+    (AttachmentsTableData, $$AttachmentsTableTableReferences),
+    AttachmentsTableData,
+    PrefetchHooks Function({bool transactionId})>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -4885,4 +6355,6 @@ class $AppDatabaseManager {
       $$BudgetsTableTableTableManager(_db, _db.budgetsTable);
   $$SyncMetadataTableTableTableManager get syncMetadataTable =>
       $$SyncMetadataTableTableTableManager(_db, _db.syncMetadataTable);
+  $$AttachmentsTableTableTableManager get attachmentsTable =>
+      $$AttachmentsTableTableTableManager(_db, _db.attachmentsTable);
 }

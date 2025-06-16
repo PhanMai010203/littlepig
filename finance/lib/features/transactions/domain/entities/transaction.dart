@@ -4,6 +4,7 @@ class Transaction extends Equatable {
   final int? id;
   final String title;
   final String? description;
+  final String? note;
   final double amount;
   final int categoryId;
   final int accountId;
@@ -20,6 +21,7 @@ class Transaction extends Equatable {
     this.id,
     required this.title,
     this.description,
+    this.note,
     required this.amount,
     required this.categoryId,
     required this.accountId,
@@ -37,6 +39,7 @@ class Transaction extends Equatable {
     int? id,
     String? title,
     String? description,
+    String? note,
     double? amount,
     int? categoryId,
     int? accountId,
@@ -53,6 +56,7 @@ class Transaction extends Equatable {
       id: id ?? this.id,
       title: title ?? this.title,
       description: description ?? this.description,
+      note: note ?? this.note,
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
       accountId: accountId ?? this.accountId,
@@ -75,6 +79,7 @@ class Transaction extends Equatable {
         id,
         title,
         description,
+        note,
         amount,
         categoryId,
         accountId,

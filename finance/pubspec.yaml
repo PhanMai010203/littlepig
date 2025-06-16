@@ -39,6 +39,12 @@ dependencies:
   googleapis: ^11.4.0
   googleapis_auth: ^1.4.1
   http: ^1.1.0
+    # File Handling & Upload
+  image_picker: ^1.1.2
+  file_picker: ^10.2.0
+  flutter_image_compress: ^2.4.0
+  mime_type: ^1.0.0
+  
     # Utilities
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
