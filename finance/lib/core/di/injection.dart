@@ -48,11 +48,6 @@ Future<void> configureDependencies() async {
   // Initialize injectable dependencies FIRST (for existing BLoCs)
   getIt.init();
   
-  // Now unregister DatabaseService so we can replace it with our custom one
-  if (getIt.isRegistered<DatabaseService>()) {
-    await getIt.unregister<DatabaseService>();
-  }
-  
   // Register SharedPreferences
   final sharedPreferences = await SharedPreferences.getInstance();
   if (!getIt.isRegistered<SharedPreferences>()) {

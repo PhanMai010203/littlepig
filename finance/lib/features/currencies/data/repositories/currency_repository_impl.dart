@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import '../../domain/entities/currency.dart';
 import '../../domain/entities/exchange_rate.dart';
 import '../../domain/repositories/currency_repository.dart';
@@ -5,6 +8,13 @@ import '../datasources/currency_local_data_source.dart';
 import '../datasources/exchange_rate_remote_data_source.dart';
 import '../datasources/exchange_rate_local_data_source.dart';
 import '../models/exchange_rate_model.dart';
+
+/// Enhanced cache durations for better offline support
+class CacheStrategy {
+  static const Duration exchangeRateFresh = Duration(hours: 6);    // Consider fresh
+  static const Duration exchangeRateStale = Duration(days: 7);     // Use if no internet
+  static const Duration exchangeRateExpiry = Duration(days: 30);   // Absolute expiry
+}
 
 class CurrencyRepositoryImpl implements CurrencyRepository {
   final CurrencyLocalDataSource _currencyLocalDataSource;
@@ -16,6 +26,35 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
     this._exchangeRateRemoteDataSource,
     this._exchangeRateLocalDataSource,
   );
+  /// Cache for fallback exchange rates
+  Map<String, double>? _fallbackRates;
+
+  /// Protected getter for data sources (for testing)
+  @protected
+  CurrencyLocalDataSource get currencyLocalDataSource => _currencyLocalDataSource;
+  
+  @protected
+  ExchangeRateRemoteDataSource get exchangeRateRemoteDataSource => _exchangeRateRemoteDataSource;
+  
+  @protected
+  ExchangeRateLocalDataSource get exchangeRateLocalDataSource => _exchangeRateLocalDataSource;
+
+  /// Loads fallback exchange rates from assets
+  Future<Map<String, double>> _loadFallbackRates() async {
+    if (_fallbackRates != null) return _fallbackRates!;
+    
+    try {
+      final jsonString = await rootBundle.loadString('assets/data/fallback_exchange_rates.json');
+      final Map<String, dynamic> data = jsonDecode(jsonString);
+      final Map<String, dynamic> rates = data['rates'] as Map<String, dynamic>;
+      
+      _fallbackRates = rates.map((key, value) => MapEntry(key, (value as num).toDouble()));
+      return _fallbackRates!;
+    } catch (e) {
+      print('Failed to load fallback rates: $e');
+      return {};
+    }
+  }
 
   @override
   Future<List<Currency>> getAllCurrencies() async {
@@ -59,22 +98,22 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
              (currency.countryName?.toLowerCase().contains(lowercaseQuery) ?? false);
     }).toList();
   }
-
   @override
   Future<Map<String, ExchangeRate>> getExchangeRates() async {
     // First try to get cached rates
     final cachedRates = await _exchangeRateLocalDataSource.getCachedExchangeRates();
     final lastUpdate = await _exchangeRateLocalDataSource.getLastUpdateTime();
     
-    // Check if cached rates are still fresh (less than 1 hour old)
+    // Check if cached rates are fresh (less than 6 hours old)
     final isCacheFresh = lastUpdate != null && 
-        DateTime.now().difference(lastUpdate).inHours < 1;
+        DateTime.now().difference(lastUpdate) < CacheStrategy.exchangeRateFresh;
     
+    // If cache is fresh, use it
     if (cachedRates.isNotEmpty && isCacheFresh) {
       return cachedRates.map((key, value) => MapEntry(key, value.toEntity()));
     }
     
-    // If cache is stale or empty, try to refresh from remote
+    // Try to fetch fresh data from remote
     try {
       final remoteRates = await _exchangeRateRemoteDataSource.getExchangeRates();
       
@@ -83,12 +122,38 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
       
       return remoteRates.map((key, value) => MapEntry(key, value.toEntity()));
     } catch (e) {
-      // If remote fails but we have cached data, use it
-      if (cachedRates.isNotEmpty) {
+      print('Failed to fetch remote exchange rates: $e');
+      
+      // Check if cached rates are still usable (less than 7 days old)
+      final isCacheUsable = lastUpdate != null && 
+          DateTime.now().difference(lastUpdate) < CacheStrategy.exchangeRateStale;
+      
+      if (cachedRates.isNotEmpty && isCacheUsable) {
+        print('Using stale cached rates (offline mode)');
         return cachedRates.map((key, value) => MapEntry(key, value.toEntity()));
       }
-      rethrow;
+      
+      // Last resort: use fallback rates
+      print('Using fallback exchange rates');
+      return await _getFallbackExchangeRates();
     }
+  }
+
+  /// Gets fallback exchange rates from assets
+  Future<Map<String, ExchangeRate>> _getFallbackExchangeRates() async {
+    final fallbackRates = await _loadFallbackRates();
+    final Map<String, ExchangeRate> rates = {};
+    
+    for (final entry in fallbackRates.entries) {
+      rates[entry.key] = ExchangeRate.withCurrentTime(
+        fromCurrency: 'USD',
+        toCurrency: entry.key,
+        rate: entry.value,
+        isCustom: false,
+      );
+    }
+    
+    return rates;
   }
 
   @override
@@ -102,19 +167,14 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
         toCurrency: to,
         rate: 1.0,
       );
-    }
-    
-    // Check for custom rates first
+    }    // Check for custom rates first
     final customRates = await getCustomExchangeRates();
-    final customRate = customRates.firstWhere(
+    final matchingRates = customRates.where(
       (rate) => rate.fromCurrency == from && rate.toCurrency == to,
-      orElse: () => throw StateError('Not found'),
     );
     
-    try {
-      return customRate;
-    } catch (_) {
-      // No custom rate found, continue with market rates
+    if (matchingRates.isNotEmpty) {
+      return matchingRates.first;
     }
     
     // Get market rates via USD as base
