@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'budget_enums.dart';
 
 enum BudgetPeriod { daily, weekly, monthly, yearly }
 
@@ -20,6 +21,28 @@ class Budget extends Equatable {
   final String syncId;
   final int version;
 
+  // Advanced filtering (Phase 2)
+  final bool excludeDebtCreditInstallments;
+  final bool excludeObjectiveInstallments;
+  final List<String>? walletFks;
+  final List<String>? currencyFks;
+
+  // Shared budget support  
+  final String? sharedReferenceBudgetPk;
+  final List<String>? budgetFksExclude;
+
+  // Currency & normalization
+  final String? normalizeToCurrency;
+  final bool isIncomeBudget;
+
+  // Transfer handling
+  final bool includeTransferInOutWithSameCurrency;
+  final bool includeUpcomingTransactionFromBudget;
+
+  // Metadata
+  final DateTime? dateCreatedOriginal;
+  final Map<String, dynamic>? budgetTransactionFilters;
+
   const Budget({
     this.id,
     required this.name,
@@ -37,6 +60,20 @@ class Budget extends Equatable {
     this.lastSyncAt,
     required this.syncId,
     required this.version,
+    
+    // Advanced filtering parameters
+    this.excludeDebtCreditInstallments = false,
+    this.excludeObjectiveInstallments = false,
+    this.walletFks,
+    this.currencyFks,
+    this.sharedReferenceBudgetPk,
+    this.budgetFksExclude,
+    this.normalizeToCurrency,
+    this.isIncomeBudget = false,
+    this.includeTransferInOutWithSameCurrency = false,
+    this.includeUpcomingTransactionFromBudget = false,
+    this.dateCreatedOriginal,
+    this.budgetTransactionFilters,
   });
 
   Budget copyWith({
@@ -56,6 +93,20 @@ class Budget extends Equatable {
     DateTime? lastSyncAt,
     String? syncId,
     int? version,
+    
+    // Advanced filtering parameters
+    bool? excludeDebtCreditInstallments,
+    bool? excludeObjectiveInstallments,
+    List<String>? walletFks,
+    List<String>? currencyFks,
+    String? sharedReferenceBudgetPk,
+    List<String>? budgetFksExclude,
+    String? normalizeToCurrency,
+    bool? isIncomeBudget,
+    bool? includeTransferInOutWithSameCurrency,
+    bool? includeUpcomingTransactionFromBudget,
+    DateTime? dateCreatedOriginal,
+    Map<String, dynamic>? budgetTransactionFilters,
   }) {
     return Budget(
       id: id ?? this.id,
@@ -74,6 +125,20 @@ class Budget extends Equatable {
       lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
       version: version ?? this.version,
+      
+      // Advanced filtering assignments
+      excludeDebtCreditInstallments: excludeDebtCreditInstallments ?? this.excludeDebtCreditInstallments,
+      excludeObjectiveInstallments: excludeObjectiveInstallments ?? this.excludeObjectiveInstallments,
+      walletFks: walletFks ?? this.walletFks,
+      currencyFks: currencyFks ?? this.currencyFks,
+      sharedReferenceBudgetPk: sharedReferenceBudgetPk ?? this.sharedReferenceBudgetPk,
+      budgetFksExclude: budgetFksExclude ?? this.budgetFksExclude,
+      normalizeToCurrency: normalizeToCurrency ?? this.normalizeToCurrency,
+      isIncomeBudget: isIncomeBudget ?? this.isIncomeBudget,
+      includeTransferInOutWithSameCurrency: includeTransferInOutWithSameCurrency ?? this.includeTransferInOutWithSameCurrency,
+      includeUpcomingTransactionFromBudget: includeUpcomingTransactionFromBudget ?? this.includeUpcomingTransactionFromBudget,
+      dateCreatedOriginal: dateCreatedOriginal ?? this.dateCreatedOriginal,
+      budgetTransactionFilters: budgetTransactionFilters ?? this.budgetTransactionFilters,
     );
   }
 
@@ -99,5 +164,19 @@ class Budget extends Equatable {
         lastSyncAt,
         syncId,
         version,
+        
+        // Advanced filtering props
+        excludeDebtCreditInstallments,
+        excludeObjectiveInstallments,
+        walletFks,
+        currencyFks,
+        sharedReferenceBudgetPk,
+        budgetFksExclude,
+        normalizeToCurrency,
+        isIncomeBudget,
+        includeTransferInOutWithSameCurrency,
+        includeUpcomingTransactionFromBudget,
+        dateCreatedOriginal,
+        budgetTransactionFilters,
       ];
 }

@@ -31,8 +31,10 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.fromFile(File file) : super(NativeDatabase(file));
   
   // Constructor for testing with in-memory database
-  AppDatabase.forTesting(QueryExecutor executor) : super(executor);  @override
-  int get schemaVersion => 4;
+  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+
+  @override
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -40,7 +42,8 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (Migrator m) async {
         await m.createAll();
         await _insertDefaultData();
-      },      onUpgrade: (Migrator m, int from, int to) async {
+      },
+      onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           // Add note field to transactions table using raw SQL
           await customStatement('ALTER TABLE transactions ADD COLUMN note TEXT');
@@ -73,9 +76,26 @@ class AppDatabase extends _$AppDatabase {
           // Loan/Objective linking (for complex loans)
           await customStatement('ALTER TABLE transactions ADD COLUMN objective_loan_fk TEXT');
         }
+        if (from <= 4) {
+          // Phase 2: Add budget advanced fields (Migration from v4 to v5)
+          await customStatement('ALTER TABLE budgets ADD COLUMN budget_transaction_filters TEXT');
+          await customStatement('ALTER TABLE budgets ADD COLUMN exclude_debt_credit_installments BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE budgets ADD COLUMN exclude_objective_installments BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE budgets ADD COLUMN wallet_fks TEXT');
+          await customStatement('ALTER TABLE budgets ADD COLUMN currency_fks TEXT');
+          await customStatement('ALTER TABLE budgets ADD COLUMN shared_reference_budget_pk TEXT');
+          await customStatement('ALTER TABLE budgets ADD COLUMN budget_fks_exclude TEXT');
+          await customStatement('ALTER TABLE budgets ADD COLUMN normalize_to_currency TEXT');
+          await customStatement('ALTER TABLE budgets ADD COLUMN is_income_budget BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE budgets ADD COLUMN include_transfer_in_out_with_same_currency BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE budgets ADD COLUMN include_upcoming_transaction_from_budget BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE budgets ADD COLUMN date_created_original DATETIME');
+        }
       },
     );
-  }/// Insert default categories and accounts
+  }
+
+  /// Insert default categories and accounts
   Future<void> _insertDefaultData() async {
     final deviceId = 'default-device';
     

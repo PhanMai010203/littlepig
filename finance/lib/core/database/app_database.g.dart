@@ -2426,7 +2426,7 @@ class TransactionsTableCompanion
 }
 
 class $BudgetsTableTable extends BudgetsTable
-    with TableInfo<$BudgetsTableTable, BudgetsTableData> {
+    with TableInfo<$BudgetsTableTable, BudgetTableData> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
@@ -2555,6 +2555,102 @@ class $BudgetsTableTable extends BudgetsTable
       type: DriftSqlType.int,
       requiredDuringInsert: false,
       defaultValue: const Constant(1));
+  static const VerificationMeta _budgetTransactionFiltersMeta =
+      const VerificationMeta('budgetTransactionFilters');
+  @override
+  late final GeneratedColumn<String> budgetTransactionFilters =
+      GeneratedColumn<String>('budget_transaction_filters', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _excludeDebtCreditInstallmentsMeta =
+      const VerificationMeta('excludeDebtCreditInstallments');
+  @override
+  late final GeneratedColumn<bool> excludeDebtCreditInstallments =
+      GeneratedColumn<bool>(
+          'exclude_debt_credit_installments', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("exclude_debt_credit_installments" IN (0, 1))'),
+          defaultValue: const Constant(false));
+  static const VerificationMeta _excludeObjectiveInstallmentsMeta =
+      const VerificationMeta('excludeObjectiveInstallments');
+  @override
+  late final GeneratedColumn<bool> excludeObjectiveInstallments =
+      GeneratedColumn<bool>(
+          'exclude_objective_installments', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("exclude_objective_installments" IN (0, 1))'),
+          defaultValue: const Constant(false));
+  static const VerificationMeta _walletFksMeta =
+      const VerificationMeta('walletFks');
+  @override
+  late final GeneratedColumn<String> walletFks = GeneratedColumn<String>(
+      'wallet_fks', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _currencyFksMeta =
+      const VerificationMeta('currencyFks');
+  @override
+  late final GeneratedColumn<String> currencyFks = GeneratedColumn<String>(
+      'currency_fks', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _sharedReferenceBudgetPkMeta =
+      const VerificationMeta('sharedReferenceBudgetPk');
+  @override
+  late final GeneratedColumn<String> sharedReferenceBudgetPk =
+      GeneratedColumn<String>('shared_reference_budget_pk', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _budgetFksExcludeMeta =
+      const VerificationMeta('budgetFksExclude');
+  @override
+  late final GeneratedColumn<String> budgetFksExclude = GeneratedColumn<String>(
+      'budget_fks_exclude', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _normalizeToCurrencyMeta =
+      const VerificationMeta('normalizeToCurrency');
+  @override
+  late final GeneratedColumn<String> normalizeToCurrency =
+      GeneratedColumn<String>('normalize_to_currency', aliasedName, true,
+          type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _isIncomeBudgetMeta =
+      const VerificationMeta('isIncomeBudget');
+  @override
+  late final GeneratedColumn<bool> isIncomeBudget = GeneratedColumn<bool>(
+      'is_income_budget', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_income_budget" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _includeTransferInOutWithSameCurrencyMeta =
+      const VerificationMeta('includeTransferInOutWithSameCurrency');
+  @override
+  late final GeneratedColumn<bool> includeTransferInOutWithSameCurrency =
+      GeneratedColumn<bool>(
+          'include_transfer_in_out_with_same_currency', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("include_transfer_in_out_with_same_currency" IN (0, 1))'),
+          defaultValue: const Constant(false));
+  static const VerificationMeta _includeUpcomingTransactionFromBudgetMeta =
+      const VerificationMeta('includeUpcomingTransactionFromBudget');
+  @override
+  late final GeneratedColumn<bool> includeUpcomingTransactionFromBudget =
+      GeneratedColumn<bool>(
+          'include_upcoming_transaction_from_budget', aliasedName, false,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("include_upcoming_transaction_from_budget" IN (0, 1))'),
+          defaultValue: const Constant(false));
+  static const VerificationMeta _dateCreatedOriginalMeta =
+      const VerificationMeta('dateCreatedOriginal');
+  @override
+  late final GeneratedColumn<DateTime> dateCreatedOriginal =
+      GeneratedColumn<DateTime>('date_created_original', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -2572,7 +2668,19 @@ class $BudgetsTableTable extends BudgetsTable
         isSynced,
         lastSyncAt,
         syncId,
-        version
+        version,
+        budgetTransactionFilters,
+        excludeDebtCreditInstallments,
+        excludeObjectiveInstallments,
+        walletFks,
+        currencyFks,
+        sharedReferenceBudgetPk,
+        budgetFksExclude,
+        normalizeToCurrency,
+        isIncomeBudget,
+        includeTransferInOutWithSameCurrency,
+        includeUpcomingTransactionFromBudget,
+        dateCreatedOriginal
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -2580,7 +2688,7 @@ class $BudgetsTableTable extends BudgetsTable
   String get actualTableName => $name;
   static const String $name = 'budgets';
   @override
-  VerificationContext validateIntegrity(Insertable<BudgetsTableData> instance,
+  VerificationContext validateIntegrity(Insertable<BudgetTableData> instance,
       {bool isInserting = false}) {
     final context = VerificationContext();
     final data = instance.toColumns(true);
@@ -2665,15 +2773,91 @@ class $BudgetsTableTable extends BudgetsTable
       context.handle(_versionMeta,
           version.isAcceptableOrUnknown(data['version']!, _versionMeta));
     }
+    if (data.containsKey('budget_transaction_filters')) {
+      context.handle(
+          _budgetTransactionFiltersMeta,
+          budgetTransactionFilters.isAcceptableOrUnknown(
+              data['budget_transaction_filters']!,
+              _budgetTransactionFiltersMeta));
+    }
+    if (data.containsKey('exclude_debt_credit_installments')) {
+      context.handle(
+          _excludeDebtCreditInstallmentsMeta,
+          excludeDebtCreditInstallments.isAcceptableOrUnknown(
+              data['exclude_debt_credit_installments']!,
+              _excludeDebtCreditInstallmentsMeta));
+    }
+    if (data.containsKey('exclude_objective_installments')) {
+      context.handle(
+          _excludeObjectiveInstallmentsMeta,
+          excludeObjectiveInstallments.isAcceptableOrUnknown(
+              data['exclude_objective_installments']!,
+              _excludeObjectiveInstallmentsMeta));
+    }
+    if (data.containsKey('wallet_fks')) {
+      context.handle(_walletFksMeta,
+          walletFks.isAcceptableOrUnknown(data['wallet_fks']!, _walletFksMeta));
+    }
+    if (data.containsKey('currency_fks')) {
+      context.handle(
+          _currencyFksMeta,
+          currencyFks.isAcceptableOrUnknown(
+              data['currency_fks']!, _currencyFksMeta));
+    }
+    if (data.containsKey('shared_reference_budget_pk')) {
+      context.handle(
+          _sharedReferenceBudgetPkMeta,
+          sharedReferenceBudgetPk.isAcceptableOrUnknown(
+              data['shared_reference_budget_pk']!,
+              _sharedReferenceBudgetPkMeta));
+    }
+    if (data.containsKey('budget_fks_exclude')) {
+      context.handle(
+          _budgetFksExcludeMeta,
+          budgetFksExclude.isAcceptableOrUnknown(
+              data['budget_fks_exclude']!, _budgetFksExcludeMeta));
+    }
+    if (data.containsKey('normalize_to_currency')) {
+      context.handle(
+          _normalizeToCurrencyMeta,
+          normalizeToCurrency.isAcceptableOrUnknown(
+              data['normalize_to_currency']!, _normalizeToCurrencyMeta));
+    }
+    if (data.containsKey('is_income_budget')) {
+      context.handle(
+          _isIncomeBudgetMeta,
+          isIncomeBudget.isAcceptableOrUnknown(
+              data['is_income_budget']!, _isIncomeBudgetMeta));
+    }
+    if (data.containsKey('include_transfer_in_out_with_same_currency')) {
+      context.handle(
+          _includeTransferInOutWithSameCurrencyMeta,
+          includeTransferInOutWithSameCurrency.isAcceptableOrUnknown(
+              data['include_transfer_in_out_with_same_currency']!,
+              _includeTransferInOutWithSameCurrencyMeta));
+    }
+    if (data.containsKey('include_upcoming_transaction_from_budget')) {
+      context.handle(
+          _includeUpcomingTransactionFromBudgetMeta,
+          includeUpcomingTransactionFromBudget.isAcceptableOrUnknown(
+              data['include_upcoming_transaction_from_budget']!,
+              _includeUpcomingTransactionFromBudgetMeta));
+    }
+    if (data.containsKey('date_created_original')) {
+      context.handle(
+          _dateCreatedOriginalMeta,
+          dateCreatedOriginal.isAcceptableOrUnknown(
+              data['date_created_original']!, _dateCreatedOriginalMeta));
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  BudgetsTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
+  BudgetTableData map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return BudgetsTableData(
+    return BudgetTableData(
       id: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
       name: attachedDatabase.typeMapping
@@ -2706,6 +2890,38 @@ class $BudgetsTableTable extends BudgetsTable
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
       version: attachedDatabase.typeMapping
           .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
+      budgetTransactionFilters: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}budget_transaction_filters']),
+      excludeDebtCreditInstallments: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}exclude_debt_credit_installments'])!,
+      excludeObjectiveInstallments: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}exclude_objective_installments'])!,
+      walletFks: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}wallet_fks']),
+      currencyFks: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}currency_fks']),
+      sharedReferenceBudgetPk: attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}shared_reference_budget_pk']),
+      budgetFksExclude: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}budget_fks_exclude']),
+      normalizeToCurrency: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}normalize_to_currency']),
+      isIncomeBudget: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_income_budget'])!,
+      includeTransferInOutWithSameCurrency: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data[
+              '${effectivePrefix}include_transfer_in_out_with_same_currency'])!,
+      includeUpcomingTransactionFromBudget: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}include_upcoming_transaction_from_budget'])!,
+      dateCreatedOriginal: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime,
+          data['${effectivePrefix}date_created_original']),
     );
   }
 
@@ -2715,8 +2931,7 @@ class $BudgetsTableTable extends BudgetsTable
   }
 }
 
-class BudgetsTableData extends DataClass
-    implements Insertable<BudgetsTableData> {
+class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
   final int id;
   final String name;
   final double amount;
@@ -2733,7 +2948,19 @@ class BudgetsTableData extends DataClass
   final DateTime? lastSyncAt;
   final String syncId;
   final int version;
-  const BudgetsTableData(
+  final String? budgetTransactionFilters;
+  final bool excludeDebtCreditInstallments;
+  final bool excludeObjectiveInstallments;
+  final String? walletFks;
+  final String? currencyFks;
+  final String? sharedReferenceBudgetPk;
+  final String? budgetFksExclude;
+  final String? normalizeToCurrency;
+  final bool isIncomeBudget;
+  final bool includeTransferInOutWithSameCurrency;
+  final bool includeUpcomingTransactionFromBudget;
+  final DateTime? dateCreatedOriginal;
+  const BudgetTableData(
       {required this.id,
       required this.name,
       required this.amount,
@@ -2749,7 +2976,19 @@ class BudgetsTableData extends DataClass
       required this.isSynced,
       this.lastSyncAt,
       required this.syncId,
-      required this.version});
+      required this.version,
+      this.budgetTransactionFilters,
+      required this.excludeDebtCreditInstallments,
+      required this.excludeObjectiveInstallments,
+      this.walletFks,
+      this.currencyFks,
+      this.sharedReferenceBudgetPk,
+      this.budgetFksExclude,
+      this.normalizeToCurrency,
+      required this.isIncomeBudget,
+      required this.includeTransferInOutWithSameCurrency,
+      required this.includeUpcomingTransactionFromBudget,
+      this.dateCreatedOriginal});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -2773,6 +3012,38 @@ class BudgetsTableData extends DataClass
     }
     map['sync_id'] = Variable<String>(syncId);
     map['version'] = Variable<int>(version);
+    if (!nullToAbsent || budgetTransactionFilters != null) {
+      map['budget_transaction_filters'] =
+          Variable<String>(budgetTransactionFilters);
+    }
+    map['exclude_debt_credit_installments'] =
+        Variable<bool>(excludeDebtCreditInstallments);
+    map['exclude_objective_installments'] =
+        Variable<bool>(excludeObjectiveInstallments);
+    if (!nullToAbsent || walletFks != null) {
+      map['wallet_fks'] = Variable<String>(walletFks);
+    }
+    if (!nullToAbsent || currencyFks != null) {
+      map['currency_fks'] = Variable<String>(currencyFks);
+    }
+    if (!nullToAbsent || sharedReferenceBudgetPk != null) {
+      map['shared_reference_budget_pk'] =
+          Variable<String>(sharedReferenceBudgetPk);
+    }
+    if (!nullToAbsent || budgetFksExclude != null) {
+      map['budget_fks_exclude'] = Variable<String>(budgetFksExclude);
+    }
+    if (!nullToAbsent || normalizeToCurrency != null) {
+      map['normalize_to_currency'] = Variable<String>(normalizeToCurrency);
+    }
+    map['is_income_budget'] = Variable<bool>(isIncomeBudget);
+    map['include_transfer_in_out_with_same_currency'] =
+        Variable<bool>(includeTransferInOutWithSameCurrency);
+    map['include_upcoming_transaction_from_budget'] =
+        Variable<bool>(includeUpcomingTransactionFromBudget);
+    if (!nullToAbsent || dateCreatedOriginal != null) {
+      map['date_created_original'] = Variable<DateTime>(dateCreatedOriginal);
+    }
     return map;
   }
 
@@ -2798,13 +3069,41 @@ class BudgetsTableData extends DataClass
           : Value(lastSyncAt),
       syncId: Value(syncId),
       version: Value(version),
+      budgetTransactionFilters: budgetTransactionFilters == null && nullToAbsent
+          ? const Value.absent()
+          : Value(budgetTransactionFilters),
+      excludeDebtCreditInstallments: Value(excludeDebtCreditInstallments),
+      excludeObjectiveInstallments: Value(excludeObjectiveInstallments),
+      walletFks: walletFks == null && nullToAbsent
+          ? const Value.absent()
+          : Value(walletFks),
+      currencyFks: currencyFks == null && nullToAbsent
+          ? const Value.absent()
+          : Value(currencyFks),
+      sharedReferenceBudgetPk: sharedReferenceBudgetPk == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sharedReferenceBudgetPk),
+      budgetFksExclude: budgetFksExclude == null && nullToAbsent
+          ? const Value.absent()
+          : Value(budgetFksExclude),
+      normalizeToCurrency: normalizeToCurrency == null && nullToAbsent
+          ? const Value.absent()
+          : Value(normalizeToCurrency),
+      isIncomeBudget: Value(isIncomeBudget),
+      includeTransferInOutWithSameCurrency:
+          Value(includeTransferInOutWithSameCurrency),
+      includeUpcomingTransactionFromBudget:
+          Value(includeUpcomingTransactionFromBudget),
+      dateCreatedOriginal: dateCreatedOriginal == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dateCreatedOriginal),
     );
   }
 
-  factory BudgetsTableData.fromJson(Map<String, dynamic> json,
+  factory BudgetTableData.fromJson(Map<String, dynamic> json,
       {ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return BudgetsTableData(
+    return BudgetTableData(
       id: serializer.fromJson<int>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       amount: serializer.fromJson<double>(json['amount']),
@@ -2821,6 +3120,26 @@ class BudgetsTableData extends DataClass
       lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
       syncId: serializer.fromJson<String>(json['syncId']),
       version: serializer.fromJson<int>(json['version']),
+      budgetTransactionFilters:
+          serializer.fromJson<String?>(json['budgetTransactionFilters']),
+      excludeDebtCreditInstallments:
+          serializer.fromJson<bool>(json['excludeDebtCreditInstallments']),
+      excludeObjectiveInstallments:
+          serializer.fromJson<bool>(json['excludeObjectiveInstallments']),
+      walletFks: serializer.fromJson<String?>(json['walletFks']),
+      currencyFks: serializer.fromJson<String?>(json['currencyFks']),
+      sharedReferenceBudgetPk:
+          serializer.fromJson<String?>(json['sharedReferenceBudgetPk']),
+      budgetFksExclude: serializer.fromJson<String?>(json['budgetFksExclude']),
+      normalizeToCurrency:
+          serializer.fromJson<String?>(json['normalizeToCurrency']),
+      isIncomeBudget: serializer.fromJson<bool>(json['isIncomeBudget']),
+      includeTransferInOutWithSameCurrency: serializer
+          .fromJson<bool>(json['includeTransferInOutWithSameCurrency']),
+      includeUpcomingTransactionFromBudget: serializer
+          .fromJson<bool>(json['includeUpcomingTransactionFromBudget']),
+      dateCreatedOriginal:
+          serializer.fromJson<DateTime?>(json['dateCreatedOriginal']),
     );
   }
   @override
@@ -2843,10 +3162,28 @@ class BudgetsTableData extends DataClass
       'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
       'syncId': serializer.toJson<String>(syncId),
       'version': serializer.toJson<int>(version),
+      'budgetTransactionFilters':
+          serializer.toJson<String?>(budgetTransactionFilters),
+      'excludeDebtCreditInstallments':
+          serializer.toJson<bool>(excludeDebtCreditInstallments),
+      'excludeObjectiveInstallments':
+          serializer.toJson<bool>(excludeObjectiveInstallments),
+      'walletFks': serializer.toJson<String?>(walletFks),
+      'currencyFks': serializer.toJson<String?>(currencyFks),
+      'sharedReferenceBudgetPk':
+          serializer.toJson<String?>(sharedReferenceBudgetPk),
+      'budgetFksExclude': serializer.toJson<String?>(budgetFksExclude),
+      'normalizeToCurrency': serializer.toJson<String?>(normalizeToCurrency),
+      'isIncomeBudget': serializer.toJson<bool>(isIncomeBudget),
+      'includeTransferInOutWithSameCurrency':
+          serializer.toJson<bool>(includeTransferInOutWithSameCurrency),
+      'includeUpcomingTransactionFromBudget':
+          serializer.toJson<bool>(includeUpcomingTransactionFromBudget),
+      'dateCreatedOriginal': serializer.toJson<DateTime?>(dateCreatedOriginal),
     };
   }
 
-  BudgetsTableData copyWith(
+  BudgetTableData copyWith(
           {int? id,
           String? name,
           double? amount,
@@ -2862,8 +3199,20 @@ class BudgetsTableData extends DataClass
           bool? isSynced,
           Value<DateTime?> lastSyncAt = const Value.absent(),
           String? syncId,
-          int? version}) =>
-      BudgetsTableData(
+          int? version,
+          Value<String?> budgetTransactionFilters = const Value.absent(),
+          bool? excludeDebtCreditInstallments,
+          bool? excludeObjectiveInstallments,
+          Value<String?> walletFks = const Value.absent(),
+          Value<String?> currencyFks = const Value.absent(),
+          Value<String?> sharedReferenceBudgetPk = const Value.absent(),
+          Value<String?> budgetFksExclude = const Value.absent(),
+          Value<String?> normalizeToCurrency = const Value.absent(),
+          bool? isIncomeBudget,
+          bool? includeTransferInOutWithSameCurrency,
+          bool? includeUpcomingTransactionFromBudget,
+          Value<DateTime?> dateCreatedOriginal = const Value.absent()}) =>
+      BudgetTableData(
         id: id ?? this.id,
         name: name ?? this.name,
         amount: amount ?? this.amount,
@@ -2880,9 +3229,37 @@ class BudgetsTableData extends DataClass
         lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
         syncId: syncId ?? this.syncId,
         version: version ?? this.version,
+        budgetTransactionFilters: budgetTransactionFilters.present
+            ? budgetTransactionFilters.value
+            : this.budgetTransactionFilters,
+        excludeDebtCreditInstallments:
+            excludeDebtCreditInstallments ?? this.excludeDebtCreditInstallments,
+        excludeObjectiveInstallments:
+            excludeObjectiveInstallments ?? this.excludeObjectiveInstallments,
+        walletFks: walletFks.present ? walletFks.value : this.walletFks,
+        currencyFks: currencyFks.present ? currencyFks.value : this.currencyFks,
+        sharedReferenceBudgetPk: sharedReferenceBudgetPk.present
+            ? sharedReferenceBudgetPk.value
+            : this.sharedReferenceBudgetPk,
+        budgetFksExclude: budgetFksExclude.present
+            ? budgetFksExclude.value
+            : this.budgetFksExclude,
+        normalizeToCurrency: normalizeToCurrency.present
+            ? normalizeToCurrency.value
+            : this.normalizeToCurrency,
+        isIncomeBudget: isIncomeBudget ?? this.isIncomeBudget,
+        includeTransferInOutWithSameCurrency:
+            includeTransferInOutWithSameCurrency ??
+                this.includeTransferInOutWithSameCurrency,
+        includeUpcomingTransactionFromBudget:
+            includeUpcomingTransactionFromBudget ??
+                this.includeUpcomingTransactionFromBudget,
+        dateCreatedOriginal: dateCreatedOriginal.present
+            ? dateCreatedOriginal.value
+            : this.dateCreatedOriginal,
       );
-  BudgetsTableData copyWithCompanion(BudgetsTableCompanion data) {
-    return BudgetsTableData(
+  BudgetTableData copyWithCompanion(BudgetsTableCompanion data) {
+    return BudgetTableData(
       id: data.id.present ? data.id.value : this.id,
       name: data.name.present ? data.name.value : this.name,
       amount: data.amount.present ? data.amount.value : this.amount,
@@ -2901,12 +3278,47 @@ class BudgetsTableData extends DataClass
           data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
       version: data.version.present ? data.version.value : this.version,
+      budgetTransactionFilters: data.budgetTransactionFilters.present
+          ? data.budgetTransactionFilters.value
+          : this.budgetTransactionFilters,
+      excludeDebtCreditInstallments: data.excludeDebtCreditInstallments.present
+          ? data.excludeDebtCreditInstallments.value
+          : this.excludeDebtCreditInstallments,
+      excludeObjectiveInstallments: data.excludeObjectiveInstallments.present
+          ? data.excludeObjectiveInstallments.value
+          : this.excludeObjectiveInstallments,
+      walletFks: data.walletFks.present ? data.walletFks.value : this.walletFks,
+      currencyFks:
+          data.currencyFks.present ? data.currencyFks.value : this.currencyFks,
+      sharedReferenceBudgetPk: data.sharedReferenceBudgetPk.present
+          ? data.sharedReferenceBudgetPk.value
+          : this.sharedReferenceBudgetPk,
+      budgetFksExclude: data.budgetFksExclude.present
+          ? data.budgetFksExclude.value
+          : this.budgetFksExclude,
+      normalizeToCurrency: data.normalizeToCurrency.present
+          ? data.normalizeToCurrency.value
+          : this.normalizeToCurrency,
+      isIncomeBudget: data.isIncomeBudget.present
+          ? data.isIncomeBudget.value
+          : this.isIncomeBudget,
+      includeTransferInOutWithSameCurrency:
+          data.includeTransferInOutWithSameCurrency.present
+              ? data.includeTransferInOutWithSameCurrency.value
+              : this.includeTransferInOutWithSameCurrency,
+      includeUpcomingTransactionFromBudget:
+          data.includeUpcomingTransactionFromBudget.present
+              ? data.includeUpcomingTransactionFromBudget.value
+              : this.includeUpcomingTransactionFromBudget,
+      dateCreatedOriginal: data.dateCreatedOriginal.present
+          ? data.dateCreatedOriginal.value
+          : this.dateCreatedOriginal,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('BudgetsTableData(')
+    return (StringBuffer('BudgetTableData(')
           ..write('id: $id, ')
           ..write('name: $name, ')
           ..write('amount: $amount, ')
@@ -2922,33 +3334,62 @@ class BudgetsTableData extends DataClass
           ..write('isSynced: $isSynced, ')
           ..write('lastSyncAt: $lastSyncAt, ')
           ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('version: $version, ')
+          ..write('budgetTransactionFilters: $budgetTransactionFilters, ')
+          ..write(
+              'excludeDebtCreditInstallments: $excludeDebtCreditInstallments, ')
+          ..write(
+              'excludeObjectiveInstallments: $excludeObjectiveInstallments, ')
+          ..write('walletFks: $walletFks, ')
+          ..write('currencyFks: $currencyFks, ')
+          ..write('sharedReferenceBudgetPk: $sharedReferenceBudgetPk, ')
+          ..write('budgetFksExclude: $budgetFksExclude, ')
+          ..write('normalizeToCurrency: $normalizeToCurrency, ')
+          ..write('isIncomeBudget: $isIncomeBudget, ')
+          ..write(
+              'includeTransferInOutWithSameCurrency: $includeTransferInOutWithSameCurrency, ')
+          ..write(
+              'includeUpcomingTransactionFromBudget: $includeUpcomingTransactionFromBudget, ')
+          ..write('dateCreatedOriginal: $dateCreatedOriginal')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(
-      id,
-      name,
-      amount,
-      spent,
-      categoryId,
-      period,
-      startDate,
-      endDate,
-      isActive,
-      createdAt,
-      updatedAt,
-      deviceId,
-      isSynced,
-      lastSyncAt,
-      syncId,
-      version);
+  int get hashCode => Object.hashAll([
+        id,
+        name,
+        amount,
+        spent,
+        categoryId,
+        period,
+        startDate,
+        endDate,
+        isActive,
+        createdAt,
+        updatedAt,
+        deviceId,
+        isSynced,
+        lastSyncAt,
+        syncId,
+        version,
+        budgetTransactionFilters,
+        excludeDebtCreditInstallments,
+        excludeObjectiveInstallments,
+        walletFks,
+        currencyFks,
+        sharedReferenceBudgetPk,
+        budgetFksExclude,
+        normalizeToCurrency,
+        isIncomeBudget,
+        includeTransferInOutWithSameCurrency,
+        includeUpcomingTransactionFromBudget,
+        dateCreatedOriginal
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is BudgetsTableData &&
+      (other is BudgetTableData &&
           other.id == this.id &&
           other.name == this.name &&
           other.amount == this.amount &&
@@ -2964,10 +3405,26 @@ class BudgetsTableData extends DataClass
           other.isSynced == this.isSynced &&
           other.lastSyncAt == this.lastSyncAt &&
           other.syncId == this.syncId &&
-          other.version == this.version);
+          other.version == this.version &&
+          other.budgetTransactionFilters == this.budgetTransactionFilters &&
+          other.excludeDebtCreditInstallments ==
+              this.excludeDebtCreditInstallments &&
+          other.excludeObjectiveInstallments ==
+              this.excludeObjectiveInstallments &&
+          other.walletFks == this.walletFks &&
+          other.currencyFks == this.currencyFks &&
+          other.sharedReferenceBudgetPk == this.sharedReferenceBudgetPk &&
+          other.budgetFksExclude == this.budgetFksExclude &&
+          other.normalizeToCurrency == this.normalizeToCurrency &&
+          other.isIncomeBudget == this.isIncomeBudget &&
+          other.includeTransferInOutWithSameCurrency ==
+              this.includeTransferInOutWithSameCurrency &&
+          other.includeUpcomingTransactionFromBudget ==
+              this.includeUpcomingTransactionFromBudget &&
+          other.dateCreatedOriginal == this.dateCreatedOriginal);
 }
 
-class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
+class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
   final Value<int> id;
   final Value<String> name;
   final Value<double> amount;
@@ -2984,6 +3441,18 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
   final Value<DateTime?> lastSyncAt;
   final Value<String> syncId;
   final Value<int> version;
+  final Value<String?> budgetTransactionFilters;
+  final Value<bool> excludeDebtCreditInstallments;
+  final Value<bool> excludeObjectiveInstallments;
+  final Value<String?> walletFks;
+  final Value<String?> currencyFks;
+  final Value<String?> sharedReferenceBudgetPk;
+  final Value<String?> budgetFksExclude;
+  final Value<String?> normalizeToCurrency;
+  final Value<bool> isIncomeBudget;
+  final Value<bool> includeTransferInOutWithSameCurrency;
+  final Value<bool> includeUpcomingTransactionFromBudget;
+  final Value<DateTime?> dateCreatedOriginal;
   const BudgetsTableCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -3001,6 +3470,18 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
     this.lastSyncAt = const Value.absent(),
     this.syncId = const Value.absent(),
     this.version = const Value.absent(),
+    this.budgetTransactionFilters = const Value.absent(),
+    this.excludeDebtCreditInstallments = const Value.absent(),
+    this.excludeObjectiveInstallments = const Value.absent(),
+    this.walletFks = const Value.absent(),
+    this.currencyFks = const Value.absent(),
+    this.sharedReferenceBudgetPk = const Value.absent(),
+    this.budgetFksExclude = const Value.absent(),
+    this.normalizeToCurrency = const Value.absent(),
+    this.isIncomeBudget = const Value.absent(),
+    this.includeTransferInOutWithSameCurrency = const Value.absent(),
+    this.includeUpcomingTransactionFromBudget = const Value.absent(),
+    this.dateCreatedOriginal = const Value.absent(),
   });
   BudgetsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -3019,6 +3500,18 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
     this.lastSyncAt = const Value.absent(),
     required String syncId,
     this.version = const Value.absent(),
+    this.budgetTransactionFilters = const Value.absent(),
+    this.excludeDebtCreditInstallments = const Value.absent(),
+    this.excludeObjectiveInstallments = const Value.absent(),
+    this.walletFks = const Value.absent(),
+    this.currencyFks = const Value.absent(),
+    this.sharedReferenceBudgetPk = const Value.absent(),
+    this.budgetFksExclude = const Value.absent(),
+    this.normalizeToCurrency = const Value.absent(),
+    this.isIncomeBudget = const Value.absent(),
+    this.includeTransferInOutWithSameCurrency = const Value.absent(),
+    this.includeUpcomingTransactionFromBudget = const Value.absent(),
+    this.dateCreatedOriginal = const Value.absent(),
   })  : name = Value(name),
         amount = Value(amount),
         period = Value(period),
@@ -3026,7 +3519,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
         endDate = Value(endDate),
         deviceId = Value(deviceId),
         syncId = Value(syncId);
-  static Insertable<BudgetsTableData> custom({
+  static Insertable<BudgetTableData> custom({
     Expression<int>? id,
     Expression<String>? name,
     Expression<double>? amount,
@@ -3043,6 +3536,18 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
     Expression<DateTime>? lastSyncAt,
     Expression<String>? syncId,
     Expression<int>? version,
+    Expression<String>? budgetTransactionFilters,
+    Expression<bool>? excludeDebtCreditInstallments,
+    Expression<bool>? excludeObjectiveInstallments,
+    Expression<String>? walletFks,
+    Expression<String>? currencyFks,
+    Expression<String>? sharedReferenceBudgetPk,
+    Expression<String>? budgetFksExclude,
+    Expression<String>? normalizeToCurrency,
+    Expression<bool>? isIncomeBudget,
+    Expression<bool>? includeTransferInOutWithSameCurrency,
+    Expression<bool>? includeUpcomingTransactionFromBudget,
+    Expression<DateTime>? dateCreatedOriginal,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -3061,6 +3566,28 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
       if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
       if (syncId != null) 'sync_id': syncId,
       if (version != null) 'version': version,
+      if (budgetTransactionFilters != null)
+        'budget_transaction_filters': budgetTransactionFilters,
+      if (excludeDebtCreditInstallments != null)
+        'exclude_debt_credit_installments': excludeDebtCreditInstallments,
+      if (excludeObjectiveInstallments != null)
+        'exclude_objective_installments': excludeObjectiveInstallments,
+      if (walletFks != null) 'wallet_fks': walletFks,
+      if (currencyFks != null) 'currency_fks': currencyFks,
+      if (sharedReferenceBudgetPk != null)
+        'shared_reference_budget_pk': sharedReferenceBudgetPk,
+      if (budgetFksExclude != null) 'budget_fks_exclude': budgetFksExclude,
+      if (normalizeToCurrency != null)
+        'normalize_to_currency': normalizeToCurrency,
+      if (isIncomeBudget != null) 'is_income_budget': isIncomeBudget,
+      if (includeTransferInOutWithSameCurrency != null)
+        'include_transfer_in_out_with_same_currency':
+            includeTransferInOutWithSameCurrency,
+      if (includeUpcomingTransactionFromBudget != null)
+        'include_upcoming_transaction_from_budget':
+            includeUpcomingTransactionFromBudget,
+      if (dateCreatedOriginal != null)
+        'date_created_original': dateCreatedOriginal,
     });
   }
 
@@ -3080,7 +3607,19 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
       Value<bool>? isSynced,
       Value<DateTime?>? lastSyncAt,
       Value<String>? syncId,
-      Value<int>? version}) {
+      Value<int>? version,
+      Value<String?>? budgetTransactionFilters,
+      Value<bool>? excludeDebtCreditInstallments,
+      Value<bool>? excludeObjectiveInstallments,
+      Value<String?>? walletFks,
+      Value<String?>? currencyFks,
+      Value<String?>? sharedReferenceBudgetPk,
+      Value<String?>? budgetFksExclude,
+      Value<String?>? normalizeToCurrency,
+      Value<bool>? isIncomeBudget,
+      Value<bool>? includeTransferInOutWithSameCurrency,
+      Value<bool>? includeUpcomingTransactionFromBudget,
+      Value<DateTime?>? dateCreatedOriginal}) {
     return BudgetsTableCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -3098,6 +3637,26 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
       lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
       version: version ?? this.version,
+      budgetTransactionFilters:
+          budgetTransactionFilters ?? this.budgetTransactionFilters,
+      excludeDebtCreditInstallments:
+          excludeDebtCreditInstallments ?? this.excludeDebtCreditInstallments,
+      excludeObjectiveInstallments:
+          excludeObjectiveInstallments ?? this.excludeObjectiveInstallments,
+      walletFks: walletFks ?? this.walletFks,
+      currencyFks: currencyFks ?? this.currencyFks,
+      sharedReferenceBudgetPk:
+          sharedReferenceBudgetPk ?? this.sharedReferenceBudgetPk,
+      budgetFksExclude: budgetFksExclude ?? this.budgetFksExclude,
+      normalizeToCurrency: normalizeToCurrency ?? this.normalizeToCurrency,
+      isIncomeBudget: isIncomeBudget ?? this.isIncomeBudget,
+      includeTransferInOutWithSameCurrency:
+          includeTransferInOutWithSameCurrency ??
+              this.includeTransferInOutWithSameCurrency,
+      includeUpcomingTransactionFromBudget:
+          includeUpcomingTransactionFromBudget ??
+              this.includeUpcomingTransactionFromBudget,
+      dateCreatedOriginal: dateCreatedOriginal ?? this.dateCreatedOriginal,
     );
   }
 
@@ -3152,6 +3711,50 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
     if (version.present) {
       map['version'] = Variable<int>(version.value);
     }
+    if (budgetTransactionFilters.present) {
+      map['budget_transaction_filters'] =
+          Variable<String>(budgetTransactionFilters.value);
+    }
+    if (excludeDebtCreditInstallments.present) {
+      map['exclude_debt_credit_installments'] =
+          Variable<bool>(excludeDebtCreditInstallments.value);
+    }
+    if (excludeObjectiveInstallments.present) {
+      map['exclude_objective_installments'] =
+          Variable<bool>(excludeObjectiveInstallments.value);
+    }
+    if (walletFks.present) {
+      map['wallet_fks'] = Variable<String>(walletFks.value);
+    }
+    if (currencyFks.present) {
+      map['currency_fks'] = Variable<String>(currencyFks.value);
+    }
+    if (sharedReferenceBudgetPk.present) {
+      map['shared_reference_budget_pk'] =
+          Variable<String>(sharedReferenceBudgetPk.value);
+    }
+    if (budgetFksExclude.present) {
+      map['budget_fks_exclude'] = Variable<String>(budgetFksExclude.value);
+    }
+    if (normalizeToCurrency.present) {
+      map['normalize_to_currency'] =
+          Variable<String>(normalizeToCurrency.value);
+    }
+    if (isIncomeBudget.present) {
+      map['is_income_budget'] = Variable<bool>(isIncomeBudget.value);
+    }
+    if (includeTransferInOutWithSameCurrency.present) {
+      map['include_transfer_in_out_with_same_currency'] =
+          Variable<bool>(includeTransferInOutWithSameCurrency.value);
+    }
+    if (includeUpcomingTransactionFromBudget.present) {
+      map['include_upcoming_transaction_from_budget'] =
+          Variable<bool>(includeUpcomingTransactionFromBudget.value);
+    }
+    if (dateCreatedOriginal.present) {
+      map['date_created_original'] =
+          Variable<DateTime>(dateCreatedOriginal.value);
+    }
     return map;
   }
 
@@ -3173,7 +3776,23 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetsTableData> {
           ..write('isSynced: $isSynced, ')
           ..write('lastSyncAt: $lastSyncAt, ')
           ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('version: $version, ')
+          ..write('budgetTransactionFilters: $budgetTransactionFilters, ')
+          ..write(
+              'excludeDebtCreditInstallments: $excludeDebtCreditInstallments, ')
+          ..write(
+              'excludeObjectiveInstallments: $excludeObjectiveInstallments, ')
+          ..write('walletFks: $walletFks, ')
+          ..write('currencyFks: $currencyFks, ')
+          ..write('sharedReferenceBudgetPk: $sharedReferenceBudgetPk, ')
+          ..write('budgetFksExclude: $budgetFksExclude, ')
+          ..write('normalizeToCurrency: $normalizeToCurrency, ')
+          ..write('isIncomeBudget: $isIncomeBudget, ')
+          ..write(
+              'includeTransferInOutWithSameCurrency: $includeTransferInOutWithSameCurrency, ')
+          ..write(
+              'includeUpcomingTransactionFromBudget: $includeUpcomingTransactionFromBudget, ')
+          ..write('dateCreatedOriginal: $dateCreatedOriginal')
           ..write(')'))
         .toString();
   }
@@ -4516,7 +5135,7 @@ final class $$CategoriesTableTableReferences extends BaseReferences<
         manager.$state.copyWith(prefetchedData: cache));
   }
 
-  static MultiTypedResultKey<$BudgetsTableTable, List<BudgetsTableData>>
+  static MultiTypedResultKey<$BudgetsTableTable, List<BudgetTableData>>
       _budgetsTableRefsTable(_$AppDatabase db) =>
           MultiTypedResultKey.fromTable(db.budgetsTable,
               aliasName: $_aliasNameGenerator(
@@ -4880,7 +5499,7 @@ class $$CategoriesTableTableTableManager extends RootTableManager<
                         typedResults: items),
                   if (budgetsTableRefs)
                     await $_getPrefetchedData<CategoriesTableData,
-                            $CategoriesTableTable, BudgetsTableData>(
+                            $CategoriesTableTable, BudgetTableData>(
                         currentTable: table,
                         referencedTable: $$CategoriesTableTableReferences
                             ._budgetsTableRefsTable(db),
@@ -6050,6 +6669,18 @@ typedef $$BudgetsTableTableCreateCompanionBuilder = BudgetsTableCompanion
   Value<DateTime?> lastSyncAt,
   required String syncId,
   Value<int> version,
+  Value<String?> budgetTransactionFilters,
+  Value<bool> excludeDebtCreditInstallments,
+  Value<bool> excludeObjectiveInstallments,
+  Value<String?> walletFks,
+  Value<String?> currencyFks,
+  Value<String?> sharedReferenceBudgetPk,
+  Value<String?> budgetFksExclude,
+  Value<String?> normalizeToCurrency,
+  Value<bool> isIncomeBudget,
+  Value<bool> includeTransferInOutWithSameCurrency,
+  Value<bool> includeUpcomingTransactionFromBudget,
+  Value<DateTime?> dateCreatedOriginal,
 });
 typedef $$BudgetsTableTableUpdateCompanionBuilder = BudgetsTableCompanion
     Function({
@@ -6069,10 +6700,22 @@ typedef $$BudgetsTableTableUpdateCompanionBuilder = BudgetsTableCompanion
   Value<DateTime?> lastSyncAt,
   Value<String> syncId,
   Value<int> version,
+  Value<String?> budgetTransactionFilters,
+  Value<bool> excludeDebtCreditInstallments,
+  Value<bool> excludeObjectiveInstallments,
+  Value<String?> walletFks,
+  Value<String?> currencyFks,
+  Value<String?> sharedReferenceBudgetPk,
+  Value<String?> budgetFksExclude,
+  Value<String?> normalizeToCurrency,
+  Value<bool> isIncomeBudget,
+  Value<bool> includeTransferInOutWithSameCurrency,
+  Value<bool> includeUpcomingTransactionFromBudget,
+  Value<DateTime?> dateCreatedOriginal,
 });
 
-final class $$BudgetsTableTableReferences extends BaseReferences<_$AppDatabase,
-    $BudgetsTableTable, BudgetsTableData> {
+final class $$BudgetsTableTableReferences
+    extends BaseReferences<_$AppDatabase, $BudgetsTableTable, BudgetTableData> {
   $$BudgetsTableTableReferences(super.$_db, super.$_table, super.$_typedResult);
 
   static $CategoriesTableTable _categoryIdTable(_$AppDatabase db) =>
@@ -6145,6 +6788,54 @@ class $$BudgetsTableTableFilterComposer
 
   ColumnFilters<int> get version => $composableBuilder(
       column: $table.version, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get budgetTransactionFilters => $composableBuilder(
+      column: $table.budgetTransactionFilters,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get excludeDebtCreditInstallments => $composableBuilder(
+      column: $table.excludeDebtCreditInstallments,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get excludeObjectiveInstallments => $composableBuilder(
+      column: $table.excludeObjectiveInstallments,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get walletFks => $composableBuilder(
+      column: $table.walletFks, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get currencyFks => $composableBuilder(
+      column: $table.currencyFks, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get sharedReferenceBudgetPk => $composableBuilder(
+      column: $table.sharedReferenceBudgetPk,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get budgetFksExclude => $composableBuilder(
+      column: $table.budgetFksExclude,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get normalizeToCurrency => $composableBuilder(
+      column: $table.normalizeToCurrency,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isIncomeBudget => $composableBuilder(
+      column: $table.isIncomeBudget,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get includeTransferInOutWithSameCurrency =>
+      $composableBuilder(
+          column: $table.includeTransferInOutWithSameCurrency,
+          builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get includeUpcomingTransactionFromBudget =>
+      $composableBuilder(
+          column: $table.includeUpcomingTransactionFromBudget,
+          builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dateCreatedOriginal => $composableBuilder(
+      column: $table.dateCreatedOriginal,
+      builder: (column) => ColumnFilters(column));
 
   $$CategoriesTableTableFilterComposer get categoryId {
     final $$CategoriesTableTableFilterComposer composer = $composerBuilder(
@@ -6221,6 +6912,54 @@ class $$BudgetsTableTableOrderingComposer
   ColumnOrderings<int> get version => $composableBuilder(
       column: $table.version, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get budgetTransactionFilters => $composableBuilder(
+      column: $table.budgetTransactionFilters,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get excludeDebtCreditInstallments => $composableBuilder(
+      column: $table.excludeDebtCreditInstallments,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get excludeObjectiveInstallments => $composableBuilder(
+      column: $table.excludeObjectiveInstallments,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get walletFks => $composableBuilder(
+      column: $table.walletFks, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get currencyFks => $composableBuilder(
+      column: $table.currencyFks, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get sharedReferenceBudgetPk => $composableBuilder(
+      column: $table.sharedReferenceBudgetPk,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get budgetFksExclude => $composableBuilder(
+      column: $table.budgetFksExclude,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get normalizeToCurrency => $composableBuilder(
+      column: $table.normalizeToCurrency,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isIncomeBudget => $composableBuilder(
+      column: $table.isIncomeBudget,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get includeTransferInOutWithSameCurrency =>
+      $composableBuilder(
+          column: $table.includeTransferInOutWithSameCurrency,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get includeUpcomingTransactionFromBudget =>
+      $composableBuilder(
+          column: $table.includeUpcomingTransactionFromBudget,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dateCreatedOriginal => $composableBuilder(
+      column: $table.dateCreatedOriginal,
+      builder: (column) => ColumnOrderings(column));
+
   $$CategoriesTableTableOrderingComposer get categoryId {
     final $$CategoriesTableTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -6296,6 +7035,47 @@ class $$BudgetsTableTableAnnotationComposer
   GeneratedColumn<int> get version =>
       $composableBuilder(column: $table.version, builder: (column) => column);
 
+  GeneratedColumn<String> get budgetTransactionFilters => $composableBuilder(
+      column: $table.budgetTransactionFilters, builder: (column) => column);
+
+  GeneratedColumn<bool> get excludeDebtCreditInstallments => $composableBuilder(
+      column: $table.excludeDebtCreditInstallments,
+      builder: (column) => column);
+
+  GeneratedColumn<bool> get excludeObjectiveInstallments => $composableBuilder(
+      column: $table.excludeObjectiveInstallments, builder: (column) => column);
+
+  GeneratedColumn<String> get walletFks =>
+      $composableBuilder(column: $table.walletFks, builder: (column) => column);
+
+  GeneratedColumn<String> get currencyFks => $composableBuilder(
+      column: $table.currencyFks, builder: (column) => column);
+
+  GeneratedColumn<String> get sharedReferenceBudgetPk => $composableBuilder(
+      column: $table.sharedReferenceBudgetPk, builder: (column) => column);
+
+  GeneratedColumn<String> get budgetFksExclude => $composableBuilder(
+      column: $table.budgetFksExclude, builder: (column) => column);
+
+  GeneratedColumn<String> get normalizeToCurrency => $composableBuilder(
+      column: $table.normalizeToCurrency, builder: (column) => column);
+
+  GeneratedColumn<bool> get isIncomeBudget => $composableBuilder(
+      column: $table.isIncomeBudget, builder: (column) => column);
+
+  GeneratedColumn<bool> get includeTransferInOutWithSameCurrency =>
+      $composableBuilder(
+          column: $table.includeTransferInOutWithSameCurrency,
+          builder: (column) => column);
+
+  GeneratedColumn<bool> get includeUpcomingTransactionFromBudget =>
+      $composableBuilder(
+          column: $table.includeUpcomingTransactionFromBudget,
+          builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dateCreatedOriginal => $composableBuilder(
+      column: $table.dateCreatedOriginal, builder: (column) => column);
+
   $$CategoriesTableTableAnnotationComposer get categoryId {
     final $$CategoriesTableTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -6320,14 +7100,14 @@ class $$BudgetsTableTableAnnotationComposer
 class $$BudgetsTableTableTableManager extends RootTableManager<
     _$AppDatabase,
     $BudgetsTableTable,
-    BudgetsTableData,
+    BudgetTableData,
     $$BudgetsTableTableFilterComposer,
     $$BudgetsTableTableOrderingComposer,
     $$BudgetsTableTableAnnotationComposer,
     $$BudgetsTableTableCreateCompanionBuilder,
     $$BudgetsTableTableUpdateCompanionBuilder,
-    (BudgetsTableData, $$BudgetsTableTableReferences),
-    BudgetsTableData,
+    (BudgetTableData, $$BudgetsTableTableReferences),
+    BudgetTableData,
     PrefetchHooks Function({bool categoryId})> {
   $$BudgetsTableTableTableManager(_$AppDatabase db, $BudgetsTableTable table)
       : super(TableManagerState(
@@ -6356,6 +7136,20 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<DateTime?> lastSyncAt = const Value.absent(),
             Value<String> syncId = const Value.absent(),
             Value<int> version = const Value.absent(),
+            Value<String?> budgetTransactionFilters = const Value.absent(),
+            Value<bool> excludeDebtCreditInstallments = const Value.absent(),
+            Value<bool> excludeObjectiveInstallments = const Value.absent(),
+            Value<String?> walletFks = const Value.absent(),
+            Value<String?> currencyFks = const Value.absent(),
+            Value<String?> sharedReferenceBudgetPk = const Value.absent(),
+            Value<String?> budgetFksExclude = const Value.absent(),
+            Value<String?> normalizeToCurrency = const Value.absent(),
+            Value<bool> isIncomeBudget = const Value.absent(),
+            Value<bool> includeTransferInOutWithSameCurrency =
+                const Value.absent(),
+            Value<bool> includeUpcomingTransactionFromBudget =
+                const Value.absent(),
+            Value<DateTime?> dateCreatedOriginal = const Value.absent(),
           }) =>
               BudgetsTableCompanion(
             id: id,
@@ -6374,6 +7168,20 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             lastSyncAt: lastSyncAt,
             syncId: syncId,
             version: version,
+            budgetTransactionFilters: budgetTransactionFilters,
+            excludeDebtCreditInstallments: excludeDebtCreditInstallments,
+            excludeObjectiveInstallments: excludeObjectiveInstallments,
+            walletFks: walletFks,
+            currencyFks: currencyFks,
+            sharedReferenceBudgetPk: sharedReferenceBudgetPk,
+            budgetFksExclude: budgetFksExclude,
+            normalizeToCurrency: normalizeToCurrency,
+            isIncomeBudget: isIncomeBudget,
+            includeTransferInOutWithSameCurrency:
+                includeTransferInOutWithSameCurrency,
+            includeUpcomingTransactionFromBudget:
+                includeUpcomingTransactionFromBudget,
+            dateCreatedOriginal: dateCreatedOriginal,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -6392,6 +7200,20 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<DateTime?> lastSyncAt = const Value.absent(),
             required String syncId,
             Value<int> version = const Value.absent(),
+            Value<String?> budgetTransactionFilters = const Value.absent(),
+            Value<bool> excludeDebtCreditInstallments = const Value.absent(),
+            Value<bool> excludeObjectiveInstallments = const Value.absent(),
+            Value<String?> walletFks = const Value.absent(),
+            Value<String?> currencyFks = const Value.absent(),
+            Value<String?> sharedReferenceBudgetPk = const Value.absent(),
+            Value<String?> budgetFksExclude = const Value.absent(),
+            Value<String?> normalizeToCurrency = const Value.absent(),
+            Value<bool> isIncomeBudget = const Value.absent(),
+            Value<bool> includeTransferInOutWithSameCurrency =
+                const Value.absent(),
+            Value<bool> includeUpcomingTransactionFromBudget =
+                const Value.absent(),
+            Value<DateTime?> dateCreatedOriginal = const Value.absent(),
           }) =>
               BudgetsTableCompanion.insert(
             id: id,
@@ -6410,6 +7232,20 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             lastSyncAt: lastSyncAt,
             syncId: syncId,
             version: version,
+            budgetTransactionFilters: budgetTransactionFilters,
+            excludeDebtCreditInstallments: excludeDebtCreditInstallments,
+            excludeObjectiveInstallments: excludeObjectiveInstallments,
+            walletFks: walletFks,
+            currencyFks: currencyFks,
+            sharedReferenceBudgetPk: sharedReferenceBudgetPk,
+            budgetFksExclude: budgetFksExclude,
+            normalizeToCurrency: normalizeToCurrency,
+            isIncomeBudget: isIncomeBudget,
+            includeTransferInOutWithSameCurrency:
+                includeTransferInOutWithSameCurrency,
+            includeUpcomingTransactionFromBudget:
+                includeUpcomingTransactionFromBudget,
+            dateCreatedOriginal: dateCreatedOriginal,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -6458,14 +7294,14 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
 typedef $$BudgetsTableTableProcessedTableManager = ProcessedTableManager<
     _$AppDatabase,
     $BudgetsTableTable,
-    BudgetsTableData,
+    BudgetTableData,
     $$BudgetsTableTableFilterComposer,
     $$BudgetsTableTableOrderingComposer,
     $$BudgetsTableTableAnnotationComposer,
     $$BudgetsTableTableCreateCompanionBuilder,
     $$BudgetsTableTableUpdateCompanionBuilder,
-    (BudgetsTableData, $$BudgetsTableTableReferences),
-    BudgetsTableData,
+    (BudgetTableData, $$BudgetsTableTableReferences),
+    BudgetTableData,
     PrefetchHooks Function({bool categoryId})>;
 typedef $$SyncMetadataTableTableCreateCompanionBuilder
     = SyncMetadataTableCompanion Function({

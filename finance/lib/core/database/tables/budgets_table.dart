@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import 'categories_table.dart';
 
+@DataClassName('BudgetTableData')
 class BudgetsTable extends Table {
   @override
   String get tableName => 'budgets';
@@ -29,4 +30,24 @@ class BudgetsTable extends Table {
   DateTimeColumn get lastSyncAt => dateTime().nullable()();
   TextColumn get syncId => text().unique()();
   IntColumn get version => integer().withDefault(const Constant(1))();
+  
+  // Advanced filtering fields (Phase 2)
+  TextColumn get budgetTransactionFilters => text().nullable()(); // JSON string
+  BoolColumn get excludeDebtCreditInstallments => boolean().withDefault(const Constant(false))();
+  BoolColumn get excludeObjectiveInstallments => boolean().withDefault(const Constant(false))();
+  TextColumn get walletFks => text().nullable()(); // JSON array of wallet IDs
+  TextColumn get currencyFks => text().nullable()(); // JSON array of currency codes
+  
+  // Shared budget support
+  TextColumn get sharedReferenceBudgetPk => text().nullable()();
+  TextColumn get budgetFksExclude => text().nullable()(); // JSON array of budget IDs to exclude
+  
+  // Currency normalization
+  TextColumn get normalizeToCurrency => text().nullable()();
+  BoolColumn get isIncomeBudget => boolean().withDefault(const Constant(false))();
+  
+  // Advanced features
+  BoolColumn get includeTransferInOutWithSameCurrency => boolean().withDefault(const Constant(false))();
+  BoolColumn get includeUpcomingTransactionFromBudget => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get dateCreatedOriginal => dateTime().nullable()();
 }

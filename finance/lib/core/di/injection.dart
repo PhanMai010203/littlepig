@@ -40,6 +40,11 @@ import '../../features/currencies/domain/usecases/exchange_rate_operations.dart'
 // Services
 import '../../services/currency_service.dart';
 
+// Budget services
+import '../../features/budgets/domain/services/budget_filter_service.dart';
+import '../../features/budgets/data/services/budget_filter_service_impl.dart';
+import '../../features/budgets/data/services/budget_csv_service.dart';
+
 final getIt = GetIt.instance;
 
 @InjectableInit()
@@ -145,6 +150,20 @@ Future<void> configureDependencies() async {
     CurrencyService(
       getIt<CurrencyRepository>(),
       getIt<AccountRepository>(),
+    ),
+  );
+  
+  // Register Budget Services
+  getIt.registerSingleton<BudgetCsvService>(
+    BudgetCsvService(),
+  );
+  
+  getIt.registerSingleton<BudgetFilterService>(
+    BudgetFilterServiceImpl(
+      getIt<TransactionRepository>(),
+      getIt<AccountRepository>(),
+      getIt<CurrencyService>(),
+      getIt<BudgetCsvService>(),
     ),
   );
   

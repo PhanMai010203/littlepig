@@ -3,6 +3,7 @@ import '../../domain/repositories/budget_repository.dart';
 import '../../../../core/database/app_database.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:convert';
 
 class BudgetRepositoryImpl implements BudgetRepository {
   final AppDatabase _database;
@@ -13,7 +14,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   @override
   Future<List<Budget>> getAllBudgets() async {
     final budgets = await _database.select(_database.budgetsTable).get();
-    return budgets.map(_mapToEntity).toList();
+    return budgets.map<Budget>(_mapToEntity).toList();
   }
 
   @override
@@ -21,7 +22,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     final budgets = await (_database.select(_database.budgetsTable)
           ..where((tbl) => tbl.isActive.equals(true)))
         .get();
-    return budgets.map(_mapToEntity).toList();
+    return budgets.map<Budget>(_mapToEntity).toList();
   }
 
   @override
@@ -45,7 +46,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     final budgets = await (_database.select(_database.budgetsTable)
           ..where((tbl) => tbl.categoryId.equals(categoryId)))
         .get();
-    return budgets.map(_mapToEntity).toList();
+    return budgets.map<Budget>(_mapToEntity).toList();
   }
 
   @override
@@ -66,6 +67,28 @@ class BudgetRepositoryImpl implements BudgetRepository {
       syncId: syncId,
       createdAt: Value(budget.createdAt),
       updatedAt: Value(now),
+      
+      // Advanced filtering fields
+      budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
+        ? jsonEncode(budget.budgetTransactionFilters) 
+        : null),
+      excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
+      excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
+      walletFks: Value(budget.walletFks != null 
+        ? jsonEncode(budget.walletFks) 
+        : null),
+      currencyFks: Value(budget.currencyFks != null 
+        ? jsonEncode(budget.currencyFks) 
+        : null),
+      sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
+      budgetFksExclude: Value(budget.budgetFksExclude != null 
+        ? jsonEncode(budget.budgetFksExclude) 
+        : null),
+      normalizeToCurrency: Value(budget.normalizeToCurrency),
+      isIncomeBudget: Value(budget.isIncomeBudget),
+      includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
+      includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+      dateCreatedOriginal: Value(budget.dateCreatedOriginal),
     );
 
     final id = await _database.into(_database.budgetsTable).insert(companion);
@@ -93,6 +116,28 @@ class BudgetRepositoryImpl implements BudgetRepository {
       updatedAt: Value(now),
       isSynced: const Value(false), // Mark as unsynced when updated
       version: Value(budget.version + 1),
+      
+      // Advanced filtering fields
+      budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
+        ? jsonEncode(budget.budgetTransactionFilters) 
+        : null),
+      excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
+      excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
+      walletFks: Value(budget.walletFks != null 
+        ? jsonEncode(budget.walletFks) 
+        : null),
+      currencyFks: Value(budget.currencyFks != null 
+        ? jsonEncode(budget.currencyFks) 
+        : null),
+      sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
+      budgetFksExclude: Value(budget.budgetFksExclude != null 
+        ? jsonEncode(budget.budgetFksExclude) 
+        : null),
+      normalizeToCurrency: Value(budget.normalizeToCurrency),
+      isIncomeBudget: Value(budget.isIncomeBudget),
+      includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
+      includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+      dateCreatedOriginal: Value(budget.dateCreatedOriginal),
     );
 
     await (_database.update(_database.budgetsTable)
@@ -130,7 +175,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     final budgets = await (_database.select(_database.budgetsTable)
           ..where((tbl) => tbl.isSynced.equals(false)))
         .get();
-    return budgets.map(_mapToEntity).toList();
+    return budgets.map<Budget>(_mapToEntity).toList();
   }
 
   @override
@@ -165,6 +210,28 @@ class BudgetRepositoryImpl implements BudgetRepository {
         lastSyncAt: Value(budget.lastSyncAt),
         syncId: budget.syncId,
         version: Value(budget.version),
+        
+        // Advanced filtering fields
+        budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
+          ? jsonEncode(budget.budgetTransactionFilters) 
+          : null),
+        excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
+        excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
+        walletFks: Value(budget.walletFks != null 
+          ? jsonEncode(budget.walletFks) 
+          : null),
+        currencyFks: Value(budget.currencyFks != null 
+          ? jsonEncode(budget.currencyFks) 
+          : null),
+        sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
+        budgetFksExclude: Value(budget.budgetFksExclude != null 
+          ? jsonEncode(budget.budgetFksExclude) 
+          : null),
+        normalizeToCurrency: Value(budget.normalizeToCurrency),
+        isIncomeBudget: Value(budget.isIncomeBudget),
+        includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
+        includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+        dateCreatedOriginal: Value(budget.dateCreatedOriginal),
       );
       await _database.into(_database.budgetsTable).insert(companion);
     } else if (budget.version > existing.version) {
@@ -183,6 +250,28 @@ class BudgetRepositoryImpl implements BudgetRepository {
         isSynced: const Value(true),
         lastSyncAt: Value(budget.lastSyncAt),
         version: Value(budget.version),
+        
+        // Advanced filtering fields
+        budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
+          ? jsonEncode(budget.budgetTransactionFilters) 
+          : null),
+        excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
+        excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
+        walletFks: Value(budget.walletFks != null 
+          ? jsonEncode(budget.walletFks) 
+          : null),
+        currencyFks: Value(budget.currencyFks != null 
+          ? jsonEncode(budget.currencyFks) 
+          : null),
+        sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
+        budgetFksExclude: Value(budget.budgetFksExclude != null 
+          ? jsonEncode(budget.budgetFksExclude) 
+          : null),
+        normalizeToCurrency: Value(budget.normalizeToCurrency),
+        isIncomeBudget: Value(budget.isIncomeBudget),
+        includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
+        includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+        dateCreatedOriginal: Value(budget.dateCreatedOriginal),
       );
       
       await (_database.update(_database.budgetsTable)
@@ -191,7 +280,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
     }
   }
 
-  Budget _mapToEntity(BudgetsTableData data) {
+  Budget _mapToEntity(BudgetTableData data) {
     return Budget(
       id: data.id,
       name: data.name,
@@ -209,6 +298,55 @@ class BudgetRepositoryImpl implements BudgetRepository {
       lastSyncAt: data.lastSyncAt,
       syncId: data.syncId,
       version: data.version,
+      
+      // Advanced filtering fields with proper JSON parsing
+      budgetTransactionFilters: data.budgetTransactionFilters != null 
+        ? _parseJsonMap(data.budgetTransactionFilters!) 
+        : null,
+      excludeDebtCreditInstallments: data.excludeDebtCreditInstallments,
+      excludeObjectiveInstallments: data.excludeObjectiveInstallments,
+      walletFks: data.walletFks != null 
+        ? _parseJsonStringList(data.walletFks!) 
+        : null,
+      currencyFks: data.currencyFks != null 
+        ? _parseJsonStringList(data.currencyFks!) 
+        : null,
+      sharedReferenceBudgetPk: data.sharedReferenceBudgetPk,
+      budgetFksExclude: data.budgetFksExclude != null 
+        ? _parseJsonStringList(data.budgetFksExclude!) 
+        : null,
+      normalizeToCurrency: data.normalizeToCurrency,
+      isIncomeBudget: data.isIncomeBudget,
+      includeTransferInOutWithSameCurrency: data.includeTransferInOutWithSameCurrency,
+      includeUpcomingTransactionFromBudget: data.includeUpcomingTransactionFromBudget,
+      dateCreatedOriginal: data.dateCreatedOriginal,
     );
+  }
+
+  // Helper methods for JSON parsing
+  List<String>? _parseJsonStringList(String jsonString) {
+    try {
+      final decoded = jsonDecode(jsonString);
+      if (decoded is List) {
+        return decoded.cast<String>();
+      }
+      return null;
+    } catch (e) {
+      print('Error parsing JSON string list: $e');
+      return null;
+    }
+  }
+
+  Map<String, dynamic>? _parseJsonMap(String jsonString) {
+    try {
+      final decoded = jsonDecode(jsonString);
+      if (decoded is Map<String, dynamic>) {
+        return decoded;
+      }
+      return null;
+    } catch (e) {
+      print('Error parsing JSON map: $e');
+      return null;
+    }
   }
 }

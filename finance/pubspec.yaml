@@ -45,6 +45,15 @@ dependencies:
   flutter_image_compress: ^2.4.0
   mime_type: ^1.0.0
   
+  # CSV Import/Export functionality (Phase 2)
+  csv: ^6.0.0
+  share_plus: ^10.0.0
+  flutter_charset_detector: ^1.0.2
+  
+  # Phase 3: Real-time updates and biometric authentication
+  local_auth: ^2.2.0
+  rxdart: ^0.28.0
+  
     # Utilities
   freezed_annotation: ^2.4.1
   json_annotation: ^4.8.1
