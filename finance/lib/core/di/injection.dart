@@ -89,7 +89,7 @@ Future<void> configureDependencies() async {
   ]);
   getIt.registerSingleton<GoogleSignIn>(googleSignIn);
   
-  // Register basic repositories first (except TransactionRepository which depends on BudgetUpdateService)
+  // Register basic repositories first
   getIt.registerSingleton<AttachmentRepository>(
     AttachmentRepositoryImpl(databaseService.database, googleSignIn),
   );
@@ -101,6 +101,11 @@ Future<void> configureDependencies() async {
   );
   getIt.registerSingleton<BudgetRepository>(
     BudgetRepositoryImpl(databaseService.database),
+  );
+  
+  // Register Transaction Repository first without BudgetUpdateService
+  getIt.registerSingleton<TransactionRepository>(
+    TransactionRepositoryImpl(databaseService.database, deviceId),
   );
   
   // Register Currency Data Sources
@@ -163,11 +168,7 @@ Future<void> configureDependencies() async {
     BudgetAuthService(),
   );
   
-  // Create temporary transaction repository for budget filter service (circular dependency workaround)
-  getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(databaseService.database, deviceId),
-  );
-  
+  // Register Budget Filter Service 
   getIt.registerSingleton<BudgetFilterService>(
     BudgetFilterServiceImpl(
       getIt<TransactionRepository>(),
@@ -186,15 +187,10 @@ Future<void> configureDependencies() async {
     ),
   );
   
-  // Re-register TransactionRepository with BudgetUpdateService dependency
-  getIt.unregister<TransactionRepository>();
-  getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(
-      databaseService.database, 
-      deviceId,
-      budgetUpdateService: getIt<BudgetUpdateService>(),
-    ),
-  );
+  // Update the TransactionRepository to include BudgetUpdateService
+  // This is a cleaner approach than unregister/re-register
+  final transactionRepo = getIt<TransactionRepository>() as TransactionRepositoryImpl;
+  transactionRepo.setBudgetUpdateService(getIt<BudgetUpdateService>());
   
   // Register File Picker Service
   getIt.registerSingleton<FilePickerService>(
@@ -250,7 +246,7 @@ Future<void> configureTestDependencies() async {
   ]);
   getIt.registerSingleton<GoogleSignIn>(googleSignIn);
   
-  // Register basic repositories first (except TransactionRepository which depends on BudgetUpdateService)
+  // Register basic repositories first
   getIt.registerSingleton<AttachmentRepository>(
     AttachmentRepositoryImpl(databaseService.database, googleSignIn),
   );
@@ -262,6 +258,11 @@ Future<void> configureTestDependencies() async {
   );
   getIt.registerSingleton<BudgetRepository>(
     BudgetRepositoryImpl(databaseService.database),
+  );
+  
+  // Register Transaction Repository first without BudgetUpdateService
+  getIt.registerSingleton<TransactionRepository>(
+    TransactionRepositoryImpl(databaseService.database, deviceId),
   );
   
   // Register Currency Data Sources
@@ -325,11 +326,7 @@ Future<void> configureTestDependencies() async {
     BudgetAuthService(),
   );
   
-  // Create temporary transaction repository for budget filter service (circular dependency workaround)
-  getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(databaseService.database, deviceId),
-  );
-  
+  // Register Budget Filter Service 
   getIt.registerSingleton<BudgetFilterService>(
     BudgetFilterServiceImpl(
       getIt<TransactionRepository>(),
@@ -348,15 +345,10 @@ Future<void> configureTestDependencies() async {
     ),
   );
   
-  // Re-register TransactionRepository with BudgetUpdateService dependency
-  getIt.unregister<TransactionRepository>();
-  getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(
-      databaseService.database, 
-      deviceId,
-      budgetUpdateService: getIt<BudgetUpdateService>(),
-    ),
-  );
+  // Update the TransactionRepository to include BudgetUpdateService
+  // This is a cleaner approach than unregister/re-register
+  final transactionRepo = getIt<TransactionRepository>() as TransactionRepositoryImpl;
+  transactionRepo.setBudgetUpdateService(getIt<BudgetUpdateService>());
   
   // Register File Picker Service
   getIt.registerSingleton<FilePickerService>(

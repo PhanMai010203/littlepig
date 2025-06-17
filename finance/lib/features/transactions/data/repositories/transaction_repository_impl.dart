@@ -10,7 +10,7 @@ import '../../../budgets/domain/services/budget_update_service.dart';
 class TransactionRepositoryImpl implements TransactionRepository {
   final AppDatabase _database;
   final String _deviceId;
-  final BudgetUpdateService? _budgetUpdateService;
+  BudgetUpdateService? _budgetUpdateService;
 
   TransactionRepositoryImpl(
     this._database, 
@@ -336,6 +336,12 @@ class TransactionRepositoryImpl implements TransactionRepository {
       )),
     );
   }
+
+  /// Sets the budget update service for late injection to avoid circular dependencies
+  void setBudgetUpdateService(BudgetUpdateService service) {
+    _budgetUpdateService = service;
+  }
+
   Transaction _mapTransactionData(TransactionsTableData data) {
     return Transaction(
       id: data.id,
