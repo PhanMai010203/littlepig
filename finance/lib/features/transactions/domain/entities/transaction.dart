@@ -13,7 +13,7 @@ class Transaction extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
   
-  // Advanced transaction fields (Phase 1 - Domain Extensions)
+  // Advanced transaction fields
   
   // Transaction type and special type
   final TransactionType transactionType;

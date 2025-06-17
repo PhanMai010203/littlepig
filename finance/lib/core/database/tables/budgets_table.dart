@@ -31,7 +31,7 @@ class BudgetsTable extends Table {
   TextColumn get syncId => text().unique()();
   IntColumn get version => integer().withDefault(const Constant(1))();
   
-  // Advanced filtering fields (Phase 2)
+  // Advanced filtering fields
   TextColumn get budgetTransactionFilters => text().nullable()(); // JSON string
   BoolColumn get excludeDebtCreditInstallments => boolean().withDefault(const Constant(false))();
   BoolColumn get excludeObjectiveInstallments => boolean().withDefault(const Constant(false))();

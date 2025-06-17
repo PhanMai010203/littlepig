@@ -56,7 +56,7 @@ class AppDatabase extends _$AppDatabase {
           await customStatement('ALTER TABLE attachments ADD COLUMN local_cache_expiry DATETIME');
         }
         if (from < 4) {
-          // Phase 1: Add advanced transaction features fields
+          // Add advanced transaction features fields
           // Transaction type and special type
           await customStatement('ALTER TABLE transactions ADD COLUMN transaction_type TEXT DEFAULT "expense"');
           await customStatement('ALTER TABLE transactions ADD COLUMN special_type TEXT');
@@ -77,7 +77,7 @@ class AppDatabase extends _$AppDatabase {
           await customStatement('ALTER TABLE transactions ADD COLUMN objective_loan_fk TEXT');
         }
         if (from <= 4) {
-          // Phase 2: Add budget advanced fields (Migration from v4 to v5)
+          // Add budget advanced fields (Migration from v4 to v5)
           await customStatement('ALTER TABLE budgets ADD COLUMN budget_transaction_filters TEXT');
           await customStatement('ALTER TABLE budgets ADD COLUMN exclude_debt_credit_installments BOOLEAN DEFAULT FALSE');
           await customStatement('ALTER TABLE budgets ADD COLUMN exclude_objective_installments BOOLEAN DEFAULT FALSE');

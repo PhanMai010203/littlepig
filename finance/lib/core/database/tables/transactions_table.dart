@@ -20,7 +20,7 @@ class TransactionsTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   
-  // Advanced transaction fields (Phase 1 - Database Schema Extensions)
+  // Advanced transaction fields
   
   // Transaction type and special type
   TextColumn get transactionType => text().withLength(min: 1, max: 20).withDefault(const Constant('expense'))();

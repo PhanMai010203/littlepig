@@ -32,7 +32,7 @@ class DeleteBudget extends BudgetsEvent {
   List<Object?> get props => [budgetId];
 }
 
-// New events for real-time updates (Phase 3)
+// Real-time update events
 class StartRealTimeUpdates extends BudgetsEvent {}
 
 class StopRealTimeUpdates extends BudgetsEvent {}

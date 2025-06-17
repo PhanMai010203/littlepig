@@ -21,7 +21,7 @@ class Budget extends Equatable {
   final String syncId;
   final int version;
 
-  // Advanced filtering (Phase 2)
+  // Advanced filtering
   final bool excludeDebtCreditInstallments;
   final bool excludeObjectiveInstallments;
   final List<String>? walletFks;
