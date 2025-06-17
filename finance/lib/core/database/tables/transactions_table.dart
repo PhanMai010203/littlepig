@@ -20,6 +20,27 @@ class TransactionsTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   
+  // Advanced transaction fields (Phase 1 - Database Schema Extensions)
+  
+  // Transaction type and special type
+  TextColumn get transactionType => text().withLength(min: 1, max: 20).withDefault(const Constant('expense'))();
+  TextColumn get specialType => text().withLength(min: 1, max: 20).nullable()(); // credit, debt, etc.
+  
+  // Recurring/Subscription fields
+  TextColumn get recurrence => text().withLength(min: 1, max: 20).withDefault(const Constant('none'))();
+  IntColumn get periodLength => integer().nullable()(); // e.g., 1 for "every 1 month"
+  DateTimeColumn get endDate => dateTime().nullable()(); // When to stop creating instances
+  DateTimeColumn get originalDateDue => dateTime().nullable()(); // Original due date for recurring
+  
+  // State and action management
+  TextColumn get transactionState => text().withLength(min: 1, max: 20).withDefault(const Constant('completed'))();
+  BoolColumn get paid => boolean().withDefault(const Constant(false))(); // For loan/recurring logic
+  BoolColumn get skipPaid => boolean().withDefault(const Constant(false))(); // Skip vs pay for recurring
+  BoolColumn get createdAnotherFutureTransaction => boolean().withDefault(const Constant(false)).nullable()(); // Prevents duplicate creation
+  
+  // Loan/Objective linking (for complex loans)
+  TextColumn get objectiveLoanFk => text().nullable()(); // Links to objectives table (future use)
+  
   // Sync fields
   TextColumn get deviceId => text().withLength(min: 1, max: 50)();
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();

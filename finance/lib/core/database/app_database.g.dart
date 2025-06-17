@@ -1286,6 +1286,99 @@ class $TransactionsTableTable extends TransactionsTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
+  static const VerificationMeta _transactionTypeMeta =
+      const VerificationMeta('transactionType');
+  @override
+  late final GeneratedColumn<String> transactionType = GeneratedColumn<String>(
+      'transaction_type', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('expense'));
+  static const VerificationMeta _specialTypeMeta =
+      const VerificationMeta('specialType');
+  @override
+  late final GeneratedColumn<String> specialType = GeneratedColumn<String>(
+      'special_type', aliasedName, true,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false);
+  static const VerificationMeta _recurrenceMeta =
+      const VerificationMeta('recurrence');
+  @override
+  late final GeneratedColumn<String> recurrence = GeneratedColumn<String>(
+      'recurrence', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('none'));
+  static const VerificationMeta _periodLengthMeta =
+      const VerificationMeta('periodLength');
+  @override
+  late final GeneratedColumn<int> periodLength = GeneratedColumn<int>(
+      'period_length', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
+  static const VerificationMeta _endDateMeta =
+      const VerificationMeta('endDate');
+  @override
+  late final GeneratedColumn<DateTime> endDate = GeneratedColumn<DateTime>(
+      'end_date', aliasedName, true,
+      type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _originalDateDueMeta =
+      const VerificationMeta('originalDateDue');
+  @override
+  late final GeneratedColumn<DateTime> originalDateDue =
+      GeneratedColumn<DateTime>('original_date_due', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _transactionStateMeta =
+      const VerificationMeta('transactionState');
+  @override
+  late final GeneratedColumn<String> transactionState = GeneratedColumn<String>(
+      'transaction_state', aliasedName, false,
+      additionalChecks:
+          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('completed'));
+  static const VerificationMeta _paidMeta = const VerificationMeta('paid');
+  @override
+  late final GeneratedColumn<bool> paid = GeneratedColumn<bool>(
+      'paid', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("paid" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _skipPaidMeta =
+      const VerificationMeta('skipPaid');
+  @override
+  late final GeneratedColumn<bool> skipPaid = GeneratedColumn<bool>(
+      'skip_paid', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("skip_paid" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _createdAnotherFutureTransactionMeta =
+      const VerificationMeta('createdAnotherFutureTransaction');
+  @override
+  late final GeneratedColumn<bool> createdAnotherFutureTransaction =
+      GeneratedColumn<bool>(
+          'created_another_future_transaction', aliasedName, true,
+          type: DriftSqlType.bool,
+          requiredDuringInsert: false,
+          defaultConstraints: GeneratedColumn.constraintIsAlways(
+              'CHECK ("created_another_future_transaction" IN (0, 1))'),
+          defaultValue: const Constant(false));
+  static const VerificationMeta _objectiveLoanFkMeta =
+      const VerificationMeta('objectiveLoanFk');
+  @override
+  late final GeneratedColumn<String> objectiveLoanFk = GeneratedColumn<String>(
+      'objective_loan_fk', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _deviceIdMeta =
       const VerificationMeta('deviceId');
   @override
@@ -1338,6 +1431,17 @@ class $TransactionsTableTable extends TransactionsTable
         date,
         createdAt,
         updatedAt,
+        transactionType,
+        specialType,
+        recurrence,
+        periodLength,
+        endDate,
+        originalDateDue,
+        transactionState,
+        paid,
+        skipPaid,
+        createdAnotherFutureTransaction,
+        objectiveLoanFk,
         deviceId,
         isSynced,
         lastSyncAt,
@@ -1408,6 +1512,67 @@ class $TransactionsTableTable extends TransactionsTable
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
+    if (data.containsKey('transaction_type')) {
+      context.handle(
+          _transactionTypeMeta,
+          transactionType.isAcceptableOrUnknown(
+              data['transaction_type']!, _transactionTypeMeta));
+    }
+    if (data.containsKey('special_type')) {
+      context.handle(
+          _specialTypeMeta,
+          specialType.isAcceptableOrUnknown(
+              data['special_type']!, _specialTypeMeta));
+    }
+    if (data.containsKey('recurrence')) {
+      context.handle(
+          _recurrenceMeta,
+          recurrence.isAcceptableOrUnknown(
+              data['recurrence']!, _recurrenceMeta));
+    }
+    if (data.containsKey('period_length')) {
+      context.handle(
+          _periodLengthMeta,
+          periodLength.isAcceptableOrUnknown(
+              data['period_length']!, _periodLengthMeta));
+    }
+    if (data.containsKey('end_date')) {
+      context.handle(_endDateMeta,
+          endDate.isAcceptableOrUnknown(data['end_date']!, _endDateMeta));
+    }
+    if (data.containsKey('original_date_due')) {
+      context.handle(
+          _originalDateDueMeta,
+          originalDateDue.isAcceptableOrUnknown(
+              data['original_date_due']!, _originalDateDueMeta));
+    }
+    if (data.containsKey('transaction_state')) {
+      context.handle(
+          _transactionStateMeta,
+          transactionState.isAcceptableOrUnknown(
+              data['transaction_state']!, _transactionStateMeta));
+    }
+    if (data.containsKey('paid')) {
+      context.handle(
+          _paidMeta, paid.isAcceptableOrUnknown(data['paid']!, _paidMeta));
+    }
+    if (data.containsKey('skip_paid')) {
+      context.handle(_skipPaidMeta,
+          skipPaid.isAcceptableOrUnknown(data['skip_paid']!, _skipPaidMeta));
+    }
+    if (data.containsKey('created_another_future_transaction')) {
+      context.handle(
+          _createdAnotherFutureTransactionMeta,
+          createdAnotherFutureTransaction.isAcceptableOrUnknown(
+              data['created_another_future_transaction']!,
+              _createdAnotherFutureTransactionMeta));
+    }
+    if (data.containsKey('objective_loan_fk')) {
+      context.handle(
+          _objectiveLoanFkMeta,
+          objectiveLoanFk.isAcceptableOrUnknown(
+              data['objective_loan_fk']!, _objectiveLoanFkMeta));
+    }
     if (data.containsKey('device_id')) {
       context.handle(_deviceIdMeta,
           deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
@@ -1463,6 +1628,29 @@ class $TransactionsTableTable extends TransactionsTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
+      transactionType: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}transaction_type'])!,
+      specialType: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}special_type']),
+      recurrence: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}recurrence'])!,
+      periodLength: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}period_length']),
+      endDate: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}end_date']),
+      originalDateDue: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}original_date_due']),
+      transactionState: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}transaction_state'])!,
+      paid: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}paid'])!,
+      skipPaid: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}skip_paid'])!,
+      createdAnotherFutureTransaction: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool,
+          data['${effectivePrefix}created_another_future_transaction']),
+      objectiveLoanFk: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}objective_loan_fk']),
       deviceId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
       isSynced: attachedDatabase.typeMapping
@@ -1494,6 +1682,17 @@ class TransactionsTableData extends DataClass
   final DateTime date;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final String transactionType;
+  final String? specialType;
+  final String recurrence;
+  final int? periodLength;
+  final DateTime? endDate;
+  final DateTime? originalDateDue;
+  final String transactionState;
+  final bool paid;
+  final bool skipPaid;
+  final bool? createdAnotherFutureTransaction;
+  final String? objectiveLoanFk;
   final String deviceId;
   final bool isSynced;
   final DateTime? lastSyncAt;
@@ -1510,6 +1709,17 @@ class TransactionsTableData extends DataClass
       required this.date,
       required this.createdAt,
       required this.updatedAt,
+      required this.transactionType,
+      this.specialType,
+      required this.recurrence,
+      this.periodLength,
+      this.endDate,
+      this.originalDateDue,
+      required this.transactionState,
+      required this.paid,
+      required this.skipPaid,
+      this.createdAnotherFutureTransaction,
+      this.objectiveLoanFk,
       required this.deviceId,
       required this.isSynced,
       this.lastSyncAt,
@@ -1532,6 +1742,30 @@ class TransactionsTableData extends DataClass
     map['date'] = Variable<DateTime>(date);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['transaction_type'] = Variable<String>(transactionType);
+    if (!nullToAbsent || specialType != null) {
+      map['special_type'] = Variable<String>(specialType);
+    }
+    map['recurrence'] = Variable<String>(recurrence);
+    if (!nullToAbsent || periodLength != null) {
+      map['period_length'] = Variable<int>(periodLength);
+    }
+    if (!nullToAbsent || endDate != null) {
+      map['end_date'] = Variable<DateTime>(endDate);
+    }
+    if (!nullToAbsent || originalDateDue != null) {
+      map['original_date_due'] = Variable<DateTime>(originalDateDue);
+    }
+    map['transaction_state'] = Variable<String>(transactionState);
+    map['paid'] = Variable<bool>(paid);
+    map['skip_paid'] = Variable<bool>(skipPaid);
+    if (!nullToAbsent || createdAnotherFutureTransaction != null) {
+      map['created_another_future_transaction'] =
+          Variable<bool>(createdAnotherFutureTransaction);
+    }
+    if (!nullToAbsent || objectiveLoanFk != null) {
+      map['objective_loan_fk'] = Variable<String>(objectiveLoanFk);
+    }
     map['device_id'] = Variable<String>(deviceId);
     map['is_synced'] = Variable<bool>(isSynced);
     if (!nullToAbsent || lastSyncAt != null) {
@@ -1556,6 +1790,30 @@ class TransactionsTableData extends DataClass
       date: Value(date),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
+      transactionType: Value(transactionType),
+      specialType: specialType == null && nullToAbsent
+          ? const Value.absent()
+          : Value(specialType),
+      recurrence: Value(recurrence),
+      periodLength: periodLength == null && nullToAbsent
+          ? const Value.absent()
+          : Value(periodLength),
+      endDate: endDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(endDate),
+      originalDateDue: originalDateDue == null && nullToAbsent
+          ? const Value.absent()
+          : Value(originalDateDue),
+      transactionState: Value(transactionState),
+      paid: Value(paid),
+      skipPaid: Value(skipPaid),
+      createdAnotherFutureTransaction:
+          createdAnotherFutureTransaction == null && nullToAbsent
+              ? const Value.absent()
+              : Value(createdAnotherFutureTransaction),
+      objectiveLoanFk: objectiveLoanFk == null && nullToAbsent
+          ? const Value.absent()
+          : Value(objectiveLoanFk),
       deviceId: Value(deviceId),
       isSynced: Value(isSynced),
       lastSyncAt: lastSyncAt == null && nullToAbsent
@@ -1580,6 +1838,18 @@ class TransactionsTableData extends DataClass
       date: serializer.fromJson<DateTime>(json['date']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      transactionType: serializer.fromJson<String>(json['transactionType']),
+      specialType: serializer.fromJson<String?>(json['specialType']),
+      recurrence: serializer.fromJson<String>(json['recurrence']),
+      periodLength: serializer.fromJson<int?>(json['periodLength']),
+      endDate: serializer.fromJson<DateTime?>(json['endDate']),
+      originalDateDue: serializer.fromJson<DateTime?>(json['originalDateDue']),
+      transactionState: serializer.fromJson<String>(json['transactionState']),
+      paid: serializer.fromJson<bool>(json['paid']),
+      skipPaid: serializer.fromJson<bool>(json['skipPaid']),
+      createdAnotherFutureTransaction:
+          serializer.fromJson<bool?>(json['createdAnotherFutureTransaction']),
+      objectiveLoanFk: serializer.fromJson<String?>(json['objectiveLoanFk']),
       deviceId: serializer.fromJson<String>(json['deviceId']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
@@ -1601,6 +1871,18 @@ class TransactionsTableData extends DataClass
       'date': serializer.toJson<DateTime>(date),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'transactionType': serializer.toJson<String>(transactionType),
+      'specialType': serializer.toJson<String?>(specialType),
+      'recurrence': serializer.toJson<String>(recurrence),
+      'periodLength': serializer.toJson<int?>(periodLength),
+      'endDate': serializer.toJson<DateTime?>(endDate),
+      'originalDateDue': serializer.toJson<DateTime?>(originalDateDue),
+      'transactionState': serializer.toJson<String>(transactionState),
+      'paid': serializer.toJson<bool>(paid),
+      'skipPaid': serializer.toJson<bool>(skipPaid),
+      'createdAnotherFutureTransaction':
+          serializer.toJson<bool?>(createdAnotherFutureTransaction),
+      'objectiveLoanFk': serializer.toJson<String?>(objectiveLoanFk),
       'deviceId': serializer.toJson<String>(deviceId),
       'isSynced': serializer.toJson<bool>(isSynced),
       'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
@@ -1620,6 +1902,17 @@ class TransactionsTableData extends DataClass
           DateTime? date,
           DateTime? createdAt,
           DateTime? updatedAt,
+          String? transactionType,
+          Value<String?> specialType = const Value.absent(),
+          String? recurrence,
+          Value<int?> periodLength = const Value.absent(),
+          Value<DateTime?> endDate = const Value.absent(),
+          Value<DateTime?> originalDateDue = const Value.absent(),
+          String? transactionState,
+          bool? paid,
+          bool? skipPaid,
+          Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
+          Value<String?> objectiveLoanFk = const Value.absent(),
           String? deviceId,
           bool? isSynced,
           Value<DateTime?> lastSyncAt = const Value.absent(),
@@ -1636,6 +1929,24 @@ class TransactionsTableData extends DataClass
         date: date ?? this.date,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
+        transactionType: transactionType ?? this.transactionType,
+        specialType: specialType.present ? specialType.value : this.specialType,
+        recurrence: recurrence ?? this.recurrence,
+        periodLength:
+            periodLength.present ? periodLength.value : this.periodLength,
+        endDate: endDate.present ? endDate.value : this.endDate,
+        originalDateDue: originalDateDue.present
+            ? originalDateDue.value
+            : this.originalDateDue,
+        transactionState: transactionState ?? this.transactionState,
+        paid: paid ?? this.paid,
+        skipPaid: skipPaid ?? this.skipPaid,
+        createdAnotherFutureTransaction: createdAnotherFutureTransaction.present
+            ? createdAnotherFutureTransaction.value
+            : this.createdAnotherFutureTransaction,
+        objectiveLoanFk: objectiveLoanFk.present
+            ? objectiveLoanFk.value
+            : this.objectiveLoanFk,
         deviceId: deviceId ?? this.deviceId,
         isSynced: isSynced ?? this.isSynced,
         lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
@@ -1656,6 +1967,32 @@ class TransactionsTableData extends DataClass
       date: data.date.present ? data.date.value : this.date,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      transactionType: data.transactionType.present
+          ? data.transactionType.value
+          : this.transactionType,
+      specialType:
+          data.specialType.present ? data.specialType.value : this.specialType,
+      recurrence:
+          data.recurrence.present ? data.recurrence.value : this.recurrence,
+      periodLength: data.periodLength.present
+          ? data.periodLength.value
+          : this.periodLength,
+      endDate: data.endDate.present ? data.endDate.value : this.endDate,
+      originalDateDue: data.originalDateDue.present
+          ? data.originalDateDue.value
+          : this.originalDateDue,
+      transactionState: data.transactionState.present
+          ? data.transactionState.value
+          : this.transactionState,
+      paid: data.paid.present ? data.paid.value : this.paid,
+      skipPaid: data.skipPaid.present ? data.skipPaid.value : this.skipPaid,
+      createdAnotherFutureTransaction:
+          data.createdAnotherFutureTransaction.present
+              ? data.createdAnotherFutureTransaction.value
+              : this.createdAnotherFutureTransaction,
+      objectiveLoanFk: data.objectiveLoanFk.present
+          ? data.objectiveLoanFk.value
+          : this.objectiveLoanFk,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       lastSyncAt:
@@ -1678,6 +2015,18 @@ class TransactionsTableData extends DataClass
           ..write('date: $date, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('transactionType: $transactionType, ')
+          ..write('specialType: $specialType, ')
+          ..write('recurrence: $recurrence, ')
+          ..write('periodLength: $periodLength, ')
+          ..write('endDate: $endDate, ')
+          ..write('originalDateDue: $originalDateDue, ')
+          ..write('transactionState: $transactionState, ')
+          ..write('paid: $paid, ')
+          ..write('skipPaid: $skipPaid, ')
+          ..write(
+              'createdAnotherFutureTransaction: $createdAnotherFutureTransaction, ')
+          ..write('objectiveLoanFk: $objectiveLoanFk, ')
           ..write('deviceId: $deviceId, ')
           ..write('isSynced: $isSynced, ')
           ..write('lastSyncAt: $lastSyncAt, ')
@@ -1688,22 +2037,34 @@ class TransactionsTableData extends DataClass
   }
 
   @override
-  int get hashCode => Object.hash(
-      id,
-      title,
-      description,
-      note,
-      amount,
-      categoryId,
-      accountId,
-      date,
-      createdAt,
-      updatedAt,
-      deviceId,
-      isSynced,
-      lastSyncAt,
-      syncId,
-      version);
+  int get hashCode => Object.hashAll([
+        id,
+        title,
+        description,
+        note,
+        amount,
+        categoryId,
+        accountId,
+        date,
+        createdAt,
+        updatedAt,
+        transactionType,
+        specialType,
+        recurrence,
+        periodLength,
+        endDate,
+        originalDateDue,
+        transactionState,
+        paid,
+        skipPaid,
+        createdAnotherFutureTransaction,
+        objectiveLoanFk,
+        deviceId,
+        isSynced,
+        lastSyncAt,
+        syncId,
+        version
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1718,6 +2079,18 @@ class TransactionsTableData extends DataClass
           other.date == this.date &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
+          other.transactionType == this.transactionType &&
+          other.specialType == this.specialType &&
+          other.recurrence == this.recurrence &&
+          other.periodLength == this.periodLength &&
+          other.endDate == this.endDate &&
+          other.originalDateDue == this.originalDateDue &&
+          other.transactionState == this.transactionState &&
+          other.paid == this.paid &&
+          other.skipPaid == this.skipPaid &&
+          other.createdAnotherFutureTransaction ==
+              this.createdAnotherFutureTransaction &&
+          other.objectiveLoanFk == this.objectiveLoanFk &&
           other.deviceId == this.deviceId &&
           other.isSynced == this.isSynced &&
           other.lastSyncAt == this.lastSyncAt &&
@@ -1737,6 +2110,17 @@ class TransactionsTableCompanion
   final Value<DateTime> date;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
+  final Value<String> transactionType;
+  final Value<String?> specialType;
+  final Value<String> recurrence;
+  final Value<int?> periodLength;
+  final Value<DateTime?> endDate;
+  final Value<DateTime?> originalDateDue;
+  final Value<String> transactionState;
+  final Value<bool> paid;
+  final Value<bool> skipPaid;
+  final Value<bool?> createdAnotherFutureTransaction;
+  final Value<String?> objectiveLoanFk;
   final Value<String> deviceId;
   final Value<bool> isSynced;
   final Value<DateTime?> lastSyncAt;
@@ -1753,6 +2137,17 @@ class TransactionsTableCompanion
     this.date = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.transactionType = const Value.absent(),
+    this.specialType = const Value.absent(),
+    this.recurrence = const Value.absent(),
+    this.periodLength = const Value.absent(),
+    this.endDate = const Value.absent(),
+    this.originalDateDue = const Value.absent(),
+    this.transactionState = const Value.absent(),
+    this.paid = const Value.absent(),
+    this.skipPaid = const Value.absent(),
+    this.createdAnotherFutureTransaction = const Value.absent(),
+    this.objectiveLoanFk = const Value.absent(),
     this.deviceId = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.lastSyncAt = const Value.absent(),
@@ -1770,6 +2165,17 @@ class TransactionsTableCompanion
     required DateTime date,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.transactionType = const Value.absent(),
+    this.specialType = const Value.absent(),
+    this.recurrence = const Value.absent(),
+    this.periodLength = const Value.absent(),
+    this.endDate = const Value.absent(),
+    this.originalDateDue = const Value.absent(),
+    this.transactionState = const Value.absent(),
+    this.paid = const Value.absent(),
+    this.skipPaid = const Value.absent(),
+    this.createdAnotherFutureTransaction = const Value.absent(),
+    this.objectiveLoanFk = const Value.absent(),
     required String deviceId,
     this.isSynced = const Value.absent(),
     this.lastSyncAt = const Value.absent(),
@@ -1793,6 +2199,17 @@ class TransactionsTableCompanion
     Expression<DateTime>? date,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? transactionType,
+    Expression<String>? specialType,
+    Expression<String>? recurrence,
+    Expression<int>? periodLength,
+    Expression<DateTime>? endDate,
+    Expression<DateTime>? originalDateDue,
+    Expression<String>? transactionState,
+    Expression<bool>? paid,
+    Expression<bool>? skipPaid,
+    Expression<bool>? createdAnotherFutureTransaction,
+    Expression<String>? objectiveLoanFk,
     Expression<String>? deviceId,
     Expression<bool>? isSynced,
     Expression<DateTime>? lastSyncAt,
@@ -1810,6 +2227,18 @@ class TransactionsTableCompanion
       if (date != null) 'date': date,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (transactionType != null) 'transaction_type': transactionType,
+      if (specialType != null) 'special_type': specialType,
+      if (recurrence != null) 'recurrence': recurrence,
+      if (periodLength != null) 'period_length': periodLength,
+      if (endDate != null) 'end_date': endDate,
+      if (originalDateDue != null) 'original_date_due': originalDateDue,
+      if (transactionState != null) 'transaction_state': transactionState,
+      if (paid != null) 'paid': paid,
+      if (skipPaid != null) 'skip_paid': skipPaid,
+      if (createdAnotherFutureTransaction != null)
+        'created_another_future_transaction': createdAnotherFutureTransaction,
+      if (objectiveLoanFk != null) 'objective_loan_fk': objectiveLoanFk,
       if (deviceId != null) 'device_id': deviceId,
       if (isSynced != null) 'is_synced': isSynced,
       if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
@@ -1829,6 +2258,17 @@ class TransactionsTableCompanion
       Value<DateTime>? date,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
+      Value<String>? transactionType,
+      Value<String?>? specialType,
+      Value<String>? recurrence,
+      Value<int?>? periodLength,
+      Value<DateTime?>? endDate,
+      Value<DateTime?>? originalDateDue,
+      Value<String>? transactionState,
+      Value<bool>? paid,
+      Value<bool>? skipPaid,
+      Value<bool?>? createdAnotherFutureTransaction,
+      Value<String?>? objectiveLoanFk,
       Value<String>? deviceId,
       Value<bool>? isSynced,
       Value<DateTime?>? lastSyncAt,
@@ -1845,6 +2285,18 @@ class TransactionsTableCompanion
       date: date ?? this.date,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      transactionType: transactionType ?? this.transactionType,
+      specialType: specialType ?? this.specialType,
+      recurrence: recurrence ?? this.recurrence,
+      periodLength: periodLength ?? this.periodLength,
+      endDate: endDate ?? this.endDate,
+      originalDateDue: originalDateDue ?? this.originalDateDue,
+      transactionState: transactionState ?? this.transactionState,
+      paid: paid ?? this.paid,
+      skipPaid: skipPaid ?? this.skipPaid,
+      createdAnotherFutureTransaction: createdAnotherFutureTransaction ??
+          this.createdAnotherFutureTransaction,
+      objectiveLoanFk: objectiveLoanFk ?? this.objectiveLoanFk,
       deviceId: deviceId ?? this.deviceId,
       isSynced: isSynced ?? this.isSynced,
       lastSyncAt: lastSyncAt ?? this.lastSyncAt,
@@ -1886,6 +2338,40 @@ class TransactionsTableCompanion
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
+    if (transactionType.present) {
+      map['transaction_type'] = Variable<String>(transactionType.value);
+    }
+    if (specialType.present) {
+      map['special_type'] = Variable<String>(specialType.value);
+    }
+    if (recurrence.present) {
+      map['recurrence'] = Variable<String>(recurrence.value);
+    }
+    if (periodLength.present) {
+      map['period_length'] = Variable<int>(periodLength.value);
+    }
+    if (endDate.present) {
+      map['end_date'] = Variable<DateTime>(endDate.value);
+    }
+    if (originalDateDue.present) {
+      map['original_date_due'] = Variable<DateTime>(originalDateDue.value);
+    }
+    if (transactionState.present) {
+      map['transaction_state'] = Variable<String>(transactionState.value);
+    }
+    if (paid.present) {
+      map['paid'] = Variable<bool>(paid.value);
+    }
+    if (skipPaid.present) {
+      map['skip_paid'] = Variable<bool>(skipPaid.value);
+    }
+    if (createdAnotherFutureTransaction.present) {
+      map['created_another_future_transaction'] =
+          Variable<bool>(createdAnotherFutureTransaction.value);
+    }
+    if (objectiveLoanFk.present) {
+      map['objective_loan_fk'] = Variable<String>(objectiveLoanFk.value);
+    }
     if (deviceId.present) {
       map['device_id'] = Variable<String>(deviceId.value);
     }
@@ -1917,6 +2403,18 @@ class TransactionsTableCompanion
           ..write('date: $date, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
+          ..write('transactionType: $transactionType, ')
+          ..write('specialType: $specialType, ')
+          ..write('recurrence: $recurrence, ')
+          ..write('periodLength: $periodLength, ')
+          ..write('endDate: $endDate, ')
+          ..write('originalDateDue: $originalDateDue, ')
+          ..write('transactionState: $transactionState, ')
+          ..write('paid: $paid, ')
+          ..write('skipPaid: $skipPaid, ')
+          ..write(
+              'createdAnotherFutureTransaction: $createdAnotherFutureTransaction, ')
+          ..write('objectiveLoanFk: $objectiveLoanFk, ')
           ..write('deviceId: $deviceId, ')
           ..write('isSynced: $isSynced, ')
           ..write('lastSyncAt: $lastSyncAt, ')
@@ -4786,6 +5284,17 @@ typedef $$TransactionsTableTableCreateCompanionBuilder
   required DateTime date,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<String> transactionType,
+  Value<String?> specialType,
+  Value<String> recurrence,
+  Value<int?> periodLength,
+  Value<DateTime?> endDate,
+  Value<DateTime?> originalDateDue,
+  Value<String> transactionState,
+  Value<bool> paid,
+  Value<bool> skipPaid,
+  Value<bool?> createdAnotherFutureTransaction,
+  Value<String?> objectiveLoanFk,
   required String deviceId,
   Value<bool> isSynced,
   Value<DateTime?> lastSyncAt,
@@ -4804,6 +5313,17 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder
   Value<DateTime> date,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
+  Value<String> transactionType,
+  Value<String?> specialType,
+  Value<String> recurrence,
+  Value<int?> periodLength,
+  Value<DateTime?> endDate,
+  Value<DateTime?> originalDateDue,
+  Value<String> transactionState,
+  Value<bool> paid,
+  Value<bool> skipPaid,
+  Value<bool?> createdAnotherFutureTransaction,
+  Value<String?> objectiveLoanFk,
   Value<String> deviceId,
   Value<bool> isSynced,
   Value<DateTime?> lastSyncAt,
@@ -4897,6 +5417,44 @@ class $$TransactionsTableTableFilterComposer
 
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get transactionType => $composableBuilder(
+      column: $table.transactionType,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get specialType => $composableBuilder(
+      column: $table.specialType, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get recurrence => $composableBuilder(
+      column: $table.recurrence, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get periodLength => $composableBuilder(
+      column: $table.periodLength, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get originalDateDue => $composableBuilder(
+      column: $table.originalDateDue,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get transactionState => $composableBuilder(
+      column: $table.transactionState,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get paid => $composableBuilder(
+      column: $table.paid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get skipPaid => $composableBuilder(
+      column: $table.skipPaid, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get createdAnotherFutureTransaction => $composableBuilder(
+      column: $table.createdAnotherFutureTransaction,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get objectiveLoanFk => $composableBuilder(
+      column: $table.objectiveLoanFk,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get deviceId => $composableBuilder(
       column: $table.deviceId, builder: (column) => ColumnFilters(column));
@@ -5008,6 +5566,46 @@ class $$TransactionsTableTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<String> get transactionType => $composableBuilder(
+      column: $table.transactionType,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get specialType => $composableBuilder(
+      column: $table.specialType, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get recurrence => $composableBuilder(
+      column: $table.recurrence, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get periodLength => $composableBuilder(
+      column: $table.periodLength,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get endDate => $composableBuilder(
+      column: $table.endDate, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get originalDateDue => $composableBuilder(
+      column: $table.originalDateDue,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get transactionState => $composableBuilder(
+      column: $table.transactionState,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get paid => $composableBuilder(
+      column: $table.paid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get skipPaid => $composableBuilder(
+      column: $table.skipPaid, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get createdAnotherFutureTransaction =>
+      $composableBuilder(
+          column: $table.createdAnotherFutureTransaction,
+          builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get objectiveLoanFk => $composableBuilder(
+      column: $table.objectiveLoanFk,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get deviceId => $composableBuilder(
       column: $table.deviceId, builder: (column) => ColumnOrderings(column));
 
@@ -5096,6 +5694,41 @@ class $$TransactionsTableTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionType => $composableBuilder(
+      column: $table.transactionType, builder: (column) => column);
+
+  GeneratedColumn<String> get specialType => $composableBuilder(
+      column: $table.specialType, builder: (column) => column);
+
+  GeneratedColumn<String> get recurrence => $composableBuilder(
+      column: $table.recurrence, builder: (column) => column);
+
+  GeneratedColumn<int> get periodLength => $composableBuilder(
+      column: $table.periodLength, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get endDate =>
+      $composableBuilder(column: $table.endDate, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get originalDateDue => $composableBuilder(
+      column: $table.originalDateDue, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionState => $composableBuilder(
+      column: $table.transactionState, builder: (column) => column);
+
+  GeneratedColumn<bool> get paid =>
+      $composableBuilder(column: $table.paid, builder: (column) => column);
+
+  GeneratedColumn<bool> get skipPaid =>
+      $composableBuilder(column: $table.skipPaid, builder: (column) => column);
+
+  GeneratedColumn<bool> get createdAnotherFutureTransaction =>
+      $composableBuilder(
+          column: $table.createdAnotherFutureTransaction,
+          builder: (column) => column);
+
+  GeneratedColumn<String> get objectiveLoanFk => $composableBuilder(
+      column: $table.objectiveLoanFk, builder: (column) => column);
 
   GeneratedColumn<String> get deviceId =>
       $composableBuilder(column: $table.deviceId, builder: (column) => column);
@@ -5210,6 +5843,17 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<DateTime> date = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> transactionType = const Value.absent(),
+            Value<String?> specialType = const Value.absent(),
+            Value<String> recurrence = const Value.absent(),
+            Value<int?> periodLength = const Value.absent(),
+            Value<DateTime?> endDate = const Value.absent(),
+            Value<DateTime?> originalDateDue = const Value.absent(),
+            Value<String> transactionState = const Value.absent(),
+            Value<bool> paid = const Value.absent(),
+            Value<bool> skipPaid = const Value.absent(),
+            Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
+            Value<String?> objectiveLoanFk = const Value.absent(),
             Value<String> deviceId = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime?> lastSyncAt = const Value.absent(),
@@ -5227,6 +5871,17 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             date: date,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            transactionType: transactionType,
+            specialType: specialType,
+            recurrence: recurrence,
+            periodLength: periodLength,
+            endDate: endDate,
+            originalDateDue: originalDateDue,
+            transactionState: transactionState,
+            paid: paid,
+            skipPaid: skipPaid,
+            createdAnotherFutureTransaction: createdAnotherFutureTransaction,
+            objectiveLoanFk: objectiveLoanFk,
             deviceId: deviceId,
             isSynced: isSynced,
             lastSyncAt: lastSyncAt,
@@ -5244,6 +5899,17 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             required DateTime date,
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
+            Value<String> transactionType = const Value.absent(),
+            Value<String?> specialType = const Value.absent(),
+            Value<String> recurrence = const Value.absent(),
+            Value<int?> periodLength = const Value.absent(),
+            Value<DateTime?> endDate = const Value.absent(),
+            Value<DateTime?> originalDateDue = const Value.absent(),
+            Value<String> transactionState = const Value.absent(),
+            Value<bool> paid = const Value.absent(),
+            Value<bool> skipPaid = const Value.absent(),
+            Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
+            Value<String?> objectiveLoanFk = const Value.absent(),
             required String deviceId,
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime?> lastSyncAt = const Value.absent(),
@@ -5261,6 +5927,17 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             date: date,
             createdAt: createdAt,
             updatedAt: updatedAt,
+            transactionType: transactionType,
+            specialType: specialType,
+            recurrence: recurrence,
+            periodLength: periodLength,
+            endDate: endDate,
+            originalDateDue: originalDateDue,
+            transactionState: transactionState,
+            paid: paid,
+            skipPaid: skipPaid,
+            createdAnotherFutureTransaction: createdAnotherFutureTransaction,
+            objectiveLoanFk: objectiveLoanFk,
             deviceId: deviceId,
             isSynced: isSynced,
             lastSyncAt: lastSyncAt,

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../domain/entities/transaction.dart';
+import '../../domain/entities/transaction_enums.dart';
 import '../../domain/repositories/transaction_repository.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
@@ -60,7 +61,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
     final result = await query.getSingleOrNull();
     return result != null ? _mapTransactionData(result) : null;
   }
-
   @override
   Future<Transaction> createTransaction(Transaction transaction) async {
     final companion = TransactionsTableCompanion.insert(
@@ -71,6 +71,20 @@ class TransactionRepositoryImpl implements TransactionRepository {
       categoryId: transaction.categoryId,
       accountId: transaction.accountId,
       date: transaction.date,
+      
+      // Advanced fields
+      transactionType: Value(transaction.transactionType.name),
+      specialType: Value(transaction.specialType?.name),
+      recurrence: Value(transaction.recurrence.name),
+      periodLength: Value(transaction.periodLength),
+      endDate: Value(transaction.endDate),
+      originalDateDue: Value(transaction.originalDateDue),
+      transactionState: Value(transaction.transactionState.name),
+      paid: Value(transaction.paid),
+      skipPaid: Value(transaction.skipPaid),
+      createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+      objectiveLoanFk: Value(transaction.objectiveLoanFk),
+      
       deviceId: _deviceId,
       syncId: const Uuid().v4(),
     );
@@ -78,7 +92,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
     final id = await _database.into(_database.transactionsTable).insert(companion);
     return transaction.copyWith(id: id, deviceId: _deviceId);
   }
-
   @override
   Future<Transaction> updateTransaction(Transaction transaction) async {
     final companion = TransactionsTableCompanion(
@@ -90,6 +103,20 @@ class TransactionRepositoryImpl implements TransactionRepository {
       categoryId: Value(transaction.categoryId),
       accountId: Value(transaction.accountId),
       date: Value(transaction.date),
+      
+      // Advanced fields
+      transactionType: Value(transaction.transactionType.name),
+      specialType: Value(transaction.specialType?.name),
+      recurrence: Value(transaction.recurrence.name),
+      periodLength: Value(transaction.periodLength),
+      endDate: Value(transaction.endDate),
+      originalDateDue: Value(transaction.originalDateDue),
+      transactionState: Value(transaction.transactionState.name),
+      paid: Value(transaction.paid),
+      skipPaid: Value(transaction.skipPaid),
+      createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+      objectiveLoanFk: Value(transaction.objectiveLoanFk),
+      
       updatedAt: Value(DateTime.now()),
       isSynced: const Value(false),
       version: Value(transaction.version + 1),
@@ -127,7 +154,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
           lastSyncAt: Value(syncTime),
         ));
   }
-
   @override
   Future<void> insertOrUpdateFromSync(Transaction transaction) async {
     final existing = await getTransactionBySyncId(transaction.syncId);
@@ -141,6 +167,20 @@ class TransactionRepositoryImpl implements TransactionRepository {
         categoryId: transaction.categoryId,
         accountId: transaction.accountId,
         date: transaction.date,
+        
+        // Advanced fields
+        transactionType: Value(transaction.transactionType.name),
+        specialType: Value(transaction.specialType?.name),
+        recurrence: Value(transaction.recurrence.name),
+        periodLength: Value(transaction.periodLength),
+        endDate: Value(transaction.endDate),
+        originalDateDue: Value(transaction.originalDateDue),
+        transactionState: Value(transaction.transactionState.name),
+        paid: Value(transaction.paid),
+        skipPaid: Value(transaction.skipPaid),
+        createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+        objectiveLoanFk: Value(transaction.objectiveLoanFk),
+        
         createdAt: Value(transaction.createdAt),
         updatedAt: Value(transaction.updatedAt),
         deviceId: transaction.deviceId,
@@ -149,8 +189,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         syncId: transaction.syncId,
         version: Value(transaction.version),
       );
-      await _database.into(_database.transactionsTable).insert(companion);
-    } else if (transaction.version > existing.version) {
+      await _database.into(_database.transactionsTable).insert(companion);    } else if (transaction.version > existing.version) {
       // Update with newer version
       final companion = TransactionsTableCompanion(
         id: Value(existing.id!),
@@ -161,6 +200,20 @@ class TransactionRepositoryImpl implements TransactionRepository {
         categoryId: Value(transaction.categoryId),
         accountId: Value(transaction.accountId),
         date: Value(transaction.date),
+        
+        // Advanced fields
+        transactionType: Value(transaction.transactionType.name),
+        specialType: Value(transaction.specialType?.name),
+        recurrence: Value(transaction.recurrence.name),
+        periodLength: Value(transaction.periodLength),
+        endDate: Value(transaction.endDate),
+        originalDateDue: Value(transaction.originalDateDue),
+        transactionState: Value(transaction.transactionState.name),
+        paid: Value(transaction.paid),
+        skipPaid: Value(transaction.skipPaid),
+        createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+        objectiveLoanFk: Value(transaction.objectiveLoanFk),
+        
         updatedAt: Value(transaction.updatedAt),
         isSynced: const Value(true),
         lastSyncAt: Value(transaction.lastSyncAt),
@@ -228,7 +281,6 @@ class TransactionRepositoryImpl implements TransactionRepository {
       )),
     );
   }
-
   Transaction _mapTransactionData(TransactionsTableData data) {
     return Transaction(
       id: data.id,
@@ -241,6 +293,34 @@ class TransactionRepositoryImpl implements TransactionRepository {
       date: data.date,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
+      
+      // Map advanced fields
+      transactionType: TransactionType.values.firstWhere(
+        (e) => e.name == data.transactionType,
+        orElse: () => TransactionType.expense,
+      ),
+      specialType: data.specialType != null 
+        ? TransactionSpecialType.values.firstWhere(
+            (e) => e.name == data.specialType,
+            orElse: () => TransactionSpecialType.credit,
+          )
+        : null,
+      recurrence: TransactionRecurrence.values.firstWhere(
+        (e) => e.name == data.recurrence,
+        orElse: () => TransactionRecurrence.none,
+      ),
+      periodLength: data.periodLength,
+      endDate: data.endDate,
+      originalDateDue: data.originalDateDue,
+      transactionState: TransactionState.values.firstWhere(
+        (e) => e.name == data.transactionState,
+        orElse: () => TransactionState.completed,
+      ),
+      paid: data.paid,
+      skipPaid: data.skipPaid,
+      createdAnotherFutureTransaction: data.createdAnotherFutureTransaction,
+      objectiveLoanFk: data.objectiveLoanFk,
+      
       deviceId: data.deviceId,
       isSynced: data.isSynced,
       lastSyncAt: data.lastSyncAt,

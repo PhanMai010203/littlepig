@@ -31,9 +31,8 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.fromFile(File file) : super(NativeDatabase(file));
   
   // Constructor for testing with in-memory database
-  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
-  @override
-  int get schemaVersion => 3;
+  AppDatabase.forTesting(QueryExecutor executor) : super(executor);  @override
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -41,8 +40,7 @@ class AppDatabase extends _$AppDatabase {
       onCreate: (Migrator m) async {
         await m.createAll();
         await _insertDefaultData();
-      },
-      onUpgrade: (Migrator m, int from, int to) async {
+      },      onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           // Add note field to transactions table using raw SQL
           await customStatement('ALTER TABLE transactions ADD COLUMN note TEXT');
@@ -53,6 +51,27 @@ class AppDatabase extends _$AppDatabase {
           // Add cache management fields to attachments table
           await customStatement('ALTER TABLE attachments ADD COLUMN is_captured_from_camera BOOLEAN DEFAULT FALSE');
           await customStatement('ALTER TABLE attachments ADD COLUMN local_cache_expiry DATETIME');
+        }
+        if (from < 4) {
+          // Phase 1: Add advanced transaction features fields
+          // Transaction type and special type
+          await customStatement('ALTER TABLE transactions ADD COLUMN transaction_type TEXT DEFAULT "expense"');
+          await customStatement('ALTER TABLE transactions ADD COLUMN special_type TEXT');
+          
+          // Recurring/Subscription fields
+          await customStatement('ALTER TABLE transactions ADD COLUMN recurrence TEXT DEFAULT "none"');
+          await customStatement('ALTER TABLE transactions ADD COLUMN period_length INTEGER');
+          await customStatement('ALTER TABLE transactions ADD COLUMN end_date DATETIME');
+          await customStatement('ALTER TABLE transactions ADD COLUMN original_date_due DATETIME');
+          
+          // State and action management
+          await customStatement('ALTER TABLE transactions ADD COLUMN transaction_state TEXT DEFAULT "completed"');
+          await customStatement('ALTER TABLE transactions ADD COLUMN paid BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE transactions ADD COLUMN skip_paid BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE transactions ADD COLUMN created_another_future_transaction BOOLEAN DEFAULT FALSE');
+          
+          // Loan/Objective linking (for complex loans)
+          await customStatement('ALTER TABLE transactions ADD COLUMN objective_loan_fk TEXT');
         }
       },
     );
