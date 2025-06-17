@@ -4,7 +4,6 @@ import 'transaction_enums.dart';
 class Transaction extends Equatable {
   final int? id;
   final String title;
-  final String? description;
   final String? note;
   final double amount;
   final int categoryId;
@@ -40,11 +39,9 @@ class Transaction extends Equatable {
   final DateTime? lastSyncAt;
   final String syncId;
   final int version;
-
   const Transaction({
     this.id,
     required this.title,
-    this.description,
     this.note,
     required this.amount,
     required this.categoryId,
@@ -72,11 +69,9 @@ class Transaction extends Equatable {
     required this.syncId,
     required this.version,
   });
-
   Transaction copyWith({
     int? id,
     String? title,
-    String? description,
     String? note,
     double? amount,
     int? categoryId,
@@ -104,7 +99,6 @@ class Transaction extends Equatable {
     return Transaction(
       id: id ?? this.id,
       title: title ?? this.title,
-      description: description ?? this.description,
       note: note ?? this.note,
       amount: amount ?? this.amount,
       categoryId: categoryId ?? this.categoryId,
@@ -178,12 +172,10 @@ class Transaction extends Equatable {
     
     return actions;
   }
-
   @override
   List<Object?> get props => [
         id,
         title,
-        description,
         note,
         amount,
         categoryId,

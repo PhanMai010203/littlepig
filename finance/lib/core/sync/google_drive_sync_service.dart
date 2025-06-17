@@ -322,13 +322,12 @@ class GoogleDriveSyncService implements SyncService {
         final localTxn = await (_database.select(_database.transactionsTable)
           ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
           .getSingleOrNull();
-        
-        if (localTxn == null) {
+          if (localTxn == null) {
           // Insert new transaction
           await _database.into(_database.transactionsTable).insert(
             TransactionsTableCompanion.insert(
               title: remoteTxn.title,
-              description: Value(remoteTxn.description),
+              note: Value(remoteTxn.note),
               amount: remoteTxn.amount,
               categoryId: remoteTxn.categoryId,
               accountId: remoteTxn.accountId,
@@ -349,7 +348,7 @@ class GoogleDriveSyncService implements SyncService {
             ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
             .write(TransactionsTableCompanion(
               title: Value(remoteTxn.title),
-              description: Value(remoteTxn.description),
+              note: Value(remoteTxn.note),
               amount: Value(remoteTxn.amount),
               categoryId: Value(remoteTxn.categoryId),
               accountId: Value(remoteTxn.accountId),

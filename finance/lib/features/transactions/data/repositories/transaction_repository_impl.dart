@@ -66,12 +66,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
       ..where((t) => t.syncId.equals(syncId));
     final result = await query.getSingleOrNull();
     return result != null ? _mapTransactionData(result) : null;
-  }
-  @override
+  }  @override
   Future<Transaction> createTransaction(Transaction transaction) async {
     final companion = TransactionsTableCompanion.insert(
       title: transaction.title,
-      description: Value(transaction.description),
       note: Value(transaction.note),
       amount: transaction.amount,
       categoryId: transaction.categoryId,
@@ -107,13 +105,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
     
     return createdTransaction;
-  }
-  @override
+  }  @override
   Future<Transaction> updateTransaction(Transaction transaction) async {
     final companion = TransactionsTableCompanion(
       id: Value(transaction.id!),
       title: Value(transaction.title),
-      description: Value(transaction.description),
       note: Value(transaction.note),
       amount: Value(transaction.amount),
       categoryId: Value(transaction.categoryId),
@@ -195,11 +191,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<void> insertOrUpdateFromSync(Transaction transaction) async {
     final existing = await getTransactionBySyncId(transaction.syncId);
     
-    if (existing == null) {
-      // Insert new transaction from sync
+    if (existing == null) {      // Insert new transaction from sync
       final companion = TransactionsTableCompanion.insert(
         title: transaction.title,
-        description: Value(transaction.description),
         note: Value(transaction.note),
         amount: transaction.amount,
         categoryId: transaction.categoryId,
@@ -236,12 +230,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
           TransactionChangeType.created
         );
       }
-    } else if (transaction.version > existing.version) {
-      // Update with newer version
+    } else if (transaction.version > existing.version) {      // Update with newer version
       final companion = TransactionsTableCompanion(
         id: Value(existing.id!),
         title: Value(transaction.title),
-        description: Value(transaction.description),
         note: Value(transaction.note),
         amount: Value(transaction.amount),
         categoryId: Value(transaction.categoryId),
@@ -341,12 +333,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
   void setBudgetUpdateService(BudgetUpdateService service) {
     _budgetUpdateService = service;
   }
-
   Transaction _mapTransactionData(TransactionsTableData data) {
     return Transaction(
       id: data.id,
       title: data.title,
-      description: data.description,
       note: data.note,
       amount: data.amount,
       categoryId: data.categoryId,

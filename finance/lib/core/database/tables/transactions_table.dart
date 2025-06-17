@@ -5,11 +5,9 @@ import 'accounts_table.dart';
 class TransactionsTable extends Table {
   @override
   String get tableName => 'transactions';
-
   IntColumn get id => integer().autoIncrement()();
   
   TextColumn get title => text().withLength(min: 1, max: 255)();
-  TextColumn get description => text().nullable()();
   TextColumn get note => text().nullable()();
   RealColumn get amount => real()();
   
