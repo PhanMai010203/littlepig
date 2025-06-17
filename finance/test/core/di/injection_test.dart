@@ -7,6 +7,8 @@ import 'package:finance/features/accounts/domain/repositories/account_repository
 import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:finance/core/sync/sync_service.dart';
 import 'package:finance/core/services/database_service.dart';
+import 'package:drift/native.dart';
+import 'package:path/path.dart' as p;
 
 void main() {
   setUpAll(() {
@@ -19,6 +21,22 @@ void main() {
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       if (methodCall.method == 'getAll') {
         return <String, Object>{}; // Return empty preferences
+      }
+      return null;
+    });
+    
+    // Mock path_provider for testing environment
+    const MethodChannel pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(pathProviderChannel, (MethodCall methodCall) async {
+      if (methodCall.method == 'getApplicationDocumentsDirectory') {
+        return '/tmp/test_documents';
+      }
+      if (methodCall.method == 'getTemporaryDirectory') {
+        return '/tmp/test_temp';
+      }
+      if (methodCall.method == 'getApplicationSupportDirectory') {
+        return '/tmp/test_support';
       }
       return null;
     });
@@ -67,13 +85,17 @@ void main() {
   tearDownAll(() async {
     // Clear method channel handlers
     const MethodChannel('plugins.flutter.io/shared_preferences').setMockMethodCallHandler(null);
+    const MethodChannel('plugins.flutter.io/path_provider').setMockMethodCallHandler(null);
     const MethodChannel('dev.fluttercommunity.plus/device_info').setMockMethodCallHandler(null);
   });
 
   group('Dependency Injection Tests', () {
     test('should configure dependencies without errors', () async {
+      // Arrange - ensure clean state
+      await resetDependencies();
+      
       // Act
-      await configureDependencies();
+      await configureTestDependencies();
       
       // Assert - no exceptions should be thrown
       expect(getIt.isRegistered<DatabaseService>(), isTrue);
@@ -85,10 +107,13 @@ void main() {
     });
 
     test('should handle multiple configuration calls gracefully', () async {
-      // Arrange & Act - call configure multiple times
-      await configureDependencies();
-      await configureDependencies(); // This should not throw
-      await configureDependencies(); // This should not throw either
+      // Arrange - ensure clean state
+      await resetDependencies();
+      
+      // Act - call configure multiple times
+      await configureTestDependencies();
+      await configureTestDependencies(); // This should not throw
+      await configureTestDependencies(); // This should not throw either
       
       // Assert - services should still be registered
       expect(getIt.isRegistered<DatabaseService>(), isTrue);
@@ -97,11 +122,12 @@ void main() {
 
     test('should reset and reconfigure dependencies', () async {
       // Arrange
-      await configureDependencies();
+      await resetDependencies();
+      await configureTestDependencies();
       expect(getIt.isRegistered<DatabaseService>(), isTrue);
       
       // Act
-      await configureDependenciesWithReset();
+      await configureTestDependencies();
       
       // Assert
       expect(getIt.isRegistered<DatabaseService>(), isTrue);

@@ -220,3 +220,154 @@ Future<void> configureDependenciesWithReset() async {
   await resetDependencies();
   await configureDependencies();
 }
+
+/// Configure dependencies for testing with in-memory database
+Future<void> configureTestDependencies() async {
+  // Check if already initialized to prevent duplicate registration
+  if (getIt.isRegistered<DatabaseService>()) {
+    return;
+  }
+  
+  // Initialize injectable dependencies FIRST (for existing BLoCs)
+  getIt.init();
+  
+  // Register SharedPreferences
+  final sharedPreferences = await SharedPreferences.getInstance();
+  if (!getIt.isRegistered<SharedPreferences>()) {
+    getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  }
+  
+  // Use test device ID
+  const deviceId = 'test-device-id';
+  
+  // Register Database Service with test implementation (in-memory)
+  final databaseService = DatabaseService.forTesting();
+  getIt.registerSingleton<DatabaseService>(databaseService);
+  
+  // Register Google Sign In
+  final googleSignIn = GoogleSignIn(scopes: [
+    'https://www.googleapis.com/auth/drive.file',
+  ]);
+  getIt.registerSingleton<GoogleSignIn>(googleSignIn);
+  
+  // Register basic repositories first (except TransactionRepository which depends on BudgetUpdateService)
+  getIt.registerSingleton<AttachmentRepository>(
+    AttachmentRepositoryImpl(databaseService.database, googleSignIn),
+  );
+  getIt.registerSingleton<CategoryRepository>(
+    CategoryRepositoryImpl(databaseService.database),
+  );
+  getIt.registerSingleton<AccountRepository>(
+    AccountRepositoryImpl(databaseService.database),
+  );
+  getIt.registerSingleton<BudgetRepository>(
+    BudgetRepositoryImpl(databaseService.database),
+  );
+  
+  // Register Currency Data Sources
+  getIt.registerSingleton<CurrencyLocalDataSource>(
+    CurrencyLocalDataSourceImpl(),
+  );
+  getIt.registerSingleton<ExchangeRateRemoteDataSource>(
+    ExchangeRateRemoteDataSourceImpl(httpClient: http.Client()),
+  );
+  getIt.registerSingleton<ExchangeRateLocalDataSource>(
+    ExchangeRateLocalDataSourceImpl(),
+  );
+  
+  // Register Currency Repository
+  getIt.registerSingleton<CurrencyRepository>(
+    CurrencyRepositoryImpl(
+      getIt<CurrencyLocalDataSource>(),
+      getIt<ExchangeRateRemoteDataSource>(),
+      getIt<ExchangeRateLocalDataSource>(),
+    ),
+  );
+  
+  // Register Currency Use Cases
+  getIt.registerSingleton<GetAllCurrencies>(
+    GetAllCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<GetPopularCurrencies>(
+    GetPopularCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<SearchCurrencies>(
+    SearchCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<ConvertCurrency>(
+    ConvertCurrency(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<GetExchangeRates>(
+    GetExchangeRates(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<SetCustomExchangeRate>(
+    SetCustomExchangeRate(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<RefreshExchangeRates>(
+    RefreshExchangeRates(getIt<CurrencyRepository>()),
+  );
+  
+  // Register Currency Service
+  getIt.registerSingleton<CurrencyService>(
+    CurrencyService(
+      getIt<CurrencyRepository>(),
+      getIt<AccountRepository>(),
+    ),
+  );
+  
+  // Register Budget Services (basic services first)
+  getIt.registerSingleton<BudgetCsvService>(
+    BudgetCsvService(),
+  );
+  
+  // Register Budget Authentication Service (no dependencies)
+  getIt.registerSingleton<BudgetAuthService>(
+    BudgetAuthService(),
+  );
+  
+  // Create temporary transaction repository for budget filter service (circular dependency workaround)
+  getIt.registerSingleton<TransactionRepository>(
+    TransactionRepositoryImpl(databaseService.database, deviceId),
+  );
+  
+  getIt.registerSingleton<BudgetFilterService>(
+    BudgetFilterServiceImpl(
+      getIt<TransactionRepository>(),
+      getIt<AccountRepository>(),
+      getIt<CurrencyService>(),
+      getIt<BudgetCsvService>(),
+    ),
+  );
+  
+  // Register Budget Update Service
+  getIt.registerSingleton<BudgetUpdateService>(
+    BudgetUpdateServiceImpl(
+      getIt<BudgetRepository>(),
+      getIt<BudgetFilterService>(),
+      getIt<BudgetAuthService>(),
+    ),
+  );
+  
+  // Re-register TransactionRepository with BudgetUpdateService dependency
+  getIt.unregister<TransactionRepository>();
+  getIt.registerSingleton<TransactionRepository>(
+    TransactionRepositoryImpl(
+      databaseService.database, 
+      deviceId,
+      budgetUpdateService: getIt<BudgetUpdateService>(),
+    ),
+  );
+  
+  // Register File Picker Service
+  getIt.registerSingleton<FilePickerService>(
+    FilePickerService(
+      getIt<AttachmentRepository>(),
+      getIt<GoogleSignIn>(),
+    ),
+  );
+  
+  // Register Sync Service
+  final syncService = GoogleDriveSyncService(databaseService.database);
+  await syncService.initialize();
+  getIt.registerSingleton<SyncService>(syncService);
+}
