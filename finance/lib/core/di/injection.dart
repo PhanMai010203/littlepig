@@ -44,6 +44,9 @@ import '../../services/currency_service.dart';
 import '../../features/budgets/domain/services/budget_filter_service.dart';
 import '../../features/budgets/data/services/budget_filter_service_impl.dart';
 import '../../features/budgets/data/services/budget_csv_service.dart';
+import '../../features/budgets/domain/services/budget_update_service.dart';
+import '../../features/budgets/data/services/budget_update_service_impl.dart';
+import '../../features/budgets/data/services/budget_auth_service.dart';
 
 final getIt = GetIt.instance;
 
@@ -86,10 +89,7 @@ Future<void> configureDependencies() async {
   ]);
   getIt.registerSingleton<GoogleSignIn>(googleSignIn);
   
-  // Register Repositories
-  getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(databaseService.database, deviceId),
-  );
+  // Register basic repositories first (except TransactionRepository which depends on BudgetUpdateService)
   getIt.registerSingleton<AttachmentRepository>(
     AttachmentRepositoryImpl(databaseService.database, googleSignIn),
   );
@@ -153,9 +153,19 @@ Future<void> configureDependencies() async {
     ),
   );
   
-  // Register Budget Services
+  // Register Budget Services (basic services first)
   getIt.registerSingleton<BudgetCsvService>(
     BudgetCsvService(),
+  );
+  
+  // Register Budget Authentication Service (no dependencies)
+  getIt.registerSingleton<BudgetAuthService>(
+    BudgetAuthService(),
+  );
+  
+  // Create temporary transaction repository for budget filter service (circular dependency workaround)
+  getIt.registerSingleton<TransactionRepository>(
+    TransactionRepositoryImpl(databaseService.database, deviceId),
   );
   
   getIt.registerSingleton<BudgetFilterService>(
@@ -164,6 +174,25 @@ Future<void> configureDependencies() async {
       getIt<AccountRepository>(),
       getIt<CurrencyService>(),
       getIt<BudgetCsvService>(),
+    ),
+  );
+  
+  // Register Budget Update Service
+  getIt.registerSingleton<BudgetUpdateService>(
+    BudgetUpdateServiceImpl(
+      getIt<BudgetRepository>(),
+      getIt<BudgetFilterService>(),
+      getIt<BudgetAuthService>(),
+    ),
+  );
+  
+  // Re-register TransactionRepository with BudgetUpdateService dependency
+  getIt.unregister<TransactionRepository>();
+  getIt.registerSingleton<TransactionRepository>(
+    TransactionRepositoryImpl(
+      databaseService.database, 
+      deviceId,
+      budgetUpdateService: getIt<BudgetUpdateService>(),
     ),
   );
   

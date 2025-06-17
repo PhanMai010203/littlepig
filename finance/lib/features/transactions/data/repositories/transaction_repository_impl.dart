@@ -5,12 +5,18 @@ import '../../../../core/database/app_database.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_enums.dart';
 import '../../domain/repositories/transaction_repository.dart';
+import '../../../budgets/domain/services/budget_update_service.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final AppDatabase _database;
   final String _deviceId;
+  final BudgetUpdateService? _budgetUpdateService;
 
-  TransactionRepositoryImpl(this._database, this._deviceId);
+  TransactionRepositoryImpl(
+    this._database, 
+    this._deviceId, {
+    BudgetUpdateService? budgetUpdateService,
+  }) : _budgetUpdateService = budgetUpdateService;
 
   @override
   Future<List<Transaction>> getAllTransactions() async {
@@ -90,7 +96,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
     );
     
     final id = await _database.into(_database.transactionsTable).insert(companion);
-    return transaction.copyWith(id: id, deviceId: _deviceId);
+    final createdTransaction = transaction.copyWith(id: id, deviceId: _deviceId);
+    
+    // Trigger budget updates if service is available
+    if (_budgetUpdateService != null) {
+      await _budgetUpdateService!.updateBudgetOnTransactionChange(
+        createdTransaction, 
+        TransactionChangeType.created
+      );
+    }
+    
+    return createdTransaction;
   }
   @override
   Future<Transaction> updateTransaction(Transaction transaction) async {
@@ -123,18 +139,39 @@ class TransactionRepositoryImpl implements TransactionRepository {
     );
     
     await _database.update(_database.transactionsTable).replace(companion);
-    return transaction.copyWith(
+    final updatedTransaction = transaction.copyWith(
       updatedAt: DateTime.now(),
       isSynced: false,
       version: transaction.version + 1,
     );
+    
+    // Trigger budget updates if service is available
+    if (_budgetUpdateService != null) {
+      await _budgetUpdateService!.updateBudgetOnTransactionChange(
+        updatedTransaction, 
+        TransactionChangeType.updated
+      );
+    }
+    
+    return updatedTransaction;
   }
 
   @override
   Future<void> deleteTransaction(int id) async {
+    // Get transaction before deletion for budget update
+    final transaction = await getTransactionById(id);
+    
     await (_database.delete(_database.transactionsTable)
           ..where((t) => t.id.equals(id)))
         .go();
+    
+    // Trigger budget updates if service is available and transaction existed
+    if (_budgetUpdateService != null && transaction != null) {
+      await _budgetUpdateService!.updateBudgetOnTransactionChange(
+        transaction, 
+        TransactionChangeType.deleted
+      );
+    }
   }
 
   @override
@@ -157,7 +194,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<void> insertOrUpdateFromSync(Transaction transaction) async {
     final existing = await getTransactionBySyncId(transaction.syncId);
-      if (existing == null) {
+    
+    if (existing == null) {
       // Insert new transaction from sync
       final companion = TransactionsTableCompanion.insert(
         title: transaction.title,
@@ -189,7 +227,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
         syncId: transaction.syncId,
         version: Value(transaction.version),
       );
-      await _database.into(_database.transactionsTable).insert(companion);    } else if (transaction.version > existing.version) {
+      await _database.into(_database.transactionsTable).insert(companion);
+      
+      // Trigger budget updates for new sync transaction
+      if (_budgetUpdateService != null) {
+        await _budgetUpdateService!.updateBudgetOnTransactionChange(
+          transaction, 
+          TransactionChangeType.created
+        );
+      }
+    } else if (transaction.version > existing.version) {
       // Update with newer version
       final companion = TransactionsTableCompanion(
         id: Value(existing.id!),
@@ -220,6 +267,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
         version: Value(transaction.version),
       );
       await _database.update(_database.transactionsTable).replace(companion);
+      
+      // Trigger budget updates for updated sync transaction
+      if (_budgetUpdateService != null) {
+        await _budgetUpdateService!.updateBudgetOnTransactionChange(
+          transaction, 
+          TransactionChangeType.updated
+        );
+      }
     }
   }
 
