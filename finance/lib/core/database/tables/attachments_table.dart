@@ -22,6 +22,10 @@ class AttachmentsTable extends Table {
   BoolColumn get isUploaded => boolean().withDefault(const Constant(false))();
   BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
   
+  // Caching fields for local file management
+  BoolColumn get isCapturedFromCamera => boolean().withDefault(const Constant(false))(); // Only cache camera-captured images
+  DateTimeColumn get localCacheExpiry => dateTime().nullable()(); // When local cache should expire (30 days for camera images)
+  
   // Sync fields
   TextColumn get deviceId => text().withLength(min: 1, max: 50)();
   BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
@@ -30,4 +34,4 @@ class AttachmentsTable extends Table {
   // For conflict resolution
   TextColumn get syncId => text().unique()(); // UUID for global uniqueness
   IntColumn get version => integer().withDefault(const Constant(1))();
-} 
+}

@@ -16,6 +16,8 @@ class Attachment extends Equatable {
   final DateTime updatedAt;
   final bool isUploaded;
   final bool isDeleted;
+  final bool isCapturedFromCamera; // For cache management
+  final DateTime? localCacheExpiry; // When local cache expires (30 days for camera images)
   final String deviceId;
   final bool isSynced;
   final DateTime? lastSyncAt;
@@ -36,13 +38,14 @@ class Attachment extends Equatable {
     required this.updatedAt,
     required this.isUploaded,
     required this.isDeleted,
+    required this.isCapturedFromCamera,
+    this.localCacheExpiry,
     required this.deviceId,
     required this.isSynced,
     this.lastSyncAt,
     required this.syncId,
     required this.version,
   });
-
   Attachment copyWith({
     int? id,
     int? transactionId,
@@ -57,6 +60,8 @@ class Attachment extends Equatable {
     DateTime? updatedAt,
     bool? isUploaded,
     bool? isDeleted,
+    bool? isCapturedFromCamera,
+    DateTime? localCacheExpiry,
     String? deviceId,
     bool? isSynced,
     DateTime? lastSyncAt,
@@ -77,6 +82,8 @@ class Attachment extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       isUploaded: isUploaded ?? this.isUploaded,
       isDeleted: isDeleted ?? this.isDeleted,
+      isCapturedFromCamera: isCapturedFromCamera ?? this.isCapturedFromCamera,
+      localCacheExpiry: localCacheExpiry ?? this.localCacheExpiry,
       deviceId: deviceId ?? this.deviceId,
       isSynced: isSynced ?? this.isSynced,
       lastSyncAt: lastSyncAt ?? this.lastSyncAt,
@@ -88,6 +95,12 @@ class Attachment extends Equatable {
   bool get isImage => type == AttachmentType.image;
   bool get isDocument => type == AttachmentType.document;
   bool get isAvailable => !isDeleted && isUploaded && googleDriveLink != null;
+  
+  // Check if local file should be cached (only camera-captured images for 30 days)
+  bool get shouldCacheLocally => isCapturedFromCamera && isImage;
+  
+  // Check if local cache is still valid
+  bool get isLocalCacheValid => localCacheExpiry != null && DateTime.now().isBefore(localCacheExpiry!);
 
   @override
   List<Object?> get props => [
@@ -100,14 +113,15 @@ class Attachment extends Equatable {
         type,
         mimeType,
         fileSizeBytes,
-        createdAt,
-        updatedAt,
+        createdAt,        updatedAt,
         isUploaded,
         isDeleted,
+        isCapturedFromCamera,
+        localCacheExpiry,
         deviceId,
         isSynced,
         lastSyncAt,
         syncId,
         version,
       ];
-} 
+}

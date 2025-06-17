@@ -50,12 +50,12 @@ class FilePickerService {
           break;
       }
 
-      if (selectedFiles.isEmpty) return [];
-
-      // Process each file according to the flow
+      if (selectedFiles.isEmpty) return [];      // Process each file according to the flow
       final attachments = <Attachment>[];
       for (final file in selectedFiles) {
-        final attachment = await _processFile(file, transactionId);
+        // Determine if this is a camera-captured image
+        final isCameraImage = attachmentSource == AttachmentSourceType.camera;
+        final attachment = await _processFile(file, transactionId, isCapturedFromCamera: isCameraImage);
         attachments.add(attachment);
       }
 
@@ -117,15 +117,15 @@ class FilePickerService {
       throw Exception('Failed to select files: $e');
     }
   }
-
   /// Process file according to the flow: compress if image, upload to Google Drive
-  Future<Attachment> _processFile(File file, int transactionId) async {
+  Future<Attachment> _processFile(File file, int transactionId, {bool isCapturedFromCamera = false}) async {
     try {
       // Step 1: Compress and store file (handles image compression)
       final attachment = await _attachmentRepository.compressAndStoreFile(
         file.path,
         transactionId,
         _getFileName(file.path),
+        isCapturedFromCamera: isCapturedFromCamera,
       );
 
       // Step 2: Create attachment record in database
@@ -206,23 +206,25 @@ class FilePickerService {
 
   /// Extract filename from file path
   String _getFileName(String filePath) {
-    return filePath.split('/').last;
+    return filePath.split('/').last;  }
+
+  /// Get the best available file path for viewing an attachment (local cache or Google Drive)
+  Future<String?> getAttachmentViewPath(int attachmentId) async {
+    final attachment = await _attachmentRepository.getAttachmentById(attachmentId);
+    if (attachment == null) return null;
+
+    // Try to get local file path (handles cache validation and Google Drive download)
+    final localPath = await _attachmentRepository.getLocalFilePath(attachment);
+    if (localPath != null) {
+      return localPath;
+    }
+
+    // If no local file available, return Google Drive link for web viewing
+    return attachment.googleDriveLink;
   }
 
-  /// Get file extension
-  String _getFileExtension(String filePath) {
-    return filePath.split('.').last.toLowerCase();
+  /// Clean expired cache files (should be called periodically, e.g., on app startup)
+  Future<void> cleanExpiredCache() async {
+    await _attachmentRepository.cleanExpiredCache();
   }
-
-  /// Check if file is an image
-  bool _isImageFile(String filePath) {
-    final extension = _getFileExtension(filePath);
-    return ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp'].contains(extension);
-  }
-
-  /// Check if file is a document
-  bool _isDocumentFile(String filePath) {
-    final extension = _getFileExtension(filePath);
-    return ['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'].contains(extension);
-  }
-} 
+}

@@ -77,13 +77,14 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-assets:
-  - assets/icons/
-  - assets/images/
-  - assets/translations/
-  - assets/data/
   
-fonts:
+  assets:
+    - assets/icons/
+    - assets/images/
+    - assets/translations/
+    - assets/data/
+  
+  fonts:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Regular.ttf

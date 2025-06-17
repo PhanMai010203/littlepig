@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
@@ -9,6 +8,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:uuid/uuid.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 
 import '../../domain/entities/attachment.dart';
 import '../../domain/repositories/attachment_repository.dart';
@@ -24,7 +24,6 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   ];
 
   AttachmentRepositoryImpl(this._database, this._googleSignIn);
-
   @override
   Future<Attachment> createAttachment(Attachment attachment) async {
     final companion = AttachmentsTableCompanion.insert(
@@ -38,6 +37,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       fileSizeBytes: Value(attachment.fileSizeBytes),
       isUploaded: Value(attachment.isUploaded),
       isDeleted: Value(attachment.isDeleted),
+      isCapturedFromCamera: Value(attachment.isCapturedFromCamera),
+      localCacheExpiry: Value(attachment.localCacheExpiry),
       deviceId: attachment.deviceId,
       isSynced: Value(attachment.isSynced),
       lastSyncAt: Value(attachment.lastSyncAt),
@@ -77,7 +78,6 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final rows = await query.get();
     return rows.map(_mapRowToAttachment).toList();
   }
-
   @override
   Future<Attachment> updateAttachment(Attachment attachment) async {
     final companion = AttachmentsTableCompanion(
@@ -93,6 +93,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       updatedAt: Value(DateTime.now()),
       isUploaded: Value(attachment.isUploaded),
       isDeleted: Value(attachment.isDeleted),
+      isCapturedFromCamera: Value(attachment.isCapturedFromCamera),
+      localCacheExpiry: Value(attachment.localCacheExpiry),
       deviceId: Value(attachment.deviceId),
       isSynced: Value(attachment.isSynced),
       lastSyncAt: Value(attachment.lastSyncAt),
@@ -106,12 +108,10 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       version: attachment.version + 1,
     );
   }
-
   @override
   Future<void> deleteAttachment(int id) async {
-    await _database.delete(_database.attachmentsTable)
-      ..where((table) => table.id.equals(id))
-      ..go();
+    await (_database.delete(_database.attachmentsTable)
+      ..where((table) => table.id.equals(id))).go();
   }
 
   @override
@@ -278,9 +278,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       await createAttachment(attachment);
     }
   }
-
   @override
-  Future<Attachment> compressAndStoreFile(String filePath, int transactionId, String fileName) async {
+  Future<Attachment> compressAndStoreFile(String filePath, int transactionId, String fileName, {bool isCapturedFromCamera = false}) async {
     final file = File(filePath);
     if (!await file.exists()) {
       throw Exception('File does not exist');
@@ -309,6 +308,12 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final fileStats = await processedFile.stat();
     final syncId = _uuid.v4();
     
+    // Set cache expiry for camera-captured images (30 days)
+    DateTime? cacheExpiry;
+    if (isCapturedFromCamera && isImage) {
+      cacheExpiry = DateTime.now().add(const Duration(days: 30));
+    }
+    
     return Attachment(
       transactionId: transactionId,
       fileName: fileName,
@@ -320,6 +325,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       updatedAt: DateTime.now(),
       isUploaded: false,
       isDeleted: false,
+      isCapturedFromCamera: isCapturedFromCamera,
+      localCacheExpiry: cacheExpiry,
       deviceId: 'current-device-id', // TODO: Get actual device ID
       isSynced: false,
       syncId: syncId,
@@ -340,6 +347,121 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     }
   }
 
+  // Cache management operations
+  @override
+  Future<void> cleanExpiredCache() async {
+    final expiredAttachments = await getExpiredCacheAttachments();
+    
+    for (final attachment in expiredAttachments) {
+      if (attachment.filePath != null && await isFileExists(attachment.filePath!)) {
+        await deleteLocalFile(attachment.filePath!);
+        
+        // Update attachment to remove local file path
+        final updatedAttachment = attachment.copyWith(
+          filePath: null,
+          localCacheExpiry: null,
+        );
+        await updateAttachment(updatedAttachment);
+      }
+    }
+  }
+
+  @override
+  Future<List<Attachment>> getExpiredCacheAttachments() async {
+    final now = DateTime.now();
+    final query = _database.select(_database.attachmentsTable)
+      ..where((table) => 
+        table.isCapturedFromCamera.equals(true) & 
+        table.localCacheExpiry.isNotNull() &
+        table.localCacheExpiry.isSmallerThanValue(now) &
+        table.filePath.isNotNull() &
+        table.isDeleted.equals(false)
+      );
+    
+    final rows = await query.get();
+    return rows.map(_mapRowToAttachment).toList();
+  }
+
+  @override
+  Future<String?> getLocalFilePath(Attachment attachment) async {
+    // Check if file exists locally and cache is still valid
+    if (attachment.filePath != null && 
+        await isFileExists(attachment.filePath!) &&
+        attachment.isLocalCacheValid) {
+      return attachment.filePath;
+    }
+    
+    // If local file doesn't exist or cache expired, try to download from Google Drive
+    if (attachment.googleDriveFileId != null && attachment.isUploaded) {
+      await downloadFromGoogleDrive(attachment);
+      
+      // Return the new local path after download
+      final updatedAttachment = await getAttachmentById(attachment.id!);
+      return updatedAttachment?.filePath;
+    }
+    
+    return null;
+  }
+
+  @override
+  Future<void> downloadFromGoogleDrive(Attachment attachment) async {
+    if (attachment.googleDriveFileId == null) {
+      throw Exception('No Google Drive file ID available');
+    }
+
+    final account = _googleSignIn.currentUser;
+    if (account == null) {
+      throw Exception('Not signed in to Google');
+    }
+
+    final authHeaders = await account.authHeaders;
+    final client = authenticatedClient(
+      http.Client(),
+      AccessCredentials(
+        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '', 
+                   DateTime.now().add(const Duration(hours: 1))),
+        null,
+        _scopes,
+      ),
+    );
+
+    final driveApi = drive.DriveApi(client);
+    
+    try {
+      // Download file content
+      final media = await driveApi.files.get(
+        attachment.googleDriveFileId!,
+        downloadOptions: drive.DownloadOptions.fullMedia,
+      ) as drive.Media;
+
+      // Create local file path
+      final tempDir = await getTemporaryDirectory();
+      final localFilePath = p.join(tempDir.path, 'cache_${attachment.id}_${attachment.fileName}');
+      final localFile = File(localFilePath);
+
+      // Write downloaded content to local file
+      final sink = localFile.openWrite();
+      await media.stream.forEach(sink.add);
+      await sink.close();
+
+      // Update attachment with new local path
+      // Only set cache expiry for camera-captured images
+      DateTime? cacheExpiry;
+      if (attachment.shouldCacheLocally) {
+        cacheExpiry = DateTime.now().add(const Duration(days: 30));
+      }
+
+      final updatedAttachment = attachment.copyWith(
+        filePath: localFilePath,
+        localCacheExpiry: cacheExpiry,
+      );
+      
+      await updateAttachment(updatedAttachment);
+      
+    } finally {
+      client.close();
+    }
+  }
   Attachment _mapRowToAttachment(AttachmentsTableData row) {
     return Attachment(
       id: row.id,
@@ -355,6 +477,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       updatedAt: row.updatedAt,
       isUploaded: row.isUploaded,
       isDeleted: row.isDeleted,
+      isCapturedFromCamera: row.isCapturedFromCamera,
+      localCacheExpiry: row.localCacheExpiry,
       deviceId: row.deviceId,
       isSynced: row.isSynced,
       lastSyncAt: row.lastSyncAt,
@@ -376,4 +500,4 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     
     return AttachmentType.other;
   }
-} 
+}

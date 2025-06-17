@@ -32,9 +32,8 @@ class AppDatabase extends _$AppDatabase {
   
   // Constructor for testing with in-memory database
   AppDatabase.forTesting(QueryExecutor executor) : super(executor);
-
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -50,9 +49,14 @@ class AppDatabase extends _$AppDatabase {
           // Create attachments table
           await m.createTable(attachmentsTable);
         }
+        if (from < 3) {
+          // Add cache management fields to attachments table
+          await customStatement('ALTER TABLE attachments ADD COLUMN is_captured_from_camera BOOLEAN DEFAULT FALSE');
+          await customStatement('ALTER TABLE attachments ADD COLUMN local_cache_expiry DATETIME');
+        }
       },
     );
-  }  /// Insert default categories and accounts
+  }/// Insert default categories and accounts
   Future<void> _insertDefaultData() async {
     final deviceId = 'default-device';
     

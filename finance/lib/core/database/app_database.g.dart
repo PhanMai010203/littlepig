@@ -3084,6 +3084,22 @@ class $AttachmentsTableTable extends AttachmentsTable
       defaultConstraints:
           GeneratedColumn.constraintIsAlways('CHECK ("is_deleted" IN (0, 1))'),
       defaultValue: const Constant(false));
+  static const VerificationMeta _isCapturedFromCameraMeta =
+      const VerificationMeta('isCapturedFromCamera');
+  @override
+  late final GeneratedColumn<bool> isCapturedFromCamera = GeneratedColumn<bool>(
+      'is_captured_from_camera', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("is_captured_from_camera" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  static const VerificationMeta _localCacheExpiryMeta =
+      const VerificationMeta('localCacheExpiry');
+  @override
+  late final GeneratedColumn<DateTime> localCacheExpiry =
+      GeneratedColumn<DateTime>('local_cache_expiry', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _deviceIdMeta =
       const VerificationMeta('deviceId');
   @override
@@ -3139,6 +3155,8 @@ class $AttachmentsTableTable extends AttachmentsTable
         updatedAt,
         isUploaded,
         isDeleted,
+        isCapturedFromCamera,
+        localCacheExpiry,
         deviceId,
         isSynced,
         lastSyncAt,
@@ -3223,6 +3241,18 @@ class $AttachmentsTableTable extends AttachmentsTable
       context.handle(_isDeletedMeta,
           isDeleted.isAcceptableOrUnknown(data['is_deleted']!, _isDeletedMeta));
     }
+    if (data.containsKey('is_captured_from_camera')) {
+      context.handle(
+          _isCapturedFromCameraMeta,
+          isCapturedFromCamera.isAcceptableOrUnknown(
+              data['is_captured_from_camera']!, _isCapturedFromCameraMeta));
+    }
+    if (data.containsKey('local_cache_expiry')) {
+      context.handle(
+          _localCacheExpiryMeta,
+          localCacheExpiry.isAcceptableOrUnknown(
+              data['local_cache_expiry']!, _localCacheExpiryMeta));
+    }
     if (data.containsKey('device_id')) {
       context.handle(_deviceIdMeta,
           deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
@@ -3284,6 +3314,10 @@ class $AttachmentsTableTable extends AttachmentsTable
           .read(DriftSqlType.bool, data['${effectivePrefix}is_uploaded'])!,
       isDeleted: attachedDatabase.typeMapping
           .read(DriftSqlType.bool, data['${effectivePrefix}is_deleted'])!,
+      isCapturedFromCamera: attachedDatabase.typeMapping.read(DriftSqlType.bool,
+          data['${effectivePrefix}is_captured_from_camera'])!,
+      localCacheExpiry: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}local_cache_expiry']),
       deviceId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
       isSynced: attachedDatabase.typeMapping
@@ -3318,6 +3352,8 @@ class AttachmentsTableData extends DataClass
   final DateTime updatedAt;
   final bool isUploaded;
   final bool isDeleted;
+  final bool isCapturedFromCamera;
+  final DateTime? localCacheExpiry;
   final String deviceId;
   final bool isSynced;
   final DateTime? lastSyncAt;
@@ -3337,6 +3373,8 @@ class AttachmentsTableData extends DataClass
       required this.updatedAt,
       required this.isUploaded,
       required this.isDeleted,
+      required this.isCapturedFromCamera,
+      this.localCacheExpiry,
       required this.deviceId,
       required this.isSynced,
       this.lastSyncAt,
@@ -3368,6 +3406,10 @@ class AttachmentsTableData extends DataClass
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['is_uploaded'] = Variable<bool>(isUploaded);
     map['is_deleted'] = Variable<bool>(isDeleted);
+    map['is_captured_from_camera'] = Variable<bool>(isCapturedFromCamera);
+    if (!nullToAbsent || localCacheExpiry != null) {
+      map['local_cache_expiry'] = Variable<DateTime>(localCacheExpiry);
+    }
     map['device_id'] = Variable<String>(deviceId);
     map['is_synced'] = Variable<bool>(isSynced);
     if (!nullToAbsent || lastSyncAt != null) {
@@ -3403,6 +3445,10 @@ class AttachmentsTableData extends DataClass
       updatedAt: Value(updatedAt),
       isUploaded: Value(isUploaded),
       isDeleted: Value(isDeleted),
+      isCapturedFromCamera: Value(isCapturedFromCamera),
+      localCacheExpiry: localCacheExpiry == null && nullToAbsent
+          ? const Value.absent()
+          : Value(localCacheExpiry),
       deviceId: Value(deviceId),
       isSynced: Value(isSynced),
       lastSyncAt: lastSyncAt == null && nullToAbsent
@@ -3431,6 +3477,10 @@ class AttachmentsTableData extends DataClass
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       isUploaded: serializer.fromJson<bool>(json['isUploaded']),
       isDeleted: serializer.fromJson<bool>(json['isDeleted']),
+      isCapturedFromCamera:
+          serializer.fromJson<bool>(json['isCapturedFromCamera']),
+      localCacheExpiry:
+          serializer.fromJson<DateTime?>(json['localCacheExpiry']),
       deviceId: serializer.fromJson<String>(json['deviceId']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
@@ -3455,6 +3505,8 @@ class AttachmentsTableData extends DataClass
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'isUploaded': serializer.toJson<bool>(isUploaded),
       'isDeleted': serializer.toJson<bool>(isDeleted),
+      'isCapturedFromCamera': serializer.toJson<bool>(isCapturedFromCamera),
+      'localCacheExpiry': serializer.toJson<DateTime?>(localCacheExpiry),
       'deviceId': serializer.toJson<String>(deviceId),
       'isSynced': serializer.toJson<bool>(isSynced),
       'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
@@ -3477,6 +3529,8 @@ class AttachmentsTableData extends DataClass
           DateTime? updatedAt,
           bool? isUploaded,
           bool? isDeleted,
+          bool? isCapturedFromCamera,
+          Value<DateTime?> localCacheExpiry = const Value.absent(),
           String? deviceId,
           bool? isSynced,
           Value<DateTime?> lastSyncAt = const Value.absent(),
@@ -3501,6 +3555,10 @@ class AttachmentsTableData extends DataClass
         updatedAt: updatedAt ?? this.updatedAt,
         isUploaded: isUploaded ?? this.isUploaded,
         isDeleted: isDeleted ?? this.isDeleted,
+        isCapturedFromCamera: isCapturedFromCamera ?? this.isCapturedFromCamera,
+        localCacheExpiry: localCacheExpiry.present
+            ? localCacheExpiry.value
+            : this.localCacheExpiry,
         deviceId: deviceId ?? this.deviceId,
         isSynced: isSynced ?? this.isSynced,
         lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
@@ -3531,6 +3589,12 @@ class AttachmentsTableData extends DataClass
       isUploaded:
           data.isUploaded.present ? data.isUploaded.value : this.isUploaded,
       isDeleted: data.isDeleted.present ? data.isDeleted.value : this.isDeleted,
+      isCapturedFromCamera: data.isCapturedFromCamera.present
+          ? data.isCapturedFromCamera.value
+          : this.isCapturedFromCamera,
+      localCacheExpiry: data.localCacheExpiry.present
+          ? data.localCacheExpiry.value
+          : this.localCacheExpiry,
       deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
       isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
       lastSyncAt:
@@ -3556,6 +3620,8 @@ class AttachmentsTableData extends DataClass
           ..write('updatedAt: $updatedAt, ')
           ..write('isUploaded: $isUploaded, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('isCapturedFromCamera: $isCapturedFromCamera, ')
+          ..write('localCacheExpiry: $localCacheExpiry, ')
           ..write('deviceId: $deviceId, ')
           ..write('isSynced: $isSynced, ')
           ..write('lastSyncAt: $lastSyncAt, ')
@@ -3580,6 +3646,8 @@ class AttachmentsTableData extends DataClass
       updatedAt,
       isUploaded,
       isDeleted,
+      isCapturedFromCamera,
+      localCacheExpiry,
       deviceId,
       isSynced,
       lastSyncAt,
@@ -3602,6 +3670,8 @@ class AttachmentsTableData extends DataClass
           other.updatedAt == this.updatedAt &&
           other.isUploaded == this.isUploaded &&
           other.isDeleted == this.isDeleted &&
+          other.isCapturedFromCamera == this.isCapturedFromCamera &&
+          other.localCacheExpiry == this.localCacheExpiry &&
           other.deviceId == this.deviceId &&
           other.isSynced == this.isSynced &&
           other.lastSyncAt == this.lastSyncAt &&
@@ -3623,6 +3693,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
   final Value<DateTime> updatedAt;
   final Value<bool> isUploaded;
   final Value<bool> isDeleted;
+  final Value<bool> isCapturedFromCamera;
+  final Value<DateTime?> localCacheExpiry;
   final Value<String> deviceId;
   final Value<bool> isSynced;
   final Value<DateTime?> lastSyncAt;
@@ -3642,6 +3714,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     this.updatedAt = const Value.absent(),
     this.isUploaded = const Value.absent(),
     this.isDeleted = const Value.absent(),
+    this.isCapturedFromCamera = const Value.absent(),
+    this.localCacheExpiry = const Value.absent(),
     this.deviceId = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.lastSyncAt = const Value.absent(),
@@ -3662,6 +3736,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     this.updatedAt = const Value.absent(),
     this.isUploaded = const Value.absent(),
     this.isDeleted = const Value.absent(),
+    this.isCapturedFromCamera = const Value.absent(),
+    this.localCacheExpiry = const Value.absent(),
     required String deviceId,
     this.isSynced = const Value.absent(),
     this.lastSyncAt = const Value.absent(),
@@ -3686,6 +3762,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     Expression<DateTime>? updatedAt,
     Expression<bool>? isUploaded,
     Expression<bool>? isDeleted,
+    Expression<bool>? isCapturedFromCamera,
+    Expression<DateTime>? localCacheExpiry,
     Expression<String>? deviceId,
     Expression<bool>? isSynced,
     Expression<DateTime>? lastSyncAt,
@@ -3706,6 +3784,9 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
       if (updatedAt != null) 'updated_at': updatedAt,
       if (isUploaded != null) 'is_uploaded': isUploaded,
       if (isDeleted != null) 'is_deleted': isDeleted,
+      if (isCapturedFromCamera != null)
+        'is_captured_from_camera': isCapturedFromCamera,
+      if (localCacheExpiry != null) 'local_cache_expiry': localCacheExpiry,
       if (deviceId != null) 'device_id': deviceId,
       if (isSynced != null) 'is_synced': isSynced,
       if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
@@ -3728,6 +3809,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
       Value<DateTime>? updatedAt,
       Value<bool>? isUploaded,
       Value<bool>? isDeleted,
+      Value<bool>? isCapturedFromCamera,
+      Value<DateTime?>? localCacheExpiry,
       Value<String>? deviceId,
       Value<bool>? isSynced,
       Value<DateTime?>? lastSyncAt,
@@ -3747,6 +3830,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
       updatedAt: updatedAt ?? this.updatedAt,
       isUploaded: isUploaded ?? this.isUploaded,
       isDeleted: isDeleted ?? this.isDeleted,
+      isCapturedFromCamera: isCapturedFromCamera ?? this.isCapturedFromCamera,
+      localCacheExpiry: localCacheExpiry ?? this.localCacheExpiry,
       deviceId: deviceId ?? this.deviceId,
       isSynced: isSynced ?? this.isSynced,
       lastSyncAt: lastSyncAt ?? this.lastSyncAt,
@@ -3797,6 +3882,13 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     if (isDeleted.present) {
       map['is_deleted'] = Variable<bool>(isDeleted.value);
     }
+    if (isCapturedFromCamera.present) {
+      map['is_captured_from_camera'] =
+          Variable<bool>(isCapturedFromCamera.value);
+    }
+    if (localCacheExpiry.present) {
+      map['local_cache_expiry'] = Variable<DateTime>(localCacheExpiry.value);
+    }
     if (deviceId.present) {
       map['device_id'] = Variable<String>(deviceId.value);
     }
@@ -3831,6 +3923,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
           ..write('updatedAt: $updatedAt, ')
           ..write('isUploaded: $isUploaded, ')
           ..write('isDeleted: $isDeleted, ')
+          ..write('isCapturedFromCamera: $isCapturedFromCamera, ')
+          ..write('localCacheExpiry: $localCacheExpiry, ')
           ..write('deviceId: $deviceId, ')
           ..write('isSynced: $isSynced, ')
           ..write('lastSyncAt: $lastSyncAt, ')
@@ -5882,6 +5976,8 @@ typedef $$AttachmentsTableTableCreateCompanionBuilder
   Value<DateTime> updatedAt,
   Value<bool> isUploaded,
   Value<bool> isDeleted,
+  Value<bool> isCapturedFromCamera,
+  Value<DateTime?> localCacheExpiry,
   required String deviceId,
   Value<bool> isSynced,
   Value<DateTime?> lastSyncAt,
@@ -5903,6 +5999,8 @@ typedef $$AttachmentsTableTableUpdateCompanionBuilder
   Value<DateTime> updatedAt,
   Value<bool> isUploaded,
   Value<bool> isDeleted,
+  Value<bool> isCapturedFromCamera,
+  Value<DateTime?> localCacheExpiry,
   Value<String> deviceId,
   Value<bool> isSynced,
   Value<DateTime?> lastSyncAt,
@@ -5978,6 +6076,14 @@ class $$AttachmentsTableTableFilterComposer
 
   ColumnFilters<bool> get isDeleted => $composableBuilder(
       column: $table.isDeleted, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isCapturedFromCamera => $composableBuilder(
+      column: $table.isCapturedFromCamera,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get localCacheExpiry => $composableBuilder(
+      column: $table.localCacheExpiry,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get deviceId => $composableBuilder(
       column: $table.deviceId, builder: (column) => ColumnFilters(column));
@@ -6063,6 +6169,14 @@ class $$AttachmentsTableTableOrderingComposer
   ColumnOrderings<bool> get isDeleted => $composableBuilder(
       column: $table.isDeleted, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get isCapturedFromCamera => $composableBuilder(
+      column: $table.isCapturedFromCamera,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get localCacheExpiry => $composableBuilder(
+      column: $table.localCacheExpiry,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get deviceId => $composableBuilder(
       column: $table.deviceId, builder: (column) => ColumnOrderings(column));
 
@@ -6144,6 +6258,12 @@ class $$AttachmentsTableTableAnnotationComposer
   GeneratedColumn<bool> get isDeleted =>
       $composableBuilder(column: $table.isDeleted, builder: (column) => column);
 
+  GeneratedColumn<bool> get isCapturedFromCamera => $composableBuilder(
+      column: $table.isCapturedFromCamera, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get localCacheExpiry => $composableBuilder(
+      column: $table.localCacheExpiry, builder: (column) => column);
+
   GeneratedColumn<String> get deviceId =>
       $composableBuilder(column: $table.deviceId, builder: (column) => column);
 
@@ -6218,6 +6338,8 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             Value<DateTime> updatedAt = const Value.absent(),
             Value<bool> isUploaded = const Value.absent(),
             Value<bool> isDeleted = const Value.absent(),
+            Value<bool> isCapturedFromCamera = const Value.absent(),
+            Value<DateTime?> localCacheExpiry = const Value.absent(),
             Value<String> deviceId = const Value.absent(),
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime?> lastSyncAt = const Value.absent(),
@@ -6238,6 +6360,8 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             updatedAt: updatedAt,
             isUploaded: isUploaded,
             isDeleted: isDeleted,
+            isCapturedFromCamera: isCapturedFromCamera,
+            localCacheExpiry: localCacheExpiry,
             deviceId: deviceId,
             isSynced: isSynced,
             lastSyncAt: lastSyncAt,
@@ -6258,6 +6382,8 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             Value<DateTime> updatedAt = const Value.absent(),
             Value<bool> isUploaded = const Value.absent(),
             Value<bool> isDeleted = const Value.absent(),
+            Value<bool> isCapturedFromCamera = const Value.absent(),
+            Value<DateTime?> localCacheExpiry = const Value.absent(),
             required String deviceId,
             Value<bool> isSynced = const Value.absent(),
             Value<DateTime?> lastSyncAt = const Value.absent(),
@@ -6278,6 +6404,8 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             updatedAt: updatedAt,
             isUploaded: isUploaded,
             isDeleted: isDeleted,
+            isCapturedFromCamera: isCapturedFromCamera,
+            localCacheExpiry: localCacheExpiry,
             deviceId: deviceId,
             isSynced: isSynced,
             lastSyncAt: lastSyncAt,

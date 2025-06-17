@@ -308,12 +308,12 @@ class GoogleDriveSyncService implements SyncService {
       
       // Open the temporary database
       final tempDatabase = AppDatabase.fromFile(tempFile);
-      
-      // Get all data from temporary database
+        // Get all data from temporary database
       final remoteTxns = await tempDatabase.select(tempDatabase.transactionsTable).get();
       final remoteCategories = await tempDatabase.select(tempDatabase.categoriesTable).get();
       final remoteAccounts = await tempDatabase.select(tempDatabase.accountsTable).get();
       final remoteBudgets = await tempDatabase.select(tempDatabase.budgetsTable).get();
+      final remoteAttachments = await tempDatabase.select(tempDatabase.attachmentsTable).get();
       
       await tempDatabase.close();
       
@@ -488,6 +488,58 @@ class GoogleDriveSyncService implements SyncService {
             ));
         }
       }
+      
+      // Merge attachments - only sync the metadata, not the actual files
+      for (final remoteAttachment in remoteAttachments) {
+        final localAttachment = await (_database.select(_database.attachmentsTable)
+          ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
+          .getSingleOrNull();
+        
+        if (localAttachment == null) {
+          // Insert new attachment (only metadata - files remain on individual devices or Google Drive)
+          await _database.into(_database.attachmentsTable).insert(
+            AttachmentsTableCompanion.insert(
+              transactionId: remoteAttachment.transactionId,
+              fileName: remoteAttachment.fileName,
+              filePath: const Value(null), // Don't sync local file paths
+              googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
+              googleDriveLink: Value(remoteAttachment.googleDriveLink),
+              type: remoteAttachment.type,
+              mimeType: Value(remoteAttachment.mimeType),
+              fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
+              isUploaded: Value(remoteAttachment.isUploaded),
+              isDeleted: Value(remoteAttachment.isDeleted),
+              isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
+              localCacheExpiry: const Value(null), // Don't sync cache expiry
+              deviceId: remoteAttachment.deviceId,
+              isSynced: const Value(true),
+              lastSyncAt: Value(remoteAttachment.lastSyncAt),
+              syncId: remoteAttachment.syncId,
+              version: Value(remoteAttachment.version),
+            ),
+          );
+        } else if (remoteAttachment.version > localAttachment.version || 
+                  (remoteAttachment.version == localAttachment.version && remoteAttachment.updatedAt.isAfter(localAttachment.updatedAt))) {
+          // Update with newer version (preserve local file path and cache expiry)
+          await (_database.update(_database.attachmentsTable)
+            ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
+            .write(AttachmentsTableCompanion(
+              fileName: Value(remoteAttachment.fileName),
+              googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
+              googleDriveLink: Value(remoteAttachment.googleDriveLink),
+              type: Value(remoteAttachment.type),
+              mimeType: Value(remoteAttachment.mimeType),
+              fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
+              isUploaded: Value(remoteAttachment.isUploaded),
+              isDeleted: Value(remoteAttachment.isDeleted),
+              isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
+              updatedAt: Value(remoteAttachment.updatedAt),
+              isSynced: const Value(true),
+              lastSyncAt: Value(remoteAttachment.lastSyncAt),
+              version: Value(remoteAttachment.version),
+            ));
+        }
+      }
     } finally {
       // Clean up temporary file
       if (await tempFile.exists()) {
@@ -495,7 +547,6 @@ class GoogleDriveSyncService implements SyncService {
       }
     }
   }
-
   Future<void> _markAllAsSynced() async {
     final now = DateTime.now();
     
@@ -526,6 +577,14 @@ class GoogleDriveSyncService implements SyncService {
     // Mark budgets as synced
     await _database.update(_database.budgetsTable).write(
       BudgetsTableCompanion(
+        isSynced: const Value(true),
+        lastSyncAt: Value(now),
+      ),
+    );
+    
+    // Mark attachments as synced
+    await _database.update(_database.attachmentsTable).write(
+      AttachmentsTableCompanion(
         isSynced: const Value(true),
         lastSyncAt: Value(now),
       ),
