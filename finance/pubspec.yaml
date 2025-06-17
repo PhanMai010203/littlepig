@@ -29,10 +29,12 @@ dependencies:
   injectable: ^2.3.2  # Storage & Database
   shared_preferences: ^2.2.2
   drift: ^2.14.1
+  sqlite3: ^2.1.0
   sqlite3_flutter_libs: ^0.5.15
   path_provider: ^2.1.1
   path: ^1.8.3
   uuid: ^4.2.1
+  crypto: ^3.0.3
   
   # Google Drive Sync & Authentication
   google_sign_in: ^6.1.5

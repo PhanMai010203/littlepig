@@ -5009,6 +5009,857 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
   }
 }
 
+class $SyncEventLogTableTable extends SyncEventLogTable
+    with TableInfo<$SyncEventLogTableTable, SyncEventLogData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncEventLogTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _eventIdMeta =
+      const VerificationMeta('eventId');
+  @override
+  late final GeneratedColumn<String> eventId = GeneratedColumn<String>(
+      'event_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _deviceIdMeta =
+      const VerificationMeta('deviceId');
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+      'device_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _tableNameFieldMeta =
+      const VerificationMeta('tableNameField');
+  @override
+  late final GeneratedColumn<String> tableNameField = GeneratedColumn<String>(
+      'table_name_field', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _recordIdMeta =
+      const VerificationMeta('recordId');
+  @override
+  late final GeneratedColumn<String> recordId = GeneratedColumn<String>(
+      'record_id', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _operationMeta =
+      const VerificationMeta('operation');
+  @override
+  late final GeneratedColumn<String> operation = GeneratedColumn<String>(
+      'operation', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _dataMeta = const VerificationMeta('data');
+  @override
+  late final GeneratedColumn<String> data = GeneratedColumn<String>(
+      'data', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _timestampMeta =
+      const VerificationMeta('timestamp');
+  @override
+  late final GeneratedColumn<DateTime> timestamp = GeneratedColumn<DateTime>(
+      'timestamp', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _sequenceNumberMeta =
+      const VerificationMeta('sequenceNumber');
+  @override
+  late final GeneratedColumn<int> sequenceNumber = GeneratedColumn<int>(
+      'sequence_number', aliasedName, false,
+      type: DriftSqlType.int, requiredDuringInsert: true);
+  static const VerificationMeta _hashMeta = const VerificationMeta('hash');
+  @override
+  late final GeneratedColumn<String> hash = GeneratedColumn<String>(
+      'hash', aliasedName, false,
+      type: DriftSqlType.string, requiredDuringInsert: true);
+  static const VerificationMeta _isSyncedMeta =
+      const VerificationMeta('isSynced');
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+      'is_synced', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
+      defaultValue: const Constant(false));
+  @override
+  List<GeneratedColumn> get $columns => [
+        id,
+        eventId,
+        deviceId,
+        tableNameField,
+        recordId,
+        operation,
+        data,
+        timestamp,
+        sequenceNumber,
+        hash,
+        isSynced
+      ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_event_log';
+  @override
+  VerificationContext validateIntegrity(Insertable<SyncEventLogData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('event_id')) {
+      context.handle(_eventIdMeta,
+          eventId.isAcceptableOrUnknown(data['event_id']!, _eventIdMeta));
+    } else if (isInserting) {
+      context.missing(_eventIdMeta);
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(_deviceIdMeta,
+          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('table_name_field')) {
+      context.handle(
+          _tableNameFieldMeta,
+          tableNameField.isAcceptableOrUnknown(
+              data['table_name_field']!, _tableNameFieldMeta));
+    } else if (isInserting) {
+      context.missing(_tableNameFieldMeta);
+    }
+    if (data.containsKey('record_id')) {
+      context.handle(_recordIdMeta,
+          recordId.isAcceptableOrUnknown(data['record_id']!, _recordIdMeta));
+    } else if (isInserting) {
+      context.missing(_recordIdMeta);
+    }
+    if (data.containsKey('operation')) {
+      context.handle(_operationMeta,
+          operation.isAcceptableOrUnknown(data['operation']!, _operationMeta));
+    } else if (isInserting) {
+      context.missing(_operationMeta);
+    }
+    if (data.containsKey('data')) {
+      context.handle(
+          _dataMeta, this.data.isAcceptableOrUnknown(data['data']!, _dataMeta));
+    } else if (isInserting) {
+      context.missing(_dataMeta);
+    }
+    if (data.containsKey('timestamp')) {
+      context.handle(_timestampMeta,
+          timestamp.isAcceptableOrUnknown(data['timestamp']!, _timestampMeta));
+    } else if (isInserting) {
+      context.missing(_timestampMeta);
+    }
+    if (data.containsKey('sequence_number')) {
+      context.handle(
+          _sequenceNumberMeta,
+          sequenceNumber.isAcceptableOrUnknown(
+              data['sequence_number']!, _sequenceNumberMeta));
+    } else if (isInserting) {
+      context.missing(_sequenceNumberMeta);
+    }
+    if (data.containsKey('hash')) {
+      context.handle(
+          _hashMeta, hash.isAcceptableOrUnknown(data['hash']!, _hashMeta));
+    } else if (isInserting) {
+      context.missing(_hashMeta);
+    }
+    if (data.containsKey('is_synced')) {
+      context.handle(_isSyncedMeta,
+          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncEventLogData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncEventLogData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      eventId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}event_id'])!,
+      deviceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
+      tableNameField: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}table_name_field'])!,
+      recordId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}record_id'])!,
+      operation: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}operation'])!,
+      data: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}data'])!,
+      timestamp: attachedDatabase.typeMapping
+          .read(DriftSqlType.dateTime, data['${effectivePrefix}timestamp'])!,
+      sequenceNumber: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}sequence_number'])!,
+      hash: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}hash'])!,
+      isSynced: attachedDatabase.typeMapping
+          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
+    );
+  }
+
+  @override
+  $SyncEventLogTableTable createAlias(String alias) {
+    return $SyncEventLogTableTable(attachedDatabase, alias);
+  }
+}
+
+class SyncEventLogData extends DataClass
+    implements Insertable<SyncEventLogData> {
+  final int id;
+  final String eventId;
+  final String deviceId;
+  final String tableNameField;
+  final String recordId;
+  final String operation;
+  final String data;
+  final DateTime timestamp;
+  final int sequenceNumber;
+  final String hash;
+  final bool isSynced;
+  const SyncEventLogData(
+      {required this.id,
+      required this.eventId,
+      required this.deviceId,
+      required this.tableNameField,
+      required this.recordId,
+      required this.operation,
+      required this.data,
+      required this.timestamp,
+      required this.sequenceNumber,
+      required this.hash,
+      required this.isSynced});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['event_id'] = Variable<String>(eventId);
+    map['device_id'] = Variable<String>(deviceId);
+    map['table_name_field'] = Variable<String>(tableNameField);
+    map['record_id'] = Variable<String>(recordId);
+    map['operation'] = Variable<String>(operation);
+    map['data'] = Variable<String>(data);
+    map['timestamp'] = Variable<DateTime>(timestamp);
+    map['sequence_number'] = Variable<int>(sequenceNumber);
+    map['hash'] = Variable<String>(hash);
+    map['is_synced'] = Variable<bool>(isSynced);
+    return map;
+  }
+
+  SyncEventLogTableCompanion toCompanion(bool nullToAbsent) {
+    return SyncEventLogTableCompanion(
+      id: Value(id),
+      eventId: Value(eventId),
+      deviceId: Value(deviceId),
+      tableNameField: Value(tableNameField),
+      recordId: Value(recordId),
+      operation: Value(operation),
+      data: Value(data),
+      timestamp: Value(timestamp),
+      sequenceNumber: Value(sequenceNumber),
+      hash: Value(hash),
+      isSynced: Value(isSynced),
+    );
+  }
+
+  factory SyncEventLogData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncEventLogData(
+      id: serializer.fromJson<int>(json['id']),
+      eventId: serializer.fromJson<String>(json['eventId']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      tableNameField: serializer.fromJson<String>(json['tableNameField']),
+      recordId: serializer.fromJson<String>(json['recordId']),
+      operation: serializer.fromJson<String>(json['operation']),
+      data: serializer.fromJson<String>(json['data']),
+      timestamp: serializer.fromJson<DateTime>(json['timestamp']),
+      sequenceNumber: serializer.fromJson<int>(json['sequenceNumber']),
+      hash: serializer.fromJson<String>(json['hash']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'eventId': serializer.toJson<String>(eventId),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'tableNameField': serializer.toJson<String>(tableNameField),
+      'recordId': serializer.toJson<String>(recordId),
+      'operation': serializer.toJson<String>(operation),
+      'data': serializer.toJson<String>(data),
+      'timestamp': serializer.toJson<DateTime>(timestamp),
+      'sequenceNumber': serializer.toJson<int>(sequenceNumber),
+      'hash': serializer.toJson<String>(hash),
+      'isSynced': serializer.toJson<bool>(isSynced),
+    };
+  }
+
+  SyncEventLogData copyWith(
+          {int? id,
+          String? eventId,
+          String? deviceId,
+          String? tableNameField,
+          String? recordId,
+          String? operation,
+          String? data,
+          DateTime? timestamp,
+          int? sequenceNumber,
+          String? hash,
+          bool? isSynced}) =>
+      SyncEventLogData(
+        id: id ?? this.id,
+        eventId: eventId ?? this.eventId,
+        deviceId: deviceId ?? this.deviceId,
+        tableNameField: tableNameField ?? this.tableNameField,
+        recordId: recordId ?? this.recordId,
+        operation: operation ?? this.operation,
+        data: data ?? this.data,
+        timestamp: timestamp ?? this.timestamp,
+        sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+        hash: hash ?? this.hash,
+        isSynced: isSynced ?? this.isSynced,
+      );
+  SyncEventLogData copyWithCompanion(SyncEventLogTableCompanion data) {
+    return SyncEventLogData(
+      id: data.id.present ? data.id.value : this.id,
+      eventId: data.eventId.present ? data.eventId.value : this.eventId,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      tableNameField: data.tableNameField.present
+          ? data.tableNameField.value
+          : this.tableNameField,
+      recordId: data.recordId.present ? data.recordId.value : this.recordId,
+      operation: data.operation.present ? data.operation.value : this.operation,
+      data: data.data.present ? data.data.value : this.data,
+      timestamp: data.timestamp.present ? data.timestamp.value : this.timestamp,
+      sequenceNumber: data.sequenceNumber.present
+          ? data.sequenceNumber.value
+          : this.sequenceNumber,
+      hash: data.hash.present ? data.hash.value : this.hash,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncEventLogData(')
+          ..write('id: $id, ')
+          ..write('eventId: $eventId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('tableNameField: $tableNameField, ')
+          ..write('recordId: $recordId, ')
+          ..write('operation: $operation, ')
+          ..write('data: $data, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('sequenceNumber: $sequenceNumber, ')
+          ..write('hash: $hash, ')
+          ..write('isSynced: $isSynced')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(id, eventId, deviceId, tableNameField,
+      recordId, operation, data, timestamp, sequenceNumber, hash, isSynced);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncEventLogData &&
+          other.id == this.id &&
+          other.eventId == this.eventId &&
+          other.deviceId == this.deviceId &&
+          other.tableNameField == this.tableNameField &&
+          other.recordId == this.recordId &&
+          other.operation == this.operation &&
+          other.data == this.data &&
+          other.timestamp == this.timestamp &&
+          other.sequenceNumber == this.sequenceNumber &&
+          other.hash == this.hash &&
+          other.isSynced == this.isSynced);
+}
+
+class SyncEventLogTableCompanion extends UpdateCompanion<SyncEventLogData> {
+  final Value<int> id;
+  final Value<String> eventId;
+  final Value<String> deviceId;
+  final Value<String> tableNameField;
+  final Value<String> recordId;
+  final Value<String> operation;
+  final Value<String> data;
+  final Value<DateTime> timestamp;
+  final Value<int> sequenceNumber;
+  final Value<String> hash;
+  final Value<bool> isSynced;
+  const SyncEventLogTableCompanion({
+    this.id = const Value.absent(),
+    this.eventId = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.tableNameField = const Value.absent(),
+    this.recordId = const Value.absent(),
+    this.operation = const Value.absent(),
+    this.data = const Value.absent(),
+    this.timestamp = const Value.absent(),
+    this.sequenceNumber = const Value.absent(),
+    this.hash = const Value.absent(),
+    this.isSynced = const Value.absent(),
+  });
+  SyncEventLogTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String eventId,
+    required String deviceId,
+    required String tableNameField,
+    required String recordId,
+    required String operation,
+    required String data,
+    required DateTime timestamp,
+    required int sequenceNumber,
+    required String hash,
+    this.isSynced = const Value.absent(),
+  })  : eventId = Value(eventId),
+        deviceId = Value(deviceId),
+        tableNameField = Value(tableNameField),
+        recordId = Value(recordId),
+        operation = Value(operation),
+        data = Value(data),
+        timestamp = Value(timestamp),
+        sequenceNumber = Value(sequenceNumber),
+        hash = Value(hash);
+  static Insertable<SyncEventLogData> custom({
+    Expression<int>? id,
+    Expression<String>? eventId,
+    Expression<String>? deviceId,
+    Expression<String>? tableNameField,
+    Expression<String>? recordId,
+    Expression<String>? operation,
+    Expression<String>? data,
+    Expression<DateTime>? timestamp,
+    Expression<int>? sequenceNumber,
+    Expression<String>? hash,
+    Expression<bool>? isSynced,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (eventId != null) 'event_id': eventId,
+      if (deviceId != null) 'device_id': deviceId,
+      if (tableNameField != null) 'table_name_field': tableNameField,
+      if (recordId != null) 'record_id': recordId,
+      if (operation != null) 'operation': operation,
+      if (data != null) 'data': data,
+      if (timestamp != null) 'timestamp': timestamp,
+      if (sequenceNumber != null) 'sequence_number': sequenceNumber,
+      if (hash != null) 'hash': hash,
+      if (isSynced != null) 'is_synced': isSynced,
+    });
+  }
+
+  SyncEventLogTableCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? eventId,
+      Value<String>? deviceId,
+      Value<String>? tableNameField,
+      Value<String>? recordId,
+      Value<String>? operation,
+      Value<String>? data,
+      Value<DateTime>? timestamp,
+      Value<int>? sequenceNumber,
+      Value<String>? hash,
+      Value<bool>? isSynced}) {
+    return SyncEventLogTableCompanion(
+      id: id ?? this.id,
+      eventId: eventId ?? this.eventId,
+      deviceId: deviceId ?? this.deviceId,
+      tableNameField: tableNameField ?? this.tableNameField,
+      recordId: recordId ?? this.recordId,
+      operation: operation ?? this.operation,
+      data: data ?? this.data,
+      timestamp: timestamp ?? this.timestamp,
+      sequenceNumber: sequenceNumber ?? this.sequenceNumber,
+      hash: hash ?? this.hash,
+      isSynced: isSynced ?? this.isSynced,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (eventId.present) {
+      map['event_id'] = Variable<String>(eventId.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (tableNameField.present) {
+      map['table_name_field'] = Variable<String>(tableNameField.value);
+    }
+    if (recordId.present) {
+      map['record_id'] = Variable<String>(recordId.value);
+    }
+    if (operation.present) {
+      map['operation'] = Variable<String>(operation.value);
+    }
+    if (data.present) {
+      map['data'] = Variable<String>(data.value);
+    }
+    if (timestamp.present) {
+      map['timestamp'] = Variable<DateTime>(timestamp.value);
+    }
+    if (sequenceNumber.present) {
+      map['sequence_number'] = Variable<int>(sequenceNumber.value);
+    }
+    if (hash.present) {
+      map['hash'] = Variable<String>(hash.value);
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncEventLogTableCompanion(')
+          ..write('id: $id, ')
+          ..write('eventId: $eventId, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('tableNameField: $tableNameField, ')
+          ..write('recordId: $recordId, ')
+          ..write('operation: $operation, ')
+          ..write('data: $data, ')
+          ..write('timestamp: $timestamp, ')
+          ..write('sequenceNumber: $sequenceNumber, ')
+          ..write('hash: $hash, ')
+          ..write('isSynced: $isSynced')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $SyncStateTableTable extends SyncStateTable
+    with TableInfo<$SyncStateTableTable, SyncStateData> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $SyncStateTableTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<int> id = GeneratedColumn<int>(
+      'id', aliasedName, false,
+      hasAutoIncrement: true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('PRIMARY KEY AUTOINCREMENT'));
+  static const VerificationMeta _deviceIdMeta =
+      const VerificationMeta('deviceId');
+  @override
+  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
+      'device_id', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: true,
+      defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _lastSyncTimeMeta =
+      const VerificationMeta('lastSyncTime');
+  @override
+  late final GeneratedColumn<DateTime> lastSyncTime = GeneratedColumn<DateTime>(
+      'last_sync_time', aliasedName, false,
+      type: DriftSqlType.dateTime, requiredDuringInsert: true);
+  static const VerificationMeta _lastSequenceNumberMeta =
+      const VerificationMeta('lastSequenceNumber');
+  @override
+  late final GeneratedColumn<int> lastSequenceNumber = GeneratedColumn<int>(
+      'last_sequence_number', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(0));
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+      'status', aliasedName, false,
+      type: DriftSqlType.string,
+      requiredDuringInsert: false,
+      defaultValue: const Constant('idle'));
+  @override
+  List<GeneratedColumn> get $columns =>
+      [id, deviceId, lastSyncTime, lastSequenceNumber, status];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'sync_state';
+  @override
+  VerificationContext validateIntegrity(Insertable<SyncStateData> instance,
+      {bool isInserting = false}) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    }
+    if (data.containsKey('device_id')) {
+      context.handle(_deviceIdMeta,
+          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
+    } else if (isInserting) {
+      context.missing(_deviceIdMeta);
+    }
+    if (data.containsKey('last_sync_time')) {
+      context.handle(
+          _lastSyncTimeMeta,
+          lastSyncTime.isAcceptableOrUnknown(
+              data['last_sync_time']!, _lastSyncTimeMeta));
+    } else if (isInserting) {
+      context.missing(_lastSyncTimeMeta);
+    }
+    if (data.containsKey('last_sequence_number')) {
+      context.handle(
+          _lastSequenceNumberMeta,
+          lastSequenceNumber.isAcceptableOrUnknown(
+              data['last_sequence_number']!, _lastSequenceNumberMeta));
+    }
+    if (data.containsKey('status')) {
+      context.handle(_statusMeta,
+          status.isAcceptableOrUnknown(data['status']!, _statusMeta));
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  SyncStateData map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return SyncStateData(
+      id: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}id'])!,
+      deviceId: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
+      lastSyncTime: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}last_sync_time'])!,
+      lastSequenceNumber: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}last_sequence_number'])!,
+      status: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}status'])!,
+    );
+  }
+
+  @override
+  $SyncStateTableTable createAlias(String alias) {
+    return $SyncStateTableTable(attachedDatabase, alias);
+  }
+}
+
+class SyncStateData extends DataClass implements Insertable<SyncStateData> {
+  final int id;
+  final String deviceId;
+  final DateTime lastSyncTime;
+  final int lastSequenceNumber;
+  final String status;
+  const SyncStateData(
+      {required this.id,
+      required this.deviceId,
+      required this.lastSyncTime,
+      required this.lastSequenceNumber,
+      required this.status});
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<int>(id);
+    map['device_id'] = Variable<String>(deviceId);
+    map['last_sync_time'] = Variable<DateTime>(lastSyncTime);
+    map['last_sequence_number'] = Variable<int>(lastSequenceNumber);
+    map['status'] = Variable<String>(status);
+    return map;
+  }
+
+  SyncStateTableCompanion toCompanion(bool nullToAbsent) {
+    return SyncStateTableCompanion(
+      id: Value(id),
+      deviceId: Value(deviceId),
+      lastSyncTime: Value(lastSyncTime),
+      lastSequenceNumber: Value(lastSequenceNumber),
+      status: Value(status),
+    );
+  }
+
+  factory SyncStateData.fromJson(Map<String, dynamic> json,
+      {ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return SyncStateData(
+      id: serializer.fromJson<int>(json['id']),
+      deviceId: serializer.fromJson<String>(json['deviceId']),
+      lastSyncTime: serializer.fromJson<DateTime>(json['lastSyncTime']),
+      lastSequenceNumber: serializer.fromJson<int>(json['lastSequenceNumber']),
+      status: serializer.fromJson<String>(json['status']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<int>(id),
+      'deviceId': serializer.toJson<String>(deviceId),
+      'lastSyncTime': serializer.toJson<DateTime>(lastSyncTime),
+      'lastSequenceNumber': serializer.toJson<int>(lastSequenceNumber),
+      'status': serializer.toJson<String>(status),
+    };
+  }
+
+  SyncStateData copyWith(
+          {int? id,
+          String? deviceId,
+          DateTime? lastSyncTime,
+          int? lastSequenceNumber,
+          String? status}) =>
+      SyncStateData(
+        id: id ?? this.id,
+        deviceId: deviceId ?? this.deviceId,
+        lastSyncTime: lastSyncTime ?? this.lastSyncTime,
+        lastSequenceNumber: lastSequenceNumber ?? this.lastSequenceNumber,
+        status: status ?? this.status,
+      );
+  SyncStateData copyWithCompanion(SyncStateTableCompanion data) {
+    return SyncStateData(
+      id: data.id.present ? data.id.value : this.id,
+      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
+      lastSyncTime: data.lastSyncTime.present
+          ? data.lastSyncTime.value
+          : this.lastSyncTime,
+      lastSequenceNumber: data.lastSequenceNumber.present
+          ? data.lastSequenceNumber.value
+          : this.lastSequenceNumber,
+      status: data.status.present ? data.status.value : this.status,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncStateData(')
+          ..write('id: $id, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('lastSyncTime: $lastSyncTime, ')
+          ..write('lastSequenceNumber: $lastSequenceNumber, ')
+          ..write('status: $status')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode =>
+      Object.hash(id, deviceId, lastSyncTime, lastSequenceNumber, status);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is SyncStateData &&
+          other.id == this.id &&
+          other.deviceId == this.deviceId &&
+          other.lastSyncTime == this.lastSyncTime &&
+          other.lastSequenceNumber == this.lastSequenceNumber &&
+          other.status == this.status);
+}
+
+class SyncStateTableCompanion extends UpdateCompanion<SyncStateData> {
+  final Value<int> id;
+  final Value<String> deviceId;
+  final Value<DateTime> lastSyncTime;
+  final Value<int> lastSequenceNumber;
+  final Value<String> status;
+  const SyncStateTableCompanion({
+    this.id = const Value.absent(),
+    this.deviceId = const Value.absent(),
+    this.lastSyncTime = const Value.absent(),
+    this.lastSequenceNumber = const Value.absent(),
+    this.status = const Value.absent(),
+  });
+  SyncStateTableCompanion.insert({
+    this.id = const Value.absent(),
+    required String deviceId,
+    required DateTime lastSyncTime,
+    this.lastSequenceNumber = const Value.absent(),
+    this.status = const Value.absent(),
+  })  : deviceId = Value(deviceId),
+        lastSyncTime = Value(lastSyncTime);
+  static Insertable<SyncStateData> custom({
+    Expression<int>? id,
+    Expression<String>? deviceId,
+    Expression<DateTime>? lastSyncTime,
+    Expression<int>? lastSequenceNumber,
+    Expression<String>? status,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (deviceId != null) 'device_id': deviceId,
+      if (lastSyncTime != null) 'last_sync_time': lastSyncTime,
+      if (lastSequenceNumber != null)
+        'last_sequence_number': lastSequenceNumber,
+      if (status != null) 'status': status,
+    });
+  }
+
+  SyncStateTableCompanion copyWith(
+      {Value<int>? id,
+      Value<String>? deviceId,
+      Value<DateTime>? lastSyncTime,
+      Value<int>? lastSequenceNumber,
+      Value<String>? status}) {
+    return SyncStateTableCompanion(
+      id: id ?? this.id,
+      deviceId: deviceId ?? this.deviceId,
+      lastSyncTime: lastSyncTime ?? this.lastSyncTime,
+      lastSequenceNumber: lastSequenceNumber ?? this.lastSequenceNumber,
+      status: status ?? this.status,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<int>(id.value);
+    }
+    if (deviceId.present) {
+      map['device_id'] = Variable<String>(deviceId.value);
+    }
+    if (lastSyncTime.present) {
+      map['last_sync_time'] = Variable<DateTime>(lastSyncTime.value);
+    }
+    if (lastSequenceNumber.present) {
+      map['last_sequence_number'] = Variable<int>(lastSequenceNumber.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('SyncStateTableCompanion(')
+          ..write('id: $id, ')
+          ..write('deviceId: $deviceId, ')
+          ..write('lastSyncTime: $lastSyncTime, ')
+          ..write('lastSequenceNumber: $lastSequenceNumber, ')
+          ..write('status: $status')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
@@ -5022,6 +5873,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $SyncMetadataTableTable(this);
   late final $AttachmentsTableTable attachmentsTable =
       $AttachmentsTableTable(this);
+  late final $SyncEventLogTableTable syncEventLogTable =
+      $SyncEventLogTableTable(this);
+  late final $SyncStateTableTable syncStateTable = $SyncStateTableTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5032,7 +5886,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
         transactionsTable,
         budgetsTable,
         syncMetadataTable,
-        attachmentsTable
+        attachmentsTable,
+        syncEventLogTable,
+        syncStateTable
       ];
 }
 
@@ -7924,6 +8780,440 @@ typedef $$AttachmentsTableTableProcessedTableManager = ProcessedTableManager<
     (AttachmentsTableData, $$AttachmentsTableTableReferences),
     AttachmentsTableData,
     PrefetchHooks Function({bool transactionId})>;
+typedef $$SyncEventLogTableTableCreateCompanionBuilder
+    = SyncEventLogTableCompanion Function({
+  Value<int> id,
+  required String eventId,
+  required String deviceId,
+  required String tableNameField,
+  required String recordId,
+  required String operation,
+  required String data,
+  required DateTime timestamp,
+  required int sequenceNumber,
+  required String hash,
+  Value<bool> isSynced,
+});
+typedef $$SyncEventLogTableTableUpdateCompanionBuilder
+    = SyncEventLogTableCompanion Function({
+  Value<int> id,
+  Value<String> eventId,
+  Value<String> deviceId,
+  Value<String> tableNameField,
+  Value<String> recordId,
+  Value<String> operation,
+  Value<String> data,
+  Value<DateTime> timestamp,
+  Value<int> sequenceNumber,
+  Value<String> hash,
+  Value<bool> isSynced,
+});
+
+class $$SyncEventLogTableTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncEventLogTableTable> {
+  $$SyncEventLogTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get eventId => $composableBuilder(
+      column: $table.eventId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get tableNameField => $composableBuilder(
+      column: $table.tableNameField,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get recordId => $composableBuilder(
+      column: $table.recordId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get operation => $composableBuilder(
+      column: $table.operation, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get data => $composableBuilder(
+      column: $table.data, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get sequenceNumber => $composableBuilder(
+      column: $table.sequenceNumber,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get hash => $composableBuilder(
+      column: $table.hash, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+      column: $table.isSynced, builder: (column) => ColumnFilters(column));
+}
+
+class $$SyncEventLogTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncEventLogTableTable> {
+  $$SyncEventLogTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get eventId => $composableBuilder(
+      column: $table.eventId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get tableNameField => $composableBuilder(
+      column: $table.tableNameField,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get recordId => $composableBuilder(
+      column: $table.recordId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get operation => $composableBuilder(
+      column: $table.operation, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get data => $composableBuilder(
+      column: $table.data, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get timestamp => $composableBuilder(
+      column: $table.timestamp, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get sequenceNumber => $composableBuilder(
+      column: $table.sequenceNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get hash => $composableBuilder(
+      column: $table.hash, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SyncEventLogTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncEventLogTableTable> {
+  $$SyncEventLogTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get eventId =>
+      $composableBuilder(column: $table.eventId, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<String> get tableNameField => $composableBuilder(
+      column: $table.tableNameField, builder: (column) => column);
+
+  GeneratedColumn<String> get recordId =>
+      $composableBuilder(column: $table.recordId, builder: (column) => column);
+
+  GeneratedColumn<String> get operation =>
+      $composableBuilder(column: $table.operation, builder: (column) => column);
+
+  GeneratedColumn<String> get data =>
+      $composableBuilder(column: $table.data, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get timestamp =>
+      $composableBuilder(column: $table.timestamp, builder: (column) => column);
+
+  GeneratedColumn<int> get sequenceNumber => $composableBuilder(
+      column: $table.sequenceNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get hash =>
+      $composableBuilder(column: $table.hash, builder: (column) => column);
+
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
+}
+
+class $$SyncEventLogTableTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SyncEventLogTableTable,
+    SyncEventLogData,
+    $$SyncEventLogTableTableFilterComposer,
+    $$SyncEventLogTableTableOrderingComposer,
+    $$SyncEventLogTableTableAnnotationComposer,
+    $$SyncEventLogTableTableCreateCompanionBuilder,
+    $$SyncEventLogTableTableUpdateCompanionBuilder,
+    (
+      SyncEventLogData,
+      BaseReferences<_$AppDatabase, $SyncEventLogTableTable, SyncEventLogData>
+    ),
+    SyncEventLogData,
+    PrefetchHooks Function()> {
+  $$SyncEventLogTableTableTableManager(
+      _$AppDatabase db, $SyncEventLogTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncEventLogTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncEventLogTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncEventLogTableTableAnnotationComposer(
+                  $db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> eventId = const Value.absent(),
+            Value<String> deviceId = const Value.absent(),
+            Value<String> tableNameField = const Value.absent(),
+            Value<String> recordId = const Value.absent(),
+            Value<String> operation = const Value.absent(),
+            Value<String> data = const Value.absent(),
+            Value<DateTime> timestamp = const Value.absent(),
+            Value<int> sequenceNumber = const Value.absent(),
+            Value<String> hash = const Value.absent(),
+            Value<bool> isSynced = const Value.absent(),
+          }) =>
+              SyncEventLogTableCompanion(
+            id: id,
+            eventId: eventId,
+            deviceId: deviceId,
+            tableNameField: tableNameField,
+            recordId: recordId,
+            operation: operation,
+            data: data,
+            timestamp: timestamp,
+            sequenceNumber: sequenceNumber,
+            hash: hash,
+            isSynced: isSynced,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String eventId,
+            required String deviceId,
+            required String tableNameField,
+            required String recordId,
+            required String operation,
+            required String data,
+            required DateTime timestamp,
+            required int sequenceNumber,
+            required String hash,
+            Value<bool> isSynced = const Value.absent(),
+          }) =>
+              SyncEventLogTableCompanion.insert(
+            id: id,
+            eventId: eventId,
+            deviceId: deviceId,
+            tableNameField: tableNameField,
+            recordId: recordId,
+            operation: operation,
+            data: data,
+            timestamp: timestamp,
+            sequenceNumber: sequenceNumber,
+            hash: hash,
+            isSynced: isSynced,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SyncEventLogTableTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $SyncEventLogTableTable,
+    SyncEventLogData,
+    $$SyncEventLogTableTableFilterComposer,
+    $$SyncEventLogTableTableOrderingComposer,
+    $$SyncEventLogTableTableAnnotationComposer,
+    $$SyncEventLogTableTableCreateCompanionBuilder,
+    $$SyncEventLogTableTableUpdateCompanionBuilder,
+    (
+      SyncEventLogData,
+      BaseReferences<_$AppDatabase, $SyncEventLogTableTable, SyncEventLogData>
+    ),
+    SyncEventLogData,
+    PrefetchHooks Function()>;
+typedef $$SyncStateTableTableCreateCompanionBuilder = SyncStateTableCompanion
+    Function({
+  Value<int> id,
+  required String deviceId,
+  required DateTime lastSyncTime,
+  Value<int> lastSequenceNumber,
+  Value<String> status,
+});
+typedef $$SyncStateTableTableUpdateCompanionBuilder = SyncStateTableCompanion
+    Function({
+  Value<int> id,
+  Value<String> deviceId,
+  Value<DateTime> lastSyncTime,
+  Value<int> lastSequenceNumber,
+  Value<String> status,
+});
+
+class $$SyncStateTableTableFilterComposer
+    extends Composer<_$AppDatabase, $SyncStateTableTable> {
+  $$SyncStateTableTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get lastSyncTime => $composableBuilder(
+      column: $table.lastSyncTime, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get lastSequenceNumber => $composableBuilder(
+      column: $table.lastSequenceNumber,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnFilters(column));
+}
+
+class $$SyncStateTableTableOrderingComposer
+    extends Composer<_$AppDatabase, $SyncStateTableTable> {
+  $$SyncStateTableTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<int> get id => $composableBuilder(
+      column: $table.id, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get deviceId => $composableBuilder(
+      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get lastSyncTime => $composableBuilder(
+      column: $table.lastSyncTime,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<int> get lastSequenceNumber => $composableBuilder(
+      column: $table.lastSequenceNumber,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get status => $composableBuilder(
+      column: $table.status, builder: (column) => ColumnOrderings(column));
+}
+
+class $$SyncStateTableTableAnnotationComposer
+    extends Composer<_$AppDatabase, $SyncStateTableTable> {
+  $$SyncStateTableTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<int> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get deviceId =>
+      $composableBuilder(column: $table.deviceId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get lastSyncTime => $composableBuilder(
+      column: $table.lastSyncTime, builder: (column) => column);
+
+  GeneratedColumn<int> get lastSequenceNumber => $composableBuilder(
+      column: $table.lastSequenceNumber, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+}
+
+class $$SyncStateTableTableTableManager extends RootTableManager<
+    _$AppDatabase,
+    $SyncStateTableTable,
+    SyncStateData,
+    $$SyncStateTableTableFilterComposer,
+    $$SyncStateTableTableOrderingComposer,
+    $$SyncStateTableTableAnnotationComposer,
+    $$SyncStateTableTableCreateCompanionBuilder,
+    $$SyncStateTableTableUpdateCompanionBuilder,
+    (
+      SyncStateData,
+      BaseReferences<_$AppDatabase, $SyncStateTableTable, SyncStateData>
+    ),
+    SyncStateData,
+    PrefetchHooks Function()> {
+  $$SyncStateTableTableTableManager(
+      _$AppDatabase db, $SyncStateTableTable table)
+      : super(TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$SyncStateTableTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$SyncStateTableTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$SyncStateTableTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            Value<String> deviceId = const Value.absent(),
+            Value<DateTime> lastSyncTime = const Value.absent(),
+            Value<int> lastSequenceNumber = const Value.absent(),
+            Value<String> status = const Value.absent(),
+          }) =>
+              SyncStateTableCompanion(
+            id: id,
+            deviceId: deviceId,
+            lastSyncTime: lastSyncTime,
+            lastSequenceNumber: lastSequenceNumber,
+            status: status,
+          ),
+          createCompanionCallback: ({
+            Value<int> id = const Value.absent(),
+            required String deviceId,
+            required DateTime lastSyncTime,
+            Value<int> lastSequenceNumber = const Value.absent(),
+            Value<String> status = const Value.absent(),
+          }) =>
+              SyncStateTableCompanion.insert(
+            id: id,
+            deviceId: deviceId,
+            lastSyncTime: lastSyncTime,
+            lastSequenceNumber: lastSequenceNumber,
+            status: status,
+          ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ));
+}
+
+typedef $$SyncStateTableTableProcessedTableManager = ProcessedTableManager<
+    _$AppDatabase,
+    $SyncStateTableTable,
+    SyncStateData,
+    $$SyncStateTableTableFilterComposer,
+    $$SyncStateTableTableOrderingComposer,
+    $$SyncStateTableTableAnnotationComposer,
+    $$SyncStateTableTableCreateCompanionBuilder,
+    $$SyncStateTableTableUpdateCompanionBuilder,
+    (
+      SyncStateData,
+      BaseReferences<_$AppDatabase, $SyncStateTableTable, SyncStateData>
+    ),
+    SyncStateData,
+    PrefetchHooks Function()>;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -7940,4 +9230,8 @@ class $AppDatabaseManager {
       $$SyncMetadataTableTableTableManager(_db, _db.syncMetadataTable);
   $$AttachmentsTableTableTableManager get attachmentsTable =>
       $$AttachmentsTableTableTableManager(_db, _db.attachmentsTable);
+  $$SyncEventLogTableTableTableManager get syncEventLogTable =>
+      $$SyncEventLogTableTableTableManager(_db, _db.syncEventLogTable);
+  $$SyncStateTableTableTableManager get syncStateTable =>
+      $$SyncStateTableTableTableManager(_db, _db.syncStateTable);
 }

@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
+import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
@@ -16,6 +19,11 @@ class GoogleDriveSyncService implements SyncService {
   static const List<String> _scopes = [
     'https://www.googleapis.com/auth/drive.file',
   ];
+
+  // ✅ PHASE 1 FIX 1: Namespace Separation
+  static const String APP_ROOT = 'FinanceApp';
+  static const String SYNC_FOLDER = '$APP_ROOT/database_sync';
+  static const String ATTACHMENTS_FOLDER = '$APP_ROOT/user_attachments';
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
   final AppDatabase _database;
@@ -93,6 +101,17 @@ class GoogleDriveSyncService implements SyncService {
     _statusController.add(SyncStatus.uploading);
 
     try {
+      // ✅ PHASE 1 FIX 2: Change Detection - Only sync if there are changes
+      if (!await _hasUnsyncedChanges()) {
+        _statusController.add(SyncStatus.completed);
+        return SyncResult(
+          success: true,
+          uploadedCount: 0,
+          downloadedCount: 0,
+          timestamp: DateTime.now(),
+        );
+      }
+
       final account = _googleSignIn.currentUser;
       if (account == null) {
         throw Exception('Not signed in');
@@ -110,13 +129,16 @@ class GoogleDriveSyncService implements SyncService {
 
       final driveApi = drive.DriveApi(client);
       
+      // ✅ PHASE 1 FIX 1: Upload to separate sync folder
+      final syncFolderId = await _ensureFolderExists(driveApi, SYNC_FOLDER);
+      
       // Export database to temporary file
       final dbFile = await _exportDatabase();
       final fileName = 'sync-$_deviceId.sqlite';
       
       // Check if file already exists
       final existingFiles = await driveApi.files.list(
-        q: "name='$fileName' and trashed=false",
+        q: "name='$fileName' and '$syncFolderId' in parents and trashed=false",
       );
 
       if (existingFiles.files?.isNotEmpty == true) {
@@ -128,11 +150,11 @@ class GoogleDriveSyncService implements SyncService {
           uploadMedia: drive.Media(dbFile.openRead(), dbFile.lengthSync()),
         );
       } else {
-        // Create new file
+        // Create new file in sync folder
         await driveApi.files.create(
           drive.File()
             ..name = fileName
-            ..parents = ['appDataFolder'],
+            ..parents = [syncFolderId],
           uploadMedia: drive.Media(dbFile.openRead(), dbFile.lengthSync()),
         );
       }
@@ -202,9 +224,12 @@ class GoogleDriveSyncService implements SyncService {
 
       final driveApi = drive.DriveApi(client);
       
+      // ✅ PHASE 1 FIX 1: Look in sync folder only
+      final syncFolderId = await _ensureFolderExists(driveApi, SYNC_FOLDER);
+      
       // Get list of sync files from other devices
       final syncFiles = await driveApi.files.list(
-        q: "name contains 'sync-' and name contains '.sqlite' and trashed=false",
+        q: "name contains 'sync-' and name contains '.sqlite' and '$syncFolderId' in parents and trashed=false",
       );
 
       int downloadedCount = 0;
@@ -283,6 +308,64 @@ class GoogleDriveSyncService implements SyncService {
     return null;
   }
 
+  // ✅ PHASE 1 FIX 2: Change Detection Implementation
+  Future<bool> _hasUnsyncedChanges() async {
+    final unsyncedCount = await _database.customSelect('''
+      SELECT COUNT(*) as count FROM (
+        SELECT 1 FROM transactions WHERE is_synced = false
+        UNION ALL
+        SELECT 1 FROM categories WHERE is_synced = false
+        UNION ALL
+        SELECT 1 FROM accounts WHERE is_synced = false
+        UNION ALL
+        SELECT 1 FROM budgets WHERE is_synced = false
+        UNION ALL
+        SELECT 1 FROM attachments WHERE is_synced = false
+      )
+    ''').getSingle();
+    
+    return unsyncedCount.data['count'] > 0;
+  }
+
+  // ✅ PHASE 1 FIX 3: Content Hashing for Better Conflict Detection
+  String _calculateRecordHash(Map<String, dynamic> data) {
+    final contentData = Map<String, dynamic>.from(data);
+    // Remove sync-specific fields that shouldn't affect content
+    contentData.remove('isSynced');
+    contentData.remove('lastSyncAt');
+    contentData.remove('version');
+    
+    final content = jsonEncode(contentData);
+    return sha256.convert(utf8.encode(content)).toString();
+  }
+
+  // ✅ PHASE 1 FIX 1: Folder Management for Namespace Separation
+  Future<String> _ensureFolderExists(drive.DriveApi driveApi, String folderPath) async {
+    final pathParts = folderPath.split('/');
+    String currentParent = 'appDataFolder';
+    
+    for (final folderName in pathParts) {
+      final existingFolders = await driveApi.files.list(
+        q: "name='$folderName' and '$currentParent' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+      );
+      
+      if (existingFolders.files?.isNotEmpty == true) {
+        currentParent = existingFolders.files!.first.id!;
+      } else {
+        // Create new folder
+        final newFolder = await driveApi.files.create(
+          drive.File()
+            ..name = folderName
+            ..mimeType = 'application/vnd.google-apps.folder'
+            ..parents = [currentParent],
+        );
+        currentParent = newFolder.id!;
+      }
+    }
+    
+    return currentParent;
+  }
+
   Future<File> _exportDatabase() async {
     final tempDir = await getTemporaryDirectory();
     final tempFile = File(p.join(tempDir.path, 'export_${DateTime.now().millisecondsSinceEpoch}.sqlite'));
@@ -296,6 +379,7 @@ class GoogleDriveSyncService implements SyncService {
     
     return tempFile;
   }
+
   Future<void> _mergeDatabase(Stream<List<int>> dataStream) async {
     final tempDir = await getTemporaryDirectory();
     final tempFile = File(p.join(tempDir.path, 'merge_${DateTime.now().millisecondsSinceEpoch}.sqlite'));
@@ -308,7 +392,8 @@ class GoogleDriveSyncService implements SyncService {
       
       // Open the temporary database
       final tempDatabase = AppDatabase.fromFile(tempFile);
-        // Get all data from temporary database
+      
+      // Get all data from temporary database
       final remoteTxns = await tempDatabase.select(tempDatabase.transactionsTable).get();
       final remoteCategories = await tempDatabase.select(tempDatabase.categoriesTable).get();
       final remoteAccounts = await tempDatabase.select(tempDatabase.accountsTable).get();
@@ -317,228 +402,13 @@ class GoogleDriveSyncService implements SyncService {
       
       await tempDatabase.close();
       
-      // Merge transactions
-      for (final remoteTxn in remoteTxns) {
-        final localTxn = await (_database.select(_database.transactionsTable)
-          ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
-          .getSingleOrNull();
-          if (localTxn == null) {
-          // Insert new transaction
-          await _database.into(_database.transactionsTable).insert(
-            TransactionsTableCompanion.insert(
-              title: remoteTxn.title,
-              note: Value(remoteTxn.note),
-              amount: remoteTxn.amount,
-              categoryId: remoteTxn.categoryId,
-              accountId: remoteTxn.accountId,
-              date: remoteTxn.date,
-              createdAt: Value(remoteTxn.createdAt),
-              updatedAt: Value(remoteTxn.updatedAt),
-              deviceId: remoteTxn.deviceId,
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteTxn.lastSyncAt),
-              syncId: remoteTxn.syncId,
-              version: Value(remoteTxn.version),
-            ),
-          );
-        } else if (remoteTxn.version > localTxn.version || 
-                  (remoteTxn.version == localTxn.version && remoteTxn.updatedAt.isAfter(localTxn.updatedAt))) {
-          // Update with newer version
-          await (_database.update(_database.transactionsTable)
-            ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
-            .write(TransactionsTableCompanion(
-              title: Value(remoteTxn.title),
-              note: Value(remoteTxn.note),
-              amount: Value(remoteTxn.amount),
-              categoryId: Value(remoteTxn.categoryId),
-              accountId: Value(remoteTxn.accountId),
-              date: Value(remoteTxn.date),
-              updatedAt: Value(remoteTxn.updatedAt),
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteTxn.lastSyncAt),
-              version: Value(remoteTxn.version),
-            ));
-        }
-      }
+      // ✅ PHASE 1 FIX 3: Enhanced conflict resolution with content hashing
+      await _mergeTransactions(remoteTxns);
+      await _mergeCategories(remoteCategories);
+      await _mergeAccounts(remoteAccounts);
+      await _mergeBudgets(remoteBudgets);
+      await _mergeAttachments(remoteAttachments);
       
-      // Merge categories
-      for (final remoteCategory in remoteCategories) {
-        final localCategory = await (_database.select(_database.categoriesTable)
-          ..where((tbl) => tbl.syncId.equals(remoteCategory.syncId)))
-          .getSingleOrNull();
-        
-        if (localCategory == null) {
-          await _database.into(_database.categoriesTable).insert(
-            CategoriesTableCompanion.insert(
-              name: remoteCategory.name,
-              icon: remoteCategory.icon,
-              color: remoteCategory.color,
-              isExpense: remoteCategory.isExpense,
-              isDefault: Value(remoteCategory.isDefault),
-              createdAt: Value(remoteCategory.createdAt),
-              updatedAt: Value(remoteCategory.updatedAt),
-              deviceId: remoteCategory.deviceId,
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteCategory.lastSyncAt),
-              syncId: remoteCategory.syncId,
-              version: Value(remoteCategory.version),
-            ),
-          );
-        } else if (remoteCategory.version > localCategory.version || 
-                  (remoteCategory.version == localCategory.version && remoteCategory.updatedAt.isAfter(localCategory.updatedAt))) {
-          await (_database.update(_database.categoriesTable)
-            ..where((tbl) => tbl.syncId.equals(remoteCategory.syncId)))
-            .write(CategoriesTableCompanion(
-              name: Value(remoteCategory.name),
-              icon: Value(remoteCategory.icon),
-              color: Value(remoteCategory.color),
-              isExpense: Value(remoteCategory.isExpense),
-              isDefault: Value(remoteCategory.isDefault),
-              updatedAt: Value(remoteCategory.updatedAt),
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteCategory.lastSyncAt),
-              version: Value(remoteCategory.version),
-            ));
-        }
-      }
-      
-      // Merge accounts
-      for (final remoteAccount in remoteAccounts) {
-        final localAccount = await (_database.select(_database.accountsTable)
-          ..where((tbl) => tbl.syncId.equals(remoteAccount.syncId)))
-          .getSingleOrNull();
-        
-        if (localAccount == null) {
-          await _database.into(_database.accountsTable).insert(
-            AccountsTableCompanion.insert(
-              name: remoteAccount.name,
-              deviceId: remoteAccount.deviceId,
-              syncId: remoteAccount.syncId,
-              balance: Value(remoteAccount.balance),
-              currency: Value(remoteAccount.currency),
-              isDefault: Value(remoteAccount.isDefault),
-              createdAt: Value(remoteAccount.createdAt),
-              updatedAt: Value(remoteAccount.updatedAt),
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteAccount.lastSyncAt),
-              version: Value(remoteAccount.version),
-            ),
-          );
-        } else if (remoteAccount.version > localAccount.version || 
-                  (remoteAccount.version == localAccount.version && remoteAccount.updatedAt.isAfter(localAccount.updatedAt))) {
-          await (_database.update(_database.accountsTable)
-            ..where((tbl) => tbl.syncId.equals(remoteAccount.syncId)))
-            .write(AccountsTableCompanion(
-              name: Value(remoteAccount.name),
-              balance: Value(remoteAccount.balance),
-              currency: Value(remoteAccount.currency),
-              isDefault: Value(remoteAccount.isDefault),
-              updatedAt: Value(remoteAccount.updatedAt),
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteAccount.lastSyncAt),
-              version: Value(remoteAccount.version),
-            ));
-        }
-      }
-      
-      // Merge budgets
-      for (final remoteBudget in remoteBudgets) {
-        final localBudget = await (_database.select(_database.budgetsTable)
-          ..where((tbl) => tbl.syncId.equals(remoteBudget.syncId)))
-          .getSingleOrNull();
-        
-        if (localBudget == null) {
-          await _database.into(_database.budgetsTable).insert(
-            BudgetsTableCompanion.insert(
-              name: remoteBudget.name,
-              amount: remoteBudget.amount,
-              spent: Value(remoteBudget.spent),
-              categoryId: Value(remoteBudget.categoryId),
-              period: remoteBudget.period,
-              startDate: remoteBudget.startDate,
-              endDate: remoteBudget.endDate,
-              isActive: Value(remoteBudget.isActive),
-              createdAt: Value(remoteBudget.createdAt),
-              updatedAt: Value(remoteBudget.updatedAt),
-              deviceId: remoteBudget.deviceId,
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteBudget.lastSyncAt),
-              syncId: remoteBudget.syncId,
-              version: Value(remoteBudget.version),
-            ),
-          );
-        } else if (remoteBudget.version > localBudget.version || 
-                  (remoteBudget.version == localBudget.version && remoteBudget.updatedAt.isAfter(localBudget.updatedAt))) {
-          await (_database.update(_database.budgetsTable)
-            ..where((tbl) => tbl.syncId.equals(remoteBudget.syncId)))
-            .write(BudgetsTableCompanion(
-              name: Value(remoteBudget.name),
-              amount: Value(remoteBudget.amount),
-              spent: Value(remoteBudget.spent),
-              categoryId: Value(remoteBudget.categoryId),
-              period: Value(remoteBudget.period),
-              startDate: Value(remoteBudget.startDate),
-              endDate: Value(remoteBudget.endDate),
-              isActive: Value(remoteBudget.isActive),
-              updatedAt: Value(remoteBudget.updatedAt),
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteBudget.lastSyncAt),
-              version: Value(remoteBudget.version),
-            ));
-        }
-      }
-      
-      // Merge attachments - only sync the metadata, not the actual files
-      for (final remoteAttachment in remoteAttachments) {
-        final localAttachment = await (_database.select(_database.attachmentsTable)
-          ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
-          .getSingleOrNull();
-        
-        if (localAttachment == null) {
-          // Insert new attachment (only metadata - files remain on individual devices or Google Drive)
-          await _database.into(_database.attachmentsTable).insert(
-            AttachmentsTableCompanion.insert(
-              transactionId: remoteAttachment.transactionId,
-              fileName: remoteAttachment.fileName,
-              filePath: const Value(null), // Don't sync local file paths
-              googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
-              googleDriveLink: Value(remoteAttachment.googleDriveLink),
-              type: remoteAttachment.type,
-              mimeType: Value(remoteAttachment.mimeType),
-              fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
-              isUploaded: Value(remoteAttachment.isUploaded),
-              isDeleted: Value(remoteAttachment.isDeleted),
-              isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
-              localCacheExpiry: const Value(null), // Don't sync cache expiry
-              deviceId: remoteAttachment.deviceId,
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteAttachment.lastSyncAt),
-              syncId: remoteAttachment.syncId,
-              version: Value(remoteAttachment.version),
-            ),
-          );
-        } else if (remoteAttachment.version > localAttachment.version || 
-                  (remoteAttachment.version == localAttachment.version && remoteAttachment.updatedAt.isAfter(localAttachment.updatedAt))) {
-          // Update with newer version (preserve local file path and cache expiry)
-          await (_database.update(_database.attachmentsTable)
-            ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
-            .write(AttachmentsTableCompanion(
-              fileName: Value(remoteAttachment.fileName),
-              googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
-              googleDriveLink: Value(remoteAttachment.googleDriveLink),
-              type: Value(remoteAttachment.type),
-              mimeType: Value(remoteAttachment.mimeType),
-              fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
-              isUploaded: Value(remoteAttachment.isUploaded),
-              isDeleted: Value(remoteAttachment.isDeleted),
-              isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
-              updatedAt: Value(remoteAttachment.updatedAt),
-              isSynced: const Value(true),
-              lastSyncAt: Value(remoteAttachment.lastSyncAt),
-              version: Value(remoteAttachment.version),
-            ));
-        }
-      }
     } finally {
       // Clean up temporary file
       if (await tempFile.exists()) {
@@ -546,6 +416,322 @@ class GoogleDriveSyncService implements SyncService {
       }
     }
   }
+
+  // ✅ PHASE 1 FIX 3: Enhanced merge with content hashing
+  Future<void> _mergeTransactions(List<TransactionsTableData> remoteTxns) async {
+    for (final remoteTxn in remoteTxns) {
+      final localTxn = await (_database.select(_database.transactionsTable)
+        ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
+        .getSingleOrNull();
+        
+      if (localTxn == null) {
+        // New record - insert
+        await _database.into(_database.transactionsTable).insert(
+          TransactionsTableCompanion.insert(
+            title: remoteTxn.title,
+            note: Value(remoteTxn.note),
+            amount: remoteTxn.amount,
+            categoryId: remoteTxn.categoryId,
+            accountId: remoteTxn.accountId,
+            date: remoteTxn.date,
+            createdAt: Value(remoteTxn.createdAt),
+            updatedAt: Value(remoteTxn.updatedAt),
+            transactionType: Value(remoteTxn.transactionType),
+            specialType: Value(remoteTxn.specialType),
+            recurrence: Value(remoteTxn.recurrence),
+            periodLength: Value(remoteTxn.periodLength),
+            endDate: Value(remoteTxn.endDate),
+            originalDateDue: Value(remoteTxn.originalDateDue),
+            transactionState: Value(remoteTxn.transactionState),
+            paid: Value(remoteTxn.paid),
+            skipPaid: Value(remoteTxn.skipPaid),
+            createdAnotherFutureTransaction: Value(remoteTxn.createdAnotherFutureTransaction),
+            objectiveLoanFk: Value(remoteTxn.objectiveLoanFk),
+            deviceId: remoteTxn.deviceId,
+            isSynced: const Value(true),
+            lastSyncAt: Value(remoteTxn.lastSyncAt),
+            syncId: remoteTxn.syncId,
+            version: Value(remoteTxn.version),
+          ),
+        );
+      } else {
+        // Check content hash for better conflict detection
+        final remoteHash = _calculateRecordHash(remoteTxn.toJson());
+        final localHash = _calculateRecordHash(localTxn.toJson());
+        
+        if (remoteHash != localHash) {
+          // Content differs - resolve conflict
+          if (remoteTxn.version > localTxn.version || 
+              (remoteTxn.version == localTxn.version && 
+               remoteTxn.updatedAt.isAfter(localTxn.updatedAt))) {
+            await (_database.update(_database.transactionsTable)
+              ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
+              .write(TransactionsTableCompanion(
+                title: Value(remoteTxn.title),
+                note: Value(remoteTxn.note),
+                amount: Value(remoteTxn.amount),
+                categoryId: Value(remoteTxn.categoryId),
+                accountId: Value(remoteTxn.accountId),
+                date: Value(remoteTxn.date),
+                updatedAt: Value(remoteTxn.updatedAt),
+                transactionType: Value(remoteTxn.transactionType),
+                specialType: Value(remoteTxn.specialType),
+                recurrence: Value(remoteTxn.recurrence),
+                periodLength: Value(remoteTxn.periodLength),
+                endDate: Value(remoteTxn.endDate),
+                originalDateDue: Value(remoteTxn.originalDateDue),
+                transactionState: Value(remoteTxn.transactionState),
+                paid: Value(remoteTxn.paid),
+                skipPaid: Value(remoteTxn.skipPaid),
+                createdAnotherFutureTransaction: Value(remoteTxn.createdAnotherFutureTransaction),
+                objectiveLoanFk: Value(remoteTxn.objectiveLoanFk),
+                isSynced: const Value(true),
+                lastSyncAt: Value(remoteTxn.lastSyncAt),
+                version: Value(remoteTxn.version),
+              ));
+          }
+          // Else keep local version (it's newer)
+        }
+        // Else content is identical - no action needed
+      }
+    }
+  }
+
+  Future<void> _mergeCategories(List<CategoriesTableData> remoteCategories) async {
+    for (final remoteCategory in remoteCategories) {
+      final localCategory = await (_database.select(_database.categoriesTable)
+        ..where((tbl) => tbl.syncId.equals(remoteCategory.syncId)))
+        .getSingleOrNull();
+        
+      if (localCategory == null) {
+        await _database.into(_database.categoriesTable).insert(
+          CategoriesTableCompanion.insert(
+            name: remoteCategory.name,
+            icon: remoteCategory.icon,
+            color: remoteCategory.color,
+            isExpense: remoteCategory.isExpense,
+            isDefault: Value(remoteCategory.isDefault),
+            createdAt: Value(remoteCategory.createdAt),
+            updatedAt: Value(remoteCategory.updatedAt),
+            deviceId: remoteCategory.deviceId,
+            isSynced: const Value(true),
+            lastSyncAt: Value(remoteCategory.lastSyncAt),
+            syncId: remoteCategory.syncId,
+            version: Value(remoteCategory.version),
+          ),
+        );
+      } else {
+        final remoteHash = _calculateRecordHash(remoteCategory.toJson());
+        final localHash = _calculateRecordHash(localCategory.toJson());
+        
+        if (remoteHash != localHash) {
+          if (remoteCategory.version > localCategory.version || 
+              (remoteCategory.version == localCategory.version && remoteCategory.updatedAt.isAfter(localCategory.updatedAt))) {
+            await (_database.update(_database.categoriesTable)
+              ..where((tbl) => tbl.syncId.equals(remoteCategory.syncId)))
+              .write(CategoriesTableCompanion(
+                name: Value(remoteCategory.name),
+                icon: Value(remoteCategory.icon),
+                color: Value(remoteCategory.color),
+                isExpense: Value(remoteCategory.isExpense),
+                isDefault: Value(remoteCategory.isDefault),
+                updatedAt: Value(remoteCategory.updatedAt),
+                isSynced: const Value(true),
+                lastSyncAt: Value(remoteCategory.lastSyncAt),
+                version: Value(remoteCategory.version),
+              ));
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> _mergeAccounts(List<AccountsTableData> remoteAccounts) async {
+    for (final remoteAccount in remoteAccounts) {
+      final localAccount = await (_database.select(_database.accountsTable)
+        ..where((tbl) => tbl.syncId.equals(remoteAccount.syncId)))
+        .getSingleOrNull();
+        
+      if (localAccount == null) {
+        await _database.into(_database.accountsTable).insert(
+          AccountsTableCompanion.insert(
+            name: remoteAccount.name,
+            deviceId: remoteAccount.deviceId,
+            syncId: remoteAccount.syncId,
+            balance: Value(remoteAccount.balance),
+            currency: Value(remoteAccount.currency),
+            isDefault: Value(remoteAccount.isDefault),
+            createdAt: Value(remoteAccount.createdAt),
+            updatedAt: Value(remoteAccount.updatedAt),
+            isSynced: const Value(true),
+            lastSyncAt: Value(remoteAccount.lastSyncAt),
+            version: Value(remoteAccount.version),
+          ),
+        );
+      } else {
+        final remoteHash = _calculateRecordHash(remoteAccount.toJson());
+        final localHash = _calculateRecordHash(localAccount.toJson());
+        
+        if (remoteHash != localHash) {
+          if (remoteAccount.version > localAccount.version || 
+              (remoteAccount.version == localAccount.version && remoteAccount.updatedAt.isAfter(localAccount.updatedAt))) {
+            await (_database.update(_database.accountsTable)
+              ..where((tbl) => tbl.syncId.equals(remoteAccount.syncId)))
+              .write(AccountsTableCompanion(
+                name: Value(remoteAccount.name),
+                balance: Value(remoteAccount.balance),
+                currency: Value(remoteAccount.currency),
+                isDefault: Value(remoteAccount.isDefault),
+                updatedAt: Value(remoteAccount.updatedAt),
+                isSynced: const Value(true),
+                lastSyncAt: Value(remoteAccount.lastSyncAt),
+                version: Value(remoteAccount.version),
+              ));
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> _mergeBudgets(List<BudgetTableData> remoteBudgets) async {
+    for (final remoteBudget in remoteBudgets) {
+      final localBudget = await (_database.select(_database.budgetsTable)
+        ..where((tbl) => tbl.syncId.equals(remoteBudget.syncId)))
+        .getSingleOrNull();
+        
+      if (localBudget == null) {
+        await _database.into(_database.budgetsTable).insert(
+          BudgetsTableCompanion.insert(
+            name: remoteBudget.name,
+            amount: remoteBudget.amount,
+            spent: Value(remoteBudget.spent),
+            categoryId: Value(remoteBudget.categoryId),
+            period: remoteBudget.period,
+            startDate: remoteBudget.startDate,
+            endDate: remoteBudget.endDate,
+            isActive: Value(remoteBudget.isActive),
+            createdAt: Value(remoteBudget.createdAt),
+            updatedAt: Value(remoteBudget.updatedAt),
+            deviceId: remoteBudget.deviceId,
+            isSynced: const Value(true),
+            lastSyncAt: Value(remoteBudget.lastSyncAt),
+            syncId: remoteBudget.syncId,
+            version: Value(remoteBudget.version),
+            budgetTransactionFilters: Value(remoteBudget.budgetTransactionFilters),
+            excludeDebtCreditInstallments: Value(remoteBudget.excludeDebtCreditInstallments),
+            excludeObjectiveInstallments: Value(remoteBudget.excludeObjectiveInstallments),
+            walletFks: Value(remoteBudget.walletFks),
+            currencyFks: Value(remoteBudget.currencyFks),
+            sharedReferenceBudgetPk: Value(remoteBudget.sharedReferenceBudgetPk),
+            budgetFksExclude: Value(remoteBudget.budgetFksExclude),
+            normalizeToCurrency: Value(remoteBudget.normalizeToCurrency),
+            isIncomeBudget: Value(remoteBudget.isIncomeBudget),
+            includeTransferInOutWithSameCurrency: Value(remoteBudget.includeTransferInOutWithSameCurrency),
+            includeUpcomingTransactionFromBudget: Value(remoteBudget.includeUpcomingTransactionFromBudget),
+            dateCreatedOriginal: Value(remoteBudget.dateCreatedOriginal),
+          ),
+        );
+      } else {
+        final remoteHash = _calculateRecordHash(remoteBudget.toJson());
+        final localHash = _calculateRecordHash(localBudget.toJson());
+        
+        if (remoteHash != localHash) {
+          if (remoteBudget.version > localBudget.version || 
+              (remoteBudget.version == localBudget.version && remoteBudget.updatedAt.isAfter(localBudget.updatedAt))) {
+            await (_database.update(_database.budgetsTable)
+              ..where((tbl) => tbl.syncId.equals(remoteBudget.syncId)))
+              .write(BudgetsTableCompanion(
+                name: Value(remoteBudget.name),
+                amount: Value(remoteBudget.amount),
+                spent: Value(remoteBudget.spent),
+                categoryId: Value(remoteBudget.categoryId),
+                period: Value(remoteBudget.period),
+                startDate: Value(remoteBudget.startDate),
+                endDate: Value(remoteBudget.endDate),
+                isActive: Value(remoteBudget.isActive),
+                updatedAt: Value(remoteBudget.updatedAt),
+                isSynced: const Value(true),
+                lastSyncAt: Value(remoteBudget.lastSyncAt),
+                version: Value(remoteBudget.version),
+                budgetTransactionFilters: Value(remoteBudget.budgetTransactionFilters),
+                excludeDebtCreditInstallments: Value(remoteBudget.excludeDebtCreditInstallments),
+                excludeObjectiveInstallments: Value(remoteBudget.excludeObjectiveInstallments),
+                walletFks: Value(remoteBudget.walletFks),
+                currencyFks: Value(remoteBudget.currencyFks),
+                sharedReferenceBudgetPk: Value(remoteBudget.sharedReferenceBudgetPk),
+                budgetFksExclude: Value(remoteBudget.budgetFksExclude),
+                normalizeToCurrency: Value(remoteBudget.normalizeToCurrency),
+                isIncomeBudget: Value(remoteBudget.isIncomeBudget),
+                includeTransferInOutWithSameCurrency: Value(remoteBudget.includeTransferInOutWithSameCurrency),
+                includeUpcomingTransactionFromBudget: Value(remoteBudget.includeUpcomingTransactionFromBudget),
+                dateCreatedOriginal: Value(remoteBudget.dateCreatedOriginal),
+              ));
+          }
+        }
+      }
+    }
+  }
+
+  Future<void> _mergeAttachments(List<AttachmentsTableData> remoteAttachments) async {
+    // Merge attachments - only sync the metadata, not the actual files
+    for (final remoteAttachment in remoteAttachments) {
+      final localAttachment = await (_database.select(_database.attachmentsTable)
+        ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
+        .getSingleOrNull();
+      
+      if (localAttachment == null) {
+        // Insert new attachment (only metadata - files remain on individual devices or Google Drive)
+        await _database.into(_database.attachmentsTable).insert(
+          AttachmentsTableCompanion.insert(
+            transactionId: remoteAttachment.transactionId,
+            fileName: remoteAttachment.fileName,
+            filePath: const Value(null), // Don't sync local file paths
+            googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
+            googleDriveLink: Value(remoteAttachment.googleDriveLink),
+            type: remoteAttachment.type,
+            mimeType: Value(remoteAttachment.mimeType),
+            fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
+            isUploaded: Value(remoteAttachment.isUploaded),
+            isDeleted: Value(remoteAttachment.isDeleted),
+            isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
+            localCacheExpiry: const Value(null), // Don't sync cache expiry
+            deviceId: remoteAttachment.deviceId,
+            isSynced: const Value(true),
+            lastSyncAt: Value(remoteAttachment.lastSyncAt),
+            syncId: remoteAttachment.syncId,
+            version: Value(remoteAttachment.version),
+          ),
+        );
+      } else {
+        final remoteHash = _calculateRecordHash(remoteAttachment.toJson());
+        final localHash = _calculateRecordHash(localAttachment.toJson());
+        
+        if (remoteHash != localHash) {
+          if (remoteAttachment.version > localAttachment.version || 
+              (remoteAttachment.version == localAttachment.version && remoteAttachment.updatedAt.isAfter(localAttachment.updatedAt))) {
+            await (_database.update(_database.attachmentsTable)
+              ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
+              .write(AttachmentsTableCompanion(
+                fileName: Value(remoteAttachment.fileName),
+                googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
+                googleDriveLink: Value(remoteAttachment.googleDriveLink),
+                type: Value(remoteAttachment.type),
+                mimeType: Value(remoteAttachment.mimeType),
+                fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
+                isUploaded: Value(remoteAttachment.isUploaded),
+                isDeleted: Value(remoteAttachment.isDeleted),
+                isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
+                updatedAt: Value(remoteAttachment.updatedAt),
+                isSynced: const Value(true),
+                lastSyncAt: Value(remoteAttachment.lastSyncAt),
+                version: Value(remoteAttachment.version),
+              ));
+          }
+        }
+      }
+    }
+  }
+
   Future<void> _markAllAsSynced() async {
     final now = DateTime.now();
     

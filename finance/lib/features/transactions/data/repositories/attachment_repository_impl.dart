@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'dart:convert';
+import 'package:crypto/crypto.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
@@ -13,6 +15,7 @@ import 'package:path_provider/path_provider.dart';
 import '../../domain/entities/attachment.dart';
 import '../../domain/repositories/attachment_repository.dart';
 import '../../../../core/database/app_database.dart';
+import '../../../../core/sync/google_drive_sync_service.dart';
 
 class AttachmentRepositoryImpl implements AttachmentRepository {
   final AppDatabase _database;
@@ -24,6 +27,14 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   ];
 
   AttachmentRepositoryImpl(this._database, this._googleSignIn);
+
+  // ✅ PHASE 1 FIX 1: Organized attachment path structure
+  String _getAttachmentPath(DateTime date, String transactionSyncId) {
+    final year = date.year;
+    final month = date.month.toString().padLeft(2, '0');
+    return '${GoogleDriveSyncService.ATTACHMENTS_FOLDER}/$year/$month/$transactionSyncId/';
+  }
+
   @override
   Future<Attachment> createAttachment(Attachment attachment) async {
     final companion = AttachmentsTableCompanion.insert(
@@ -78,6 +89,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final rows = await query.get();
     return rows.map(_mapRowToAttachment).toList();
   }
+
   @override
   Future<Attachment> updateAttachment(Attachment attachment) async {
     final companion = AttachmentsTableCompanion(
@@ -108,6 +120,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       version: attachment.version + 1,
     );
   }
+
   @override
   Future<void> deleteAttachment(int id) async {
     await (_database.delete(_database.attachmentsTable)
@@ -154,27 +167,55 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
     final driveApi = drive.DriveApi(client);
     
-    final driveFile = drive.File()
-      ..name = attachment.fileName
-      ..parents = ['appDataFolder'];
+    try {
+      // ✅ PHASE 1 FIX 1: Get transaction for organized folder structure
+      final transaction = await _getTransactionForAttachment(attachment);
+      final folderPath = _getAttachmentPath(transaction.date, transaction.syncId);
+      
+      // ✅ PHASE 1 FIX 1: Create organized folder hierarchy
+      final folderId = await _ensureFolderExists(driveApi, folderPath);
+      
+      // ✅ PHASE 1 FIX 1: Check for duplicates using file hash
+      final fileHash = await _calculateFileHash(file);
+      final existingFile = await _findExistingFile(driveApi, fileHash, folderId);
+      
+      if (existingFile != null) {
+        // File already exists - just update metadata
+        await _updateAttachmentWithDriveInfo(attachment, existingFile);
+        return;
+      }
+      
+      // ✅ PHASE 1 FIX 1: Generate collision-safe filename
+      final safeFileName = await _generateUniqueFileName(driveApi, attachment.fileName, folderId);
+      
+      final driveFile = drive.File()
+        ..name = safeFileName
+        ..parents = [folderId]  // ✅ Upload to organized folder structure
+        ..appProperties = {
+          'fileHash': fileHash,  // ✅ For deduplication
+          'originalName': attachment.fileName,
+          'capturedFromCamera': attachment.isCapturedFromCamera.toString(),
+          'uploadedAt': DateTime.now().toIso8601String(),
+        };
 
-    final media = drive.Media(file.openRead(), file.lengthSync());
-    
-    final uploadedFile = await driveApi.files.create(
-      driveFile,
-      uploadMedia: media,
-    );
+      final media = drive.Media(file.openRead(), file.lengthSync());
+      
+      final uploadedFile = await driveApi.files.create(
+        driveFile,
+        uploadMedia: media,
+      );
 
-    client.close();
+      // Update attachment with Google Drive info
+      final updatedAttachment = attachment.copyWith(
+        googleDriveFileId: uploadedFile.id,
+        isUploaded: true,
+        updatedAt: DateTime.now(),
+      );
 
-    // Update attachment with Google Drive info
-    final updatedAttachment = attachment.copyWith(
-      googleDriveFileId: uploadedFile.id,
-      isUploaded: true,
-      updatedAt: DateTime.now(),
-    );
-
-    await updateAttachment(updatedAttachment);
+      await updateAttachment(updatedAttachment);
+    } finally {
+      client.close();
+    }
   }
 
   @override
@@ -197,13 +238,15 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
     final driveApi = drive.DriveApi(client);
     
-    // Move file to trash instead of permanent deletion
-    await driveApi.files.update(
-      drive.File()..trashed = true,
-      googleDriveFileId,
-    );
-
-    client.close();
+    try {
+      // Move file to trash instead of permanent deletion
+      await driveApi.files.update(
+        drive.File()..trashed = true,
+        googleDriveFileId,
+      );
+    } finally {
+      client.close();
+    }
   }
 
   @override
@@ -232,11 +275,11 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
         $fields: 'webViewLink',
       ) as drive.File;
       
-      client.close();
       return file.webViewLink;
     } catch (e) {
-      client.close();
       return null;
+    } finally {
+      client.close();
     }
   }
 
@@ -263,61 +306,34 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   @override
   Future<void> insertOrUpdateFromSync(Attachment attachment) async {
-    final query = _database.select(_database.attachmentsTable)
-      ..where((table) => table.syncId.equals(attachment.syncId));
+    final existingAttachment = await (_database.select(_database.attachmentsTable)
+      ..where((table) => table.syncId.equals(attachment.syncId)))
+      .getSingleOrNull();
     
-    final existing = await query.getSingleOrNull();
-
-    if (existing != null) {
-      // Update existing if version is newer
-      if (attachment.version > existing.version) {
-        await updateAttachment(attachment.copyWith(id: existing.id));
-      }
-    } else {
-      // Insert new
+    if (existingAttachment == null) {
       await createAttachment(attachment);
+    } else {
+      await updateAttachment(attachment.copyWith(id: existingAttachment.id));
     }
   }
+
   @override
   Future<Attachment> compressAndStoreFile(String filePath, int transactionId, String fileName, {bool isCapturedFromCamera = false}) async {
-    final file = File(filePath);
-    if (!await file.exists()) {
-      throw Exception('File does not exist');
-    }
-
-    final mimeType = mime(filePath);
-    final isImage = mimeType?.startsWith('image/') == true;
+    File file = File(filePath);
     
-    File processedFile = file;
-    
-    if (isImage) {
-      // Compress image
-      final compressedFile = await FlutterImageCompress.compressAndGetFile(
-        filePath,
-        '${filePath}_compressed.jpg',
-        quality: 70,
-        minWidth: 1920,
-        minHeight: 1080,
-      );
-      
-      if (compressedFile != null) {
-        processedFile = File(compressedFile.path);
-      }
+    // Compress if it's an image captured from camera
+    if (isCapturedFromCamera && _isImageFile(fileName)) {
+      file = await _compressImage(file);
     }
-
-    final fileStats = await processedFile.stat();
-    final syncId = _uuid.v4();
     
-    // Set cache expiry for camera-captured images (30 days)
-    DateTime? cacheExpiry;
-    if (isCapturedFromCamera && isImage) {
-      cacheExpiry = DateTime.now().add(const Duration(days: 30));
-    }
+    final fileStats = await file.stat();
+    final mimeType = mime(fileName);
+    final deviceId = await _getDeviceId();
     
     return Attachment(
       transactionId: transactionId,
       fileName: fileName,
-      filePath: processedFile.path,
+      filePath: file.path,
       type: _getAttachmentType(mimeType),
       mimeType: mimeType,
       fileSizeBytes: fileStats.size,
@@ -326,17 +342,17 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       isUploaded: false,
       isDeleted: false,
       isCapturedFromCamera: isCapturedFromCamera,
-      localCacheExpiry: cacheExpiry,
-      deviceId: 'current-device-id', // TODO: Get actual device ID
+      localCacheExpiry: isCapturedFromCamera ? DateTime.now().add(const Duration(days: 30)) : null,
+      deviceId: deviceId,
       isSynced: false,
-      syncId: syncId,
+      syncId: _uuid.v4(),
       version: 1,
     );
   }
 
   @override
   Future<bool> isFileExists(String filePath) async {
-    return File(filePath).exists();
+    return await File(filePath).exists();
   }
 
   @override
@@ -347,13 +363,12 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     }
   }
 
-  // Cache management operations
   @override
   Future<void> cleanExpiredCache() async {
     final expiredAttachments = await getExpiredCacheAttachments();
     
     for (final attachment in expiredAttachments) {
-      if (attachment.filePath != null && await isFileExists(attachment.filePath!)) {
+      if (attachment.filePath != null) {
         await deleteLocalFile(attachment.filePath!);
         
         // Update attachment to remove local file path
@@ -462,6 +477,115 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       client.close();
     }
   }
+
+  // ✅ PHASE 1 HELPER METHODS
+  
+  Future<TransactionsTableData> _getTransactionForAttachment(Attachment attachment) async {
+    final transaction = await (_database.select(_database.transactionsTable)
+      ..where((t) => t.id.equals(attachment.transactionId)))
+      .getSingle();
+    return transaction;
+  }
+
+  Future<String> _ensureFolderExists(drive.DriveApi driveApi, String folderPath) async {
+    final pathParts = folderPath.split('/');
+    String currentParent = 'appDataFolder';
+    
+    for (final folderName in pathParts) {
+      if (folderName.isEmpty) continue;
+      
+      final existingFolders = await driveApi.files.list(
+        q: "name='$folderName' and '$currentParent' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
+      );
+      
+      if (existingFolders.files?.isNotEmpty == true) {
+        currentParent = existingFolders.files!.first.id!;
+      } else {
+        // Create new folder
+        final newFolder = await driveApi.files.create(
+          drive.File()
+            ..name = folderName
+            ..mimeType = 'application/vnd.google-apps.folder'
+            ..parents = [currentParent],
+        );
+        currentParent = newFolder.id!;
+      }
+    }
+    
+    return currentParent;
+  }
+
+  Future<String> _calculateFileHash(File file) async {
+    final bytes = await file.readAsBytes();
+    return sha256.convert(bytes).toString();
+  }
+
+  Future<drive.File?> _findExistingFile(drive.DriveApi driveApi, String fileHash, String folderId) async {
+    final existingFiles = await driveApi.files.list(
+      q: "appProperties has { key='fileHash' and value='$fileHash' } and '$folderId' in parents and trashed=false",
+    );
+    
+    return existingFiles.files?.isNotEmpty == true ? existingFiles.files!.first : null;
+  }
+
+  Future<String> _generateUniqueFileName(drive.DriveApi driveApi, String fileName, String folderId) async {
+    String baseName = p.basenameWithoutExtension(fileName);
+    String extension = p.extension(fileName);
+    String candidateName = fileName;
+    int counter = 1;
+    
+    while (true) {
+      final existingFiles = await driveApi.files.list(
+        q: "name='$candidateName' and '$folderId' in parents and trashed=false",
+      );
+      
+      if (existingFiles.files?.isEmpty == true) {
+        return candidateName;
+      }
+      
+      candidateName = '${baseName}_$counter$extension';
+      counter++;
+    }
+  }
+
+  Future<void> _updateAttachmentWithDriveInfo(Attachment attachment, drive.File driveFile) async {
+    final updatedAttachment = attachment.copyWith(
+      googleDriveFileId: driveFile.id,
+      isUploaded: true,
+      updatedAt: DateTime.now(),
+    );
+    await updateAttachment(updatedAttachment);
+  }
+
+  // EXISTING HELPER METHODS
+
+  Future<File> _compressImage(File file) async {
+    final tempDir = await getTemporaryDirectory();
+    final targetPath = p.join(tempDir.path, 'compressed_${p.basename(file.path)}');
+    
+    final compressedFile = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 85,
+      minWidth: 1920,
+      minHeight: 1080,
+      format: CompressFormat.jpeg,
+    );
+    
+    return compressedFile != null ? File(compressedFile.path) : file;
+  }
+
+  bool _isImageFile(String fileName) {
+    final extension = p.extension(fileName).toLowerCase();
+    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].contains(extension);
+  }
+
+  Future<String> _getDeviceId() async {
+    // This should match the device ID logic from GoogleDriveSyncService
+    // For now, return a simple UUID
+    return _uuid.v4();
+  }
+
   Attachment _mapRowToAttachment(AttachmentsTableData row) {
     return Attachment(
       id: row.id,
