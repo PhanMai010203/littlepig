@@ -44,8 +44,9 @@ lib/
 lib/app/
 ├── app.dart                           # Main app widget with theme and routing setup
 └── router/                            # Navigation configuration
-    ├── app_router.dart               # GoRouter setup and route definitions
-    └── app_routes.dart               # Route constants and path definitions
+    ├── app_router.dart               # GoRouter setup with enhanced page transitions
+    ├── app_routes.dart               # Route constants and path definitions
+    └── page_transitions.dart         # Phase 4: Page transition framework with platform-aware animations
 ```
 **Summary**: Contains the main app configuration including routing setup using GoRouter, theme management, and app-level state providers.
 
@@ -236,6 +237,8 @@ lib/shared/
 │   ├── dialogs/                      # Dialog framework components (Phase 3)
 │   │   ├── popup_framework.dart     # Reusable popup template with Material 3 design
 │   │   └── bottom_sheet_service.dart # Smart bottom sheets with snapping and options
+│   ├── transitions/                  # Page transition components (Phase 4)
+│   │   └── open_container_navigation.dart # Material 3 OpenContainer navigation components
 │   ├── app_text.dart                # Custom text widgets with theming
 │   ├── page_template.dart           # Common page layout template
 │   └── language_selector.dart       # Language selection widget
@@ -315,9 +318,9 @@ lib/shared/
 - ✅ **Localization**: Multi-language support (English, Vietnamese)
 - ✅ **Use Cases**: Business logic abstraction layer
 - ✅ **State Management**: Comprehensive BLoC implementation
-- ✅ **Animation Framework**: Phase 1-3 - Foundation, Widget Library, and Dialog Framework
+- ✅ **Animation Framework**: Phase 1-4 - Foundation, Widget Library, Dialog Framework, and Page Transitions
 
-### 🎬 Animation Framework (Phase 1-3)
+### 🎬 Animation Framework (Phase 1-4)
 - **Platform Detection**: Comprehensive platform and device capability detection
 - **Animation Settings**: Enhanced user preferences with granular animation controls  
 - **Animation Utilities**: Core framework with settings-aware animation wrappers
@@ -325,7 +328,9 @@ lib/shared/
 - **Transition Animations**: AnimatedExpanded, AnimatedSizeSwitcher, ScaledAnimatedSwitcher, SlideFadeTransition
 - **Interactive Animations**: TappableWidget, ShakeAnimation, AnimatedScaleOpacity
 - **Dialog Framework**: PopupFramework, DialogService, BottomSheetService with animation integration
-- **Performance Optimization**: Battery saver and reduced motion support
+- **Page Transitions**: Platform-aware slide, fade, scale, and slide-fade transitions with Material 3 OpenContainer support
+- **Navigation Enhancement**: Seamless container transitions for card-to-page and list-to-page navigation
+- **Performance Optimization**: Battery saver and reduced motion support with zero overhead when disabled
 - **Platform Adaptation**: iOS, Android, web, and desktop-specific behaviors
 
 This architecture provides a scalable, maintainable foundation for a comprehensive personal finance management application with advanced file management, multi-currency capabilities, and a sophisticated animation framework. 
