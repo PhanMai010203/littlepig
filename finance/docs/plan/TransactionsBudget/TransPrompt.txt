@@ -1,0 +1,8 @@
+My Finance project has the following structure in @FILE_STRUCTURE.md .
+I want you to start phase 3 of the plan in @PHASE_3_IMPLEMENTATION_GUIDE.md . For context, the whole summary of the plan is in  @PHASE_SUMMARIES_QUICK_REFERENCE.md .I want:
+
+1. Implement this phase
+2. Write test and run until they all pass
+3. Update FILE_STRUCTURE.md, and <feature>_HOW_TO_USE in docs/features/
+4. Write a short and succint Github commit with Title and Description
+Begin by searching the codebase to understand what has been implemented. Then read through the provided plan, and plan your approach to this phase (you are allowed to do web search, just saying), and start coding. Stick to the plan you make, and remember to revise your plan regularly in case you drift off tracks!
