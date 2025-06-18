@@ -21,7 +21,15 @@ class AppSettings {
 
   /// Get a setting value with a default fallback
   static T getWithDefault<T>(String key, T defaultValue) {
-    return _settings[key] as T? ?? defaultValue;
+    try {
+      final value = _settings[key];
+      if (value is T) {
+        return value;
+      }
+      return defaultValue;
+    } catch (e) {
+      return defaultValue;
+    }
   }
 
   /// Update a setting and persist it
@@ -108,8 +116,14 @@ class AppSettings {
       // Localization
       'locale': 'system', // 'system' or locale code like 'en', 'es'
       
-      // Accessibility
+      // Enhanced animation settings (Phase 1)
       'reduceAnimations': false,
+      'animationLevel': 'normal', // 'none', 'reduced', 'normal', 'enhanced'
+      'batterySaver': false,
+      'outlinedIcons': false,
+      'appAnimations': true,
+      
+      // Accessibility
       'highContrast': false,
       
       // App behavior
@@ -170,6 +184,47 @@ class AppSettings {
         break;
     }
     await set('themeMode', modeString);
+  }
+
+  /// Animation-related convenience methods (Phase 1)
+  static String get animationLevel {
+    return get<String>('animationLevel') ?? 'normal';
+  }
+
+  static Future<void> setAnimationLevel(String level) async {
+    await set('animationLevel', level);
+  }
+
+  static bool get batterySaver {
+    return get<bool>('batterySaver') ?? false;
+  }
+
+  static Future<void> setBatterySaver(bool enabled) async {
+    await set('batterySaver', enabled);
+  }
+
+  static bool get outlinedIcons {
+    return get<bool>('outlinedIcons') ?? false;
+  }
+
+  static Future<void> setOutlinedIcons(bool enabled) async {
+    await set('outlinedIcons', enabled);
+  }
+
+  static bool get appAnimations {
+    return get<bool>('appAnimations') ?? true;
+  }
+
+  static Future<void> setAppAnimations(bool enabled) async {
+    await set('appAnimations', enabled);
+  }
+
+  static bool get reduceAnimations {
+    return get<bool>('reduceAnimations') ?? false;
+  }
+
+  static Future<void> setReduceAnimations(bool enabled) async {
+    await set('reduceAnimations', enabled);
   }
 
   /// Debug method to print all settings
