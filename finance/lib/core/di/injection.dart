@@ -11,6 +11,9 @@ import '../services/database_service.dart';
 import '../services/file_picker_service.dart';
 import '../sync/sync_service.dart';
 import '../sync/google_drive_sync_service.dart';
+import '../sync/incremental_sync_service.dart';
+import '../sync/crdt_conflict_resolver.dart';
+import '../database/migrations/schema_cleanup_migration.dart';
 
 // Repository interfaces
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
@@ -200,10 +203,26 @@ Future<void> configureDependencies() async {
     ),
   );
   
-  // Register Sync Service
-  final syncService = GoogleDriveSyncService(databaseService.database);
-  await syncService.initialize();
-  getIt.registerSingleton<SyncService>(syncService);
+  // Register Phase 3 & 4 Sync Services
+  getIt.registerSingleton<CRDTConflictResolver>(
+    CRDTConflictResolver(),
+  );
+  
+  getIt.registerSingleton<SchemaCleanupMigration>(
+    SchemaCleanupMigration(databaseService.database),
+  );
+  
+  // Register the new IncrementalSyncService (Phase 3)
+  final incrementalSyncService = IncrementalSyncService(databaseService.database);
+  await incrementalSyncService.initialize();
+  
+  // Keep the old GoogleDriveSyncService for backward compatibility if needed
+  final legacySyncService = GoogleDriveSyncService(databaseService.database);
+  await legacySyncService.initialize();
+  
+  // Use IncrementalSyncService as the primary sync service
+  getIt.registerSingleton<SyncService>(incrementalSyncService);
+  getIt.registerSingleton<GoogleDriveSyncService>(legacySyncService);
 }
 
 /// Reset all GetIt registrations (useful for testing or hot reload)
@@ -358,8 +377,24 @@ Future<void> configureTestDependencies() async {
     ),
   );
   
-  // Register Sync Service
-  final syncService = GoogleDriveSyncService(databaseService.database);
-  await syncService.initialize();
-  getIt.registerSingleton<SyncService>(syncService);
+  // Register Phase 3 & 4 Sync Services for Testing
+  getIt.registerSingleton<CRDTConflictResolver>(
+    CRDTConflictResolver(),
+  );
+  
+  getIt.registerSingleton<SchemaCleanupMigration>(
+    SchemaCleanupMigration(databaseService.database),
+  );
+  
+  // Register the new IncrementalSyncService (Phase 3) for testing
+  final incrementalSyncService = IncrementalSyncService(databaseService.database);
+  await incrementalSyncService.initialize();
+  
+  // Keep the old GoogleDriveSyncService for backward compatibility if needed
+  final legacySyncService = GoogleDriveSyncService(databaseService.database);
+  await legacySyncService.initialize();
+  
+  // Use IncrementalSyncService as the primary sync service
+  getIt.registerSingleton<SyncService>(incrementalSyncService);
+  getIt.registerSingleton<GoogleDriveSyncService>(legacySyncService);
 }
