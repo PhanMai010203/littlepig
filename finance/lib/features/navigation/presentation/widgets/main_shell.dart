@@ -7,7 +7,6 @@ import '../../domain/entities/navigation_item.dart';
 import '../bloc/navigation_bloc.dart';
 import 'adaptive_bottom_navigation.dart';
 import '../../../../core/services/dialog_service.dart';
-import '../../../../shared/widgets/animations/tappable_widget.dart';
 import 'navigation_customization_content.dart';
 
 class MainShell extends StatelessWidget {
