@@ -6,6 +6,9 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../domain/entities/navigation_item.dart';
 import '../bloc/navigation_bloc.dart';
 import 'adaptive_bottom_navigation.dart';
+import '../../../../core/services/dialog_service.dart';
+import '../../../../shared/widgets/animations/tappable_widget.dart';
+import 'navigation_customization_content.dart';
 
 class MainShell extends StatelessWidget {
   const MainShell({
@@ -35,7 +38,7 @@ class MainShell extends StatelessWidget {
               context.go(route);
             },
             onLongPress: (index) {
-              // Show customization dialog for navigation items
+              // Show customization dialog using PopupFramework
               _showCustomizationDialog(context, index, state);
             },
           ),
@@ -43,43 +46,37 @@ class MainShell extends StatelessWidget {
       },
     );
   }
+
+  /// Phase 5 Enhancement: Enhanced customization dialog with PopupFramework
   void _showCustomizationDialog(
     BuildContext context,
     int index,
     NavigationState state,
   ) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text('navigation.customize_title'.tr()),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('navigation.customize_message'.tr(namedArgs: {'item': state.navigationItems[index].label.tr()})),
-            const SizedBox(height: 16),
-            ...NavigationItem.allItems
-                .where((item) => !state.navigationItems.contains(item))
-                .map(
-                  (item) => ListTile(
-                    leading: Icon(Icons.circle),
-                    title: Text(item.label.tr()),
-                    onTap: () {
-                      context.read<NavigationBloc>().add(
-                        NavigationEvent.navigationItemReplaced(index, item),
-                      );
-                      Navigator.of(dialogContext).pop();
-                    },
-                  ),
-                ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text('common.cancel'.tr()),
-          ),
-        ],
+    final availableItems = NavigationItem.allItems
+        .where((item) => !state.navigationItems.contains(item))
+        .toList();
+
+    DialogService.showPopup<void>(
+      context,
+      NavigationCustomizationContent(
+        currentIndex: index,
+        currentItem: state.navigationItems[index],
+        availableItems: availableItems,
+        onItemSelected: (newItem) {
+          context.read<NavigationBloc>().add(
+            NavigationEvent.navigationItemReplaced(index, newItem),
+          );
+          Navigator.of(context).pop();
+        },
       ),
+      title: 'navigation.customize_title'.tr(),
+      subtitle: 'navigation.customize_message'.tr(
+        namedArgs: {'item': state.navigationItems[index].label.tr()},
+      ),
+      icon: Icons.edit,
+      showCloseButton: true,
+      barrierDismissible: true,
     );
   }
 } 

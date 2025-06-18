@@ -183,13 +183,15 @@ lib/features/
 │       └── models/                  # Data transfer objects
 │           ├── currency_model.dart  # Currency data model
 │           └── exchange_rate_model.dart # Exchange rate data model
-├── navigation/                      # Navigation feature
+├── navigation/                      # Navigation feature (Enhanced in Phase 5)
 │   ├── domain/                      # Navigation entities
 │   │   └── entities/                # Navigation-related entities
+│   │       └── navigation_item.dart # Navigation item entity with customization support
 │   └── presentation/                # Navigation UI components
 │       ├── widgets/                 # Navigation widgets
-│       │   ├── adaptive_bottom_navigation.dart # Bottom navigation bar
-│       │   └── main_shell.dart      # Main app shell wrapper
+│       │   ├── adaptive_bottom_navigation.dart # Bottom navigation bar with TappableWidget integration
+│       │   ├── main_shell.dart      # Main app shell wrapper with PopupFramework integration
+│       │   └── navigation_customization_content.dart # Phase 5: Custom dialog content for navigation customization
 │       └── bloc/                    # Navigation state management
 │           ├── navigation_bloc.dart # Navigation BLoC
 │           ├── navigation_event.dart # Navigation events
@@ -231,7 +233,7 @@ lib/shared/
 │   │   ├── animated_size_switcher.dart # Content switching with size transitions
 │   │   ├── scaled_animated_switcher.dart # Scale + fade content switching
 │   │   ├── slide_fade_transition.dart # Combined slide and fade effects
-│   │   ├── tappable_widget.dart     # Tap response with customizable feedback
+│   │   ├── tappable_widget.dart     # Tap response with customizable feedback (Enhanced in Phase 5)
 │   │   ├── shake_animation.dart     # Horizontal shake effects for errors
 │   │   └── animated_scale_opacity.dart # Combined scale and opacity changes
 │   ├── dialogs/                      # Dialog framework components (Phase 3)
@@ -240,7 +242,7 @@ lib/shared/
 │   ├── transitions/                  # Page transition components (Phase 4)
 │   │   └── open_container_navigation.dart # Material 3 OpenContainer navigation components
 │   ├── app_text.dart                # Custom text widgets with theming
-│   ├── page_template.dart           # Common page layout template
+│   ├── page_template.dart           # Common page layout template (Enhanced in Phase 5 with FadeIn and AnimatedSwitcher)
 │   └── language_selector.dart       # Language selection widget
 └── utils/                           # Shared utilities (currently empty)
 ```
@@ -320,7 +322,7 @@ lib/shared/
 - ✅ **State Management**: Comprehensive BLoC implementation
 - ✅ **Animation Framework**: Phase 1-4 - Foundation, Widget Library, Dialog Framework, and Page Transitions
 
-### 🎬 Animation Framework (Phase 1-4)
+### 🎬 Animation Framework (Phase 1-5 Complete)
 - **Platform Detection**: Comprehensive platform and device capability detection
 - **Animation Settings**: Enhanced user preferences with granular animation controls  
 - **Animation Utilities**: Core framework with settings-aware animation wrappers
@@ -330,6 +332,7 @@ lib/shared/
 - **Dialog Framework**: PopupFramework, DialogService, BottomSheetService with animation integration
 - **Page Transitions**: Platform-aware slide, fade, scale, and slide-fade transitions with Material 3 OpenContainer support
 - **Navigation Enhancement**: Seamless container transitions for card-to-page and list-to-page navigation
+- **Phase 5 Integration**: Enhanced navigation with PopupFramework dialogs, animated PageTemplate, and comprehensive TappableWidget integration
 - **Performance Optimization**: Battery saver and reduced motion support with zero overhead when disabled
 - **Platform Adaptation**: iOS, Android, web, and desktop-specific behaviors
 

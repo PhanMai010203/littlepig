@@ -7,7 +7,12 @@
     "budgets": "Ngân sách",
     "more": "Thêm",
     "customize_title": "Tùy chỉnh Điều hướng",
-    "customize_message": "Chọn thay thế cho {item}:"
+    "customize_message": "Chọn thay thế cho {item}:",
+    "current_item": "Mục hiện tại",
+    "available_items": "Mục có sẵn",
+    "all_items_active": "Tất cả mục đã kích hoạt",
+    "all_items_active_message": "Tất cả các mục điều hướng có sẵn đã được kích hoạt.",
+    "tap_to_replace": "Nhấn vào bất kỳ mục nào để thay thế mục hiện tại"
   },
 
   "home": {

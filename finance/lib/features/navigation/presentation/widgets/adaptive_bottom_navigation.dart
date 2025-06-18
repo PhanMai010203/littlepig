@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import '../../domain/entities/navigation_item.dart';
+// Phase 5 import
+import '../../../../shared/widgets/animations/tappable_widget.dart';
 
 class AdaptiveBottomNavigation extends StatefulWidget {
   const AdaptiveBottomNavigation({
@@ -219,10 +221,9 @@ class _AnimatedNavigationItem extends StatelessWidget {
       builder: (context, child) {
         return Transform.scale(
           scale: scaleAnimation.value,
-          child: GestureDetector(
+          child: TappableWidget(
             onTap: onTap,
             onLongPress: onLongPress,
-            behavior: HitTestBehavior.opaque,
             child: Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 12,

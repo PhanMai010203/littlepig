@@ -7,7 +7,12 @@
     "budgets": "Budgets",
     "more": "More",
     "customize_title": "Customize Navigation",
-    "customize_message": "Choose a replacement for {item}:"
+    "customize_message": "Choose a replacement for {item}:",
+    "current_item": "Current Item",
+    "available_items": "Available Items",
+    "all_items_active": "All Items Active",
+    "all_items_active_message": "All available navigation items are already active.",
+    "tap_to_replace": "Tap any item to replace the current one"
   },
 
   "home": {
