@@ -69,7 +69,8 @@ lib/core/
 │   ├── database_service.dart         # Database service abstraction
 │   ├── file_picker_service.dart      # File selection and attachment processing service
 │   ├── cache_management_service.dart # Local file cache management service
-│   └── platform_service.dart        # Platform detection and device capabilities service
+│   ├── platform_service.dart        # Platform detection and device capabilities service
+│   └── dialog_service.dart          # Dialog and popup service (Phase 3)
 ├── sync/                             # Cloud synchronization services (Phase 5A)
 │   ├── sync_service.dart            # Legacy sync service interface
 │   ├── incremental_sync_service.dart # Event-driven sync service (Phase 4)
@@ -232,6 +233,9 @@ lib/shared/
 │   │   ├── tappable_widget.dart     # Tap response with customizable feedback
 │   │   ├── shake_animation.dart     # Horizontal shake effects for errors
 │   │   └── animated_scale_opacity.dart # Combined scale and opacity changes
+│   ├── dialogs/                      # Dialog framework components (Phase 3)
+│   │   ├── popup_framework.dart     # Reusable popup template with Material 3 design
+│   │   └── bottom_sheet_service.dart # Smart bottom sheets with snapping and options
 │   ├── app_text.dart                # Custom text widgets with theming
 │   ├── page_template.dart           # Common page layout template
 │   └── language_selector.dart       # Language selection widget
@@ -311,15 +315,16 @@ lib/shared/
 - ✅ **Localization**: Multi-language support (English, Vietnamese)
 - ✅ **Use Cases**: Business logic abstraction layer
 - ✅ **State Management**: Comprehensive BLoC implementation
-- ✅ **Animation Framework**: Phase 1 - Foundation with platform-aware settings
+- ✅ **Animation Framework**: Phase 1-3 - Foundation, Widget Library, and Dialog Framework
 
-### 🎬 Animation Framework (Phase 1-2)
+### 🎬 Animation Framework (Phase 1-3)
 - **Platform Detection**: Comprehensive platform and device capability detection
 - **Animation Settings**: Enhanced user preferences with granular animation controls  
 - **Animation Utilities**: Core framework with settings-aware animation wrappers
 - **Entry Animations**: FadeIn, ScaleIn, SlideIn, BouncingWidget, BreathingWidget
 - **Transition Animations**: AnimatedExpanded, AnimatedSizeSwitcher, ScaledAnimatedSwitcher, SlideFadeTransition
 - **Interactive Animations**: TappableWidget, ShakeAnimation, AnimatedScaleOpacity
+- **Dialog Framework**: PopupFramework, DialogService, BottomSheetService with animation integration
 - **Performance Optimization**: Battery saver and reduced motion support
 - **Platform Adaptation**: iOS, Android, web, and desktop-specific behaviors
 
