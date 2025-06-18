@@ -12,8 +12,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   BudgetUpdateService? _budgetUpdateService;
 
   TransactionRepositoryImpl(
-    this._database, 
-    String deviceId, {  // Keep parameter for backward compatibility but don't use it
+    this._database, {
     BudgetUpdateService? budgetUpdateService,
   }) : _budgetUpdateService = budgetUpdateService;
 
@@ -336,7 +335,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
     );
   }
 
-  /// Sets the budget update service for late injection to avoid circular dependencies
+  // ✅ PHASE 4: Method to set budget service after construction
   void setBudgetUpdateService(BudgetUpdateService service) {
     _budgetUpdateService = service;
   }

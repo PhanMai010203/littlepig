@@ -106,9 +106,11 @@ Future<void> configureDependencies() async {
     BudgetRepositoryImpl(databaseService.database),
   );
   
-  // Register Transaction Repository first without BudgetUpdateService
+  // Register TransactionRepository (Phase 4: no more deviceId parameter)
   getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(databaseService.database, deviceId),
+    TransactionRepositoryImpl(
+      getIt<DatabaseService>().database,
+    ),
   );
   
   // Register Currency Data Sources
@@ -279,9 +281,11 @@ Future<void> configureTestDependencies() async {
     BudgetRepositoryImpl(databaseService.database),
   );
   
-  // Register Transaction Repository first without BudgetUpdateService
+  // Register TransactionRepository (Phase 4: no more deviceId parameter)
   getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(databaseService.database, deviceId),
+    TransactionRepositoryImpl(
+      getIt<DatabaseService>().database,
+    ),
   );
   
   // Register Currency Data Sources

@@ -14,10 +14,7 @@ void main() {
         date: DateTime.now(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test-device',
-        isSynced: false,
         syncId: 'test-sync-id',
-        version: 1,
         
         // Advanced fields
         transactionType: TransactionType.subscription,
@@ -50,10 +47,7 @@ void main() {
         date: DateTime.now(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test-device',
-        isSynced: false,
         syncId: 'test-sync-id-2',
-        version: 1,
         
         // Advanced fields
         transactionType: TransactionType.loan,
@@ -85,10 +79,7 @@ void main() {
         date: DateTime.now(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test-device',
-        isSynced: false,
         syncId: 'test-sync-id-3',
-        version: 1,
         
         // Advanced fields
         transactionType: TransactionType.loan,
@@ -118,10 +109,7 @@ void main() {
         date: DateTime.now(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test-device',
-        isSynced: false,
         syncId: 'test-sync-id-4',
-        version: 1,
       );
 
       expect(regularTransaction.availableActions, contains(TransactionAction.edit));
@@ -149,10 +137,7 @@ void main() {
         date: DateTime.now(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test-device',
-        isSynced: false,
         syncId: 'test-sync-id-5',
-        version: 1,
       );
 
       // Act
@@ -203,7 +188,9 @@ void main() {
       expect(TransactionState.values, contains(TransactionState.pending));
       expect(TransactionState.values, contains(TransactionState.scheduled));
       expect(TransactionState.values, contains(TransactionState.cancelled));
-      expect(TransactionState.values, contains(TransactionState.actionRequired));      // Test actions
+      expect(TransactionState.values, contains(TransactionState.actionRequired));
+      
+      // Test actions
       expect(TransactionAction.values.length, 8);
       expect(TransactionAction.values, contains(TransactionAction.none));
       expect(TransactionAction.values, contains(TransactionAction.pay));

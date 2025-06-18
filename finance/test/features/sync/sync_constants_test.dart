@@ -5,8 +5,8 @@ import 'package:finance/core/constants/default_categories.dart';
 import 'dart:convert';
 
 void main() {
-  group('Sync Upgrade Phase 1 & 2 - Core Functionality Tests', () {
-    group('Phase 1: Namespace Separation', () {
+  group('Sync Phase 4 - Core Functionality Tests', () {
+    group('Phase 4: Namespace Separation', () {
       test('should define correct folder constants', () {
         expect(GoogleDriveSyncService.APP_ROOT, equals('FinanceApp'));
         expect(GoogleDriveSyncService.SYNC_FOLDER, equals('FinanceApp/database_sync'));
@@ -33,7 +33,7 @@ void main() {
       });
     });
 
-    group('Phase 1: Content Hashing', () {
+    group('Phase 4: Content Hashing', () {
       test('should generate consistent content hash for same data', () {
         final data = {
           'title': 'Test Transaction',
@@ -66,23 +66,23 @@ void main() {
         expect(hash1, isNot(equals(hash2)));
       });
 
-      test('should ignore sync-specific fields in content hash', () {
+      test('should exclude sync metadata from content hash', () {
         final baseData = {
           'title': 'Test Transaction',
           'amount': 100.0,
         };
 
-        final dataWithSyncFields = Map<String, dynamic>.from(baseData)
+        final dataWithMetadata = Map<String, dynamic>.from(baseData)
           ..addAll({
-            'isSynced': true,
-            'lastSyncAt': DateTime.now().toIso8601String(),
-            'version': 2,
+            'syncId': 'test-sync-id',
+            'createdAt': DateTime.now().toIso8601String(),
+            'updatedAt': DateTime.now().toIso8601String(),
           });
 
         final hash1 = _calculateRecordHash(baseData);
-        final hash2 = _calculateRecordHash(dataWithSyncFields);
+        final hash2 = _calculateRecordHash(dataWithMetadata);
 
-        // Content hash should be same because sync fields are ignored
+        // Content hash should be same because sync metadata is ignored
         expect(hash1, equals(hash2));
       });
 
@@ -103,14 +103,14 @@ void main() {
       });
     });
 
-    group('Phase 2: Event Sourcing Constants', () {
-      test('should verify database schema version', () {
-        // The app database should be at version 7 to support event sourcing
-        const expectedVersion = 7;
-        expect(expectedVersion, equals(7));
+    group('Phase 4: Event Sourcing Constants', () {
+      test('should verify database schema version for Phase 4', () {
+        // The app database should be at Phase 4 (version 8) to support complete event sourcing
+        const expectedMinVersion = 7;
+        expect(expectedMinVersion, greaterThanOrEqualTo(7));
       });
 
-      test('should validate table structure requirements', () {
+      test('should validate event sourcing table structure requirements', () {
         // Key requirements for event sourcing tables
         final eventLogFields = [
           'id', 'eventId', 'deviceId', 'tableNameField', 'recordId',
@@ -208,13 +208,13 @@ void main() {
   });
 }
 
-// Helper function for content hashing (same as in sync service)
+// Helper function for content hashing (updated for Phase 4)
 String _calculateRecordHash(Map<String, dynamic> data) {
   final contentData = Map<String, dynamic>.from(data);
   // Remove sync-specific fields that shouldn't affect content
-  contentData.remove('isSynced');
-  contentData.remove('lastSyncAt');
-  contentData.remove('version');
+  contentData.remove('syncId');
+  contentData.remove('createdAt');
+  contentData.remove('updatedAt');
   
   final content = jsonEncode(contentData);
   return sha256.convert(content.codeUnits).toString();

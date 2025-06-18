@@ -13,10 +13,7 @@ class MockAccountRepository implements AccountRepository {
         isDefault: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test-device',
-        isSynced: true,
         syncId: 'test-sync-id',
-        version: 1,
       ),
     ];
   }
@@ -32,10 +29,7 @@ class MockAccountRepository implements AccountRepository {
         isDefault: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test-device',
-        isSynced: true,
         syncId: 'test-sync-id',
-        version: 1,
       );
     }
     return null;
