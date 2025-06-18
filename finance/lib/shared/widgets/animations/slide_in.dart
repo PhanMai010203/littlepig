@@ -109,7 +109,7 @@ class _SlideInState extends State<SlideIn>
       return widget.child;
     }
 
-    return AnimationUtils.animatedBuilder(
+    return AnimatedBuilder(
       animation: _slideAnimation,
       builder: (context, child) {
         return Transform.translate(
