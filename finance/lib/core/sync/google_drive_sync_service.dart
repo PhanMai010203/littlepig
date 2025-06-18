@@ -308,32 +308,46 @@ class GoogleDriveSyncService implements SyncService {
     return null;
   }
 
-  // ✅ PHASE 1 FIX 2: Change Detection Implementation
+  /// Check if there are unsynced changes using event log approach
   Future<bool> _hasUnsyncedChanges() async {
-    final unsyncedCount = await _database.customSelect('''
-      SELECT COUNT(*) as count FROM (
-        SELECT 1 FROM transactions WHERE is_synced = false
-        UNION ALL
-        SELECT 1 FROM categories WHERE is_synced = false
-        UNION ALL
-        SELECT 1 FROM accounts WHERE is_synced = false
-        UNION ALL
-        SELECT 1 FROM budgets WHERE is_synced = false
-        UNION ALL
-        SELECT 1 FROM attachments WHERE is_synced = false
-      )
-    ''').getSingle();
-    
-    return unsyncedCount.data['count'] > 0;
+    try {
+      // ✅ PHASE 4: Use event sourcing approach - check for unsynced events
+      final unsyncedEvents = await _database.customSelect('''
+        SELECT COUNT(*) as count FROM sync_event_log 
+        WHERE is_synced = false
+      ''').getSingle();
+      
+      return unsyncedEvents.data['count'] > 0;
+    } catch (e) {
+      // Fallback: check if any records exist (simple approach)
+      final tables = ['transactions', 'categories', 'accounts', 'budgets', 'attachments'];
+      
+      for (final table in tables) {
+        try {
+          final result = await _database.customSelect('''
+            SELECT COUNT(*) as count FROM $table
+          ''').getSingle();
+          
+          if (result.data['count'] > 0) {
+            return true; // Assume needs sync if data exists
+          }
+        } catch (e) {
+          // Table might not exist, continue
+          continue;
+        }
+      }
+      
+      return false;
+    }
   }
 
-  // ✅ PHASE 1 FIX 3: Content Hashing for Better Conflict Detection
+  // ✅ PHASE 4: Content Hashing for Better Conflict Detection (cleaned)
   String _calculateRecordHash(Map<String, dynamic> data) {
     final contentData = Map<String, dynamic>.from(data);
     // Remove sync-specific fields that shouldn't affect content
-    contentData.remove('isSynced');
-    contentData.remove('lastSyncAt');
-    contentData.remove('version');
+    contentData.remove('syncId');
+    contentData.remove('createdAt');
+    contentData.remove('updatedAt');
     
     final content = jsonEncode(contentData);
     return sha256.convert(utf8.encode(content)).toString();
@@ -425,15 +439,15 @@ class GoogleDriveSyncService implements SyncService {
         .getSingleOrNull();
         
       if (localTxn == null) {
-        // New record - insert
+        // New record - insert (Phase 4: only use syncId field)
         await _database.into(_database.transactionsTable).insert(
           TransactionsTableCompanion.insert(
             title: remoteTxn.title,
-            note: Value(remoteTxn.note),
             amount: remoteTxn.amount,
             categoryId: remoteTxn.categoryId,
             accountId: remoteTxn.accountId,
             date: remoteTxn.date,
+            note: Value(remoteTxn.note),
             createdAt: Value(remoteTxn.createdAt),
             updatedAt: Value(remoteTxn.updatedAt),
             transactionType: Value(remoteTxn.transactionType),
@@ -447,52 +461,36 @@ class GoogleDriveSyncService implements SyncService {
             skipPaid: Value(remoteTxn.skipPaid),
             createdAnotherFutureTransaction: Value(remoteTxn.createdAnotherFutureTransaction),
             objectiveLoanFk: Value(remoteTxn.objectiveLoanFk),
-            deviceId: remoteTxn.deviceId,
-            isSynced: const Value(true),
-            lastSyncAt: Value(remoteTxn.lastSyncAt),
             syncId: remoteTxn.syncId,
-            version: Value(remoteTxn.version),
           ),
         );
       } else {
-        // Check content hash for better conflict detection
-        final remoteHash = _calculateRecordHash(remoteTxn.toJson());
-        final localHash = _calculateRecordHash(localTxn.toJson());
-        
-        if (remoteHash != localHash) {
-          // Content differs - resolve conflict
-          if (remoteTxn.version > localTxn.version || 
-              (remoteTxn.version == localTxn.version && 
-               remoteTxn.updatedAt.isAfter(localTxn.updatedAt))) {
-            await (_database.update(_database.transactionsTable)
-              ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
-              .write(TransactionsTableCompanion(
-                title: Value(remoteTxn.title),
-                note: Value(remoteTxn.note),
-                amount: Value(remoteTxn.amount),
-                categoryId: Value(remoteTxn.categoryId),
-                accountId: Value(remoteTxn.accountId),
-                date: Value(remoteTxn.date),
-                updatedAt: Value(remoteTxn.updatedAt),
-                transactionType: Value(remoteTxn.transactionType),
-                specialType: Value(remoteTxn.specialType),
-                recurrence: Value(remoteTxn.recurrence),
-                periodLength: Value(remoteTxn.periodLength),
-                endDate: Value(remoteTxn.endDate),
-                originalDateDue: Value(remoteTxn.originalDateDue),
-                transactionState: Value(remoteTxn.transactionState),
-                paid: Value(remoteTxn.paid),
-                skipPaid: Value(remoteTxn.skipPaid),
-                createdAnotherFutureTransaction: Value(remoteTxn.createdAnotherFutureTransaction),
-                objectiveLoanFk: Value(remoteTxn.objectiveLoanFk),
-                isSynced: const Value(true),
-                lastSyncAt: Value(remoteTxn.lastSyncAt),
-                version: Value(remoteTxn.version),
-              ));
-          }
-          // Else keep local version (it's newer)
+        // ✅ PHASE 4: Simple conflict resolution - use timestamp comparison
+        if (remoteTxn.updatedAt.isAfter(localTxn.updatedAt)) {
+          await (_database.update(_database.transactionsTable)
+            ..where((tbl) => tbl.syncId.equals(remoteTxn.syncId)))
+            .write(TransactionsTableCompanion(
+              title: Value(remoteTxn.title),
+              note: Value(remoteTxn.note),
+              amount: Value(remoteTxn.amount),
+              categoryId: Value(remoteTxn.categoryId),
+              accountId: Value(remoteTxn.accountId),
+              date: Value(remoteTxn.date),
+              updatedAt: Value(remoteTxn.updatedAt),
+              transactionType: Value(remoteTxn.transactionType),
+              specialType: Value(remoteTxn.specialType),
+              recurrence: Value(remoteTxn.recurrence),
+              periodLength: Value(remoteTxn.periodLength),
+              endDate: Value(remoteTxn.endDate),
+              originalDateDue: Value(remoteTxn.originalDateDue),
+              transactionState: Value(remoteTxn.transactionState),
+              paid: Value(remoteTxn.paid),
+              skipPaid: Value(remoteTxn.skipPaid),
+              createdAnotherFutureTransaction: Value(remoteTxn.createdAnotherFutureTransaction),
+              objectiveLoanFk: Value(remoteTxn.objectiveLoanFk),
+            ));
         }
-        // Else content is identical - no action needed
+        // Else keep local version (it's newer)
       }
     }
   }
@@ -504,6 +502,7 @@ class GoogleDriveSyncService implements SyncService {
         .getSingleOrNull();
         
       if (localCategory == null) {
+        // ✅ PHASE 4: Insert new category with only essential fields
         await _database.into(_database.categoriesTable).insert(
           CategoriesTableCompanion.insert(
             name: remoteCategory.name,
@@ -513,34 +512,22 @@ class GoogleDriveSyncService implements SyncService {
             isDefault: Value(remoteCategory.isDefault),
             createdAt: Value(remoteCategory.createdAt),
             updatedAt: Value(remoteCategory.updatedAt),
-            deviceId: remoteCategory.deviceId,
-            isSynced: const Value(true),
-            lastSyncAt: Value(remoteCategory.lastSyncAt),
             syncId: remoteCategory.syncId,
-            version: Value(remoteCategory.version),
           ),
         );
       } else {
-        final remoteHash = _calculateRecordHash(remoteCategory.toJson());
-        final localHash = _calculateRecordHash(localCategory.toJson());
-        
-        if (remoteHash != localHash) {
-          if (remoteCategory.version > localCategory.version || 
-              (remoteCategory.version == localCategory.version && remoteCategory.updatedAt.isAfter(localCategory.updatedAt))) {
-            await (_database.update(_database.categoriesTable)
-              ..where((tbl) => tbl.syncId.equals(remoteCategory.syncId)))
-              .write(CategoriesTableCompanion(
-                name: Value(remoteCategory.name),
-                icon: Value(remoteCategory.icon),
-                color: Value(remoteCategory.color),
-                isExpense: Value(remoteCategory.isExpense),
-                isDefault: Value(remoteCategory.isDefault),
-                updatedAt: Value(remoteCategory.updatedAt),
-                isSynced: const Value(true),
-                lastSyncAt: Value(remoteCategory.lastSyncAt),
-                version: Value(remoteCategory.version),
-              ));
-          }
+        // ✅ PHASE 4: Simple conflict resolution - use timestamp comparison
+        if (remoteCategory.updatedAt.isAfter(localCategory.updatedAt)) {
+          await (_database.update(_database.categoriesTable)
+            ..where((tbl) => tbl.syncId.equals(remoteCategory.syncId)))
+            .write(CategoriesTableCompanion(
+              name: Value(remoteCategory.name),
+              icon: Value(remoteCategory.icon),
+              color: Value(remoteCategory.color),
+              isExpense: Value(remoteCategory.isExpense),
+              isDefault: Value(remoteCategory.isDefault),
+              updatedAt: Value(remoteCategory.updatedAt),
+            ));
         }
       }
     }
@@ -553,41 +540,30 @@ class GoogleDriveSyncService implements SyncService {
         .getSingleOrNull();
         
       if (localAccount == null) {
+        // ✅ PHASE 4: Insert new account with only essential fields
         await _database.into(_database.accountsTable).insert(
           AccountsTableCompanion.insert(
             name: remoteAccount.name,
-            deviceId: remoteAccount.deviceId,
             syncId: remoteAccount.syncId,
             balance: Value(remoteAccount.balance),
             currency: Value(remoteAccount.currency),
             isDefault: Value(remoteAccount.isDefault),
             createdAt: Value(remoteAccount.createdAt),
             updatedAt: Value(remoteAccount.updatedAt),
-            isSynced: const Value(true),
-            lastSyncAt: Value(remoteAccount.lastSyncAt),
-            version: Value(remoteAccount.version),
           ),
         );
       } else {
-        final remoteHash = _calculateRecordHash(remoteAccount.toJson());
-        final localHash = _calculateRecordHash(localAccount.toJson());
-        
-        if (remoteHash != localHash) {
-          if (remoteAccount.version > localAccount.version || 
-              (remoteAccount.version == localAccount.version && remoteAccount.updatedAt.isAfter(localAccount.updatedAt))) {
-            await (_database.update(_database.accountsTable)
-              ..where((tbl) => tbl.syncId.equals(remoteAccount.syncId)))
-              .write(AccountsTableCompanion(
-                name: Value(remoteAccount.name),
-                balance: Value(remoteAccount.balance),
-                currency: Value(remoteAccount.currency),
-                isDefault: Value(remoteAccount.isDefault),
-                updatedAt: Value(remoteAccount.updatedAt),
-                isSynced: const Value(true),
-                lastSyncAt: Value(remoteAccount.lastSyncAt),
-                version: Value(remoteAccount.version),
-              ));
-          }
+        // ✅ PHASE 4: Simple conflict resolution - use timestamp comparison
+        if (remoteAccount.updatedAt.isAfter(localAccount.updatedAt)) {
+          await (_database.update(_database.accountsTable)
+            ..where((tbl) => tbl.syncId.equals(remoteAccount.syncId)))
+            .write(AccountsTableCompanion(
+              name: Value(remoteAccount.name),
+              balance: Value(remoteAccount.balance),
+              currency: Value(remoteAccount.currency),
+              isDefault: Value(remoteAccount.isDefault),
+              updatedAt: Value(remoteAccount.updatedAt),
+            ));
         }
       }
     }
@@ -600,6 +576,7 @@ class GoogleDriveSyncService implements SyncService {
         .getSingleOrNull();
         
       if (localBudget == null) {
+        // ✅ PHASE 4: Insert new budget with only essential fields
         await _database.into(_database.budgetsTable).insert(
           BudgetsTableCompanion.insert(
             name: remoteBudget.name,
@@ -612,11 +589,7 @@ class GoogleDriveSyncService implements SyncService {
             isActive: Value(remoteBudget.isActive),
             createdAt: Value(remoteBudget.createdAt),
             updatedAt: Value(remoteBudget.updatedAt),
-            deviceId: remoteBudget.deviceId,
-            isSynced: const Value(true),
-            lastSyncAt: Value(remoteBudget.lastSyncAt),
             syncId: remoteBudget.syncId,
-            version: Value(remoteBudget.version),
             budgetTransactionFilters: Value(remoteBudget.budgetTransactionFilters),
             excludeDebtCreditInstallments: Value(remoteBudget.excludeDebtCreditInstallments),
             excludeObjectiveInstallments: Value(remoteBudget.excludeObjectiveInstallments),
@@ -632,41 +605,33 @@ class GoogleDriveSyncService implements SyncService {
           ),
         );
       } else {
-        final remoteHash = _calculateRecordHash(remoteBudget.toJson());
-        final localHash = _calculateRecordHash(localBudget.toJson());
-        
-        if (remoteHash != localHash) {
-          if (remoteBudget.version > localBudget.version || 
-              (remoteBudget.version == localBudget.version && remoteBudget.updatedAt.isAfter(localBudget.updatedAt))) {
-            await (_database.update(_database.budgetsTable)
-              ..where((tbl) => tbl.syncId.equals(remoteBudget.syncId)))
-              .write(BudgetsTableCompanion(
-                name: Value(remoteBudget.name),
-                amount: Value(remoteBudget.amount),
-                spent: Value(remoteBudget.spent),
-                categoryId: Value(remoteBudget.categoryId),
-                period: Value(remoteBudget.period),
-                startDate: Value(remoteBudget.startDate),
-                endDate: Value(remoteBudget.endDate),
-                isActive: Value(remoteBudget.isActive),
-                updatedAt: Value(remoteBudget.updatedAt),
-                isSynced: const Value(true),
-                lastSyncAt: Value(remoteBudget.lastSyncAt),
-                version: Value(remoteBudget.version),
-                budgetTransactionFilters: Value(remoteBudget.budgetTransactionFilters),
-                excludeDebtCreditInstallments: Value(remoteBudget.excludeDebtCreditInstallments),
-                excludeObjectiveInstallments: Value(remoteBudget.excludeObjectiveInstallments),
-                walletFks: Value(remoteBudget.walletFks),
-                currencyFks: Value(remoteBudget.currencyFks),
-                sharedReferenceBudgetPk: Value(remoteBudget.sharedReferenceBudgetPk),
-                budgetFksExclude: Value(remoteBudget.budgetFksExclude),
-                normalizeToCurrency: Value(remoteBudget.normalizeToCurrency),
-                isIncomeBudget: Value(remoteBudget.isIncomeBudget),
-                includeTransferInOutWithSameCurrency: Value(remoteBudget.includeTransferInOutWithSameCurrency),
-                includeUpcomingTransactionFromBudget: Value(remoteBudget.includeUpcomingTransactionFromBudget),
-                dateCreatedOriginal: Value(remoteBudget.dateCreatedOriginal),
-              ));
-          }
+        // ✅ PHASE 4: Simple conflict resolution - use timestamp comparison
+        if (remoteBudget.updatedAt.isAfter(localBudget.updatedAt)) {
+          await (_database.update(_database.budgetsTable)
+            ..where((tbl) => tbl.syncId.equals(remoteBudget.syncId)))
+            .write(BudgetsTableCompanion(
+              name: Value(remoteBudget.name),
+              amount: Value(remoteBudget.amount),
+              spent: Value(remoteBudget.spent),
+              categoryId: Value(remoteBudget.categoryId),
+              period: Value(remoteBudget.period),
+              startDate: Value(remoteBudget.startDate),
+              endDate: Value(remoteBudget.endDate),
+              isActive: Value(remoteBudget.isActive),
+              updatedAt: Value(remoteBudget.updatedAt),
+              budgetTransactionFilters: Value(remoteBudget.budgetTransactionFilters),
+              excludeDebtCreditInstallments: Value(remoteBudget.excludeDebtCreditInstallments),
+              excludeObjectiveInstallments: Value(remoteBudget.excludeObjectiveInstallments),
+              walletFks: Value(remoteBudget.walletFks),
+              currencyFks: Value(remoteBudget.currencyFks),
+              sharedReferenceBudgetPk: Value(remoteBudget.sharedReferenceBudgetPk),
+              budgetFksExclude: Value(remoteBudget.budgetFksExclude),
+              normalizeToCurrency: Value(remoteBudget.normalizeToCurrency),
+              isIncomeBudget: Value(remoteBudget.isIncomeBudget),
+              includeTransferInOutWithSameCurrency: Value(remoteBudget.includeTransferInOutWithSameCurrency),
+              includeUpcomingTransactionFromBudget: Value(remoteBudget.includeUpcomingTransactionFromBudget),
+              dateCreatedOriginal: Value(remoteBudget.dateCreatedOriginal),
+            ));
         }
       }
     }
@@ -681,6 +646,7 @@ class GoogleDriveSyncService implements SyncService {
       
       if (localAttachment == null) {
         // Insert new attachment (only metadata - files remain on individual devices or Google Drive)
+        // ✅ PHASE 4: Insert new attachment with only essential fields
         await _database.into(_database.attachmentsTable).insert(
           AttachmentsTableCompanion.insert(
             transactionId: remoteAttachment.transactionId,
@@ -695,85 +661,50 @@ class GoogleDriveSyncService implements SyncService {
             isDeleted: Value(remoteAttachment.isDeleted),
             isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
             localCacheExpiry: const Value(null), // Don't sync cache expiry
-            deviceId: remoteAttachment.deviceId,
-            isSynced: const Value(true),
-            lastSyncAt: Value(remoteAttachment.lastSyncAt),
             syncId: remoteAttachment.syncId,
-            version: Value(remoteAttachment.version),
           ),
         );
       } else {
-        final remoteHash = _calculateRecordHash(remoteAttachment.toJson());
-        final localHash = _calculateRecordHash(localAttachment.toJson());
-        
-        if (remoteHash != localHash) {
-          if (remoteAttachment.version > localAttachment.version || 
-              (remoteAttachment.version == localAttachment.version && remoteAttachment.updatedAt.isAfter(localAttachment.updatedAt))) {
-            await (_database.update(_database.attachmentsTable)
-              ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
-              .write(AttachmentsTableCompanion(
-                fileName: Value(remoteAttachment.fileName),
-                googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
-                googleDriveLink: Value(remoteAttachment.googleDriveLink),
-                type: Value(remoteAttachment.type),
-                mimeType: Value(remoteAttachment.mimeType),
-                fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
-                isUploaded: Value(remoteAttachment.isUploaded),
-                isDeleted: Value(remoteAttachment.isDeleted),
-                isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
-                updatedAt: Value(remoteAttachment.updatedAt),
-                isSynced: const Value(true),
-                lastSyncAt: Value(remoteAttachment.lastSyncAt),
-                version: Value(remoteAttachment.version),
-              ));
-          }
+        // ✅ PHASE 4: Simple conflict resolution - use timestamp comparison
+        if (remoteAttachment.updatedAt.isAfter(localAttachment.updatedAt)) {
+          await (_database.update(_database.attachmentsTable)
+            ..where((tbl) => tbl.syncId.equals(remoteAttachment.syncId)))
+            .write(AttachmentsTableCompanion(
+              fileName: Value(remoteAttachment.fileName),
+              googleDriveFileId: Value(remoteAttachment.googleDriveFileId),
+              googleDriveLink: Value(remoteAttachment.googleDriveLink),
+              type: Value(remoteAttachment.type),
+              mimeType: Value(remoteAttachment.mimeType),
+              fileSizeBytes: Value(remoteAttachment.fileSizeBytes),
+              isUploaded: Value(remoteAttachment.isUploaded),
+              isDeleted: Value(remoteAttachment.isDeleted),
+              isCapturedFromCamera: Value(remoteAttachment.isCapturedFromCamera),
+              updatedAt: Value(remoteAttachment.updatedAt),
+            ));
         }
       }
     }
   }
 
+  /// ✅ PHASE 4: Mark sync events as processed (event sourcing approach)
   Future<void> _markAllAsSynced() async {
     final now = DateTime.now();
     
-    // Mark transactions as synced
-    await _database.update(_database.transactionsTable).write(
-      TransactionsTableCompanion(
-        isSynced: const Value(true),
-        lastSyncAt: Value(now),
-      ),
-    );
-    
-    // Mark categories as synced
-    await _database.update(_database.categoriesTable).write(
-      CategoriesTableCompanion(
-        isSynced: const Value(true),
-        lastSyncAt: Value(now),
-      ),
-    );
-    
-    // Mark accounts as synced
-    await _database.update(_database.accountsTable).write(
-      AccountsTableCompanion(
-        isSynced: const Value(true),
-        lastSyncAt: Value(now),
-      ),
-    );
-    
-    // Mark budgets as synced
-    await _database.update(_database.budgetsTable).write(
-      BudgetsTableCompanion(
-        isSynced: const Value(true),
-        lastSyncAt: Value(now),
-      ),
-    );
-    
-    // Mark attachments as synced
-    await _database.update(_database.attachmentsTable).write(
-      AttachmentsTableCompanion(
-        isSynced: const Value(true),
-        lastSyncAt: Value(now),
-      ),
-    );
+    try {
+      // ✅ PHASE 4: Mark sync events as synced (event sourcing approach)
+      await _database.customStatement('''
+        UPDATE sync_event_log 
+        SET is_synced = true 
+        WHERE is_synced = false
+      ''');
+      
+      // Update last sync time
+      await _updateLastSyncTime(now);
+    } catch (e) {
+      // Fallback: If event log doesn't exist, just update metadata
+      print('Warning: Could not mark events as synced (event log may not exist): $e');
+      await _updateLastSyncTime(now);
+    }
   }
 
   Future<void> _updateLastSyncTime(DateTime time) async {

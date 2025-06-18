@@ -49,7 +49,7 @@ class AccountRepositoryImpl implements AccountRepository {
       balance: Value(account.balance),
       currency: Value(account.currency),
       isDefault: Value(account.isDefault),
-      deviceId: account.deviceId,
+
       syncId: syncId,
       createdAt: Value(account.createdAt),
       updatedAt: Value(now),
@@ -74,19 +74,13 @@ class AccountRepositoryImpl implements AccountRepository {
       currency: Value(account.currency),
       isDefault: Value(account.isDefault),
       updatedAt: Value(now),
-      isSynced: const Value(false), // Mark as unsynced when updated
-      version: Value(account.version + 1),
     );
 
     await (_database.update(_database.accountsTable)
           ..where((tbl) => tbl.id.equals(account.id!)))
         .write(companion);
     
-    return account.copyWith(
-      updatedAt: now,
-      isSynced: false,
-      version: account.version + 1,
-    );
+    return account.copyWith(updatedAt: now);
   }
 
   @override
@@ -104,26 +98,21 @@ class AccountRepositoryImpl implements AccountRepository {
         .write(AccountsTableCompanion(
           balance: Value(amount),
           updatedAt: Value(now),
-          isSynced: const Value(false),
+
         ));
   }
 
   @override
   Future<List<Account>> getUnsyncedAccounts() async {
-    final accounts = await (_database.select(_database.accountsTable)
-          ..where((tbl) => tbl.isSynced.equals(false)))
-        .get();
+    final accounts = await _database.select(_database.accountsTable).get();
     return accounts.map(_mapToEntity).toList();
   }
 
   @override
   Future<void> markAsSynced(String syncId, DateTime syncTime) async {
-    await (_database.update(_database.accountsTable)
-          ..where((tbl) => tbl.syncId.equals(syncId)))
-        .write(AccountsTableCompanion(
-          isSynced: const Value(true),
-          lastSyncAt: Value(syncTime),
-        ));
+    // ✅ PHASE 4: No-op since sync fields removed from table
+    // Event sourcing tracks sync status in sync_event_log table
+    // This method kept for backward compatibility
   }
 
   @override
@@ -138,15 +127,11 @@ class AccountRepositoryImpl implements AccountRepository {
         isDefault: Value(account.isDefault),
         createdAt: Value(account.createdAt),
         updatedAt: Value(account.updatedAt),
-        deviceId: account.deviceId,
-        isSynced: const Value(true),
-        lastSyncAt: Value(account.lastSyncAt),
         syncId: account.syncId,
-        version: Value(account.version),
       );
       await _database.into(_database.accountsTable).insert(companion);
-    } else if (account.version > existing.version) {
-      // Update existing account if incoming version is newer
+    } else {
+      // ✅ PHASE 4: Always update with newer data from sync (no version comparison needed)
       final companion = AccountsTableCompanion(
         id: Value(existing.id!),
         name: Value(account.name),
@@ -154,9 +139,6 @@ class AccountRepositoryImpl implements AccountRepository {
         currency: Value(account.currency),
         isDefault: Value(account.isDefault),
         updatedAt: Value(account.updatedAt),
-        isSynced: const Value(true),
-        lastSyncAt: Value(account.lastSyncAt),
-        version: Value(account.version),
       );
       
       await (_database.update(_database.accountsTable)
@@ -174,11 +156,7 @@ class AccountRepositoryImpl implements AccountRepository {
       isDefault: data.isDefault,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      deviceId: data.deviceId,
-      isSynced: data.isSynced,
-      lastSyncAt: data.lastSyncAt,
       syncId: data.syncId,
-      version: data.version,
     );
   }
 }

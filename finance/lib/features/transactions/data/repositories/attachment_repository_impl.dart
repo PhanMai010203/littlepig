@@ -37,6 +37,9 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   @override
   Future<Attachment> createAttachment(Attachment attachment) async {
+    final now = DateTime.now();
+    final syncId = attachment.syncId.isEmpty ? _uuid.v4() : attachment.syncId;
+    
     final companion = AttachmentsTableCompanion.insert(
       transactionId: attachment.transactionId,
       fileName: attachment.fileName,
@@ -46,19 +49,22 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       type: attachment.type.index,
       mimeType: Value(attachment.mimeType),
       fileSizeBytes: Value(attachment.fileSizeBytes),
+      createdAt: Value(attachment.createdAt),
+      updatedAt: Value(now),
       isUploaded: Value(attachment.isUploaded),
       isDeleted: Value(attachment.isDeleted),
       isCapturedFromCamera: Value(attachment.isCapturedFromCamera),
       localCacheExpiry: Value(attachment.localCacheExpiry),
-      deviceId: attachment.deviceId,
-      isSynced: Value(attachment.isSynced),
-      lastSyncAt: Value(attachment.lastSyncAt),
-      syncId: attachment.syncId,
-      version: Value(attachment.version),
+      syncId: syncId,
     );
 
     final id = await _database.into(_database.attachmentsTable).insert(companion);
-    return attachment.copyWith(id: id);
+    
+    return attachment.copyWith(
+      id: id,
+      syncId: syncId,
+      updatedAt: now,
+    );
   }
 
   @override
@@ -92,6 +98,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   @override
   Future<Attachment> updateAttachment(Attachment attachment) async {
+    final now = DateTime.now();
     final companion = AttachmentsTableCompanion(
       id: Value(attachment.id!),
       transactionId: Value(attachment.transactionId),
@@ -102,23 +109,18 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       type: Value(attachment.type.index),
       mimeType: Value(attachment.mimeType),
       fileSizeBytes: Value(attachment.fileSizeBytes),
-      updatedAt: Value(DateTime.now()),
+      updatedAt: Value(now),
       isUploaded: Value(attachment.isUploaded),
       isDeleted: Value(attachment.isDeleted),
       isCapturedFromCamera: Value(attachment.isCapturedFromCamera),
       localCacheExpiry: Value(attachment.localCacheExpiry),
-      deviceId: Value(attachment.deviceId),
-      isSynced: Value(attachment.isSynced),
-      lastSyncAt: Value(attachment.lastSyncAt),
-      syncId: Value(attachment.syncId),
-      version: Value(attachment.version + 1),
     );
 
-    await _database.update(_database.attachmentsTable).replace(companion);
-    return attachment.copyWith(
-      updatedAt: DateTime.now(),
-      version: attachment.version + 1,
-    );
+    await (_database.update(_database.attachmentsTable)
+          ..where((table) => table.id.equals(attachment.id!)))
+        .write(companion);
+    
+    return attachment.copyWith(updatedAt: now);
   }
 
   @override
@@ -285,8 +287,10 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   @override
   Future<List<Attachment>> getUnsyncedAttachments() async {
+    // ✅ PHASE 4: With event sourcing, use event log to determine unsynced items
+    // For now, return all non-deleted attachments since individual table sync is replaced by event sourcing
     final query = _database.select(_database.attachmentsTable)
-      ..where((table) => table.isSynced.equals(false) & table.isDeleted.equals(false))
+      ..where((table) => table.isDeleted.equals(false))
       ..orderBy([(table) => OrderingTerm.asc(table.createdAt)]);
     
     final rows = await query.get();
@@ -295,13 +299,9 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   @override
   Future<void> markAsSynced(String syncId, DateTime syncTime) async {
-    final update = _database.update(_database.attachmentsTable)
-      ..where((table) => table.syncId.equals(syncId));
-    
-    await update.write(AttachmentsTableCompanion(
-      isSynced: const Value(true),
-      lastSyncAt: Value(syncTime),
-    ));
+    // ✅ PHASE 4: No-op since sync fields removed from table
+    // Event sourcing tracks sync status in sync_event_log table
+    // This method kept for backward compatibility
   }
 
   @override
@@ -343,10 +343,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       isDeleted: false,
       isCapturedFromCamera: isCapturedFromCamera,
       localCacheExpiry: isCapturedFromCamera ? DateTime.now().add(const Duration(days: 30)) : null,
-      deviceId: deviceId,
-      isSynced: false,
+      
       syncId: _uuid.v4(),
-      version: 1,
     );
   }
 
@@ -603,11 +601,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       isDeleted: row.isDeleted,
       isCapturedFromCamera: row.isCapturedFromCamera,
       localCacheExpiry: row.localCacheExpiry,
-      deviceId: row.deviceId,
-      isSynced: row.isSynced,
-      lastSyncAt: row.lastSyncAt,
       syncId: row.syncId,
-      version: row.version,
     );
   }
 

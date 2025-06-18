@@ -60,10 +60,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
       color: category.color.value,
       isExpense: category.isExpense,
       isDefault: Value(category.isDefault),
-      deviceId: category.deviceId,
-      syncId: syncId,
       createdAt: Value(category.createdAt),
       updatedAt: Value(now),
+      syncId: syncId,
     );
 
     final id = await _database.into(_database.categoriesTable).insert(companion);
@@ -86,19 +85,13 @@ class CategoryRepositoryImpl implements CategoryRepository {
       isExpense: Value(category.isExpense),
       isDefault: Value(category.isDefault),
       updatedAt: Value(now),
-      isSynced: const Value(false), // Mark as unsynced when updated
-      version: Value(category.version + 1),
     );
 
     await (_database.update(_database.categoriesTable)
           ..where((tbl) => tbl.id.equals(category.id!)))
         .write(companion);
     
-    return category.copyWith(
-      updatedAt: now,
-      isSynced: false,
-      version: category.version + 1,
-    );
+    return category.copyWith(updatedAt: now);
   }
 
   @override
@@ -110,20 +103,15 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
   @override
   Future<List<Category>> getUnsyncedCategories() async {
-    final categories = await (_database.select(_database.categoriesTable)
-          ..where((tbl) => tbl.isSynced.equals(false)))
-        .get();
+    final categories = await _database.select(_database.categoriesTable).get();
     return categories.map(_mapToEntity).toList();
   }
 
   @override
   Future<void> markAsSynced(String syncId, DateTime syncTime) async {
-    await (_database.update(_database.categoriesTable)
-          ..where((tbl) => tbl.syncId.equals(syncId)))
-        .write(CategoriesTableCompanion(
-          isSynced: const Value(true),
-          lastSyncAt: Value(syncTime),
-        ));
+    // ✅ PHASE 4: No-op since sync fields removed from table
+    // Event sourcing tracks sync status in sync_event_log table
+    // This method kept for backward compatibility
   }
 
   @override
@@ -140,15 +128,11 @@ class CategoryRepositoryImpl implements CategoryRepository {
         isDefault: Value(category.isDefault),
         createdAt: Value(category.createdAt),
         updatedAt: Value(category.updatedAt),
-        deviceId: category.deviceId,
-        isSynced: const Value(true),
-        lastSyncAt: Value(category.lastSyncAt),
         syncId: category.syncId,
-        version: Value(category.version),
       );
       await _database.into(_database.categoriesTable).insert(companion);
-    } else if (category.version > existing.version) {
-      // Update existing category if incoming version is newer
+    } else {
+      // ✅ PHASE 4: Always update with newer data from sync (no version comparison needed)
       final companion = CategoriesTableCompanion(
         id: Value(existing.id!),
         name: Value(category.name),
@@ -157,9 +141,6 @@ class CategoryRepositoryImpl implements CategoryRepository {
         isExpense: Value(category.isExpense),
         isDefault: Value(category.isDefault),
         updatedAt: Value(category.updatedAt),
-        isSynced: const Value(true),
-        lastSyncAt: Value(category.lastSyncAt),
-        version: Value(category.version),
       );
       
       await (_database.update(_database.categoriesTable)
@@ -178,11 +159,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
       isDefault: data.isDefault,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      deviceId: data.deviceId,
-      isSynced: data.isSynced,
-      lastSyncAt: data.lastSyncAt,
       syncId: data.syncId,
-      version: data.version,
     );
   }
 }

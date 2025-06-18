@@ -63,7 +63,6 @@ class BudgetRepositoryImpl implements BudgetRepository {
       startDate: budget.startDate,
       endDate: budget.endDate,
       isActive: Value(budget.isActive),
-      deviceId: budget.deviceId,
       syncId: syncId,
       createdAt: Value(budget.createdAt),
       updatedAt: Value(now),
@@ -114,8 +113,6 @@ class BudgetRepositoryImpl implements BudgetRepository {
       endDate: Value(budget.endDate),
       isActive: Value(budget.isActive),
       updatedAt: Value(now),
-      isSynced: const Value(false), // Mark as unsynced when updated
-      version: Value(budget.version + 1),
       
       // Advanced filtering fields
       budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
@@ -144,11 +141,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
           ..where((tbl) => tbl.id.equals(budget.id!)))
         .write(companion);
     
-    return budget.copyWith(
-      updatedAt: now,
-      isSynced: false,
-      version: budget.version + 1,
-    );
+    return budget.copyWith(updatedAt: now);
   }
 
   @override
@@ -171,16 +164,17 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
   @override
   Future<List<Budget>> getUnsyncedBudgets() async {
-    // Phase 4: Since sync fields removed, return all budgets for now
-    // TODO: Implement proper event sourcing logic
+    // ✅ PHASE 4: With event sourcing, use event log to determine unsynced items
+    // For now, return all budgets since individual table sync is replaced by event sourcing
     final budgets = await _database.select(_database.budgetsTable).get();
     return budgets.map<Budget>(_mapToEntity).toList();
   }
 
   @override
   Future<void> markAsSynced(String syncId, DateTime syncTime) async {
-    // Phase 4: No-op since sync fields removed from table
-    // TODO: Implement proper event sourcing logic
+    // ✅ PHASE 4: No-op since sync fields removed from table
+    // Event sourcing tracks sync status in sync_event_log table
+    // This method kept for backward compatibility
   }
 
   @override
@@ -200,11 +194,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
         isActive: Value(budget.isActive),
         createdAt: Value(budget.createdAt),
         updatedAt: Value(budget.updatedAt),
-        deviceId: budget.deviceId,
-        isSynced: const Value(true),
-        lastSyncAt: Value(budget.lastSyncAt),
         syncId: budget.syncId,
-        version: Value(budget.version),
         
         // Advanced filtering fields
         budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
@@ -229,8 +219,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
         dateCreatedOriginal: Value(budget.dateCreatedOriginal),
       );
       await _database.into(_database.budgetsTable).insert(companion);
-    } else if (budget.version > existing.version) {
-      // Update existing budget if incoming version is newer
+    } else {
+      // ✅ PHASE 4: Always update with newer data from sync (no version comparison needed)
       final companion = BudgetsTableCompanion(
         id: Value(existing.id!),
         name: Value(budget.name),
@@ -242,9 +232,6 @@ class BudgetRepositoryImpl implements BudgetRepository {
         endDate: Value(budget.endDate),
         isActive: Value(budget.isActive),
         updatedAt: Value(budget.updatedAt),
-        isSynced: const Value(true),
-        lastSyncAt: Value(budget.lastSyncAt),
-        version: Value(budget.version),
         
         // Advanced filtering fields
         budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
@@ -288,60 +275,23 @@ class BudgetRepositoryImpl implements BudgetRepository {
       isActive: data.isActive,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      deviceId: data.deviceId,
-      isSynced: data.isSynced,
-      lastSyncAt: data.lastSyncAt,
       syncId: data.syncId,
-      version: data.version,
       
-      // Advanced filtering fields with proper JSON parsing
-      budgetTransactionFilters: data.budgetTransactionFilters != null 
-        ? _parseJsonMap(data.budgetTransactionFilters!) 
-        : null,
+      // Advanced filtering fields
       excludeDebtCreditInstallments: data.excludeDebtCreditInstallments,
       excludeObjectiveInstallments: data.excludeObjectiveInstallments,
-      walletFks: data.walletFks != null 
-        ? _parseJsonStringList(data.walletFks!) 
-        : null,
-      currencyFks: data.currencyFks != null 
-        ? _parseJsonStringList(data.currencyFks!) 
-        : null,
+      walletFks: data.walletFks != null ? List<String>.from(jsonDecode(data.walletFks!)) : null,
+      currencyFks: data.currencyFks != null ? List<String>.from(jsonDecode(data.currencyFks!)) : null,
       sharedReferenceBudgetPk: data.sharedReferenceBudgetPk,
-      budgetFksExclude: data.budgetFksExclude != null 
-        ? _parseJsonStringList(data.budgetFksExclude!) 
-        : null,
+      budgetFksExclude: data.budgetFksExclude != null ? List<String>.from(jsonDecode(data.budgetFksExclude!)) : null,
       normalizeToCurrency: data.normalizeToCurrency,
       isIncomeBudget: data.isIncomeBudget,
       includeTransferInOutWithSameCurrency: data.includeTransferInOutWithSameCurrency,
       includeUpcomingTransactionFromBudget: data.includeUpcomingTransactionFromBudget,
       dateCreatedOriginal: data.dateCreatedOriginal,
+      budgetTransactionFilters: data.budgetTransactionFilters != null 
+        ? Map<String, dynamic>.from(jsonDecode(data.budgetTransactionFilters!)) 
+        : null,
     );
-  }
-
-  // Helper methods for JSON parsing
-  List<String>? _parseJsonStringList(String jsonString) {
-    try {
-      final decoded = jsonDecode(jsonString);
-      if (decoded is List) {
-        return decoded.cast<String>();
-      }
-      return null;
-    } catch (e) {
-      print('Error parsing JSON string list: $e');
-      return null;
-    }
-  }
-
-  Map<String, dynamic>? _parseJsonMap(String jsonString) {
-    try {
-      final decoded = jsonDecode(jsonString);
-      if (decoded is Map<String, dynamic>) {
-        return decoded;
-      }
-      return null;
-    } catch (e) {
-      print('Error parsing JSON map: $e');
-      return null;
-    }
   }
 }

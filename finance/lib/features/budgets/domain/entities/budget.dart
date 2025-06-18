@@ -15,11 +15,7 @@ class Budget extends Equatable {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
 
   // Advanced filtering
   final bool excludeDebtCreditInstallments;
@@ -55,11 +51,7 @@ class Budget extends Equatable {
     required this.isActive,
     required this.createdAt,
     required this.updatedAt,
-    required this.deviceId,
-    required this.isSynced,
-    this.lastSyncAt,
     required this.syncId,
-    required this.version,
     
     // Advanced filtering parameters
     this.excludeDebtCreditInstallments = false,
@@ -88,11 +80,7 @@ class Budget extends Equatable {
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? deviceId,
-    bool? isSynced,
-    DateTime? lastSyncAt,
     String? syncId,
-    int? version,
     
     // Advanced filtering parameters
     bool? excludeDebtCreditInstallments,
@@ -120,11 +108,7 @@ class Budget extends Equatable {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
       
       // Advanced filtering assignments
       excludeDebtCreditInstallments: excludeDebtCreditInstallments ?? this.excludeDebtCreditInstallments,
@@ -159,11 +143,7 @@ class Budget extends Equatable {
         isActive,
         createdAt,
         updatedAt,
-        deviceId,
-        isSynced,
-        lastSyncAt,
         syncId,
-        version,
         
         // Advanced filtering props
         excludeDebtCreditInstallments,

@@ -10,11 +10,7 @@ class Category extends Equatable {
   final bool isDefault;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
 
   const Category({
     this.id,
@@ -25,11 +21,7 @@ class Category extends Equatable {
     required this.isDefault,
     required this.createdAt,
     required this.updatedAt,
-    required this.deviceId,
-    required this.isSynced,
-    this.lastSyncAt,
     required this.syncId,
-    required this.version,
   });
 
   Category copyWith({
@@ -41,11 +33,7 @@ class Category extends Equatable {
     bool? isDefault,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? deviceId,
-    bool? isSynced,
-    DateTime? lastSyncAt,
     String? syncId,
-    int? version,
   }) {
     return Category(
       id: id ?? this.id,
@@ -56,11 +44,7 @@ class Category extends Equatable {
       isDefault: isDefault ?? this.isDefault,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -74,10 +58,6 @@ class Category extends Equatable {
         isDefault,
         createdAt,
         updatedAt,
-        deviceId,
-        isSynced,
-        lastSyncAt,
         syncId,
-        version,
       ];
 }
