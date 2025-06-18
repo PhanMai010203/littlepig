@@ -137,10 +137,7 @@ class BudgetCsvService {
       isActive: true,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
-      deviceId: 'imported-device',
-      isSynced: false,
       syncId: DateTime.now().millisecondsSinceEpoch.toString(),
-      version: 1,
     );
   }
 } 

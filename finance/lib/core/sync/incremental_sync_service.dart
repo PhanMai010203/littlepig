@@ -545,11 +545,7 @@ class IncrementalSyncService implements SyncService {
           categoryId: data['categoryId'],
           accountId: data['accountId'],
           date: DateTime.parse(data['date']),
-          deviceId: data['deviceId'],
           syncId: data['syncId'],
-          // Mark as synced since it's coming from sync
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ),
         mode: InsertMode.insertOrIgnore,
       );
@@ -567,10 +563,7 @@ class IncrementalSyncService implements SyncService {
           icon: data['icon'],
           color: data['color'],
           isExpense: data['isExpense'],
-          deviceId: data['deviceId'],
           syncId: data['syncId'],
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ),
         mode: InsertMode.insertOrIgnore,
       );
@@ -585,10 +578,7 @@ class IncrementalSyncService implements SyncService {
       await _database.into(_database.accountsTable).insert(
         AccountsTableCompanion.insert(
           name: data['name'],
-          deviceId: data['deviceId'],
           syncId: data['syncId'],
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ),
         mode: InsertMode.insertOrIgnore,
       );
@@ -607,10 +597,7 @@ class IncrementalSyncService implements SyncService {
           period: data['period'],
           startDate: DateTime.parse(data['startDate']),
           endDate: DateTime.parse(data['endDate']),
-          deviceId: data['deviceId'],
           syncId: data['syncId'],
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ),
         mode: InsertMode.insertOrIgnore,
       );
@@ -627,10 +614,7 @@ class IncrementalSyncService implements SyncService {
           transactionId: data['transactionId'],
           fileName: data['fileName'],
           type: data['type'],
-          deviceId: data['deviceId'],
           syncId: data['syncId'],
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ),
         mode: InsertMode.insertOrIgnore,
       );
@@ -653,8 +637,6 @@ class IncrementalSyncService implements SyncService {
           accountId: Value(data['accountId']),
           date: Value(DateTime.parse(data['date'])),
           updatedAt: Value(DateTime.now()),
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ));
       return true;
     } catch (e) {
@@ -672,8 +654,6 @@ class IncrementalSyncService implements SyncService {
           color: Value(data['color']),
           isExpense: Value(data['isExpense']),
           updatedAt: Value(DateTime.now()),
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ));
       return true;
     } catch (e) {
@@ -688,8 +668,6 @@ class IncrementalSyncService implements SyncService {
         .write(AccountsTableCompanion(
           name: Value(data['name']),
           updatedAt: Value(DateTime.now()),
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ));
       return true;
     } catch (e) {
@@ -708,8 +686,6 @@ class IncrementalSyncService implements SyncService {
           startDate: Value(DateTime.parse(data['startDate'])),
           endDate: Value(DateTime.parse(data['endDate'])),
           updatedAt: Value(DateTime.now()),
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ));
       return true;
     } catch (e) {
@@ -724,8 +700,6 @@ class IncrementalSyncService implements SyncService {
         .write(AttachmentsTableCompanion(
           fileName: Value(data['fileName']),
           updatedAt: Value(DateTime.now()),
-          isSynced: const Value(true),
-          lastSyncAt: Value(DateTime.now()),
         ));
       return true;
     } catch (e) {
