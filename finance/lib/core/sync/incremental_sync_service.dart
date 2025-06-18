@@ -346,14 +346,43 @@ class IncrementalSyncService implements SyncService {
   }
 
   Future<void> _markEventsAsSynced(List<SyncEventLogData> events) async {
+    if (events.isEmpty) return;
+    
     final now = DateTime.now();
     
-    for (final event in events) {
-      await (_database.update(_database.syncEventLogTable)
-        ..where((t) => t.id.equals(event.id)))
-        .write(SyncEventLogTableCompanion(
-          isSynced: const Value(true),
-        ));
+    try {
+      // ✅ PHASE 4.4: Enhanced batch operation using event IDs for better control
+      final eventIds = events.map((e) => e.eventId).toList();
+      final placeholders = eventIds.map((_) => '?').join(', ');
+      
+      await _database.customStatement(
+        'UPDATE sync_event_log SET is_synced = true WHERE event_id IN ($placeholders)',
+        eventIds,
+      );
+      
+      print('✅ PHASE 4.4: Batch marked ${events.length} events as synced');
+    } catch (e) {
+      // ✅ PHASE 4.4: Enhanced fallback strategy with detailed error handling
+      print('Warning: Batch update failed, trying individual updates: $e');
+      
+      int successCount = 0;
+      for (final event in events) {
+        try {
+          final rowsAffected = await (_database.update(_database.syncEventLogTable)
+            ..where((t) => t.eventId.equals(event.eventId)))
+            .write(const SyncEventLogTableCompanion(
+              isSynced: Value(true),
+            ));
+          
+          if (rowsAffected > 0) {
+            successCount++;
+          }
+        } catch (individualError) {
+          print('Failed to mark event ${event.eventId} as synced: $individualError');
+        }
+      }
+      
+      print('✅ PHASE 4.4: Individual fallback completed: $successCount/${events.length} events marked');
     }
   }
 

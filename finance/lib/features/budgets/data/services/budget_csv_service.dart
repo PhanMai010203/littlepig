@@ -21,6 +21,7 @@ class BudgetCsvService {
         'Exclude Objectives',
         'Currency Normalization',
         'Is Income Budget',
+        'Sync ID',
       ],
       // Data row
       [
@@ -35,6 +36,7 @@ class BudgetCsvService {
         budget.excludeObjectiveInstallments.toString(),
         budget.normalizeToCurrency ?? '',
         budget.isIncomeBudget.toString(),
+        budget.syncId,
       ],
     ];
     
@@ -64,6 +66,7 @@ class BudgetCsvService {
         'Exclude Objectives',
         'Currency Normalization',
         'Is Income Budget',
+        'Sync ID',
       ],
     ];
     
@@ -81,6 +84,7 @@ class BudgetCsvService {
         budget.excludeObjectiveInstallments.toString(),
         budget.normalizeToCurrency ?? '',
         budget.isIncomeBudget.toString(),
+        budget.syncId,
       ]);
     }
     
@@ -137,7 +141,34 @@ class BudgetCsvService {
       isActive: true,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
-      syncId: DateTime.now().millisecondsSinceEpoch.toString(),
+      
+      // ✅ PHASE 4.4: Enhanced syncId handling for imports
+      syncId: row.length > 11 && row[11].toString().isNotEmpty 
+          ? row[11].toString() 
+          : 'imported-budget-${DateTime.now().millisecondsSinceEpoch}-${row[0].toString().hashCode}',
+    );
+  }
+
+  /// ✅ PHASE 4.4: Create budget with proper syncId for exports
+  static Budget createBudgetForExport(Budget source) {
+    return Budget(
+      name: source.name,
+      amount: source.amount,
+      spent: source.spent,
+      period: source.period,
+      startDate: source.startDate,
+      endDate: source.endDate,
+      categoryId: source.categoryId,
+      excludeDebtCreditInstallments: source.excludeDebtCreditInstallments,
+      excludeObjectiveInstallments: source.excludeObjectiveInstallments,
+      normalizeToCurrency: source.normalizeToCurrency,
+      isIncomeBudget: source.isIncomeBudget,
+      isActive: source.isActive,
+      createdAt: source.createdAt,
+      updatedAt: source.updatedAt,
+      
+      // ✅ PHASE 4.4: Ensure syncId is present for export tracking
+      syncId: source.syncId.isNotEmpty ? source.syncId : 'export-budget-${DateTime.now().millisecondsSinceEpoch}',
     );
   }
 } 

@@ -375,8 +375,12 @@ class TestDatabaseSetup {
     // Set to Phase 4 schema version
     await database.customStatement('PRAGMA user_version = 8');
     
-    // Manually create tables without calling createAll() to avoid default category insertion
-    await _createTablesManually(database);
+    // Clear any default data that was inserted during database initialization
+    await database.customStatement('DELETE FROM categories');
+    await database.customStatement('DELETE FROM accounts');
+    await database.customStatement('DELETE FROM sync_event_log');
+    await database.customStatement('DELETE FROM sync_state');
+    await database.customStatement('DELETE FROM sync_metadata');
     
     // Only verify event sourcing tables exist (no test data)
     await _verifyEventSourcingTables(database);
@@ -387,99 +391,7 @@ class TestDatabaseSetup {
     return database;
   }
   
-  /// Manually creates database tables without triggers or default data
-  static Future<void> _createTablesManually(AppDatabase database) async {
-    // Create only the essential tables for event sourcing without any default data
-    await database.customStatement('''
-      CREATE TABLE IF NOT EXISTS sync_event_log (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        event_id TEXT NOT NULL UNIQUE,
-        device_id TEXT NOT NULL,
-        table_name_field TEXT NOT NULL,
-        record_id TEXT NOT NULL,
-        operation TEXT NOT NULL CHECK (operation IN ('create', 'update', 'delete')),
-        data TEXT NOT NULL,
-        timestamp INTEGER NOT NULL,
-        sequence_number INTEGER NOT NULL,
-        hash TEXT NOT NULL,
-        is_synced INTEGER NOT NULL DEFAULT 0 CHECK (is_synced IN (0, 1))
-      )
-    ''');
-    
-    await database.customStatement('''
-      CREATE TABLE IF NOT EXISTS sync_state (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        device_id TEXT NOT NULL UNIQUE,
-        last_sync_time INTEGER NOT NULL,
-        last_sequence_number INTEGER,
-        status TEXT
-      )
-    ''');
-    
-    await database.customStatement('''
-      CREATE TABLE IF NOT EXISTS sync_metadata (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        key TEXT NOT NULL UNIQUE,
-        value TEXT NOT NULL
-      )
-    ''');
-    
-    // Create other main tables but don't insert any data
-    await database.customStatement('''
-      CREATE TABLE IF NOT EXISTS categories (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        name TEXT NOT NULL,
-        icon TEXT NOT NULL,
-        color INTEGER NOT NULL,
-        is_expense INTEGER NOT NULL CHECK (is_expense IN (0, 1)),
-        is_default INTEGER DEFAULT 0 CHECK (is_default IN (0, 1)),
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
-        sync_id TEXT NOT NULL UNIQUE
-      )
-    ''');
-    
-    await database.customStatement('''
-      CREATE TABLE IF NOT EXISTS accounts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        name TEXT NOT NULL,
-        balance REAL NOT NULL,
-        currency TEXT NOT NULL,
-        is_default INTEGER NOT NULL DEFAULT 0 CHECK (is_default IN (0, 1)),
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
-        sync_id TEXT NOT NULL UNIQUE
-      )
-    ''');
-    
-    await database.customStatement('''
-      CREATE TABLE IF NOT EXISTS transactions (
-        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        title TEXT NOT NULL,
-        note TEXT,
-        amount REAL NOT NULL,
-        category_id INTEGER NOT NULL,
-        account_id INTEGER NOT NULL,
-        date INTEGER NOT NULL,
-        created_at INTEGER NOT NULL,
-        updated_at INTEGER NOT NULL,
-        transaction_type TEXT,
-        special_type TEXT,
-        recurrence TEXT,
-        period_length INTEGER,
-        end_date INTEGER,
-        original_date_due INTEGER,
-        transaction_state TEXT,
-        paid INTEGER,
-        skip_paid INTEGER,
-        created_another_future_transaction INTEGER,
-        objective_loan_fk INTEGER,
-        sync_id TEXT NOT NULL UNIQUE
-      )
-    ''');
-    
-    // Add other table definitions as needed...
-  }
+
   
   /// Creates event sourcing triggers for test databases
   static Future<void> _createEventSourcingTriggers(AppDatabase database) async {

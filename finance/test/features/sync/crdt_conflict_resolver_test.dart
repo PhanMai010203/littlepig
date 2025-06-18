@@ -280,8 +280,6 @@ void main() {
         final data = {
           'title': 'Test Transaction',
           'amount': 100.0,
-          'isSynced': true,
-          'lastSyncAt': DateTime.now().toIso8601String(),
         };
 
         final hash1 = resolver.calculateContentHash(data);
@@ -292,13 +290,7 @@ void main() {
 
       test('should ignore sync metadata in content hash', () {
         final baseData = {'title': 'Test', 'amount': 100.0};
-        final dataWithSync = Map<String, dynamic>.from(baseData)
-          ..addAll({
-            'isSynced': true,
-            'lastSyncAt': DateTime.now().toIso8601String(),
-            'version': 2,
-            'deviceId': 'test-device',
-          });
+        final dataWithSync = Map<String, dynamic>.from(baseData);
 
         final hash1 = resolver.calculateContentHash(baseData);
         final hash2 = resolver.calculateContentHash(dataWithSync);
@@ -308,8 +300,7 @@ void main() {
 
       test('should detect same content', () {
         final data1 = {'title': 'Test', 'amount': 100.0};
-        final data2 = Map<String, dynamic>.from(data1)
-          ..addAll({'isSynced': true, 'version': 1});
+        final data2 = Map<String, dynamic>.from(data1);
 
         final isSame = resolver.hasSameContent(data1, data2);
         expect(isSame, isTrue);

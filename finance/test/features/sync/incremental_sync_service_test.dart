@@ -53,9 +53,7 @@ void main() {
             categoryId: 1,
             accountId: 1,
             date: DateTime.now(),
-            deviceId: 'test-device',
             syncId: 'test-txn-1',
-            isSynced: const Value(false),
           ),
         );
 
@@ -274,7 +272,6 @@ void main() {
             categoryId: 1,
             accountId: 1,
             date: DateTime.now(),
-            deviceId: 'test-device',
             syncId: syncId,
           ),
         );

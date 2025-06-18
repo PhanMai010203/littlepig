@@ -241,11 +241,14 @@ class CRDTConflictResolver {
   String calculateContentHash(Map<String, dynamic> data) {
     final contentData = Map<String, dynamic>.from(data);
     
-    // Remove sync-specific fields that shouldn't affect content
-    contentData.remove('isSynced');
-    contentData.remove('lastSyncAt');
-    contentData.remove('version');
+    // ✅ PHASE 4.4: Remove legacy sync fields that were in the old sync infrastructure
+    // but keep the current event sourcing infrastructure fields
     contentData.remove('deviceId');
+    contentData.remove('isSynced');
+    contentData.remove('version');
+    contentData.remove('lastSyncAt');
+    
+    // Also remove current sync infrastructure fields that shouldn't affect content
     contentData.remove('syncId');
     contentData.remove('createdAt');
     contentData.remove('updatedAt');

@@ -60,10 +60,7 @@ void main() {
           date: DateTime.now(),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'test-sync',
-          version: 1,
         );
         
         final budget = Budget(
@@ -77,10 +74,7 @@ void main() {
           isActive: true,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'test-sync',
-          version: 1,
         );
         
         // Reset and setup specific mocks for this test
@@ -117,10 +111,7 @@ void main() {
           date: DateTime.now(),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'test-sync',
-          version: 1,
         );
         
         final budget = Budget(
@@ -134,10 +125,7 @@ void main() {
           isActive: true,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'test-sync',
-          version: 1,
         );
         
         // Reset and setup specific mocks for this test
@@ -178,10 +166,7 @@ void main() {
           isActive: true,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'test-sync',
-          version: 1,
         );
         
         // Reset and setup specific mocks for this test
@@ -222,10 +207,7 @@ void main() {
             isActive: true,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
-            deviceId: 'test',
-            isSynced: false,
             syncId: 'test-sync-1',
-            version: 1,
           ),
           Budget(
             id: 2,
@@ -238,10 +220,7 @@ void main() {
             isActive: true,
             createdAt: DateTime.now(),
             updatedAt: DateTime.now(),
-            deviceId: 'test',
-            isSynced: false,
             syncId: 'test-sync-2',
-            version: 1,
           ),
         ];
         
@@ -282,10 +261,7 @@ void main() {
           isActive: true,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'test-sync',
-          version: 1,
         );
         
         // Reset and setup specific mocks for this test

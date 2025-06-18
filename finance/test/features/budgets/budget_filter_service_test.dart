@@ -49,10 +49,7 @@ void main() {
           transactionType: TransactionType.expense,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'sync1',
-          version: 1,
         ),
         Transaction(
           id: 2,
@@ -65,10 +62,7 @@ void main() {
           specialType: TransactionSpecialType.credit,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'sync2',
-          version: 1,
         ),
       ];
 
@@ -126,10 +120,7 @@ void main() {
           transactionType: TransactionType.expense,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'sync1',
-          version: 1,
         ),
         Transaction(
           id: 2,
@@ -141,10 +132,7 @@ void main() {
           transactionType: TransactionType.expense,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'sync2',
-          version: 1,
         ),
       ];
 
@@ -169,10 +157,7 @@ void main() {
           transactionType: TransactionType.expense,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'sync1',
-          version: 1,
           objectiveLoanFk: null,
         ),
         Transaction(
@@ -185,10 +170,7 @@ void main() {
           transactionType: TransactionType.expense,
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
-          deviceId: 'test',
-          isSynced: false,
           syncId: 'sync2',
-          version: 1,
           objectiveLoanFk: '123',
         ),
       ];
@@ -213,10 +195,7 @@ void main() {
         isActive: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test',
-        isSynced: false,
         syncId: 'budget1',
-        version: 1,
         excludeDebtCreditInstallments: true,
         excludeObjectiveInstallments: false,
       );
@@ -231,10 +210,7 @@ void main() {
         transactionType: TransactionType.expense,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test',
-        isSynced: false,
         syncId: 'sync1',
-        version: 1,
       );
 
       // Act
@@ -256,10 +232,7 @@ void main() {
         isActive: true,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test',
-        isSynced: false,
         syncId: 'budget1',
-        version: 1,
         excludeDebtCreditInstallments: true,
       );
 
@@ -274,10 +247,7 @@ void main() {
         specialType: TransactionSpecialType.credit,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
-        deviceId: 'test',
-        isSynced: false,
         syncId: 'sync1',
-        version: 1,
       );
 
       // Act

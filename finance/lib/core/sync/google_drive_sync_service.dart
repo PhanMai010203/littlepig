@@ -707,6 +707,40 @@ class GoogleDriveSyncService implements SyncService {
     }
   }
 
+  /// ✅ PHASE 4.4: Mark specific events as synced for better control
+  Future<void> _markEventsAsSynced(List<String> eventIds) async {
+    if (eventIds.isEmpty) return;
+    
+    try {
+      // ✅ PHASE 4.4: Enhanced batch operation with better error handling
+      final placeholders = eventIds.map((_) => '?').join(', ');
+      await _database.customStatement(
+        'UPDATE sync_event_log SET is_synced = true WHERE event_id IN ($placeholders)',
+        eventIds,
+      );
+      
+      print('✅ PHASE 4.4: Marked ${eventIds.length} events as synced');
+    } catch (e) {
+      // ✅ PHASE 4.4: Fallback strategy for failed batch operations
+      print('Warning: Batch event marking failed, trying individual fallback: $e');
+      
+      int successCount = 0;
+      for (final eventId in eventIds) {
+        try {
+          await _database.customStatement(
+            'UPDATE sync_event_log SET is_synced = true WHERE event_id = ?',
+            [eventId],
+          );
+          successCount++;
+        } catch (individualError) {
+          print('Failed to mark event $eventId as synced: $individualError');
+        }
+      }
+      
+      print('✅ PHASE 4.4: Individual fallback completed: $successCount/${eventIds.length} events marked');
+    }
+  }
+
   Future<void> _updateLastSyncTime(DateTime time) async {
     await _database.into(_database.syncMetadataTable).insertOnConflictUpdate(
       SyncMetadataTableCompanion.insert(
