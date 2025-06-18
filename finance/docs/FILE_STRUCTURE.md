@@ -71,7 +71,8 @@ lib/core/
 │   ├── file_picker_service.dart      # File selection and attachment processing service
 │   ├── cache_management_service.dart # Local file cache management service
 │   ├── platform_service.dart        # Platform detection and device capabilities service
-│   └── dialog_service.dart          # Dialog and popup service (Phase 3)
+│   ├── dialog_service.dart          # Dialog and popup service (Phase 3)
+│   └── animation_performance_service.dart # Animation performance optimization service (Phase 6.1)
 ├── sync/                             # Cloud synchronization services (Phase 5A)
 │   ├── sync_service.dart            # Legacy sync service interface
 │   ├── incremental_sync_service.dart # Event-driven sync service (Phase 4)
@@ -100,7 +101,7 @@ lib/core/
     ├── injection.dart               # GetIt service locator configuration
     └── injection.config.dart        # Generated dependency injection configuration
 ```
-**Summary**: Core infrastructure layer containing database setup with Drift ORM, file management and attachment services, **Phase 5A advanced sync services** with event sourcing and real-time capabilities, theming system with Material You support, dependency injection setup, and shared utilities.
+**Summary**: Core infrastructure layer containing database setup with Drift ORM, file management and attachment services, **Phase 5A advanced sync services** with event sourcing and real-time capabilities, **Phase 6.1 animation performance optimization**, theming system with Material You support, dependency injection setup, and shared utilities.
 
 ---
 

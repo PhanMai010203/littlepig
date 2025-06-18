@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:drift/drift.dart';
 import 'dart:io';
 
 import 'injection.config.dart';
@@ -240,10 +241,11 @@ Future<void> configureDependenciesWithReset() async {
 
 /// Configure dependencies for testing with in-memory database
 Future<void> configureTestDependencies() async {
-  // Check if already initialized to prevent duplicate registration
-  if (getIt.isRegistered<DatabaseService>()) {
-    return;
-  }
+  // Configure drift to suppress multiple database warnings in tests
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+  
+  // Reset dependencies first to avoid conflicts
+  await resetDependencies();
   
   // Initialize injectable dependencies FIRST (for existing BLoCs)
   getIt.init();

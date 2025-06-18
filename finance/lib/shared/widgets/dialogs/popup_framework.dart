@@ -321,7 +321,13 @@ class PopupFramework extends StatelessWidget {
     } else {
       return Row(
         mainAxisAlignment: isIOS ? MainAxisAlignment.center : MainAxisAlignment.start,
-        children: titleRowChildren,
+        children: titleRowChildren.map((child) {
+          // Wrap text widgets with Flexible to prevent overflow
+          if (child is Text) {
+            return Flexible(child: child);
+          }
+          return child;
+        }).toList(),
       );
     }
   }

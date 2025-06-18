@@ -129,7 +129,10 @@
     "export_data": "Xuất dữ liệu",
     "import_data": "Nhập dữ liệu",
     "clear_data": "Xóa tất cả dữ liệu",
-    "reset_app": "Đặt lại ứng dụng"
+    "reset_app": "Đặt lại ứng dụng",
+
+    "color_picker_title": "Chọn màu",
+    "color_picker_subtitle": "Chọn màu nhấn mạnh ưa thích của bạn"
   },
 
   "common": {

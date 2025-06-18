@@ -3,6 +3,11 @@ import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../../lib/core/database/app_database.dart';
 
+// Configure drift to suppress multiple database warnings in tests
+void _configureDriftForTesting() {
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+}
+
 /// ✅ PHASE 4.3: Test Database Setup
 /// 
 /// Provides utilities for creating clean test databases and verifying
@@ -11,6 +16,9 @@ class TestDatabaseSetup {
   
   /// Creates a clean test database for testing
   static Future<AppDatabase> createCleanTestDatabase() async {
+    // Configure drift for testing
+    _configureDriftForTesting();
+    
     final database = AppDatabase.forTesting(NativeDatabase.memory());
     
     // Ensure schema is at version 8 (Phase 4 complete)
@@ -390,8 +398,6 @@ class TestDatabaseSetup {
     
     return database;
   }
-  
-
   
   /// Creates event sourcing triggers for test databases
   static Future<void> _createEventSourcingTriggers(AppDatabase database) async {

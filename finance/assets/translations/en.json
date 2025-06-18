@@ -129,7 +129,10 @@
     "export_data": "Export Data",
     "import_data": "Import Data",
     "clear_data": "Clear All Data",
-    "reset_app": "Reset App"
+    "reset_app": "Reset App",
+
+    "color_picker_title": "Choose Color",
+    "color_picker_subtitle": "Select your preferred accent color"
   },
 
   "common": {

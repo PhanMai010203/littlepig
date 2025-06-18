@@ -10,6 +10,9 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/material_you.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/language_selector.dart';
+import '../../../../core/services/dialog_service.dart';
+import '../../../../core/services/animation_performance_service.dart';
+import '../../../../shared/widgets/animations/tappable_widget.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -57,6 +60,11 @@ class _SettingsPageState extends State<SettingsPage> {
               // Accessibility Section
               _buildSectionHeader('Accessibility'),
               _buildReduceAnimationsSetting(),
+              _buildDivider(),
+              
+              // Animation Framework Section (Phase 6.1)
+              _buildSectionHeader('Animations'),
+              _buildAnimationFrameworkSettings(),
               _buildDivider(),
               
               // Data & Privacy Section
@@ -445,68 +453,419 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
+  /// Phase 6.1: Enhanced Animation Framework Settings
+  Widget _buildAnimationFrameworkSettings() {
+    final appAnimations = AppSettings.getWithDefault<bool>('appAnimations', true);
+    final batterySaver = AppSettings.getWithDefault<bool>('batterySaver', false);
+    final animationLevel = AppSettings.getWithDefault<String>('animationLevel', 'normal');
+    final outlinedIcons = AppSettings.getWithDefault<bool>('outlinedIcons', false);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Master animation toggle
+          SwitchListTile(
+            title: const AppText(
+              'App Animations',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            subtitle: const AppText(
+              'Enable smooth animations throughout the app',
+              fontSize: 12,
+              colorName: 'textLight',
+            ),
+            value: appAnimations,
+            onChanged: (value) async {
+              await AppSettings.set('appAnimations', value);
+              setState(() {});
+            },
+            activeColor: getColor(context, 'primary'),
+            contentPadding: EdgeInsets.zero,
+          ),
+
+          // Animation level selector
+          if (appAnimations) ...[
+            const SizedBox(height: 12),
+            AppText(
+              'Animation Level',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              colorName: 'text',
+            ),
+            const SizedBox(height: 8),
+            _buildAnimationLevelSelector(animationLevel),
+          ],
+
+          const SizedBox(height: 12),
+
+          // Battery saver mode
+          SwitchListTile(
+            title: const AppText(
+              'Battery Saver',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            subtitle: const AppText(
+              'Reduces animations to save battery life',
+              fontSize: 12,
+              colorName: 'textLight',
+            ),
+            value: batterySaver,
+            onChanged: (value) async {
+              await AppSettings.set('batterySaver', value);
+              setState(() {});
+            },
+            activeColor: getColor(context, 'primary'),
+            contentPadding: EdgeInsets.zero,
+          ),
+
+          // Outlined icons toggle
+          SwitchListTile(
+            title: const AppText(
+              'Outlined Icons',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            subtitle: const AppText(
+              'Use outlined icon style instead of filled',
+              fontSize: 12,
+              colorName: 'textLight',
+            ),
+            value: outlinedIcons,
+            onChanged: (value) async {
+              await AppSettings.set('outlinedIcons', value);
+              setState(() {});
+            },
+            activeColor: getColor(context, 'primary'),
+            contentPadding: EdgeInsets.zero,
+          ),
+
+          // Performance info (when relevant)
+          if (batterySaver || !appAnimations || animationLevel == 'reduced') ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: getColor(context, 'surfaceContainer'),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: getColor(context, 'primary'),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppText(
+                      _getPerformanceInfo(),
+                      fontSize: 12,
+                      colorName: 'text',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAnimationLevelSelector(String currentLevel) {
+    final levels = [
+      {'value': 'none', 'label': 'None', 'description': 'No animations'},
+      {'value': 'reduced', 'label': 'Reduced', 'description': 'Minimal animations'},
+      {'value': 'normal', 'label': 'Normal', 'description': 'Standard animations'},
+      {'value': 'enhanced', 'label': 'Enhanced', 'description': 'Rich animations'},
+    ];
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: levels.map((level) {
+        final isSelected = level['value'] == currentLevel;
+        return TappableWidget(
+          onTap: () async {
+            await AppSettings.set('animationLevel', level['value']!);
+            setState(() {});
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? getColor(context, 'primary')
+                  : getColor(context, 'surfaceContainer'),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected
+                    ? getColor(context, 'primary')
+                    : Colors.transparent,
+                width: 1,
+              ),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  level['label']!,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  textColor: isSelected
+                      ? Colors.white
+                      : getColor(context, 'text'),
+                ),
+                const SizedBox(height: 2),
+                AppText(
+                  level['description']!,
+                  fontSize: 10,
+                  textColor: isSelected
+                      ? Colors.white.withValues(alpha: 0.8)
+                      : getColor(context, 'textLight'),
+                ),
+              ],
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  String _getPerformanceInfo() {
+    final profile = AnimationPerformanceService.getPerformanceProfile();
+    
+    if (!profile['appAnimations']) {
+      return 'All animations disabled for maximum performance';
+    } else if (profile['batterySaver']) {
+      return 'Battery saver active: Reduced animations and effects';
+    } else if (profile['animationLevel'] == 'reduced') {
+      return 'Reduced animations: ${profile['maxSimultaneousAnimations']} max concurrent';
+    } else if (profile['animationLevel'] == 'enhanced') {
+      return 'Enhanced animations: Full effects and transitions enabled';
+    }
+    
+    return 'Normal animation level: Balanced performance and experience';
+  }
+
   Widget _buildAboutTile() {
     return ListTile(
       title: const AppText(
-        'About Boilerplate App',
+        'About Finance App',
         fontSize: 16,
         fontWeight: FontWeight.bold,
       ),
       subtitle: const AppText(
-        'A production-ready Flutter app with advanced theming',
+        'A personal finance management app with advanced features',
         fontSize: 12,
         colorName: 'textLight',
       ),
       trailing: const Icon(Icons.info_outline),
-      onTap: () {
-        showAboutDialog(
-          context: context,
-          applicationName: 'Boilerplate App',
-          applicationVersion: '1.0.0',
-          applicationLegalese: '© 2025 Boilerplate Team',
-          children: [
-            const Padding(
-              padding: EdgeInsets.only(top: 16),
+      onTap: () => _showAboutDialog(),
+    );
+  }
+
+  /// Phase 6.1: Enhanced About dialog with PopupFramework
+  void _showAboutDialog() {
+    DialogService.showPopup<void>(
+      context,
+      Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // App description
+          AppText(
+            'Built with Flutter and featuring advanced theming capabilities including Material You support, comprehensive animation framework, custom fonts, and accessibility features.',
+            fontSize: 14,
+            colorName: 'text',
+          ),
+          const SizedBox(height: 16),
+          
+          // Features list
+          AppText(
+            'Key Features:',
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            colorName: 'text',
+          ),
+          const SizedBox(height: 8),
+          
+          ...['Multi-currency support', 'Cloud synchronization', 'Budget tracking', 'Advanced animations', 'Material You theming', 'Accessibility support']
+              .map((feature) => Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.check_circle,
+                          size: 16,
+                          color: getColor(context, 'primary'),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: AppText(
+                            feature,
+                            fontSize: 13,
+                            colorName: 'text',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ))
+              .toList(),
+          
+          const SizedBox(height: 16),
+          
+          // Legal and version info
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: getColor(context, 'surfaceContainer'),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    AppText(
+                      'Version',
+                      fontSize: 12,
+                      colorName: 'textLight',
+                    ),
+                    AppText(
+                      '1.0.0',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      colorName: 'text',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    AppText(
+                      'Build',
+                      fontSize: 12,
+                      colorName: 'textLight',
+                    ),
+                    AppText(
+                      '1',
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      colorName: 'text',
+                    ),
+                  ],
+                ),
+                const Divider(height: 16),
+                AppText(
+                  '© 2025 Finance App Team',
+                  fontSize: 11,
+                  colorName: 'textLight',
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Close button
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
               child: AppText(
-                'Built with Flutter and advanced theming capabilities including Material You support, custom fonts, and accessibility features.',
+                'Close',
                 fontSize: 14,
+                fontWeight: FontWeight.w600,
+                textColor: Colors.white,
               ),
             ),
-          ],
-        );
-      },
+          ),
+        ],
+      ),
+      title: 'About Finance App',
+      subtitle: 'App information and details',
+      icon: Icons.info,
+      showCloseButton: true,
+      barrierDismissible: true,
+      animationType: DialogService.defaultPopupAnimation,
     );
   }
 
   void _showColorPicker() async {
     Color selectedColor = AppSettings.accentColor;
     
-    await showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Pick a Color'),
-        content: SingleChildScrollView(
-          child: flutter_colorpicker.ColorPicker(
-            pickerColor: selectedColor,
-            onColorChanged: (color) {
-              selectedColor = color;
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await AppTheme.setAccentColor(selectedColor);
-              setState(() {});
-              Navigator.of(context).pop();
-            },
-            child: const Text('Select'),
-          ),
-        ],
-      ),    );
+    // Phase 6.1: Replace standard showDialog with PopupFramework
+    await DialogService.showPopup<void>(
+      context,
+      StatefulBuilder(
+        builder: (context, setState) {
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Color picker content
+              SizedBox(
+                width: 280,
+                height: 300,
+                child: SingleChildScrollView(
+                  child: flutter_colorpicker.ColorPicker(
+                    pickerColor: selectedColor,
+                    onColorChanged: (color) {
+                      setState(() {
+                        selectedColor = color;
+                      });
+                    },
+                    enableAlpha: false,
+                    displayThumbColor: true,
+                    showLabel: true,
+                    paletteType: flutter_colorpicker.PaletteType.hslWithHue,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              // Action buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: AppText(
+                      'Cancel',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  FilledButton(
+                    onPressed: () async {
+                      await AppTheme.setAccentColor(selectedColor);
+                      this.setState(() {}); // Update parent widget
+                      Navigator.of(context).pop();
+                    },
+                    child: AppText(
+                      'Select',
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      textColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+      title: 'settings.color_picker_title'.tr(),
+      subtitle: 'settings.color_picker_subtitle'.tr(),
+      icon: Icons.palette,
+      showCloseButton: true,
+      barrierDismissible: true,
+      animationType: DialogService.defaultPopupAnimation,
+    );
   }
 }
