@@ -8,11 +8,7 @@ class Account extends Equatable {
   final bool isDefault;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
 
   const Account({
     this.id,
@@ -22,11 +18,7 @@ class Account extends Equatable {
     required this.isDefault,
     required this.createdAt,
     required this.updatedAt,
-    required this.deviceId,
-    required this.isSynced,
-    this.lastSyncAt,
     required this.syncId,
-    required this.version,
   });
 
   Account copyWith({
@@ -37,11 +29,7 @@ class Account extends Equatable {
     bool? isDefault,
     DateTime? createdAt,
     DateTime? updatedAt,
-    String? deviceId,
-    bool? isSynced,
-    DateTime? lastSyncAt,
     String? syncId,
-    int? version,
   }) {
     return Account(
       id: id ?? this.id,
@@ -51,11 +39,7 @@ class Account extends Equatable {
       isDefault: isDefault ?? this.isDefault,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -68,10 +52,6 @@ class Account extends Equatable {
         isDefault,
         createdAt,
         updatedAt,
-        deviceId,
-        isSynced,
-        lastSyncAt,
         syncId,
-        version,
       ];
 }

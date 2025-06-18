@@ -166,26 +166,21 @@ class BudgetRepositoryImpl implements BudgetRepository {
         .write(BudgetsTableCompanion(
           spent: Value(spentAmount),
           updatedAt: Value(now),
-          isSynced: const Value(false),
         ));
   }
 
   @override
   Future<List<Budget>> getUnsyncedBudgets() async {
-    final budgets = await (_database.select(_database.budgetsTable)
-          ..where((tbl) => tbl.isSynced.equals(false)))
-        .get();
+    // Phase 4: Since sync fields removed, return all budgets for now
+    // TODO: Implement proper event sourcing logic
+    final budgets = await _database.select(_database.budgetsTable).get();
     return budgets.map<Budget>(_mapToEntity).toList();
   }
 
   @override
   Future<void> markAsSynced(String syncId, DateTime syncTime) async {
-    await (_database.update(_database.budgetsTable)
-          ..where((tbl) => tbl.syncId.equals(syncId)))
-        .write(BudgetsTableCompanion(
-          isSynced: const Value(true),
-          lastSyncAt: Value(syncTime),
-        ));
+    // Phase 4: No-op since sync fields removed from table
+    // TODO: Implement proper event sourcing logic
   }
 
   @override

@@ -39,12 +39,6 @@ class TransactionsTable extends Table {
   // Loan/Objective linking (for complex loans)
   TextColumn get objectiveLoanFk => text().nullable()(); // Links to objectives table (future use)
   
-  // Sync fields
-  TextColumn get deviceId => text().withLength(min: 1, max: 50)();
-  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get lastSyncAt => dateTime().nullable()();
-  
-  // For conflict resolution
+  // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   TextColumn get syncId => text().unique()(); // UUID for global uniqueness
-  IntColumn get version => integer().withDefault(const Constant(1))();
 }

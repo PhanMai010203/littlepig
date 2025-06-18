@@ -74,31 +74,6 @@ class $CategoriesTableTable extends CategoriesTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
-  static const VerificationMeta _deviceIdMeta =
-      const VerificationMeta('deviceId');
-  @override
-  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
-      'device_id', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
-  static const VerificationMeta _lastSyncAtMeta =
-      const VerificationMeta('lastSyncAt');
-  @override
-  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
-      'last_sync_at', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
   @override
   late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
@@ -106,14 +81,6 @@ class $CategoriesTableTable extends CategoriesTable
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _versionMeta =
-      const VerificationMeta('version');
-  @override
-  late final GeneratedColumn<int> version = GeneratedColumn<int>(
-      'version', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(1));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -124,11 +91,7 @@ class $CategoriesTableTable extends CategoriesTable
         isDefault,
         createdAt,
         updatedAt,
-        deviceId,
-        isSynced,
-        lastSyncAt,
-        syncId,
-        version
+        syncId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -180,31 +143,11 @@ class $CategoriesTableTable extends CategoriesTable
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
-    if (data.containsKey('device_id')) {
-      context.handle(_deviceIdMeta,
-          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
-    } else if (isInserting) {
-      context.missing(_deviceIdMeta);
-    }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
-    if (data.containsKey('last_sync_at')) {
-      context.handle(
-          _lastSyncAtMeta,
-          lastSyncAt.isAcceptableOrUnknown(
-              data['last_sync_at']!, _lastSyncAtMeta));
-    }
     if (data.containsKey('sync_id')) {
       context.handle(_syncIdMeta,
           syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta));
     } else if (isInserting) {
       context.missing(_syncIdMeta);
-    }
-    if (data.containsKey('version')) {
-      context.handle(_versionMeta,
-          version.isAcceptableOrUnknown(data['version']!, _versionMeta));
     }
     return context;
   }
@@ -231,16 +174,8 @@ class $CategoriesTableTable extends CategoriesTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      deviceId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
-      lastSyncAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_sync_at']),
       syncId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
-      version: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
     );
   }
 
@@ -260,11 +195,7 @@ class CategoriesTableData extends DataClass
   final bool isDefault;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
   const CategoriesTableData(
       {required this.id,
       required this.name,
@@ -274,11 +205,7 @@ class CategoriesTableData extends DataClass
       required this.isDefault,
       required this.createdAt,
       required this.updatedAt,
-      required this.deviceId,
-      required this.isSynced,
-      this.lastSyncAt,
-      required this.syncId,
-      required this.version});
+      required this.syncId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -290,13 +217,7 @@ class CategoriesTableData extends DataClass
     map['is_default'] = Variable<bool>(isDefault);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['device_id'] = Variable<String>(deviceId);
-    map['is_synced'] = Variable<bool>(isSynced);
-    if (!nullToAbsent || lastSyncAt != null) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
-    }
     map['sync_id'] = Variable<String>(syncId);
-    map['version'] = Variable<int>(version);
     return map;
   }
 
@@ -310,13 +231,7 @@ class CategoriesTableData extends DataClass
       isDefault: Value(isDefault),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
-      deviceId: Value(deviceId),
-      isSynced: Value(isSynced),
-      lastSyncAt: lastSyncAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastSyncAt),
       syncId: Value(syncId),
-      version: Value(version),
     );
   }
 
@@ -332,11 +247,7 @@ class CategoriesTableData extends DataClass
       isDefault: serializer.fromJson<bool>(json['isDefault']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      deviceId: serializer.fromJson<String>(json['deviceId']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
-      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
       syncId: serializer.fromJson<String>(json['syncId']),
-      version: serializer.fromJson<int>(json['version']),
     );
   }
   @override
@@ -351,11 +262,7 @@ class CategoriesTableData extends DataClass
       'isDefault': serializer.toJson<bool>(isDefault),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'deviceId': serializer.toJson<String>(deviceId),
-      'isSynced': serializer.toJson<bool>(isSynced),
-      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
       'syncId': serializer.toJson<String>(syncId),
-      'version': serializer.toJson<int>(version),
     };
   }
 
@@ -368,11 +275,7 @@ class CategoriesTableData extends DataClass
           bool? isDefault,
           DateTime? createdAt,
           DateTime? updatedAt,
-          String? deviceId,
-          bool? isSynced,
-          Value<DateTime?> lastSyncAt = const Value.absent(),
-          String? syncId,
-          int? version}) =>
+          String? syncId}) =>
       CategoriesTableData(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -382,11 +285,7 @@ class CategoriesTableData extends DataClass
         isDefault: isDefault ?? this.isDefault,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
-        deviceId: deviceId ?? this.deviceId,
-        isSynced: isSynced ?? this.isSynced,
-        lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
         syncId: syncId ?? this.syncId,
-        version: version ?? this.version,
       );
   CategoriesTableData copyWithCompanion(CategoriesTableCompanion data) {
     return CategoriesTableData(
@@ -398,12 +297,7 @@ class CategoriesTableData extends DataClass
       isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
-      lastSyncAt:
-          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
-      version: data.version.present ? data.version.value : this.version,
     );
   }
 
@@ -418,18 +312,14 @@ class CategoriesTableData extends DataClass
           ..write('isDefault: $isDefault, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
 
   @override
   int get hashCode => Object.hash(id, name, icon, color, isExpense, isDefault,
-      createdAt, updatedAt, deviceId, isSynced, lastSyncAt, syncId, version);
+      createdAt, updatedAt, syncId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -442,11 +332,7 @@ class CategoriesTableData extends DataClass
           other.isDefault == this.isDefault &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.deviceId == this.deviceId &&
-          other.isSynced == this.isSynced &&
-          other.lastSyncAt == this.lastSyncAt &&
-          other.syncId == this.syncId &&
-          other.version == this.version);
+          other.syncId == this.syncId);
 }
 
 class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
@@ -458,11 +344,7 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
   final Value<bool> isDefault;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
-  final Value<String> deviceId;
-  final Value<bool> isSynced;
-  final Value<DateTime?> lastSyncAt;
   final Value<String> syncId;
-  final Value<int> version;
   const CategoriesTableCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -472,11 +354,7 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
     this.isDefault = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.deviceId = const Value.absent(),
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     this.syncId = const Value.absent(),
-    this.version = const Value.absent(),
   });
   CategoriesTableCompanion.insert({
     this.id = const Value.absent(),
@@ -487,16 +365,11 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
     this.isDefault = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    required String deviceId,
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     required String syncId,
-    this.version = const Value.absent(),
   })  : name = Value(name),
         icon = Value(icon),
         color = Value(color),
         isExpense = Value(isExpense),
-        deviceId = Value(deviceId),
         syncId = Value(syncId);
   static Insertable<CategoriesTableData> custom({
     Expression<int>? id,
@@ -507,11 +380,7 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
     Expression<bool>? isDefault,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
-    Expression<String>? deviceId,
-    Expression<bool>? isSynced,
-    Expression<DateTime>? lastSyncAt,
     Expression<String>? syncId,
-    Expression<int>? version,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -522,11 +391,7 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
       if (isDefault != null) 'is_default': isDefault,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (deviceId != null) 'device_id': deviceId,
-      if (isSynced != null) 'is_synced': isSynced,
-      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
       if (syncId != null) 'sync_id': syncId,
-      if (version != null) 'version': version,
     });
   }
 
@@ -539,11 +404,7 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
       Value<bool>? isDefault,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
-      Value<String>? deviceId,
-      Value<bool>? isSynced,
-      Value<DateTime?>? lastSyncAt,
-      Value<String>? syncId,
-      Value<int>? version}) {
+      Value<String>? syncId}) {
     return CategoriesTableCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -553,11 +414,7 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
       isDefault: isDefault ?? this.isDefault,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -588,20 +445,8 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (deviceId.present) {
-      map['device_id'] = Variable<String>(deviceId.value);
-    }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
-    if (lastSyncAt.present) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
-    }
     if (syncId.present) {
       map['sync_id'] = Variable<String>(syncId.value);
-    }
-    if (version.present) {
-      map['version'] = Variable<int>(version.value);
     }
     return map;
   }
@@ -617,11 +462,7 @@ class CategoriesTableCompanion extends UpdateCompanion<CategoriesTableData> {
           ..write('isDefault: $isDefault, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
@@ -694,31 +535,6 @@ class $AccountsTableTable extends AccountsTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
-  static const VerificationMeta _deviceIdMeta =
-      const VerificationMeta('deviceId');
-  @override
-  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
-      'device_id', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
-  static const VerificationMeta _lastSyncAtMeta =
-      const VerificationMeta('lastSyncAt');
-  @override
-  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
-      'last_sync_at', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
   @override
   late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
@@ -726,29 +542,9 @@ class $AccountsTableTable extends AccountsTable
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _versionMeta =
-      const VerificationMeta('version');
   @override
-  late final GeneratedColumn<int> version = GeneratedColumn<int>(
-      'version', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(1));
-  @override
-  List<GeneratedColumn> get $columns => [
-        id,
-        name,
-        balance,
-        currency,
-        isDefault,
-        createdAt,
-        updatedAt,
-        deviceId,
-        isSynced,
-        lastSyncAt,
-        syncId,
-        version
-      ];
+  List<GeneratedColumn> get $columns =>
+      [id, name, balance, currency, isDefault, createdAt, updatedAt, syncId];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
@@ -788,31 +584,11 @@ class $AccountsTableTable extends AccountsTable
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
-    if (data.containsKey('device_id')) {
-      context.handle(_deviceIdMeta,
-          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
-    } else if (isInserting) {
-      context.missing(_deviceIdMeta);
-    }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
-    if (data.containsKey('last_sync_at')) {
-      context.handle(
-          _lastSyncAtMeta,
-          lastSyncAt.isAcceptableOrUnknown(
-              data['last_sync_at']!, _lastSyncAtMeta));
-    }
     if (data.containsKey('sync_id')) {
       context.handle(_syncIdMeta,
           syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta));
     } else if (isInserting) {
       context.missing(_syncIdMeta);
-    }
-    if (data.containsKey('version')) {
-      context.handle(_versionMeta,
-          version.isAcceptableOrUnknown(data['version']!, _versionMeta));
     }
     return context;
   }
@@ -837,16 +613,8 @@ class $AccountsTableTable extends AccountsTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      deviceId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
-      lastSyncAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_sync_at']),
       syncId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
-      version: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
     );
   }
 
@@ -865,11 +633,7 @@ class AccountsTableData extends DataClass
   final bool isDefault;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
   const AccountsTableData(
       {required this.id,
       required this.name,
@@ -878,11 +642,7 @@ class AccountsTableData extends DataClass
       required this.isDefault,
       required this.createdAt,
       required this.updatedAt,
-      required this.deviceId,
-      required this.isSynced,
-      this.lastSyncAt,
-      required this.syncId,
-      required this.version});
+      required this.syncId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -893,13 +653,7 @@ class AccountsTableData extends DataClass
     map['is_default'] = Variable<bool>(isDefault);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['device_id'] = Variable<String>(deviceId);
-    map['is_synced'] = Variable<bool>(isSynced);
-    if (!nullToAbsent || lastSyncAt != null) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
-    }
     map['sync_id'] = Variable<String>(syncId);
-    map['version'] = Variable<int>(version);
     return map;
   }
 
@@ -912,13 +666,7 @@ class AccountsTableData extends DataClass
       isDefault: Value(isDefault),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
-      deviceId: Value(deviceId),
-      isSynced: Value(isSynced),
-      lastSyncAt: lastSyncAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastSyncAt),
       syncId: Value(syncId),
-      version: Value(version),
     );
   }
 
@@ -933,11 +681,7 @@ class AccountsTableData extends DataClass
       isDefault: serializer.fromJson<bool>(json['isDefault']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      deviceId: serializer.fromJson<String>(json['deviceId']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
-      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
       syncId: serializer.fromJson<String>(json['syncId']),
-      version: serializer.fromJson<int>(json['version']),
     );
   }
   @override
@@ -951,11 +695,7 @@ class AccountsTableData extends DataClass
       'isDefault': serializer.toJson<bool>(isDefault),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'deviceId': serializer.toJson<String>(deviceId),
-      'isSynced': serializer.toJson<bool>(isSynced),
-      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
       'syncId': serializer.toJson<String>(syncId),
-      'version': serializer.toJson<int>(version),
     };
   }
 
@@ -967,11 +707,7 @@ class AccountsTableData extends DataClass
           bool? isDefault,
           DateTime? createdAt,
           DateTime? updatedAt,
-          String? deviceId,
-          bool? isSynced,
-          Value<DateTime?> lastSyncAt = const Value.absent(),
-          String? syncId,
-          int? version}) =>
+          String? syncId}) =>
       AccountsTableData(
         id: id ?? this.id,
         name: name ?? this.name,
@@ -980,11 +716,7 @@ class AccountsTableData extends DataClass
         isDefault: isDefault ?? this.isDefault,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
-        deviceId: deviceId ?? this.deviceId,
-        isSynced: isSynced ?? this.isSynced,
-        lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
         syncId: syncId ?? this.syncId,
-        version: version ?? this.version,
       );
   AccountsTableData copyWithCompanion(AccountsTableCompanion data) {
     return AccountsTableData(
@@ -995,12 +727,7 @@ class AccountsTableData extends DataClass
       isDefault: data.isDefault.present ? data.isDefault.value : this.isDefault,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
-      lastSyncAt:
-          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
-      version: data.version.present ? data.version.value : this.version,
     );
   }
 
@@ -1014,18 +741,14 @@ class AccountsTableData extends DataClass
           ..write('isDefault: $isDefault, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(id, name, balance, currency, isDefault,
-      createdAt, updatedAt, deviceId, isSynced, lastSyncAt, syncId, version);
+  int get hashCode => Object.hash(
+      id, name, balance, currency, isDefault, createdAt, updatedAt, syncId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -1037,11 +760,7 @@ class AccountsTableData extends DataClass
           other.isDefault == this.isDefault &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.deviceId == this.deviceId &&
-          other.isSynced == this.isSynced &&
-          other.lastSyncAt == this.lastSyncAt &&
-          other.syncId == this.syncId &&
-          other.version == this.version);
+          other.syncId == this.syncId);
 }
 
 class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
@@ -1052,11 +771,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
   final Value<bool> isDefault;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
-  final Value<String> deviceId;
-  final Value<bool> isSynced;
-  final Value<DateTime?> lastSyncAt;
   final Value<String> syncId;
-  final Value<int> version;
   const AccountsTableCompanion({
     this.id = const Value.absent(),
     this.name = const Value.absent(),
@@ -1065,11 +780,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
     this.isDefault = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.deviceId = const Value.absent(),
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     this.syncId = const Value.absent(),
-    this.version = const Value.absent(),
   });
   AccountsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -1079,13 +790,8 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
     this.isDefault = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    required String deviceId,
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     required String syncId,
-    this.version = const Value.absent(),
   })  : name = Value(name),
-        deviceId = Value(deviceId),
         syncId = Value(syncId);
   static Insertable<AccountsTableData> custom({
     Expression<int>? id,
@@ -1095,11 +801,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
     Expression<bool>? isDefault,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
-    Expression<String>? deviceId,
-    Expression<bool>? isSynced,
-    Expression<DateTime>? lastSyncAt,
     Expression<String>? syncId,
-    Expression<int>? version,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1109,11 +811,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
       if (isDefault != null) 'is_default': isDefault,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (deviceId != null) 'device_id': deviceId,
-      if (isSynced != null) 'is_synced': isSynced,
-      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
       if (syncId != null) 'sync_id': syncId,
-      if (version != null) 'version': version,
     });
   }
 
@@ -1125,11 +823,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
       Value<bool>? isDefault,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
-      Value<String>? deviceId,
-      Value<bool>? isSynced,
-      Value<DateTime?>? lastSyncAt,
-      Value<String>? syncId,
-      Value<int>? version}) {
+      Value<String>? syncId}) {
     return AccountsTableCompanion(
       id: id ?? this.id,
       name: name ?? this.name,
@@ -1138,11 +832,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
       isDefault: isDefault ?? this.isDefault,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -1170,20 +860,8 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (deviceId.present) {
-      map['device_id'] = Variable<String>(deviceId.value);
-    }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
-    if (lastSyncAt.present) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
-    }
     if (syncId.present) {
       map['sync_id'] = Variable<String>(syncId.value);
-    }
-    if (version.present) {
-      map['version'] = Variable<int>(version.value);
     }
     return map;
   }
@@ -1198,11 +876,7 @@ class AccountsTableCompanion extends UpdateCompanion<AccountsTableData> {
           ..write('isDefault: $isDefault, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
@@ -1373,31 +1047,6 @@ class $TransactionsTableTable extends TransactionsTable
   late final GeneratedColumn<String> objectiveLoanFk = GeneratedColumn<String>(
       'objective_loan_fk', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
-  static const VerificationMeta _deviceIdMeta =
-      const VerificationMeta('deviceId');
-  @override
-  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
-      'device_id', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
-  static const VerificationMeta _lastSyncAtMeta =
-      const VerificationMeta('lastSyncAt');
-  @override
-  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
-      'last_sync_at', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
   @override
   late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
@@ -1405,14 +1054,6 @@ class $TransactionsTableTable extends TransactionsTable
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _versionMeta =
-      const VerificationMeta('version');
-  @override
-  late final GeneratedColumn<int> version = GeneratedColumn<int>(
-      'version', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(1));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1435,11 +1076,7 @@ class $TransactionsTableTable extends TransactionsTable
         skipPaid,
         createdAnotherFutureTransaction,
         objectiveLoanFk,
-        deviceId,
-        isSynced,
-        lastSyncAt,
-        syncId,
-        version
+        syncId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1560,31 +1197,11 @@ class $TransactionsTableTable extends TransactionsTable
           objectiveLoanFk.isAcceptableOrUnknown(
               data['objective_loan_fk']!, _objectiveLoanFkMeta));
     }
-    if (data.containsKey('device_id')) {
-      context.handle(_deviceIdMeta,
-          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
-    } else if (isInserting) {
-      context.missing(_deviceIdMeta);
-    }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
-    if (data.containsKey('last_sync_at')) {
-      context.handle(
-          _lastSyncAtMeta,
-          lastSyncAt.isAcceptableOrUnknown(
-              data['last_sync_at']!, _lastSyncAtMeta));
-    }
     if (data.containsKey('sync_id')) {
       context.handle(_syncIdMeta,
           syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta));
     } else if (isInserting) {
       context.missing(_syncIdMeta);
-    }
-    if (data.containsKey('version')) {
-      context.handle(_versionMeta,
-          version.isAcceptableOrUnknown(data['version']!, _versionMeta));
     }
     return context;
   }
@@ -1636,16 +1253,8 @@ class $TransactionsTableTable extends TransactionsTable
           data['${effectivePrefix}created_another_future_transaction']),
       objectiveLoanFk: attachedDatabase.typeMapping.read(
           DriftSqlType.string, data['${effectivePrefix}objective_loan_fk']),
-      deviceId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
-      lastSyncAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_sync_at']),
       syncId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
-      version: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
     );
   }
 
@@ -1677,11 +1286,7 @@ class TransactionsTableData extends DataClass
   final bool skipPaid;
   final bool? createdAnotherFutureTransaction;
   final String? objectiveLoanFk;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
   const TransactionsTableData(
       {required this.id,
       required this.title,
@@ -1703,11 +1308,7 @@ class TransactionsTableData extends DataClass
       required this.skipPaid,
       this.createdAnotherFutureTransaction,
       this.objectiveLoanFk,
-      required this.deviceId,
-      required this.isSynced,
-      this.lastSyncAt,
-      required this.syncId,
-      required this.version});
+      required this.syncId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1746,13 +1347,7 @@ class TransactionsTableData extends DataClass
     if (!nullToAbsent || objectiveLoanFk != null) {
       map['objective_loan_fk'] = Variable<String>(objectiveLoanFk);
     }
-    map['device_id'] = Variable<String>(deviceId);
-    map['is_synced'] = Variable<bool>(isSynced);
-    if (!nullToAbsent || lastSyncAt != null) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
-    }
     map['sync_id'] = Variable<String>(syncId);
-    map['version'] = Variable<int>(version);
     return map;
   }
 
@@ -1791,13 +1386,7 @@ class TransactionsTableData extends DataClass
       objectiveLoanFk: objectiveLoanFk == null && nullToAbsent
           ? const Value.absent()
           : Value(objectiveLoanFk),
-      deviceId: Value(deviceId),
-      isSynced: Value(isSynced),
-      lastSyncAt: lastSyncAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastSyncAt),
       syncId: Value(syncId),
-      version: Value(version),
     );
   }
 
@@ -1826,11 +1415,7 @@ class TransactionsTableData extends DataClass
       createdAnotherFutureTransaction:
           serializer.fromJson<bool?>(json['createdAnotherFutureTransaction']),
       objectiveLoanFk: serializer.fromJson<String?>(json['objectiveLoanFk']),
-      deviceId: serializer.fromJson<String>(json['deviceId']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
-      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
       syncId: serializer.fromJson<String>(json['syncId']),
-      version: serializer.fromJson<int>(json['version']),
     );
   }
   @override
@@ -1858,11 +1443,7 @@ class TransactionsTableData extends DataClass
       'createdAnotherFutureTransaction':
           serializer.toJson<bool?>(createdAnotherFutureTransaction),
       'objectiveLoanFk': serializer.toJson<String?>(objectiveLoanFk),
-      'deviceId': serializer.toJson<String>(deviceId),
-      'isSynced': serializer.toJson<bool>(isSynced),
-      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
       'syncId': serializer.toJson<String>(syncId),
-      'version': serializer.toJson<int>(version),
     };
   }
 
@@ -1887,11 +1468,7 @@ class TransactionsTableData extends DataClass
           bool? skipPaid,
           Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
           Value<String?> objectiveLoanFk = const Value.absent(),
-          String? deviceId,
-          bool? isSynced,
-          Value<DateTime?> lastSyncAt = const Value.absent(),
-          String? syncId,
-          int? version}) =>
+          String? syncId}) =>
       TransactionsTableData(
         id: id ?? this.id,
         title: title ?? this.title,
@@ -1920,11 +1497,7 @@ class TransactionsTableData extends DataClass
         objectiveLoanFk: objectiveLoanFk.present
             ? objectiveLoanFk.value
             : this.objectiveLoanFk,
-        deviceId: deviceId ?? this.deviceId,
-        isSynced: isSynced ?? this.isSynced,
-        lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
         syncId: syncId ?? this.syncId,
-        version: version ?? this.version,
       );
   TransactionsTableData copyWithCompanion(TransactionsTableCompanion data) {
     return TransactionsTableData(
@@ -1964,12 +1537,7 @@ class TransactionsTableData extends DataClass
       objectiveLoanFk: data.objectiveLoanFk.present
           ? data.objectiveLoanFk.value
           : this.objectiveLoanFk,
-      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
-      lastSyncAt:
-          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
-      version: data.version.present ? data.version.value : this.version,
     );
   }
 
@@ -1997,11 +1565,7 @@ class TransactionsTableData extends DataClass
           ..write(
               'createdAnotherFutureTransaction: $createdAnotherFutureTransaction, ')
           ..write('objectiveLoanFk: $objectiveLoanFk, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
@@ -2028,11 +1592,7 @@ class TransactionsTableData extends DataClass
         skipPaid,
         createdAnotherFutureTransaction,
         objectiveLoanFk,
-        deviceId,
-        isSynced,
-        lastSyncAt,
-        syncId,
-        version
+        syncId
       ]);
   @override
   bool operator ==(Object other) =>
@@ -2059,11 +1619,7 @@ class TransactionsTableData extends DataClass
           other.createdAnotherFutureTransaction ==
               this.createdAnotherFutureTransaction &&
           other.objectiveLoanFk == this.objectiveLoanFk &&
-          other.deviceId == this.deviceId &&
-          other.isSynced == this.isSynced &&
-          other.lastSyncAt == this.lastSyncAt &&
-          other.syncId == this.syncId &&
-          other.version == this.version);
+          other.syncId == this.syncId);
 }
 
 class TransactionsTableCompanion
@@ -2088,11 +1644,7 @@ class TransactionsTableCompanion
   final Value<bool> skipPaid;
   final Value<bool?> createdAnotherFutureTransaction;
   final Value<String?> objectiveLoanFk;
-  final Value<String> deviceId;
-  final Value<bool> isSynced;
-  final Value<DateTime?> lastSyncAt;
   final Value<String> syncId;
-  final Value<int> version;
   const TransactionsTableCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -2114,11 +1666,7 @@ class TransactionsTableCompanion
     this.skipPaid = const Value.absent(),
     this.createdAnotherFutureTransaction = const Value.absent(),
     this.objectiveLoanFk = const Value.absent(),
-    this.deviceId = const Value.absent(),
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     this.syncId = const Value.absent(),
-    this.version = const Value.absent(),
   });
   TransactionsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -2141,17 +1689,12 @@ class TransactionsTableCompanion
     this.skipPaid = const Value.absent(),
     this.createdAnotherFutureTransaction = const Value.absent(),
     this.objectiveLoanFk = const Value.absent(),
-    required String deviceId,
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     required String syncId,
-    this.version = const Value.absent(),
   })  : title = Value(title),
         amount = Value(amount),
         categoryId = Value(categoryId),
         accountId = Value(accountId),
         date = Value(date),
-        deviceId = Value(deviceId),
         syncId = Value(syncId);
   static Insertable<TransactionsTableData> custom({
     Expression<int>? id,
@@ -2174,11 +1717,7 @@ class TransactionsTableCompanion
     Expression<bool>? skipPaid,
     Expression<bool>? createdAnotherFutureTransaction,
     Expression<String>? objectiveLoanFk,
-    Expression<String>? deviceId,
-    Expression<bool>? isSynced,
-    Expression<DateTime>? lastSyncAt,
     Expression<String>? syncId,
-    Expression<int>? version,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -2202,11 +1741,7 @@ class TransactionsTableCompanion
       if (createdAnotherFutureTransaction != null)
         'created_another_future_transaction': createdAnotherFutureTransaction,
       if (objectiveLoanFk != null) 'objective_loan_fk': objectiveLoanFk,
-      if (deviceId != null) 'device_id': deviceId,
-      if (isSynced != null) 'is_synced': isSynced,
-      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
       if (syncId != null) 'sync_id': syncId,
-      if (version != null) 'version': version,
     });
   }
 
@@ -2231,11 +1766,7 @@ class TransactionsTableCompanion
       Value<bool>? skipPaid,
       Value<bool?>? createdAnotherFutureTransaction,
       Value<String?>? objectiveLoanFk,
-      Value<String>? deviceId,
-      Value<bool>? isSynced,
-      Value<DateTime?>? lastSyncAt,
-      Value<String>? syncId,
-      Value<int>? version}) {
+      Value<String>? syncId}) {
     return TransactionsTableCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -2258,11 +1789,7 @@ class TransactionsTableCompanion
       createdAnotherFutureTransaction: createdAnotherFutureTransaction ??
           this.createdAnotherFutureTransaction,
       objectiveLoanFk: objectiveLoanFk ?? this.objectiveLoanFk,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -2330,20 +1857,8 @@ class TransactionsTableCompanion
     if (objectiveLoanFk.present) {
       map['objective_loan_fk'] = Variable<String>(objectiveLoanFk.value);
     }
-    if (deviceId.present) {
-      map['device_id'] = Variable<String>(deviceId.value);
-    }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
-    if (lastSyncAt.present) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
-    }
     if (syncId.present) {
       map['sync_id'] = Variable<String>(syncId.value);
-    }
-    if (version.present) {
-      map['version'] = Variable<int>(version.value);
     }
     return map;
   }
@@ -2372,11 +1887,7 @@ class TransactionsTableCompanion
           ..write(
               'createdAnotherFutureTransaction: $createdAnotherFutureTransaction, ')
           ..write('objectiveLoanFk: $objectiveLoanFk, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
@@ -2472,31 +1983,6 @@ class $BudgetsTableTable extends BudgetsTable
       type: DriftSqlType.dateTime,
       requiredDuringInsert: false,
       defaultValue: currentDateAndTime);
-  static const VerificationMeta _deviceIdMeta =
-      const VerificationMeta('deviceId');
-  @override
-  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
-      'device_id', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
-  static const VerificationMeta _lastSyncAtMeta =
-      const VerificationMeta('lastSyncAt');
-  @override
-  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
-      'last_sync_at', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
   @override
   late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
@@ -2504,14 +1990,6 @@ class $BudgetsTableTable extends BudgetsTable
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _versionMeta =
-      const VerificationMeta('version');
-  @override
-  late final GeneratedColumn<int> version = GeneratedColumn<int>(
-      'version', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(1));
   static const VerificationMeta _budgetTransactionFiltersMeta =
       const VerificationMeta('budgetTransactionFilters');
   @override
@@ -2621,11 +2099,7 @@ class $BudgetsTableTable extends BudgetsTable
         isActive,
         createdAt,
         updatedAt,
-        deviceId,
-        isSynced,
-        lastSyncAt,
         syncId,
-        version,
         budgetTransactionFilters,
         excludeDebtCreditInstallments,
         excludeObjectiveInstallments,
@@ -2704,31 +2178,11 @@ class $BudgetsTableTable extends BudgetsTable
       context.handle(_updatedAtMeta,
           updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta));
     }
-    if (data.containsKey('device_id')) {
-      context.handle(_deviceIdMeta,
-          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
-    } else if (isInserting) {
-      context.missing(_deviceIdMeta);
-    }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
-    if (data.containsKey('last_sync_at')) {
-      context.handle(
-          _lastSyncAtMeta,
-          lastSyncAt.isAcceptableOrUnknown(
-              data['last_sync_at']!, _lastSyncAtMeta));
-    }
     if (data.containsKey('sync_id')) {
       context.handle(_syncIdMeta,
           syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta));
     } else if (isInserting) {
       context.missing(_syncIdMeta);
-    }
-    if (data.containsKey('version')) {
-      context.handle(_versionMeta,
-          version.isAcceptableOrUnknown(data['version']!, _versionMeta));
     }
     if (data.containsKey('budget_transaction_filters')) {
       context.handle(
@@ -2837,16 +2291,8 @@ class $BudgetsTableTable extends BudgetsTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
-      deviceId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
-      lastSyncAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_sync_at']),
       syncId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
-      version: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
       budgetTransactionFilters: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}budget_transaction_filters']),
@@ -2900,11 +2346,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
   final String? budgetTransactionFilters;
   final bool excludeDebtCreditInstallments;
   final bool excludeObjectiveInstallments;
@@ -2929,11 +2371,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       required this.isActive,
       required this.createdAt,
       required this.updatedAt,
-      required this.deviceId,
-      required this.isSynced,
-      this.lastSyncAt,
       required this.syncId,
-      required this.version,
       this.budgetTransactionFilters,
       required this.excludeDebtCreditInstallments,
       required this.excludeObjectiveInstallments,
@@ -2962,13 +2400,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
     map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
-    map['device_id'] = Variable<String>(deviceId);
-    map['is_synced'] = Variable<bool>(isSynced);
-    if (!nullToAbsent || lastSyncAt != null) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
-    }
     map['sync_id'] = Variable<String>(syncId);
-    map['version'] = Variable<int>(version);
     if (!nullToAbsent || budgetTransactionFilters != null) {
       map['budget_transaction_filters'] =
           Variable<String>(budgetTransactionFilters);
@@ -3019,13 +2451,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       isActive: Value(isActive),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
-      deviceId: Value(deviceId),
-      isSynced: Value(isSynced),
-      lastSyncAt: lastSyncAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastSyncAt),
       syncId: Value(syncId),
-      version: Value(version),
       budgetTransactionFilters: budgetTransactionFilters == null && nullToAbsent
           ? const Value.absent()
           : Value(budgetTransactionFilters),
@@ -3072,11 +2498,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      deviceId: serializer.fromJson<String>(json['deviceId']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
-      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
       syncId: serializer.fromJson<String>(json['syncId']),
-      version: serializer.fromJson<int>(json['version']),
       budgetTransactionFilters:
           serializer.fromJson<String?>(json['budgetTransactionFilters']),
       excludeDebtCreditInstallments:
@@ -3114,11 +2536,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
-      'deviceId': serializer.toJson<String>(deviceId),
-      'isSynced': serializer.toJson<bool>(isSynced),
-      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
       'syncId': serializer.toJson<String>(syncId),
-      'version': serializer.toJson<int>(version),
       'budgetTransactionFilters':
           serializer.toJson<String?>(budgetTransactionFilters),
       'excludeDebtCreditInstallments':
@@ -3152,11 +2570,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           bool? isActive,
           DateTime? createdAt,
           DateTime? updatedAt,
-          String? deviceId,
-          bool? isSynced,
-          Value<DateTime?> lastSyncAt = const Value.absent(),
           String? syncId,
-          int? version,
           Value<String?> budgetTransactionFilters = const Value.absent(),
           bool? excludeDebtCreditInstallments,
           bool? excludeObjectiveInstallments,
@@ -3181,11 +2595,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
         isActive: isActive ?? this.isActive,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
-        deviceId: deviceId ?? this.deviceId,
-        isSynced: isSynced ?? this.isSynced,
-        lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
         syncId: syncId ?? this.syncId,
-        version: version ?? this.version,
         budgetTransactionFilters: budgetTransactionFilters.present
             ? budgetTransactionFilters.value
             : this.budgetTransactionFilters,
@@ -3229,12 +2639,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
-      lastSyncAt:
-          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
-      version: data.version.present ? data.version.value : this.version,
       budgetTransactionFilters: data.budgetTransactionFilters.present
           ? data.budgetTransactionFilters.value
           : this.budgetTransactionFilters,
@@ -3287,11 +2692,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
           ..write('syncId: $syncId, ')
-          ..write('version: $version, ')
           ..write('budgetTransactionFilters: $budgetTransactionFilters, ')
           ..write(
               'excludeDebtCreditInstallments: $excludeDebtCreditInstallments, ')
@@ -3325,11 +2726,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
         isActive,
         createdAt,
         updatedAt,
-        deviceId,
-        isSynced,
-        lastSyncAt,
         syncId,
-        version,
         budgetTransactionFilters,
         excludeDebtCreditInstallments,
         excludeObjectiveInstallments,
@@ -3358,11 +2755,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
-          other.deviceId == this.deviceId &&
-          other.isSynced == this.isSynced &&
-          other.lastSyncAt == this.lastSyncAt &&
           other.syncId == this.syncId &&
-          other.version == this.version &&
           other.budgetTransactionFilters == this.budgetTransactionFilters &&
           other.excludeDebtCreditInstallments ==
               this.excludeDebtCreditInstallments &&
@@ -3393,11 +2786,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
   final Value<bool> isActive;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
-  final Value<String> deviceId;
-  final Value<bool> isSynced;
-  final Value<DateTime?> lastSyncAt;
   final Value<String> syncId;
-  final Value<int> version;
   final Value<String?> budgetTransactionFilters;
   final Value<bool> excludeDebtCreditInstallments;
   final Value<bool> excludeObjectiveInstallments;
@@ -3422,11 +2811,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    this.deviceId = const Value.absent(),
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     this.syncId = const Value.absent(),
-    this.version = const Value.absent(),
     this.budgetTransactionFilters = const Value.absent(),
     this.excludeDebtCreditInstallments = const Value.absent(),
     this.excludeObjectiveInstallments = const Value.absent(),
@@ -3452,11 +2837,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
-    required String deviceId,
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     required String syncId,
-    this.version = const Value.absent(),
     this.budgetTransactionFilters = const Value.absent(),
     this.excludeDebtCreditInstallments = const Value.absent(),
     this.excludeObjectiveInstallments = const Value.absent(),
@@ -3474,7 +2855,6 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
         period = Value(period),
         startDate = Value(startDate),
         endDate = Value(endDate),
-        deviceId = Value(deviceId),
         syncId = Value(syncId);
   static Insertable<BudgetTableData> custom({
     Expression<int>? id,
@@ -3488,11 +2868,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
-    Expression<String>? deviceId,
-    Expression<bool>? isSynced,
-    Expression<DateTime>? lastSyncAt,
     Expression<String>? syncId,
-    Expression<int>? version,
     Expression<String>? budgetTransactionFilters,
     Expression<bool>? excludeDebtCreditInstallments,
     Expression<bool>? excludeObjectiveInstallments,
@@ -3518,11 +2894,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
-      if (deviceId != null) 'device_id': deviceId,
-      if (isSynced != null) 'is_synced': isSynced,
-      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
       if (syncId != null) 'sync_id': syncId,
-      if (version != null) 'version': version,
       if (budgetTransactionFilters != null)
         'budget_transaction_filters': budgetTransactionFilters,
       if (excludeDebtCreditInstallments != null)
@@ -3560,11 +2932,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       Value<bool>? isActive,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
-      Value<String>? deviceId,
-      Value<bool>? isSynced,
-      Value<DateTime?>? lastSyncAt,
       Value<String>? syncId,
-      Value<int>? version,
       Value<String?>? budgetTransactionFilters,
       Value<bool>? excludeDebtCreditInstallments,
       Value<bool>? excludeObjectiveInstallments,
@@ -3589,11 +2957,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
       budgetTransactionFilters:
           budgetTransactionFilters ?? this.budgetTransactionFilters,
       excludeDebtCreditInstallments:
@@ -3653,20 +3017,8 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
-    if (deviceId.present) {
-      map['device_id'] = Variable<String>(deviceId.value);
-    }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
-    if (lastSyncAt.present) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
-    }
     if (syncId.present) {
       map['sync_id'] = Variable<String>(syncId.value);
-    }
-    if (version.present) {
-      map['version'] = Variable<int>(version.value);
     }
     if (budgetTransactionFilters.present) {
       map['budget_transaction_filters'] =
@@ -3729,11 +3081,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
           ..write('syncId: $syncId, ')
-          ..write('version: $version, ')
           ..write('budgetTransactionFilters: $budgetTransactionFilters, ')
           ..write(
               'excludeDebtCreditInstallments: $excludeDebtCreditInstallments, ')
@@ -4174,31 +3522,6 @@ class $AttachmentsTableTable extends AttachmentsTable
   late final GeneratedColumn<DateTime> localCacheExpiry =
       GeneratedColumn<DateTime>('local_cache_expiry', aliasedName, true,
           type: DriftSqlType.dateTime, requiredDuringInsert: false);
-  static const VerificationMeta _deviceIdMeta =
-      const VerificationMeta('deviceId');
-  @override
-  late final GeneratedColumn<String> deviceId = GeneratedColumn<String>(
-      'device_id', aliasedName, false,
-      additionalChecks:
-          GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 50),
-      type: DriftSqlType.string,
-      requiredDuringInsert: true);
-  static const VerificationMeta _isSyncedMeta =
-      const VerificationMeta('isSynced');
-  @override
-  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
-      'is_synced', aliasedName, false,
-      type: DriftSqlType.bool,
-      requiredDuringInsert: false,
-      defaultConstraints:
-          GeneratedColumn.constraintIsAlways('CHECK ("is_synced" IN (0, 1))'),
-      defaultValue: const Constant(false));
-  static const VerificationMeta _lastSyncAtMeta =
-      const VerificationMeta('lastSyncAt');
-  @override
-  late final GeneratedColumn<DateTime> lastSyncAt = GeneratedColumn<DateTime>(
-      'last_sync_at', aliasedName, true,
-      type: DriftSqlType.dateTime, requiredDuringInsert: false);
   static const VerificationMeta _syncIdMeta = const VerificationMeta('syncId');
   @override
   late final GeneratedColumn<String> syncId = GeneratedColumn<String>(
@@ -4206,14 +3529,6 @@ class $AttachmentsTableTable extends AttachmentsTable
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
-  static const VerificationMeta _versionMeta =
-      const VerificationMeta('version');
-  @override
-  late final GeneratedColumn<int> version = GeneratedColumn<int>(
-      'version', aliasedName, false,
-      type: DriftSqlType.int,
-      requiredDuringInsert: false,
-      defaultValue: const Constant(1));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -4231,11 +3546,7 @@ class $AttachmentsTableTable extends AttachmentsTable
         isDeleted,
         isCapturedFromCamera,
         localCacheExpiry,
-        deviceId,
-        isSynced,
-        lastSyncAt,
-        syncId,
-        version
+        syncId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -4327,31 +3638,11 @@ class $AttachmentsTableTable extends AttachmentsTable
           localCacheExpiry.isAcceptableOrUnknown(
               data['local_cache_expiry']!, _localCacheExpiryMeta));
     }
-    if (data.containsKey('device_id')) {
-      context.handle(_deviceIdMeta,
-          deviceId.isAcceptableOrUnknown(data['device_id']!, _deviceIdMeta));
-    } else if (isInserting) {
-      context.missing(_deviceIdMeta);
-    }
-    if (data.containsKey('is_synced')) {
-      context.handle(_isSyncedMeta,
-          isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta));
-    }
-    if (data.containsKey('last_sync_at')) {
-      context.handle(
-          _lastSyncAtMeta,
-          lastSyncAt.isAcceptableOrUnknown(
-              data['last_sync_at']!, _lastSyncAtMeta));
-    }
     if (data.containsKey('sync_id')) {
       context.handle(_syncIdMeta,
           syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta));
     } else if (isInserting) {
       context.missing(_syncIdMeta);
-    }
-    if (data.containsKey('version')) {
-      context.handle(_versionMeta,
-          version.isAcceptableOrUnknown(data['version']!, _versionMeta));
     }
     return context;
   }
@@ -4392,16 +3683,8 @@ class $AttachmentsTableTable extends AttachmentsTable
           data['${effectivePrefix}is_captured_from_camera'])!,
       localCacheExpiry: attachedDatabase.typeMapping.read(
           DriftSqlType.dateTime, data['${effectivePrefix}local_cache_expiry']),
-      deviceId: attachedDatabase.typeMapping
-          .read(DriftSqlType.string, data['${effectivePrefix}device_id'])!,
-      isSynced: attachedDatabase.typeMapping
-          .read(DriftSqlType.bool, data['${effectivePrefix}is_synced'])!,
-      lastSyncAt: attachedDatabase.typeMapping
-          .read(DriftSqlType.dateTime, data['${effectivePrefix}last_sync_at']),
       syncId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
-      version: attachedDatabase.typeMapping
-          .read(DriftSqlType.int, data['${effectivePrefix}version'])!,
     );
   }
 
@@ -4428,11 +3711,7 @@ class AttachmentsTableData extends DataClass
   final bool isDeleted;
   final bool isCapturedFromCamera;
   final DateTime? localCacheExpiry;
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
   const AttachmentsTableData(
       {required this.id,
       required this.transactionId,
@@ -4449,11 +3728,7 @@ class AttachmentsTableData extends DataClass
       required this.isDeleted,
       required this.isCapturedFromCamera,
       this.localCacheExpiry,
-      required this.deviceId,
-      required this.isSynced,
-      this.lastSyncAt,
-      required this.syncId,
-      required this.version});
+      required this.syncId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -4484,13 +3759,7 @@ class AttachmentsTableData extends DataClass
     if (!nullToAbsent || localCacheExpiry != null) {
       map['local_cache_expiry'] = Variable<DateTime>(localCacheExpiry);
     }
-    map['device_id'] = Variable<String>(deviceId);
-    map['is_synced'] = Variable<bool>(isSynced);
-    if (!nullToAbsent || lastSyncAt != null) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt);
-    }
     map['sync_id'] = Variable<String>(syncId);
-    map['version'] = Variable<int>(version);
     return map;
   }
 
@@ -4523,13 +3792,7 @@ class AttachmentsTableData extends DataClass
       localCacheExpiry: localCacheExpiry == null && nullToAbsent
           ? const Value.absent()
           : Value(localCacheExpiry),
-      deviceId: Value(deviceId),
-      isSynced: Value(isSynced),
-      lastSyncAt: lastSyncAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(lastSyncAt),
       syncId: Value(syncId),
-      version: Value(version),
     );
   }
 
@@ -4555,11 +3818,7 @@ class AttachmentsTableData extends DataClass
           serializer.fromJson<bool>(json['isCapturedFromCamera']),
       localCacheExpiry:
           serializer.fromJson<DateTime?>(json['localCacheExpiry']),
-      deviceId: serializer.fromJson<String>(json['deviceId']),
-      isSynced: serializer.fromJson<bool>(json['isSynced']),
-      lastSyncAt: serializer.fromJson<DateTime?>(json['lastSyncAt']),
       syncId: serializer.fromJson<String>(json['syncId']),
-      version: serializer.fromJson<int>(json['version']),
     );
   }
   @override
@@ -4581,11 +3840,7 @@ class AttachmentsTableData extends DataClass
       'isDeleted': serializer.toJson<bool>(isDeleted),
       'isCapturedFromCamera': serializer.toJson<bool>(isCapturedFromCamera),
       'localCacheExpiry': serializer.toJson<DateTime?>(localCacheExpiry),
-      'deviceId': serializer.toJson<String>(deviceId),
-      'isSynced': serializer.toJson<bool>(isSynced),
-      'lastSyncAt': serializer.toJson<DateTime?>(lastSyncAt),
       'syncId': serializer.toJson<String>(syncId),
-      'version': serializer.toJson<int>(version),
     };
   }
 
@@ -4605,11 +3860,7 @@ class AttachmentsTableData extends DataClass
           bool? isDeleted,
           bool? isCapturedFromCamera,
           Value<DateTime?> localCacheExpiry = const Value.absent(),
-          String? deviceId,
-          bool? isSynced,
-          Value<DateTime?> lastSyncAt = const Value.absent(),
-          String? syncId,
-          int? version}) =>
+          String? syncId}) =>
       AttachmentsTableData(
         id: id ?? this.id,
         transactionId: transactionId ?? this.transactionId,
@@ -4633,11 +3884,7 @@ class AttachmentsTableData extends DataClass
         localCacheExpiry: localCacheExpiry.present
             ? localCacheExpiry.value
             : this.localCacheExpiry,
-        deviceId: deviceId ?? this.deviceId,
-        isSynced: isSynced ?? this.isSynced,
-        lastSyncAt: lastSyncAt.present ? lastSyncAt.value : this.lastSyncAt,
         syncId: syncId ?? this.syncId,
-        version: version ?? this.version,
       );
   AttachmentsTableData copyWithCompanion(AttachmentsTableCompanion data) {
     return AttachmentsTableData(
@@ -4669,12 +3916,7 @@ class AttachmentsTableData extends DataClass
       localCacheExpiry: data.localCacheExpiry.present
           ? data.localCacheExpiry.value
           : this.localCacheExpiry,
-      deviceId: data.deviceId.present ? data.deviceId.value : this.deviceId,
-      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
-      lastSyncAt:
-          data.lastSyncAt.present ? data.lastSyncAt.value : this.lastSyncAt,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
-      version: data.version.present ? data.version.value : this.version,
     );
   }
 
@@ -4696,11 +3938,7 @@ class AttachmentsTableData extends DataClass
           ..write('isDeleted: $isDeleted, ')
           ..write('isCapturedFromCamera: $isCapturedFromCamera, ')
           ..write('localCacheExpiry: $localCacheExpiry, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
@@ -4722,11 +3960,7 @@ class AttachmentsTableData extends DataClass
       isDeleted,
       isCapturedFromCamera,
       localCacheExpiry,
-      deviceId,
-      isSynced,
-      lastSyncAt,
-      syncId,
-      version);
+      syncId);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4746,11 +3980,7 @@ class AttachmentsTableData extends DataClass
           other.isDeleted == this.isDeleted &&
           other.isCapturedFromCamera == this.isCapturedFromCamera &&
           other.localCacheExpiry == this.localCacheExpiry &&
-          other.deviceId == this.deviceId &&
-          other.isSynced == this.isSynced &&
-          other.lastSyncAt == this.lastSyncAt &&
-          other.syncId == this.syncId &&
-          other.version == this.version);
+          other.syncId == this.syncId);
 }
 
 class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
@@ -4769,11 +3999,7 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
   final Value<bool> isDeleted;
   final Value<bool> isCapturedFromCamera;
   final Value<DateTime?> localCacheExpiry;
-  final Value<String> deviceId;
-  final Value<bool> isSynced;
-  final Value<DateTime?> lastSyncAt;
   final Value<String> syncId;
-  final Value<int> version;
   const AttachmentsTableCompanion({
     this.id = const Value.absent(),
     this.transactionId = const Value.absent(),
@@ -4790,11 +4016,7 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     this.isDeleted = const Value.absent(),
     this.isCapturedFromCamera = const Value.absent(),
     this.localCacheExpiry = const Value.absent(),
-    this.deviceId = const Value.absent(),
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     this.syncId = const Value.absent(),
-    this.version = const Value.absent(),
   });
   AttachmentsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -4812,15 +4034,10 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     this.isDeleted = const Value.absent(),
     this.isCapturedFromCamera = const Value.absent(),
     this.localCacheExpiry = const Value.absent(),
-    required String deviceId,
-    this.isSynced = const Value.absent(),
-    this.lastSyncAt = const Value.absent(),
     required String syncId,
-    this.version = const Value.absent(),
   })  : transactionId = Value(transactionId),
         fileName = Value(fileName),
         type = Value(type),
-        deviceId = Value(deviceId),
         syncId = Value(syncId);
   static Insertable<AttachmentsTableData> custom({
     Expression<int>? id,
@@ -4838,11 +4055,7 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     Expression<bool>? isDeleted,
     Expression<bool>? isCapturedFromCamera,
     Expression<DateTime>? localCacheExpiry,
-    Expression<String>? deviceId,
-    Expression<bool>? isSynced,
-    Expression<DateTime>? lastSyncAt,
     Expression<String>? syncId,
-    Expression<int>? version,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -4861,11 +4074,7 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
       if (isCapturedFromCamera != null)
         'is_captured_from_camera': isCapturedFromCamera,
       if (localCacheExpiry != null) 'local_cache_expiry': localCacheExpiry,
-      if (deviceId != null) 'device_id': deviceId,
-      if (isSynced != null) 'is_synced': isSynced,
-      if (lastSyncAt != null) 'last_sync_at': lastSyncAt,
       if (syncId != null) 'sync_id': syncId,
-      if (version != null) 'version': version,
     });
   }
 
@@ -4885,11 +4094,7 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
       Value<bool>? isDeleted,
       Value<bool>? isCapturedFromCamera,
       Value<DateTime?>? localCacheExpiry,
-      Value<String>? deviceId,
-      Value<bool>? isSynced,
-      Value<DateTime?>? lastSyncAt,
-      Value<String>? syncId,
-      Value<int>? version}) {
+      Value<String>? syncId}) {
     return AttachmentsTableCompanion(
       id: id ?? this.id,
       transactionId: transactionId ?? this.transactionId,
@@ -4906,11 +4111,7 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
       isDeleted: isDeleted ?? this.isDeleted,
       isCapturedFromCamera: isCapturedFromCamera ?? this.isCapturedFromCamera,
       localCacheExpiry: localCacheExpiry ?? this.localCacheExpiry,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -4963,20 +4164,8 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
     if (localCacheExpiry.present) {
       map['local_cache_expiry'] = Variable<DateTime>(localCacheExpiry.value);
     }
-    if (deviceId.present) {
-      map['device_id'] = Variable<String>(deviceId.value);
-    }
-    if (isSynced.present) {
-      map['is_synced'] = Variable<bool>(isSynced.value);
-    }
-    if (lastSyncAt.present) {
-      map['last_sync_at'] = Variable<DateTime>(lastSyncAt.value);
-    }
     if (syncId.present) {
       map['sync_id'] = Variable<String>(syncId.value);
-    }
-    if (version.present) {
-      map['version'] = Variable<int>(version.value);
     }
     return map;
   }
@@ -4999,11 +4188,7 @@ class AttachmentsTableCompanion extends UpdateCompanion<AttachmentsTableData> {
           ..write('isDeleted: $isDeleted, ')
           ..write('isCapturedFromCamera: $isCapturedFromCamera, ')
           ..write('localCacheExpiry: $localCacheExpiry, ')
-          ..write('deviceId: $deviceId, ')
-          ..write('isSynced: $isSynced, ')
-          ..write('lastSyncAt: $lastSyncAt, ')
-          ..write('syncId: $syncId, ')
-          ..write('version: $version')
+          ..write('syncId: $syncId')
           ..write(')'))
         .toString();
   }
@@ -5902,11 +5087,7 @@ typedef $$CategoriesTableTableCreateCompanionBuilder = CategoriesTableCompanion
   Value<bool> isDefault,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
-  required String deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   required String syncId,
-  Value<int> version,
 });
 typedef $$CategoriesTableTableUpdateCompanionBuilder = CategoriesTableCompanion
     Function({
@@ -5918,11 +5099,7 @@ typedef $$CategoriesTableTableUpdateCompanionBuilder = CategoriesTableCompanion
   Value<bool> isDefault,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
-  Value<String> deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   Value<String> syncId,
-  Value<int> version,
 });
 
 final class $$CategoriesTableTableReferences extends BaseReferences<
@@ -5997,20 +5174,8 @@ class $$CategoriesTableTableFilterComposer
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnFilters(column));
 
   Expression<bool> transactionsTableRefs(
       Expression<bool> Function($$TransactionsTableTableFilterComposer f) f) {
@@ -6088,20 +5253,8 @@ class $$CategoriesTableTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnOrderings(column));
 }
 
 class $$CategoriesTableTableAnnotationComposer
@@ -6137,20 +5290,8 @@ class $$CategoriesTableTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => column);
-
   GeneratedColumn<String> get syncId =>
       $composableBuilder(column: $table.syncId, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
 
   Expression<T> transactionsTableRefs<T extends Object>(
       Expression<T> Function($$TransactionsTableTableAnnotationComposer a) f) {
@@ -6229,11 +5370,7 @@ class $$CategoriesTableTableTableManager extends RootTableManager<
             Value<bool> isDefault = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            Value<String> deviceId = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             Value<String> syncId = const Value.absent(),
-            Value<int> version = const Value.absent(),
           }) =>
               CategoriesTableCompanion(
             id: id,
@@ -6244,11 +5381,7 @@ class $$CategoriesTableTableTableManager extends RootTableManager<
             isDefault: isDefault,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -6259,11 +5392,7 @@ class $$CategoriesTableTableTableManager extends RootTableManager<
             Value<bool> isDefault = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            required String deviceId,
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             required String syncId,
-            Value<int> version = const Value.absent(),
           }) =>
               CategoriesTableCompanion.insert(
             id: id,
@@ -6274,11 +5403,7 @@ class $$CategoriesTableTableTableManager extends RootTableManager<
             isDefault: isDefault,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -6352,11 +5477,7 @@ typedef $$AccountsTableTableCreateCompanionBuilder = AccountsTableCompanion
   Value<bool> isDefault,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
-  required String deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   required String syncId,
-  Value<int> version,
 });
 typedef $$AccountsTableTableUpdateCompanionBuilder = AccountsTableCompanion
     Function({
@@ -6367,11 +5488,7 @@ typedef $$AccountsTableTableUpdateCompanionBuilder = AccountsTableCompanion
   Value<bool> isDefault,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
-  Value<String> deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   Value<String> syncId,
-  Value<int> version,
 });
 
 final class $$AccountsTableTableReferences extends BaseReferences<_$AppDatabase,
@@ -6428,20 +5545,8 @@ class $$AccountsTableTableFilterComposer
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnFilters(column));
 
   Expression<bool> transactionsTableRefs(
       Expression<bool> Function($$TransactionsTableTableFilterComposer f) f) {
@@ -6495,20 +5600,8 @@ class $$AccountsTableTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnOrderings(column));
 }
 
 class $$AccountsTableTableAnnotationComposer
@@ -6541,20 +5634,8 @@ class $$AccountsTableTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => column);
-
   GeneratedColumn<String> get syncId =>
       $composableBuilder(column: $table.syncId, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
 
   Expression<T> transactionsTableRefs<T extends Object>(
       Expression<T> Function($$TransactionsTableTableAnnotationComposer a) f) {
@@ -6609,11 +5690,7 @@ class $$AccountsTableTableTableManager extends RootTableManager<
             Value<bool> isDefault = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            Value<String> deviceId = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             Value<String> syncId = const Value.absent(),
-            Value<int> version = const Value.absent(),
           }) =>
               AccountsTableCompanion(
             id: id,
@@ -6623,11 +5700,7 @@ class $$AccountsTableTableTableManager extends RootTableManager<
             isDefault: isDefault,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -6637,11 +5710,7 @@ class $$AccountsTableTableTableManager extends RootTableManager<
             Value<bool> isDefault = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            required String deviceId,
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             required String syncId,
-            Value<int> version = const Value.absent(),
           }) =>
               AccountsTableCompanion.insert(
             id: id,
@@ -6651,11 +5720,7 @@ class $$AccountsTableTableTableManager extends RootTableManager<
             isDefault: isDefault,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -6726,11 +5791,7 @@ typedef $$TransactionsTableTableCreateCompanionBuilder
   Value<bool> skipPaid,
   Value<bool?> createdAnotherFutureTransaction,
   Value<String?> objectiveLoanFk,
-  required String deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   required String syncId,
-  Value<int> version,
 });
 typedef $$TransactionsTableTableUpdateCompanionBuilder
     = TransactionsTableCompanion Function({
@@ -6754,11 +5815,7 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder
   Value<bool> skipPaid,
   Value<bool?> createdAnotherFutureTransaction,
   Value<String?> objectiveLoanFk,
-  Value<String> deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   Value<String> syncId,
-  Value<int> version,
 });
 
 final class $$TransactionsTableTableReferences extends BaseReferences<
@@ -6883,20 +5940,8 @@ class $$TransactionsTableTableFilterComposer
       column: $table.objectiveLoanFk,
       builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnFilters(column));
 
   $$CategoriesTableTableFilterComposer get categoryId {
     final $$CategoriesTableTableFilterComposer composer = $composerBuilder(
@@ -7030,20 +6075,8 @@ class $$TransactionsTableTableOrderingComposer
       column: $table.objectiveLoanFk,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnOrderings(column));
 
   $$CategoriesTableTableOrderingComposer get categoryId {
     final $$CategoriesTableTableOrderingComposer composer = $composerBuilder(
@@ -7151,20 +6184,8 @@ class $$TransactionsTableTableAnnotationComposer
   GeneratedColumn<String> get objectiveLoanFk => $composableBuilder(
       column: $table.objectiveLoanFk, builder: (column) => column);
 
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => column);
-
   GeneratedColumn<String> get syncId =>
       $composableBuilder(column: $table.syncId, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
 
   $$CategoriesTableTableAnnotationComposer get categoryId {
     final $$CategoriesTableTableAnnotationComposer composer = $composerBuilder(
@@ -7274,11 +6295,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<bool> skipPaid = const Value.absent(),
             Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
             Value<String?> objectiveLoanFk = const Value.absent(),
-            Value<String> deviceId = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             Value<String> syncId = const Value.absent(),
-            Value<int> version = const Value.absent(),
           }) =>
               TransactionsTableCompanion(
             id: id,
@@ -7301,11 +6318,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             skipPaid: skipPaid,
             createdAnotherFutureTransaction: createdAnotherFutureTransaction,
             objectiveLoanFk: objectiveLoanFk,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -7328,11 +6341,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<bool> skipPaid = const Value.absent(),
             Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
             Value<String?> objectiveLoanFk = const Value.absent(),
-            required String deviceId,
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             required String syncId,
-            Value<int> version = const Value.absent(),
           }) =>
               TransactionsTableCompanion.insert(
             id: id,
@@ -7355,11 +6364,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             skipPaid: skipPaid,
             createdAnotherFutureTransaction: createdAnotherFutureTransaction,
             objectiveLoanFk: objectiveLoanFk,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -7462,11 +6467,7 @@ typedef $$BudgetsTableTableCreateCompanionBuilder = BudgetsTableCompanion
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
-  required String deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   required String syncId,
-  Value<int> version,
   Value<String?> budgetTransactionFilters,
   Value<bool> excludeDebtCreditInstallments,
   Value<bool> excludeObjectiveInstallments,
@@ -7493,11 +6494,7 @@ typedef $$BudgetsTableTableUpdateCompanionBuilder = BudgetsTableCompanion
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
-  Value<String> deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   Value<String> syncId,
-  Value<int> version,
   Value<String?> budgetTransactionFilters,
   Value<bool> excludeDebtCreditInstallments,
   Value<bool> excludeObjectiveInstallments,
@@ -7572,20 +6569,8 @@ class $$BudgetsTableTableFilterComposer
   ColumnFilters<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get budgetTransactionFilters => $composableBuilder(
       column: $table.budgetTransactionFilters,
@@ -7695,20 +6680,8 @@ class $$BudgetsTableTableOrderingComposer
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
       column: $table.updatedAt, builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get budgetTransactionFilters => $composableBuilder(
       column: $table.budgetTransactionFilters,
@@ -7818,20 +6791,8 @@ class $$BudgetsTableTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => column);
-
   GeneratedColumn<String> get syncId =>
       $composableBuilder(column: $table.syncId, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
 
   GeneratedColumn<String> get budgetTransactionFilters => $composableBuilder(
       column: $table.budgetTransactionFilters, builder: (column) => column);
@@ -7929,11 +6890,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            Value<String> deviceId = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             Value<String> syncId = const Value.absent(),
-            Value<int> version = const Value.absent(),
             Value<String?> budgetTransactionFilters = const Value.absent(),
             Value<bool> excludeDebtCreditInstallments = const Value.absent(),
             Value<bool> excludeObjectiveInstallments = const Value.absent(),
@@ -7961,11 +6918,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
             budgetTransactionFilters: budgetTransactionFilters,
             excludeDebtCreditInstallments: excludeDebtCreditInstallments,
             excludeObjectiveInstallments: excludeObjectiveInstallments,
@@ -7993,11 +6946,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
-            required String deviceId,
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             required String syncId,
-            Value<int> version = const Value.absent(),
             Value<String?> budgetTransactionFilters = const Value.absent(),
             Value<bool> excludeDebtCreditInstallments = const Value.absent(),
             Value<bool> excludeObjectiveInstallments = const Value.absent(),
@@ -8025,11 +6974,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
             budgetTransactionFilters: budgetTransactionFilters,
             excludeDebtCreditInstallments: excludeDebtCreditInstallments,
             excludeObjectiveInstallments: excludeObjectiveInstallments,
@@ -8289,11 +7234,7 @@ typedef $$AttachmentsTableTableCreateCompanionBuilder
   Value<bool> isDeleted,
   Value<bool> isCapturedFromCamera,
   Value<DateTime?> localCacheExpiry,
-  required String deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   required String syncId,
-  Value<int> version,
 });
 typedef $$AttachmentsTableTableUpdateCompanionBuilder
     = AttachmentsTableCompanion Function({
@@ -8312,11 +7253,7 @@ typedef $$AttachmentsTableTableUpdateCompanionBuilder
   Value<bool> isDeleted,
   Value<bool> isCapturedFromCamera,
   Value<DateTime?> localCacheExpiry,
-  Value<String> deviceId,
-  Value<bool> isSynced,
-  Value<DateTime?> lastSyncAt,
   Value<String> syncId,
-  Value<int> version,
 });
 
 final class $$AttachmentsTableTableReferences extends BaseReferences<
@@ -8396,20 +7333,8 @@ class $$AttachmentsTableTableFilterComposer
       column: $table.localCacheExpiry,
       builder: (column) => ColumnFilters(column));
 
-  ColumnFilters<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnFilters(column));
-
   ColumnFilters<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnFilters(column));
-
-  ColumnFilters<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnFilters(column));
 
   $$TransactionsTableTableFilterComposer get transactionId {
     final $$TransactionsTableTableFilterComposer composer = $composerBuilder(
@@ -8488,20 +7413,8 @@ class $$AttachmentsTableTableOrderingComposer
       column: $table.localCacheExpiry,
       builder: (column) => ColumnOrderings(column));
 
-  ColumnOrderings<String> get deviceId => $composableBuilder(
-      column: $table.deviceId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<bool> get isSynced => $composableBuilder(
-      column: $table.isSynced, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => ColumnOrderings(column));
-
   ColumnOrderings<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnOrderings(column));
-
-  ColumnOrderings<int> get version => $composableBuilder(
-      column: $table.version, builder: (column) => ColumnOrderings(column));
 
   $$TransactionsTableTableOrderingComposer get transactionId {
     final $$TransactionsTableTableOrderingComposer composer = $composerBuilder(
@@ -8575,20 +7488,8 @@ class $$AttachmentsTableTableAnnotationComposer
   GeneratedColumn<DateTime> get localCacheExpiry => $composableBuilder(
       column: $table.localCacheExpiry, builder: (column) => column);
 
-  GeneratedColumn<String> get deviceId =>
-      $composableBuilder(column: $table.deviceId, builder: (column) => column);
-
-  GeneratedColumn<bool> get isSynced =>
-      $composableBuilder(column: $table.isSynced, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get lastSyncAt => $composableBuilder(
-      column: $table.lastSyncAt, builder: (column) => column);
-
   GeneratedColumn<String> get syncId =>
       $composableBuilder(column: $table.syncId, builder: (column) => column);
-
-  GeneratedColumn<int> get version =>
-      $composableBuilder(column: $table.version, builder: (column) => column);
 
   $$TransactionsTableTableAnnotationComposer get transactionId {
     final $$TransactionsTableTableAnnotationComposer composer =
@@ -8651,11 +7552,7 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             Value<bool> isDeleted = const Value.absent(),
             Value<bool> isCapturedFromCamera = const Value.absent(),
             Value<DateTime?> localCacheExpiry = const Value.absent(),
-            Value<String> deviceId = const Value.absent(),
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             Value<String> syncId = const Value.absent(),
-            Value<int> version = const Value.absent(),
           }) =>
               AttachmentsTableCompanion(
             id: id,
@@ -8673,11 +7570,7 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             isDeleted: isDeleted,
             isCapturedFromCamera: isCapturedFromCamera,
             localCacheExpiry: localCacheExpiry,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -8695,11 +7588,7 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             Value<bool> isDeleted = const Value.absent(),
             Value<bool> isCapturedFromCamera = const Value.absent(),
             Value<DateTime?> localCacheExpiry = const Value.absent(),
-            required String deviceId,
-            Value<bool> isSynced = const Value.absent(),
-            Value<DateTime?> lastSyncAt = const Value.absent(),
             required String syncId,
-            Value<int> version = const Value.absent(),
           }) =>
               AttachmentsTableCompanion.insert(
             id: id,
@@ -8717,11 +7606,7 @@ class $$AttachmentsTableTableTableManager extends RootTableManager<
             isDeleted: isDeleted,
             isCapturedFromCamera: isCapturedFromCamera,
             localCacheExpiry: localCacheExpiry,
-            deviceId: deviceId,
-            isSynced: isSynced,
-            lastSyncAt: lastSyncAt,
             syncId: syncId,
-            version: version,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (

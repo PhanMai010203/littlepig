@@ -14,10 +14,6 @@ class AccountsTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
   
-  // Sync fields
-  TextColumn get deviceId => text().withLength(min: 1, max: 50)();
-  BoolColumn get isSynced => boolean().withDefault(const Constant(false))();
-  DateTimeColumn get lastSyncAt => dateTime().nullable()();
+  // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   TextColumn get syncId => text().unique()();
-  IntColumn get version => integer().withDefault(const Constant(1))();
 }

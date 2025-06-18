@@ -9,12 +9,11 @@ import '../../../budgets/domain/services/budget_update_service.dart';
 
 class TransactionRepositoryImpl implements TransactionRepository {
   final AppDatabase _database;
-  final String _deviceId;
   BudgetUpdateService? _budgetUpdateService;
 
   TransactionRepositoryImpl(
     this._database, 
-    this._deviceId, {
+    String deviceId, {  // Keep parameter for backward compatibility but don't use it
     BudgetUpdateService? budgetUpdateService,
   }) : _budgetUpdateService = budgetUpdateService;
 
@@ -66,7 +65,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
       ..where((t) => t.syncId.equals(syncId));
     final result = await query.getSingleOrNull();
     return result != null ? _mapTransactionData(result) : null;
-  }  @override
+  }
+
+  @override
   Future<Transaction> createTransaction(Transaction transaction) async {
     final companion = TransactionsTableCompanion.insert(
       title: transaction.title,
@@ -89,12 +90,12 @@ class TransactionRepositoryImpl implements TransactionRepository {
       createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
       objectiveLoanFk: Value(transaction.objectiveLoanFk),
       
-      deviceId: _deviceId,
+      // ✅ PHASE 4: Only essential sync field
       syncId: const Uuid().v4(),
     );
     
     final id = await _database.into(_database.transactionsTable).insert(companion);
-    final createdTransaction = transaction.copyWith(id: id, deviceId: _deviceId);
+    final createdTransaction = transaction.copyWith(id: id);
     
     // Trigger budget updates if service is available
     if (_budgetUpdateService != null) {
@@ -105,7 +106,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     }
     
     return createdTransaction;
-  }  @override
+  }
+
+  @override
   Future<Transaction> updateTransaction(Transaction transaction) async {
     final companion = TransactionsTableCompanion(
       id: Value(transaction.id!),
@@ -130,16 +133,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
       objectiveLoanFk: Value(transaction.objectiveLoanFk),
       
       updatedAt: Value(DateTime.now()),
-      isSynced: const Value(false),
-      version: Value(transaction.version + 1),
+      // ✅ PHASE 4: No more redundant sync fields - event sourcing handles sync state
     );
     
     await _database.update(_database.transactionsTable).replace(companion);
-    final updatedTransaction = transaction.copyWith(
-      updatedAt: DateTime.now(),
-      isSynced: false,
-      version: transaction.version + 1,
-    );
+    final updatedTransaction = transaction.copyWith(updatedAt: DateTime.now());
     
     // Trigger budget updates if service is available
     if (_budgetUpdateService != null) {
@@ -172,26 +170,39 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   @override
   Future<List<Transaction>> getUnsyncedTransactions() async {
+    // ✅ PHASE 4: Use event sourcing to get unsynced transactions
+    final unsyncedEvents = await _database.customSelect('''
+      SELECT DISTINCT record_id as sync_id
+      FROM sync_event_log 
+      WHERE table_name_field = 'transactions' AND is_synced = false
+    ''').get();
+    
+    final unsyncedSyncIds = unsyncedEvents.map((row) => row.data['sync_id'] as String).toList();
+    
+    if (unsyncedSyncIds.isEmpty) return [];
+    
     final query = _database.select(_database.transactionsTable)
-      ..where((t) => t.isSynced.equals(false));
+      ..where((t) => t.syncId.isIn(unsyncedSyncIds));
     final results = await query.get();
     return results.map(_mapTransactionData).toList();
   }
 
   @override
   Future<void> markAsSynced(String syncId, DateTime syncTime) async {
-    await (_database.update(_database.transactionsTable)
-          ..where((t) => t.syncId.equals(syncId)))
-        .write(TransactionsTableCompanion(
-          isSynced: const Value(true),
-          lastSyncAt: Value(syncTime),
-        ));
+    // ✅ PHASE 4: Mark sync events as synced instead of table records
+    await _database.customStatement('''
+      UPDATE sync_event_log 
+      SET is_synced = true 
+      WHERE table_name_field = 'transactions' AND record_id = ?
+    ''', [syncId]);
   }
+
   @override
   Future<void> insertOrUpdateFromSync(Transaction transaction) async {
     final existing = await getTransactionBySyncId(transaction.syncId);
     
-    if (existing == null) {      // Insert new transaction from sync
+    if (existing == null) {
+      // Insert new transaction from sync
       final companion = TransactionsTableCompanion.insert(
         title: transaction.title,
         note: Value(transaction.note),
@@ -215,11 +226,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
         
         createdAt: Value(transaction.createdAt),
         updatedAt: Value(transaction.updatedAt),
-        deviceId: transaction.deviceId,
-        isSynced: const Value(true),
-        lastSyncAt: Value(transaction.lastSyncAt),
+        // ✅ PHASE 4: Only sync_id field for sync operations
         syncId: transaction.syncId,
-        version: Value(transaction.version),
       );
       await _database.into(_database.transactionsTable).insert(companion);
       
@@ -230,7 +238,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
           TransactionChangeType.created
         );
       }
-    } else if (transaction.version > existing.version) {      // Update with newer version
+    } else {
+      // ✅ PHASE 4: Always update with newer data from sync (no version comparison needed)
       final companion = TransactionsTableCompanion(
         id: Value(existing.id!),
         title: Value(transaction.title),
@@ -254,9 +263,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         objectiveLoanFk: Value(transaction.objectiveLoanFk),
         
         updatedAt: Value(transaction.updatedAt),
-        isSynced: const Value(true),
-        lastSyncAt: Value(transaction.lastSyncAt),
-        version: Value(transaction.version),
+        // ✅ PHASE 4: No redundant sync fields to update
       );
       await _database.update(_database.transactionsTable).replace(companion);
       
@@ -333,6 +340,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   void setBudgetUpdateService(BudgetUpdateService service) {
     _budgetUpdateService = service;
   }
+
+  // ✅ PHASE 4: Clean mapping without redundant sync fields
   Transaction _mapTransactionData(TransactionsTableData data) {
     return Transaction(
       id: data.id,
@@ -345,17 +354,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       
-      // Map advanced fields
+      // Advanced fields
       transactionType: TransactionType.values.firstWhere(
         (e) => e.name == data.transactionType,
         orElse: () => TransactionType.expense,
       ),
-      specialType: data.specialType != null 
-        ? TransactionSpecialType.values.firstWhere(
-            (e) => e.name == data.specialType,
-            orElse: () => TransactionSpecialType.credit,
-          )
-        : null,
+      specialType: data.specialType != null
+          ? TransactionSpecialType.values.firstWhere(
+              (e) => e.name == data.specialType!,
+              orElse: () => TransactionSpecialType.credit,
+            )
+          : null,
       recurrence: TransactionRecurrence.values.firstWhere(
         (e) => e.name == data.recurrence,
         orElse: () => TransactionRecurrence.none,
@@ -372,11 +381,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
       createdAnotherFutureTransaction: data.createdAnotherFutureTransaction,
       objectiveLoanFk: data.objectiveLoanFk,
       
-      deviceId: data.deviceId,
-      isSynced: data.isSynced,
-      lastSyncAt: data.lastSyncAt,
+      // ✅ PHASE 4: Only essential sync field
       syncId: data.syncId,
-      version: data.version,
     );
   }
 }

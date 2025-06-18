@@ -15,6 +15,7 @@ import 'tables/attachments_table.dart';
 import 'tables/sync_event_log_table.dart';
 import 'tables/sync_state_table.dart';
 import '../constants/default_categories.dart';
+import 'migrations/schema_cleanup_migration.dart';
 
 part 'app_database.g.dart';
 
@@ -38,7 +39,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(QueryExecutor executor) : super(executor);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -52,6 +53,14 @@ class AppDatabase extends _$AppDatabase {
         await m.createTable(syncStateTable);
         
         await _addEventSourcingTriggers();
+      }
+      
+      // ✅ PHASE 4: Schema Cleanup Migration (v7 → v8)
+      if (from < 8) {
+        print('🧹 Starting Phase 4: Schema Cleanup Migration (v7 → v8)...');
+        final migration = SchemaCleanupMigration(this);
+        await migration.executeCleanup();
+        print('✅ Phase 4 migration completed successfully!');
       }
     },
   );
@@ -139,8 +148,18 @@ class AppDatabase extends _$AppDatabase {
           'date', NEW.date,
           'created_at', NEW.created_at,
           'updated_at', NEW.updated_at,
-          'sync_id', NEW.sync_id,
-          'version', NEW.version
+          'transaction_type', NEW.transaction_type,
+          'special_type', NEW.special_type,
+          'recurrence', NEW.recurrence,
+          'period_length', NEW.period_length,
+          'end_date', NEW.end_date,
+          'original_date_due', NEW.original_date_due,
+          'transaction_state', NEW.transaction_state,
+          'paid', NEW.paid,
+          'skip_paid', NEW.skip_paid,
+          'created_another_future_transaction', NEW.created_another_future_transaction,
+          'objective_loan_fk', NEW.objective_loan_fk,
+          'sync_id', NEW.sync_id
         ''';
       case 'categories':
         return '''
@@ -152,8 +171,7 @@ class AppDatabase extends _$AppDatabase {
           'is_default', NEW.is_default,
           'created_at', NEW.created_at,
           'updated_at', NEW.updated_at,
-          'sync_id', NEW.sync_id,
-          'version', NEW.version
+          'sync_id', NEW.sync_id
         ''';
       case 'accounts':
         return '''
@@ -164,8 +182,7 @@ class AppDatabase extends _$AppDatabase {
           'is_default', NEW.is_default,
           'created_at', NEW.created_at,
           'updated_at', NEW.updated_at,
-          'sync_id', NEW.sync_id,
-          'version', NEW.version
+          'sync_id', NEW.sync_id
         ''';
       case 'budgets':
         return '''
@@ -180,32 +197,43 @@ class AppDatabase extends _$AppDatabase {
           'is_active', NEW.is_active,
           'created_at', NEW.created_at,
           'updated_at', NEW.updated_at,
-          'sync_id', NEW.sync_id,
-          'version', NEW.version
+          'budget_transaction_filters', NEW.budget_transaction_filters,
+          'exclude_debt_credit_installments', NEW.exclude_debt_credit_installments,
+          'exclude_objective_installments', NEW.exclude_objective_installments,
+          'wallet_fks', NEW.wallet_fks,
+          'currency_fks', NEW.currency_fks,
+          'shared_reference_budget_pk', NEW.shared_reference_budget_pk,
+          'budget_fks_exclude', NEW.budget_fks_exclude,
+          'normalize_to_currency', NEW.normalize_to_currency,
+          'is_income_budget', NEW.is_income_budget,
+          'include_transfer_in_out_with_same_currency', NEW.include_transfer_in_out_with_same_currency,
+          'include_upcoming_transaction_from_budget', NEW.include_upcoming_transaction_from_budget,
+          'date_created_original', NEW.date_created_original,
+          'sync_id', NEW.sync_id
         ''';
       case 'attachments':
         return '''
           'id', NEW.id,
           'transaction_id', NEW.transaction_id,
           'file_name', NEW.file_name,
+          'file_path', NEW.file_path,
           'google_drive_file_id', NEW.google_drive_file_id,
           'google_drive_link', NEW.google_drive_link,
           'type', NEW.type,
           'mime_type', NEW.mime_type,
           'file_size_bytes', NEW.file_size_bytes,
+          'created_at', NEW.created_at,
+          'updated_at', NEW.updated_at,
           'is_uploaded', NEW.is_uploaded,
           'is_deleted', NEW.is_deleted,
           'is_captured_from_camera', NEW.is_captured_from_camera,
-          'created_at', NEW.created_at,
-          'updated_at', NEW.updated_at,
-          'sync_id', NEW.sync_id,
-          'version', NEW.version
+          'local_cache_expiry', NEW.local_cache_expiry,
+          'sync_id', NEW.sync_id
         ''';
       default:
         return '''
           'id', NEW.id,
-          'sync_id', NEW.sync_id,
-          'version', NEW.version
+          'sync_id', NEW.sync_id
         ''';
     }
   }
@@ -231,8 +259,6 @@ class AppDatabase extends _$AppDatabase {
   }
 
   Future<void> _insertDefaultCategories() async {
-    final deviceId = await _getOrCreateDeviceId();
-    
     for (final category in DefaultCategories.allCategories) {
       await into(categoriesTable).insert(
         CategoriesTableCompanion.insert(
@@ -241,7 +267,6 @@ class AppDatabase extends _$AppDatabase {
           color: category.color,
           isExpense: category.isExpense,
           isDefault: const Value(true),
-          deviceId: deviceId,
           syncId: category.syncId,
         ),
       );

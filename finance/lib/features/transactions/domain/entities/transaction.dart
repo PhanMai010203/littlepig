@@ -33,12 +33,9 @@ class Transaction extends Equatable {
   // Loan/Objective linking (for complex loans)
   final String? objectiveLoanFk; // Links to objectives table (future use)
   
-  // Sync fields
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
+  // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   final String syncId;
-  final int version;
+
   const Transaction({
     this.id,
     required this.title,
@@ -63,11 +60,7 @@ class Transaction extends Equatable {
     this.createdAnotherFutureTransaction,
     this.objectiveLoanFk,
     
-    required this.deviceId,
-    required this.isSynced,
-    this.lastSyncAt,
     required this.syncId,
-    required this.version,
   });
   Transaction copyWith({
     int? id,
@@ -90,11 +83,7 @@ class Transaction extends Equatable {
     bool? skipPaid,
     bool? createdAnotherFutureTransaction,
     String? objectiveLoanFk,
-    String? deviceId,
-    bool? isSynced,
-    DateTime? lastSyncAt,
     String? syncId,
-    int? version,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -117,11 +106,7 @@ class Transaction extends Equatable {
       skipPaid: skipPaid ?? this.skipPaid,
       createdAnotherFutureTransaction: createdAnotherFutureTransaction ?? this.createdAnotherFutureTransaction,
       objectiveLoanFk: objectiveLoanFk ?? this.objectiveLoanFk,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -194,10 +179,6 @@ class Transaction extends Equatable {
         skipPaid,
         createdAnotherFutureTransaction,
         objectiveLoanFk,
-        deviceId,
-        isSynced,
-        lastSyncAt,
         syncId,
-        version,
       ];
 }

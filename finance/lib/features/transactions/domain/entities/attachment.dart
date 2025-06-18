@@ -18,11 +18,7 @@ class Attachment extends Equatable {
   final bool isDeleted;
   final bool isCapturedFromCamera; // For cache management
   final DateTime? localCacheExpiry; // When local cache expires (30 days for camera images)
-  final String deviceId;
-  final bool isSynced;
-  final DateTime? lastSyncAt;
   final String syncId;
-  final int version;
 
   const Attachment({
     this.id,
@@ -40,11 +36,7 @@ class Attachment extends Equatable {
     required this.isDeleted,
     required this.isCapturedFromCamera,
     this.localCacheExpiry,
-    required this.deviceId,
-    required this.isSynced,
-    this.lastSyncAt,
     required this.syncId,
-    required this.version,
   });
   Attachment copyWith({
     int? id,
@@ -62,11 +54,7 @@ class Attachment extends Equatable {
     bool? isDeleted,
     bool? isCapturedFromCamera,
     DateTime? localCacheExpiry,
-    String? deviceId,
-    bool? isSynced,
-    DateTime? lastSyncAt,
     String? syncId,
-    int? version,
   }) {
     return Attachment(
       id: id ?? this.id,
@@ -84,11 +72,7 @@ class Attachment extends Equatable {
       isDeleted: isDeleted ?? this.isDeleted,
       isCapturedFromCamera: isCapturedFromCamera ?? this.isCapturedFromCamera,
       localCacheExpiry: localCacheExpiry ?? this.localCacheExpiry,
-      deviceId: deviceId ?? this.deviceId,
-      isSynced: isSynced ?? this.isSynced,
-      lastSyncAt: lastSyncAt ?? this.lastSyncAt,
       syncId: syncId ?? this.syncId,
-      version: version ?? this.version,
     );
   }
 
@@ -113,15 +97,12 @@ class Attachment extends Equatable {
         type,
         mimeType,
         fileSizeBytes,
-        createdAt,        updatedAt,
+        createdAt,
+        updatedAt,
         isUploaded,
         isDeleted,
         isCapturedFromCamera,
         localCacheExpiry,
-        deviceId,
-        isSynced,
-        lastSyncAt,
         syncId,
-        version,
       ];
 }
