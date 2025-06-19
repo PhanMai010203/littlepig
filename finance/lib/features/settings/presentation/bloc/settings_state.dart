@@ -7,5 +7,6 @@ class SettingsState with _$SettingsState {
     required bool analyticsEnabled,
     required bool autoBackupEnabled,
     required bool notificationsEnabled,
+    required bool hapticFeedbackEnabled,
   }) = _SettingsState;
 }

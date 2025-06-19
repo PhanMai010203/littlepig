@@ -11,4 +11,6 @@ class SettingsEvent with _$SettingsEvent {
       _AutoBackupToggled;
   const factory SettingsEvent.notificationsToggled(bool enabled) =
       _NotificationsToggled;
+  const factory SettingsEvent.hapticFeedbackToggled(bool enabled) =
+      _HapticFeedbackToggled;
 }

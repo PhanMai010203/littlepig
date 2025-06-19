@@ -170,24 +170,30 @@ void main() {
     });
 
     group('shouldUseHapticFeedback', () {
-      test('returns true for normal animation level', () async {
-        await AppSettings.set('animationLevel', 'normal');
+      test('returns true when haptic feedback is enabled', () async {
+        await AppSettings.setHapticFeedback(true);
+        await AppSettings.setBatterySaver(false);
         expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
       });
 
-      test('returns true for enhanced animation level', () async {
-        await AppSettings.set('animationLevel', 'enhanced');
+      test('returns false when haptic feedback is disabled', () async {
+        await AppSettings.setHapticFeedback(false);
+        await AppSettings.setBatterySaver(false);
+        expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
+      });
+
+      test('returns false when battery saver is enabled', () async {
+        await AppSettings.setHapticFeedback(true);
+        await AppSettings.setBatterySaver(true);
+        expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
+      });
+
+      test('is independent of animation settings', () async {
+        await AppSettings.setHapticFeedback(true);
+        await AppSettings.setAppAnimations(false);
+        await AppSettings.set('animationLevel', 'none');
+        await AppSettings.setBatterySaver(false);
         expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
-      });
-
-      test('returns false when appAnimations is disabled', () async {
-        await AppSettings.set('appAnimations', false);
-        expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
-      });
-
-      test('returns false for reduced animation level', () async {
-        await AppSettings.set('animationLevel', 'reduced');
-        expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
       });
     });
 
@@ -250,13 +256,14 @@ void main() {
         await AppSettings.set('animationLevel', 'enhanced');
         await AppSettings.set('appAnimations', false);
         await AppSettings.set('batterySaver', false);
+        await AppSettings.setHapticFeedback(true); // Haptic should still work
 
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
         expect(
             AnimationPerformanceService.getOptimizedDuration(
                 Duration(milliseconds: 300)),
             equals(Duration.zero));
-        expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
+        expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
       });
     });
   });

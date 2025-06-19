@@ -65,6 +65,7 @@ class _SettingsPageState extends State<SettingsPage> {
               // Accessibility Section
               _buildSectionHeader('Accessibility'),
               _buildReduceAnimationsSetting(),
+              _buildHapticFeedbackSetting(),
               _buildDivider(),
 
               // Animation Framework Section (Phase 6.1)
@@ -463,6 +464,36 @@ class _SettingsPageState extends State<SettingsPage> {
         setState(() {});
       },
       activeColor: getColor(context, 'primary'),
+    );
+  }
+
+  Widget _buildHapticFeedbackSetting() {
+    return BlocBuilder<SettingsBloc, SettingsState>(
+      builder: (context, state) {
+        return SwitchListTile(
+          title: const AppText(
+            'Haptic Feedback',
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+          subtitle: const AppText(
+            'Enable touch vibrations and haptic responses',
+            fontSize: 12,
+            colorName: 'textLight',
+          ),
+          value: state.hapticFeedbackEnabled,
+          onChanged: (value) {
+            context.read<SettingsBloc>().add(
+                  SettingsEvent.hapticFeedbackToggled(value),
+                );
+          },
+          activeColor: getColor(context, 'primary'),
+          secondary: Icon(
+            Icons.vibration,
+            color: getColor(context, 'textLight'),
+          ),
+        );
+      },
     );
   }
 

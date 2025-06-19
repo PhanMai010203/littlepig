@@ -23,6 +23,7 @@ mixin _$SettingsEvent {
     required TResult Function(bool enabled) analyticsToggled,
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -32,6 +33,7 @@ mixin _$SettingsEvent {
     TResult? Function(bool enabled)? analyticsToggled,
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -41,6 +43,7 @@ mixin _$SettingsEvent {
     TResult Function(bool enabled)? analyticsToggled,
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -51,6 +54,8 @@ mixin _$SettingsEvent {
     required TResult Function(_AnalyticsToggled value) analyticsToggled,
     required TResult Function(_AutoBackupToggled value) autoBackupToggled,
     required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -60,6 +65,7 @@ mixin _$SettingsEvent {
     TResult? Function(_AnalyticsToggled value)? analyticsToggled,
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -69,6 +75,7 @@ mixin _$SettingsEvent {
     TResult Function(_AnalyticsToggled value)? analyticsToggled,
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -141,6 +148,7 @@ class _$LoadSettingsImpl implements _LoadSettings {
     required TResult Function(bool enabled) analyticsToggled,
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
   }) {
     return loadSettings();
   }
@@ -153,6 +161,7 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult? Function(bool enabled)? analyticsToggled,
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
   }) {
     return loadSettings?.call();
   }
@@ -165,6 +174,7 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult Function(bool enabled)? analyticsToggled,
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (loadSettings != null) {
@@ -181,6 +191,8 @@ class _$LoadSettingsImpl implements _LoadSettings {
     required TResult Function(_AnalyticsToggled value) analyticsToggled,
     required TResult Function(_AutoBackupToggled value) autoBackupToggled,
     required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
   }) {
     return loadSettings(this);
   }
@@ -193,6 +205,7 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult? Function(_AnalyticsToggled value)? analyticsToggled,
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
   }) {
     return loadSettings?.call(this);
   }
@@ -205,6 +218,7 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult Function(_AnalyticsToggled value)? analyticsToggled,
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (loadSettings != null) {
@@ -293,6 +307,7 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     required TResult Function(bool enabled) analyticsToggled,
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
   }) {
     return themeModeChanged(themeMode);
   }
@@ -305,6 +320,7 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult? Function(bool enabled)? analyticsToggled,
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
   }) {
     return themeModeChanged?.call(themeMode);
   }
@@ -317,6 +333,7 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult Function(bool enabled)? analyticsToggled,
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (themeModeChanged != null) {
@@ -333,6 +350,8 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     required TResult Function(_AnalyticsToggled value) analyticsToggled,
     required TResult Function(_AutoBackupToggled value) autoBackupToggled,
     required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
   }) {
     return themeModeChanged(this);
   }
@@ -345,6 +364,7 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult? Function(_AnalyticsToggled value)? analyticsToggled,
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
   }) {
     return themeModeChanged?.call(this);
   }
@@ -357,6 +377,7 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult Function(_AnalyticsToggled value)? analyticsToggled,
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (themeModeChanged != null) {
@@ -453,6 +474,7 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     required TResult Function(bool enabled) analyticsToggled,
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
   }) {
     return analyticsToggled(enabled);
   }
@@ -465,6 +487,7 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult? Function(bool enabled)? analyticsToggled,
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
   }) {
     return analyticsToggled?.call(enabled);
   }
@@ -477,6 +500,7 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult Function(bool enabled)? analyticsToggled,
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (analyticsToggled != null) {
@@ -493,6 +517,8 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     required TResult Function(_AnalyticsToggled value) analyticsToggled,
     required TResult Function(_AutoBackupToggled value) autoBackupToggled,
     required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
   }) {
     return analyticsToggled(this);
   }
@@ -505,6 +531,7 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult? Function(_AnalyticsToggled value)? analyticsToggled,
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
   }) {
     return analyticsToggled?.call(this);
   }
@@ -517,6 +544,7 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult Function(_AnalyticsToggled value)? analyticsToggled,
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (analyticsToggled != null) {
@@ -612,6 +640,7 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     required TResult Function(bool enabled) analyticsToggled,
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
   }) {
     return autoBackupToggled(enabled);
   }
@@ -624,6 +653,7 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult? Function(bool enabled)? analyticsToggled,
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
   }) {
     return autoBackupToggled?.call(enabled);
   }
@@ -636,6 +666,7 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult Function(bool enabled)? analyticsToggled,
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (autoBackupToggled != null) {
@@ -652,6 +683,8 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     required TResult Function(_AnalyticsToggled value) analyticsToggled,
     required TResult Function(_AutoBackupToggled value) autoBackupToggled,
     required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
   }) {
     return autoBackupToggled(this);
   }
@@ -664,6 +697,7 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult? Function(_AnalyticsToggled value)? analyticsToggled,
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
   }) {
     return autoBackupToggled?.call(this);
   }
@@ -676,6 +710,7 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult Function(_AnalyticsToggled value)? analyticsToggled,
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (autoBackupToggled != null) {
@@ -773,6 +808,7 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     required TResult Function(bool enabled) analyticsToggled,
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
   }) {
     return notificationsToggled(enabled);
   }
@@ -785,6 +821,7 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult? Function(bool enabled)? analyticsToggled,
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
   }) {
     return notificationsToggled?.call(enabled);
   }
@@ -797,6 +834,7 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult Function(bool enabled)? analyticsToggled,
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (notificationsToggled != null) {
@@ -813,6 +851,8 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     required TResult Function(_AnalyticsToggled value) analyticsToggled,
     required TResult Function(_AutoBackupToggled value) autoBackupToggled,
     required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
   }) {
     return notificationsToggled(this);
   }
@@ -825,6 +865,7 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult? Function(_AnalyticsToggled value)? analyticsToggled,
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
   }) {
     return notificationsToggled?.call(this);
   }
@@ -837,6 +878,7 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult Function(_AnalyticsToggled value)? analyticsToggled,
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
     required TResult orElse(),
   }) {
     if (notificationsToggled != null) {
@@ -860,11 +902,180 @@ abstract class _NotificationsToggled implements SettingsEvent {
 }
 
 /// @nodoc
+abstract class _$$HapticFeedbackToggledImplCopyWith<$Res> {
+  factory _$$HapticFeedbackToggledImplCopyWith(
+          _$HapticFeedbackToggledImpl value,
+          $Res Function(_$HapticFeedbackToggledImpl) then) =
+      __$$HapticFeedbackToggledImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({bool enabled});
+}
+
+/// @nodoc
+class __$$HapticFeedbackToggledImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$HapticFeedbackToggledImpl>
+    implements _$$HapticFeedbackToggledImplCopyWith<$Res> {
+  __$$HapticFeedbackToggledImplCopyWithImpl(_$HapticFeedbackToggledImpl _value,
+      $Res Function(_$HapticFeedbackToggledImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? enabled = null,
+  }) {
+    return _then(_$HapticFeedbackToggledImpl(
+      null == enabled
+          ? _value.enabled
+          : enabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$HapticFeedbackToggledImpl implements _HapticFeedbackToggled {
+  const _$HapticFeedbackToggledImpl(this.enabled);
+
+  @override
+  final bool enabled;
+
+  @override
+  String toString() {
+    return 'SettingsEvent.hapticFeedbackToggled(enabled: $enabled)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$HapticFeedbackToggledImpl &&
+            (identical(other.enabled, enabled) || other.enabled == enabled));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, enabled);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$HapticFeedbackToggledImplCopyWith<_$HapticFeedbackToggledImpl>
+      get copyWith => __$$HapticFeedbackToggledImplCopyWithImpl<
+          _$HapticFeedbackToggledImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+  }) {
+    return hapticFeedbackToggled(enabled);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+  }) {
+    return hapticFeedbackToggled?.call(enabled);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    required TResult orElse(),
+  }) {
+    if (hapticFeedbackToggled != null) {
+      return hapticFeedbackToggled(enabled);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+  }) {
+    return hapticFeedbackToggled(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+  }) {
+    return hapticFeedbackToggled?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    required TResult orElse(),
+  }) {
+    if (hapticFeedbackToggled != null) {
+      return hapticFeedbackToggled(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _HapticFeedbackToggled implements SettingsEvent {
+  const factory _HapticFeedbackToggled(final bool enabled) =
+      _$HapticFeedbackToggledImpl;
+
+  bool get enabled;
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$HapticFeedbackToggledImplCopyWith<_$HapticFeedbackToggledImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
 mixin _$SettingsState {
   ThemeMode get themeMode => throw _privateConstructorUsedError;
   bool get analyticsEnabled => throw _privateConstructorUsedError;
   bool get autoBackupEnabled => throw _privateConstructorUsedError;
   bool get notificationsEnabled => throw _privateConstructorUsedError;
+  bool get hapticFeedbackEnabled => throw _privateConstructorUsedError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -883,7 +1094,8 @@ abstract class $SettingsStateCopyWith<$Res> {
       {ThemeMode themeMode,
       bool analyticsEnabled,
       bool autoBackupEnabled,
-      bool notificationsEnabled});
+      bool notificationsEnabled,
+      bool hapticFeedbackEnabled});
 }
 
 /// @nodoc
@@ -905,6 +1117,7 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
     Object? analyticsEnabled = null,
     Object? autoBackupEnabled = null,
     Object? notificationsEnabled = null,
+    Object? hapticFeedbackEnabled = null,
   }) {
     return _then(_value.copyWith(
       themeMode: null == themeMode
@@ -923,6 +1136,10 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
           ? _value.notificationsEnabled
           : notificationsEnabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      hapticFeedbackEnabled: null == hapticFeedbackEnabled
+          ? _value.hapticFeedbackEnabled
+          : hapticFeedbackEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -939,7 +1156,8 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
       {ThemeMode themeMode,
       bool analyticsEnabled,
       bool autoBackupEnabled,
-      bool notificationsEnabled});
+      bool notificationsEnabled,
+      bool hapticFeedbackEnabled});
 }
 
 /// @nodoc
@@ -959,6 +1177,7 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
     Object? analyticsEnabled = null,
     Object? autoBackupEnabled = null,
     Object? notificationsEnabled = null,
+    Object? hapticFeedbackEnabled = null,
   }) {
     return _then(_$SettingsStateImpl(
       themeMode: null == themeMode
@@ -977,6 +1196,10 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
           ? _value.notificationsEnabled
           : notificationsEnabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      hapticFeedbackEnabled: null == hapticFeedbackEnabled
+          ? _value.hapticFeedbackEnabled
+          : hapticFeedbackEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -988,7 +1211,8 @@ class _$SettingsStateImpl implements _SettingsState {
       {required this.themeMode,
       required this.analyticsEnabled,
       required this.autoBackupEnabled,
-      required this.notificationsEnabled});
+      required this.notificationsEnabled,
+      required this.hapticFeedbackEnabled});
 
   @override
   final ThemeMode themeMode;
@@ -998,10 +1222,12 @@ class _$SettingsStateImpl implements _SettingsState {
   final bool autoBackupEnabled;
   @override
   final bool notificationsEnabled;
+  @override
+  final bool hapticFeedbackEnabled;
 
   @override
   String toString() {
-    return 'SettingsState(themeMode: $themeMode, analyticsEnabled: $analyticsEnabled, autoBackupEnabled: $autoBackupEnabled, notificationsEnabled: $notificationsEnabled)';
+    return 'SettingsState(themeMode: $themeMode, analyticsEnabled: $analyticsEnabled, autoBackupEnabled: $autoBackupEnabled, notificationsEnabled: $notificationsEnabled, hapticFeedbackEnabled: $hapticFeedbackEnabled)';
   }
 
   @override
@@ -1016,12 +1242,14 @@ class _$SettingsStateImpl implements _SettingsState {
             (identical(other.autoBackupEnabled, autoBackupEnabled) ||
                 other.autoBackupEnabled == autoBackupEnabled) &&
             (identical(other.notificationsEnabled, notificationsEnabled) ||
-                other.notificationsEnabled == notificationsEnabled));
+                other.notificationsEnabled == notificationsEnabled) &&
+            (identical(other.hapticFeedbackEnabled, hapticFeedbackEnabled) ||
+                other.hapticFeedbackEnabled == hapticFeedbackEnabled));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, themeMode, analyticsEnabled,
-      autoBackupEnabled, notificationsEnabled);
+      autoBackupEnabled, notificationsEnabled, hapticFeedbackEnabled);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -1037,7 +1265,8 @@ abstract class _SettingsState implements SettingsState {
       {required final ThemeMode themeMode,
       required final bool analyticsEnabled,
       required final bool autoBackupEnabled,
-      required final bool notificationsEnabled}) = _$SettingsStateImpl;
+      required final bool notificationsEnabled,
+      required final bool hapticFeedbackEnabled}) = _$SettingsStateImpl;
 
   @override
   ThemeMode get themeMode;
@@ -1047,6 +1276,8 @@ abstract class _SettingsState implements SettingsState {
   bool get autoBackupEnabled;
   @override
   bool get notificationsEnabled;
+  @override
+  bool get hapticFeedbackEnabled;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
