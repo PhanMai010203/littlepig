@@ -230,6 +230,9 @@ class _AnimatedNavigationItem extends StatelessWidget {
             onTap: onTap,
             onLongPress: onLongPress,
             child: Container(
+              color: Colors.transparent,
+              // Fill the entire available space
+              width: double.infinity,
               padding: const EdgeInsets.symmetric(
                 horizontal: 12,
                 vertical: 8,
