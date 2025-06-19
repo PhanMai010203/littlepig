@@ -70,7 +70,7 @@ lib/core/
 │   ├── database_service.dart         # Database service abstraction
 │   ├── file_picker_service.dart      # File selection and attachment processing service
 │   ├── cache_management_service.dart # Local file cache management service
-│   ├── platform_service.dart        # Platform detection and device capabilities service
+│   ├── platform_service.dart        # Platform detection, device capabilities, and high refresh rate management service
 │   ├── dialog_service.dart          # Dialog and popup service (Phase 3)
 │   └── animation_performance_service.dart # Phase 6: Advanced animation performance optimization and monitoring service
 ├── sync/                             # Cloud synchronization services (Phase 5A)
@@ -101,7 +101,7 @@ lib/core/
     ├── injection.dart               # GetIt service locator configuration
     └── injection.config.dart        # Generated dependency injection configuration
 ```
-**Summary**: Core infrastructure layer containing database setup with Drift ORM, file management and attachment services, **Phase 5A advanced sync services** with event sourcing and real-time capabilities, **Phase 6.1 animation performance optimization**, theming system with Material You support, dependency injection setup, and shared utilities.
+**Summary**: Core infrastructure layer containing database setup with Drift ORM, file management and attachment services, **Phase 5A advanced sync services** with event sourcing and real-time capabilities, **Phase 6.1 animation performance optimization**, platform detection with high refresh rate management for optimal display performance, theming system with Material You support, dependency injection setup, and shared utilities.
 
 ---
 
@@ -238,6 +238,7 @@ lib/shared/
 │   │   ├── shake_animation.dart     # Horizontal shake effects for errors
 │   │   └── animated_scale_opacity.dart # Combined scale and opacity changes
 │   │   └── animation_performance_monitor.dart # Real-time performance monitor widget
+│   ├── app_lifecycle_manager.dart   # App lifecycle manager for handling resume/pause events and high refresh rate
 │   ├── dialogs/                      # Reusable dialog framework (Phase 3)
 │   │   ├── popup_framework.dart     # Reusable popup template with Material 3 design
 │   │   └── bottom_sheet_service.dart # Smart bottom sheets with snapping and options
@@ -284,6 +285,12 @@ lib/shared/
 ### 🌐 Localization
 - **EasyLocalization**: Multi-language support (English, Vietnamese)
 - **Asset-based**: Translation files in assets folder
+
+### 📱 High Refresh Rate Display
+- **Android Support**: Uses flutter_displaymode package for high refresh rate on supported devices
+- **iOS Support**: Configured with CADisableMinimumFrameDurationOnPhone in Info.plist
+- **Lifecycle Management**: Automatically sets high refresh rate on app startup and resume
+- **Platform Detection**: Smart detection of device capabilities and platform-specific handling
 
 ### ☁️ Cloud Synchronization
 - **Google Drive**: Cloud storage for data backup and file attachments

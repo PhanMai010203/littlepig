@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 /// Platform detection and device capabilities service for animation framework
 /// Based on the plan specifications for Phase 1
@@ -170,6 +171,51 @@ class PlatformService {
   static bool get prefersCenteredDialogs {
     // iOS prefers centered dialogs, Android can use bottom sheets
     return getPlatform() == PlatformOS.isIOS || isDesktop;
+  }
+
+  /// Set high refresh rate for Android devices
+  /// Returns true if successfully set or if not needed, false if failed
+  static Future<bool> setHighRefreshRate() async {
+    try {
+      if (getPlatform() == PlatformOS.isAndroid) {
+        await FlutterDisplayMode.setHighRefreshRate();
+        return true;
+      }
+      // iOS and other platforms don't need this call
+      // iOS uses CADisableMinimumFrameDurationOnPhone in Info.plist
+      return true;
+    } catch (e) {
+      debugPrint("Error setting high refresh rate: ${e.toString()}");
+      return false;
+    }
+  }
+
+  /// Get supported display modes on Android devices
+  /// Returns empty list on unsupported platforms
+  static Future<List<DisplayMode>> getSupportedDisplayModes() async {
+    try {
+      if (getPlatform() == PlatformOS.isAndroid) {
+        return await FlutterDisplayMode.supported;
+      }
+      return [];
+    } catch (e) {
+      debugPrint("Error getting supported display modes: ${e.toString()}");
+      return [];
+    }
+  }
+
+  /// Get currently active display mode on Android devices
+  /// Returns null on unsupported platforms or error
+  static Future<DisplayMode?> getActiveDisplayMode() async {
+    try {
+      if (getPlatform() == PlatformOS.isAndroid) {
+        return await FlutterDisplayMode.active;
+      }
+      return null;
+    } catch (e) {
+      debugPrint("Error getting active display mode: ${e.toString()}");
+      return null;
+    }
   }
 
   /// Debug information about current platform

@@ -8,6 +8,8 @@ import 'core/di/injection.dart';
 import 'core/utils/bloc_observer.dart';
 import 'core/settings/app_settings.dart';
 import 'core/theme/material_you.dart';
+import 'core/services/platform_service.dart';
+import 'shared/widgets/app_lifecycle_manager.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +34,9 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
+  // Set high refresh rate on supported devices
+  await PlatformService.setHighRefreshRate();
+
   runApp(
     EasyLocalization(
       supportedLocales: const [
@@ -40,7 +45,12 @@ void main() async {
       ],
       path: 'assets/translations',
       fallbackLocale: const Locale('en'),
-      child: const MainApp(),
+      child: AppLifecycleManager(
+        onAppResume: () async {
+          await PlatformService.setHighRefreshRate();
+        },
+        child: const MainApp(),
+      ),
     ),
   );
 }
