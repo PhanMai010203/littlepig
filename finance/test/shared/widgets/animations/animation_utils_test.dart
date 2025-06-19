@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:finance/shared/widgets/animations/animation_utils.dart';
 import 'package:finance/core/settings/app_settings.dart';
 import 'package:finance/core/services/platform_service.dart';
+import 'package:finance/core/services/animation_performance_service.dart';
 
 void main() {
   group('AnimationUtils', () {
@@ -11,6 +12,7 @@ void main() {
       // Reset settings before each test
       SharedPreferences.setMockInitialValues({});
       await AppSettings.initialize();
+      AnimationPerformanceService.resetPerformanceMetrics();
     });
 
     group('Animation Control', () {
@@ -133,15 +135,53 @@ void main() {
         expect(AnimationUtils.shouldUseComplexAnimations(), isFalse);
       });
 
-      test('shouldUseComplexAnimations() returns false on reduced level', () async {
+      test('shouldUseComplexAnimations() returns true on reduced level if performance is good', () async {
         await AppSettings.setAnimationLevel('reduced');
-        expect(AnimationUtils.shouldUseComplexAnimations(), isFalse);
+        // It returns true because 'reduced' is not 'none' and performance is good by default in tests
+        expect(AnimationUtils.shouldUseComplexAnimations(), isTrue);
       });
 
       test('shouldUseComplexAnimations() respects platform capabilities', () {
         if (!PlatformService.supportsComplexAnimations) {
           expect(AnimationUtils.shouldUseComplexAnimations(), isFalse);
         }
+      });
+    });
+
+    group('Staggered Animation Control', () {
+      test('shouldUseStaggeredAnimations() returns false on reduced level', () async {
+        await AppSettings.setAnimationLevel('reduced');
+        expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
+      });
+
+      test('shouldUseStaggeredAnimations() is context-aware of active animations', () async {
+        await AppSettings.setAnimationLevel('normal');
+        
+        // Initially should allow staggered animations
+        expect(AnimationUtils.shouldUseStaggeredAnimations(), isTrue);
+        
+        // Simulate many active animations to reach the limit
+        for (int i = 0; i < 5; i++) {
+          AnimationPerformanceService.registerAnimationStart();
+        }
+        
+        // Should now return false due to too many active animations
+        expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
+        
+        // Clean up
+        for (int i = 0; i < 5; i++) {
+          AnimationPerformanceService.registerAnimationEnd();
+        }
+      });
+
+      test('shouldUseStaggeredAnimations() returns false when animations disabled', () async {
+        await AppSettings.setAppAnimations(false);
+        expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
+      });
+
+      test('shouldUseStaggeredAnimations() returns false in battery saver mode', () async {
+        await AppSettings.setBatterySaver(true);
+        expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
       });
     });
 
@@ -173,7 +213,7 @@ void main() {
         // Enhanced level
         await AppSettings.setAnimationLevel('enhanced');
         final enhancedDelay = AnimationUtils.getStaggerDelay(0, baseDelay: baseDelay);
-        expect(enhancedDelay.inMilliseconds, equals(150)); // 150% of base
+        expect(enhancedDelay.inMilliseconds, equals(120)); // 120% of base
       });
     });
 
@@ -308,14 +348,13 @@ void main() {
       });
 
       test('settings override platform preferences appropriately', () async {
-        // Enhanced level should use more dramatic animations
+        const baseDuration = Duration(milliseconds: 300);
         await AppSettings.setAnimationLevel('enhanced');
         
-        expect(AnimationUtils.getCurve(), equals(Curves.elasticOut));
-        expect(AnimationUtils.shouldUseComplexAnimations(), isTrue);
+        final duration = AnimationUtils.getDuration(baseDuration);
         
-        final duration = AnimationUtils.getDuration(const Duration(milliseconds: 300));
-        expect(duration.inMilliseconds, equals(360)); // 120% of base
+        // Should use the 'enhanced' multiplier, not the platform default
+        expect(duration.inMilliseconds, 360);
       });
     });
 

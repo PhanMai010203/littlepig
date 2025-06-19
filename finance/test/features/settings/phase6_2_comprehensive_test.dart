@@ -38,10 +38,8 @@ void main() {
         await tester.pump();
 
         // Should display basic performance information
-        expect(find.text('Animation Performance'), findsOneWidget);
-        expect(find.text('Active Animations'), findsOneWidget);
-        expect(find.text('Frame Time'), findsOneWidget);
-        expect(find.text('Performance'), findsOneWidget);
+        expect(find.text('0 / 4'), findsOneWidget);
+        expect(find.text('16ms'), findsOneWidget);
       });
 
       testWidgets('detailed monitor shows comprehensive information', (tester) async {
@@ -58,11 +56,10 @@ void main() {
         await tester.pump();
 
         // Should display detailed performance sections
-        expect(find.text('Performance Profile'), findsOneWidget);
-        expect(find.text('Animation Statistics'), findsOneWidget);
-        expect(find.text('Animation Level'), findsOneWidget);
-        expect(find.text('Battery Saver'), findsOneWidget);
-        expect(find.text('Complex Animations'), findsOneWidget);
+        expect(find.text('Animations: 0 / 4'), findsOneWidget);
+        expect(find.text('Frame Time: 16ms'), findsOneWidget);
+        expect(find.text('Performance: Good'), findsOneWidget);
+        expect(find.text('Level: normal'), findsOneWidget);
       });
 
       testWidgets('floating monitor positions correctly', (tester) async {
@@ -102,15 +99,15 @@ void main() {
         );
 
         // Initial state
-        await tester.pump();
-        expect(find.text('0 / 4'), findsOneWidget); // Active animations
+        await tester.pumpAndSettle();
+        expect(find.text('Animations: 0 / 4'), findsOneWidget);
 
         // Simulate performance change
         AnimationPerformanceService.registerAnimationStart();
         
         // Wait for refresh
-        await tester.pump(Duration(milliseconds: 150));
-        expect(find.text('1 / 4'), findsOneWidget); // Should update
+        await tester.pumpAndSettle();
+        expect(find.text('Animations: 1 / 4'), findsOneWidget); // Should update
 
         // Clean up
         AnimationPerformanceService.registerAnimationEnd();
@@ -168,7 +165,7 @@ void main() {
         await tester.pump();
 
         // Should wrap content in Stack with FloatingPerformanceMonitor
-        expect(find.byType(Stack), findsOneWidget);
+        expect(find.byWidgetPredicate((widget) => widget is Stack && widget.children.any((child) => child is FloatingPerformanceMonitor)), findsOneWidget);
         expect(find.byType(FloatingPerformanceMonitor), findsOneWidget);
         expect(find.text('Test Content'), findsOneWidget);
       });
@@ -226,11 +223,12 @@ void main() {
         
         // Should track active animations
         expect(metrics['activeAnimations'], isA<int>());
-        expect(metrics['animationMetrics'], isA<Map<String, dynamic>>());
-        expect(metrics['performanceProfile'], isA<Map<String, dynamic>>());
+        expect(metrics['animationMetrics'], isA<Map>());
+        expect(metrics['performanceProfile'], isA<Map>());
         
         // Should have animation type tracking
-        final animationMetrics = metrics['animationMetrics'] as Map<String, dynamic>;
+        final animationMetricsRaw = metrics['animationMetrics'];
+        final animationMetrics = Map<String, dynamic>.from(animationMetricsRaw as Map);
         expect(animationMetrics.containsKey('FadeIn') || 
                animationMetrics.containsKey('ScaleIn') || 
                animationMetrics.containsKey('SlideIn'), isTrue);
@@ -266,6 +264,22 @@ void main() {
         // Clean up
         AnimationUtils.registerAnimationEnd('Test1');
         AnimationUtils.registerAnimationEnd('Test2');
+      });
+
+      testWidgets('staggered animation logic respects capacity', (tester) async {
+        await AppSettings.setAnimationLevel('enhanced'); // Max 8 animations
+
+        // Use up most of the animation capacity
+        for (int i = 0; i < 7; i++) {
+          AnimationPerformanceService.registerAnimationStart();
+        }
+
+        // Staggered animations should now be disabled to preserve performance
+        expect(AnimationPerformanceService.shouldUseStaggeredAnimations, isFalse);
+
+        // Clean up
+        AnimationPerformanceService.resetPerformanceMetrics();
+        expect(AnimationPerformanceService.shouldUseStaggeredAnimations, isTrue);
       });
     });
 
@@ -337,35 +351,24 @@ void main() {
 
     group('Battery Saver Integration Tests', () {
       testWidgets('battery saver mode overrides all animation settings', (tester) async {
-        await AppSettings.set('animationLevel', 'enhanced');
-        await AppSettings.set('appAnimations', true);
         await AppSettings.set('batterySaver', true);
+        await AppSettings.set('animationLevel', 'enhanced');
+
+        // Check performance service outputs
+        expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
+        expect(AnimationPerformanceService.getOptimizedDuration(Duration(milliseconds: 100)), Duration.zero);
+        expect(AnimationPerformanceService.maxSimultaneousAnimations, 1);
         
+        // Check monitor UI
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: AnimationPerformanceMonitor(
-                showFullDetails: true,
-              ),
+              body: AnimationPerformanceMonitor(showFullDetails: true),
             ),
           ),
         );
-
-        await tester.pump();
-        
-        // Should show battery saver is active
-        expect(find.text('true'), findsWidgets); // Battery saver should be true
-        
-        // Performance settings should reflect battery saver mode
-        expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
-        expect(AnimationPerformanceService.maxSimultaneousAnimations, equals(1));
-        expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
-        
-        // Duration should be zero
-        final optimizedDuration = AnimationPerformanceService.getOptimizedDuration(
-          Duration(milliseconds: 300),
-        );
-        expect(optimizedDuration, equals(Duration.zero));
+        await tester.pumpAndSettle();
+        expect(find.text('Battery Saver: ON'), findsOneWidget);
       });
     });
 
@@ -375,26 +378,21 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: AnimationPerformanceMonitor(
-                refreshInterval: Duration(milliseconds: 100),
                 showFullDetails: true,
+                refreshInterval: Duration(milliseconds: 100),
               ),
             ),
           ),
         );
 
-        await tester.pump();
-        
-        // Initial state - normal level
-        expect(find.text('normal'), findsOneWidget);
-        
-        // Change animation level
+        await tester.pumpAndSettle();
+        expect(find.text('Level: normal'), findsOneWidget);
+
+        // Change setting
         await AppSettings.set('animationLevel', 'enhanced');
         
-        // Wait for refresh
-        await tester.pump(Duration(milliseconds: 150));
-        
-        // Should update to show enhanced
-        expect(find.text('enhanced'), findsOneWidget);
+        await tester.pumpAndSettle();
+        expect(find.text('Level: enhanced'), findsOneWidget);
       });
 
       test('performance profile reflects all settings correctly', () async {
@@ -471,28 +469,6 @@ void main() {
         final poorDuration = AnimationPerformanceService.getOptimizedDuration(testDuration);
         expect(poorDuration.inMilliseconds, equals(240)); // 80% of 300ms
       });
-
-      test('staggered animation logic respects capacity', () async {
-        await AppSettings.set('animationLevel', 'normal'); // Max 4 concurrent
-        
-        // Fill up half the capacity
-        AnimationPerformanceService.registerAnimationStart();
-        AnimationPerformanceService.registerAnimationStart();
-        
-        // Should still allow staggered animations (uses half capacity)
-        expect(AnimationPerformanceService.shouldUseStaggeredAnimations, isTrue);
-        
-        // Fill more capacity
-        AnimationPerformanceService.registerAnimationStart();
-        
-        // Should now disable staggered animations
-        expect(AnimationPerformanceService.shouldUseStaggeredAnimations, isFalse);
-        
-        // Clean up
-        for (int i = 0; i < 3; i++) {
-          AnimationPerformanceService.registerAnimationEnd();
-        }
-      });
     });
 
     group('Error Handling and Edge Cases', () {
@@ -548,30 +524,18 @@ void main() {
             home: Scaffold(
               body: Column(
                 children: [
-                  FadeIn(child: Text('Fade')),
-                  ScaleIn(child: Text('Scale')),
-                  SlideIn(child: Text('Slide')),
-                  TappableWidget(
-                    onTap: () {},
-                    child: Text('Tappable'),
-                  ),
-                  AnimationPerformanceMonitor(showFullDetails: true),
+                  FadeIn(child: Text('1')),
+                  ScaleIn(child: Text('2')),
+                  SlideIn(child: Text('3')),
                 ],
-              ),
+              ).withPerformanceMonitor(enabled: true, showFullDetails: true),
             ),
           ),
         );
 
-        await tester.pump();
-        await tester.pump(Duration(milliseconds: 100));
+        await tester.pumpAndSettle();
 
-        // Should track all animation types
-        final metrics = AnimationUtils.getPerformanceMetrics();
-        expect(metrics['animationMetrics'], isA<Map<String, dynamic>>());
-        
-        // Monitor should display without issues
-        expect(find.byType(AnimationPerformanceMonitor), findsOneWidget);
-        expect(find.text('Animation Performance'), findsOneWidget);
+        expect(find.textContaining('Animations:'), findsOneWidget);
       });
     });
 

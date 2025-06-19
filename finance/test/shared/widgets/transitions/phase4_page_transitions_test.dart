@@ -408,8 +408,8 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OpenContainerCard(
-                child: const Text('Card Content'),
                 openPage: const Scaffold(body: Text('Open Page')),
+                child: const Text('Card Content'),
               ),
             ),
           ),
@@ -427,8 +427,8 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: OpenContainerCard(
-                child: const Text('Card Content'),
                 openPage: const Scaffold(body: Text('Open Page')),
+                child: const Text('Card Content'),
               ),
             ),
           ),

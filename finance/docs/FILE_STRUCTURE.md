@@ -72,7 +72,7 @@ lib/core/
 │   ├── cache_management_service.dart # Local file cache management service
 │   ├── platform_service.dart        # Platform detection and device capabilities service
 │   ├── dialog_service.dart          # Dialog and popup service (Phase 3)
-│   └── animation_performance_service.dart # Animation performance optimization service (Phase 6.1)
+│   └── animation_performance_service.dart # Phase 6: Advanced animation performance optimization and monitoring service
 ├── sync/                             # Cloud synchronization services (Phase 5A)
 │   ├── sync_service.dart            # Legacy sync service interface
 │   ├── incremental_sync_service.dart # Event-driven sync service (Phase 4)
@@ -223,8 +223,8 @@ lib/services/
 ```
 lib/shared/
 ├── widgets/                          # Reusable UI components
-│   ├── animations/                   # Animation framework components (Phase 1-2)
-│   │   ├── animation_utils.dart     # Core animation utilities with settings integration
+│   ├── animations/                   # Comprehensive animation framework (Phase 1-6)
+│   │   ├── animation_utils.dart     # Core animation utilities with performance optimization
 │   │   ├── fade_in.dart             # Fade entrance animation
 │   │   ├── scale_in.dart            # Scale entrance animation with elastic curves
 │   │   ├── slide_in.dart            # Directional slide animations
@@ -237,7 +237,8 @@ lib/shared/
 │   │   ├── tappable_widget.dart     # Tap response with customizable feedback (Enhanced in Phase 5)
 │   │   ├── shake_animation.dart     # Horizontal shake effects for errors
 │   │   └── animated_scale_opacity.dart # Combined scale and opacity changes
-│   ├── dialogs/                      # Dialog framework components (Phase 3)
+│   │   └── animation_performance_monitor.dart # Real-time performance monitor widget
+│   ├── dialogs/                      # Reusable dialog framework (Phase 3)
 │   │   ├── popup_framework.dart     # Reusable popup template with Material 3 design
 │   │   └── bottom_sheet_service.dart # Smart bottom sheets with snapping and options
 │   ├── transitions/                  # Page transition components (Phase 4)
@@ -247,7 +248,7 @@ lib/shared/
 │   └── language_selector.dart       # Language selection widget
 └── utils/                           # Shared utilities (currently empty)
 ```
-**Summary**: Shared components and utilities that can be used across multiple features, including reusable widgets and common utilities.
+**Summary**: Shared components and utilities that can be used across multiple features, including a comprehensive animation and dialog framework, reusable widgets, and common utilities.
 
 ---
 
@@ -321,9 +322,9 @@ lib/shared/
 - ✅ **Localization**: Multi-language support (English, Vietnamese)
 - ✅ **Use Cases**: Business logic abstraction layer
 - ✅ **State Management**: Comprehensive BLoC implementation
-- ✅ **Animation Framework**: Phase 1-4 - Foundation, Widget Library, Dialog Framework, and Page Transitions
+- ✅ **Animation Framework**: Phase 1-6 - Complete animation and dialog framework with performance optimization.
 
-### 🎬 Animation Framework (Phase 1-5 Complete)
+### 🎬 Animation Framework (All Phases Complete)
 - **Platform Detection**: Comprehensive platform and device capability detection
 - **Animation Settings**: Enhanced user preferences with granular animation controls  
 - **Animation Utilities**: Core framework with settings-aware animation wrappers
@@ -334,7 +335,7 @@ lib/shared/
 - **Page Transitions**: Platform-aware slide, fade, scale, and slide-fade transitions with Material 3 OpenContainer support
 - **Navigation Enhancement**: Seamless container transitions for card-to-page and list-to-page navigation
 - **Phase 5 Integration**: Enhanced navigation with PopupFramework dialogs, animated PageTemplate, and comprehensive TappableWidget integration
-- **Performance Optimization**: Battery saver and reduced motion support with zero overhead when disabled
+- **Performance Optimization**: Battery saver, real-time performance monitoring, and reduced motion support with zero overhead when disabled
 - **Platform Adaptation**: iOS, Android, web, and desktop-specific behaviors
 
 This architecture provides a scalable, maintainable foundation for a comprehensive personal finance management application with advanced file management, multi-currency capabilities, and a sophisticated animation framework. 

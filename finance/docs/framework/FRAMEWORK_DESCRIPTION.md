@@ -540,6 +540,77 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> { ... }
 
 ---
 
+## 🎬 Animation & Dialog Framework
+
+The Finance app includes a sophisticated, performance-aware animation and dialog framework designed to create a consistent, high-quality user experience.
+
+### 🎯 Core Principles
+- **Performance First**: Animations are optimized to run smoothly on a wide range of devices. The framework includes a battery saver mode and performance scaling.
+- **Consistency**: Provides a shared library of animations and dialogs to ensure a uniform look and feel across the app.
+- **Customizability**: Allows for easy customization of animations and dialogs while maintaining consistency.
+
+### 🚀 Animation System
+
+The animation system is managed by `AnimationPerformanceService` and exposed through `AnimationUtils`.
+
+#### AnimationPerformanceService
+**Location**: `lib/core/services/animation_performance_service.dart`
+
+This service is the brain of the animation system. It centralizes all performance-related logic:
+- **Animation Levels**: Defines different levels of animation complexity ('none', 'reduced', 'normal', 'enhanced').
+- **Performance-based Scaling**: Adjusts animation durations and complexity based on real-time performance metrics.
+- **Battery Saver Integration**: Drastically reduces or disables animations when battery saver is active.
+
+#### AnimationUtils
+**Location**: `lib/shared/widgets/animations/animation_utils.dart`
+
+This utility class is the primary entry point for using animations in the UI. It provides simple, high-level methods to:
+- Get optimized durations and curves.
+- Check if animations should play.
+- Create performance-aware `AnimationController`s.
+
+#### Animation Widgets
+**Location**: `lib/shared/widgets/animations/`
+
+A rich library of pre-built animation widgets is available:
+- **Entry Animations**: `FadeIn`, `ScaleIn`, `SlideIn` for staggered list item entrances.
+- **Interactive Animations**: `TappableWidget` for touch feedback, `ShakeAnimation` for errors.
+- **Effect Animations**: `BouncingWidget`, `BreathingWidget` for engaging effects.
+- **Transition Animations**: `AnimatedExpanded`, `ScaledAnimatedSwitcher` for smooth content transitions.
+
+### ポップアップ Dialog & Popup System
+
+#### DialogService & BottomSheetService
+**Location**: `lib/core/services/dialog_service.dart`, `lib/shared/widgets/dialogs/bottom_sheet_service.dart`
+
+These services provide a simple API to show dialogs and bottom sheets:
+- `DialogService.showPopup()`: Shows a platform-adaptive dialog.
+- `BottomSheetService.showCustomBottomSheet()`: Shows a customizable bottom sheet with snap points.
+
+#### PopupFramework
+**Location**: `lib/shared/widgets/dialogs/popup_framework.dart`
+
+This widget provides a consistent UI template for all popups and bottom sheets, ensuring they match the app's theme and design language.
+
+### Transitions
+
+#### Page Transitions
+**Location**: `lib/app/router/page_transitions.dart`
+
+The routing system uses custom page transitions that are aware of the animation settings, providing smooth slide and fade transitions between pages.
+
+#### OpenContainerNavigation
+**Location**: `lib/shared/widgets/transitions/open_container_navigation.dart`
+
+Implements the Material 3 "Open Container" transform pattern for seamless transitions from a list item or card to a detail page.
+
+### 📊 Performance Monitoring
+**Location**: `lib/shared/widgets/animations/animation_performance_monitor.dart`
+
+A real-time performance monitor can be enabled in debug builds to display key animation metrics, helping developers diagnose performance issues. It can be added to any widget using the `.withPerformanceMonitor()` extension.
+
+---
+
 ## 🔮 Future Expansion
 
 ### Planned Features:

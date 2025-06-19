@@ -53,13 +53,25 @@ class _FadeInState extends State<FadeIn>
   }
 
   void _startAnimation() async {
+    // Check if we can start an animation based on concurrent limits
+    if (!AnimationUtils.canStartAnimation()) {
+      // If we can't start an animation, just show the final state immediately
+      if (mounted) {
+        _controller.value = 1.0; // Jump to end state
+      }
+      return;
+    }
+    
     // Respect delay only if animations are enabled
     if (AnimationUtils.shouldAnimate() && widget.delay > Duration.zero) {
       await Future.delayed(widget.delay);
     }
     
-    if (mounted) {
+    if (mounted && AnimationUtils.canStartAnimation()) {
       _controller.forward();
+    } else if (mounted) {
+      // If we can't start during delay, show final state
+      _controller.value = 1.0;
     }
   }
 

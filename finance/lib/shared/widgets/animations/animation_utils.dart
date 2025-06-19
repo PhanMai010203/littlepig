@@ -59,11 +59,16 @@ class AnimationUtils {
 
   /// Get delay for staggered animations with performance optimization
   static Duration getStaggerDelay(int index, {Duration? baseDelay}) {
-    if (!shouldAnimate() || !shouldUseStaggeredAnimations()) return Duration.zero;
+    if (!shouldAnimate()) return Duration.zero;
     
     final base = baseDelay ?? const Duration(milliseconds: 50);
+    if (index == 0) {
+      // For index 0, apply optimization to the base delay
+      return AnimationPerformanceService.getOptimizedDuration(base);
+    }
+    
     return AnimationPerformanceService.getOptimizedDuration(
-      Duration(milliseconds: base.inMilliseconds * index),
+      Duration(milliseconds: base.inMilliseconds * (index + 1)),
     );
   }
 

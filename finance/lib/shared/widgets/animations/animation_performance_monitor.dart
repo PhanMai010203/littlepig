@@ -1,310 +1,234 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/animation_performance_service.dart';
 import 'animation_utils.dart';
-import 'fade_in.dart';
+import 'dart:async';
 
-/// AnimationPerformanceMonitor - Phase 6.2 Implementation
+/// Position options for floating performance monitor
+enum FloatingMonitorPosition {
+  topLeft,
+  topRight,
+  bottomLeft,
+  bottomRight,
+  centerLeft,
+  centerRight,
+}
+
+/// AnimationPerformanceMonitor Widget - Phase 6.2 Implementation
 /// 
-/// A debug widget that displays real-time animation performance information
-/// Useful for developers and power users to monitor animation performance
+/// A real-time monitor for animation performance metrics
+/// Displays current animation state, frame rates, and optimization info
 class AnimationPerformanceMonitor extends StatefulWidget {
   const AnimationPerformanceMonitor({
+    this.refreshInterval = const Duration(milliseconds: 250),
     this.showFullDetails = false,
-    this.refreshInterval = const Duration(milliseconds: 500),
     this.backgroundColor,
     this.textColor,
+    this.borderColor,
+    this.borderRadius = 8.0,
+    this.padding = const EdgeInsets.all(8.0),
+    this.textStyle,
     super.key,
   });
 
-  /// Whether to show full details or just basic metrics
-  final bool showFullDetails;
-  
   /// How often to refresh the performance data
   final Duration refreshInterval;
-  
-  /// Background color for the monitor widget
+
+  /// Whether to show detailed metrics or just summary
+  final bool showFullDetails;
+
+  /// Background color for the monitor
   final Color? backgroundColor;
-  
-  /// Text color for the performance information
+
+  /// Text color for the monitor
   final Color? textColor;
+
+  /// Border color for the monitor
+  final Color? borderColor;
+
+  /// Border radius for the monitor
+  final double borderRadius;
+
+  /// Padding inside the monitor
+  final EdgeInsets padding;
+
+  /// Text style for the monitor
+  final TextStyle? textStyle;
 
   @override
   State<AnimationPerformanceMonitor> createState() => _AnimationPerformanceMonitorState();
 }
 
-class _AnimationPerformanceMonitorState extends State<AnimationPerformanceMonitor>
-    with TickerProviderStateMixin {
-  late AnimationController _refreshController;
-  Map<String, dynamic>? _performanceData;
-  
+class _AnimationPerformanceMonitorState extends State<AnimationPerformanceMonitor> {
+  late Timer _timer;
+  Map<String, dynamic> _currentMetrics = {};
+
   @override
   void initState() {
     super.initState();
-    
-    _refreshController = AnimationUtils.createController(
-      vsync: this,
-      duration: widget.refreshInterval,
-      debugLabel: 'PerformanceMonitorRefresh',
-    );
-    
-    _refreshController.addListener(_updatePerformanceData);
-    _refreshController.repeat();
-    _updatePerformanceData();
+    _updateMetrics();
+    _timer = Timer.periodic(widget.refreshInterval, (_) => _updateMetrics());
   }
 
   @override
   void dispose() {
-    _refreshController.dispose();
+    _timer.cancel();
     super.dispose();
   }
 
-  void _updatePerformanceData() {
+  void _updateMetrics() {
     if (mounted) {
       setState(() {
-        _performanceData = AnimationUtils.getPerformanceMetrics();
+        _currentMetrics = {
+          ...AnimationPerformanceService.performanceMetrics,
+          'profile': AnimationPerformanceService.getPerformanceProfile(),
+          'utils': AnimationUtils.getPerformanceMetrics(),
+        };
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_performanceData == null) {
-      return const SizedBox.shrink();
-    }
-
-    return FadeIn(
-      duration: const Duration(milliseconds: 200),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: widget.backgroundColor ?? 
-                 Theme.of(context).colorScheme.surface.withOpacity(0.9),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.5),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(context),
-            const SizedBox(height: 8),
-            if (widget.showFullDetails) 
-              _buildFullDetails(context)
-            else
-              _buildBasicMetrics(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context) {
-    final isPerformanceGood = _performanceData!['performanceProfile']
-        ['performanceMetrics']['isPerformanceGood'] as bool;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     
-    return Row(
+    final backgroundColor = widget.backgroundColor ?? 
+        (isDark ? Colors.black87 : Colors.white.withOpacity(0.9));
+    final textColor = widget.textColor ?? 
+        (isDark ? Colors.white : Colors.black87);
+    final borderColor = widget.borderColor ?? 
+        (isDark ? Colors.white24 : Colors.black12);
+
+    return Container(
+      padding: widget.padding,
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        border: Border.all(color: borderColor),
+        borderRadius: BorderRadius.circular(widget.borderRadius),
+      ),
+      child: widget.showFullDetails ? _buildDetailedView(textColor) : _buildSummaryView(textColor),
+    );
+  }
+
+  Widget _buildSummaryView(Color textColor) {
+    final activeAnimations = _currentMetrics['currentActiveAnimations'] ?? 0;
+    final maxAnimations = AnimationPerformanceService.maxSimultaneousAnimations;
+    final frameTime = _currentMetrics['averageFrameTimeMs'] ?? 16;
+    
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(
-          Icons.speed,
-          size: 16,
-          color: widget.textColor ?? Theme.of(context).colorScheme.onSurface,
-        ),
-        const SizedBox(width: 8),
         Text(
-          'Animation Performance',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 14,
-            color: widget.textColor ?? Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
-        const Spacer(),
-        Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: isPerformanceGood ? Colors.green : Colors.orange,
-            shape: BoxShape.circle,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBasicMetrics(BuildContext context) {
-    final metrics = _performanceData!['performanceProfile']['performanceMetrics'] 
-        as Map<String, dynamic>;
-    final activeAnimations = _performanceData!['activeAnimations'] as int;
-    final maxAnimations = _performanceData!['maxSimultaneousAnimations'] as int;
-    final frameTime = metrics['averageFrameTimeMs'] as int;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildMetricRow(
-          context,
-          'Active Animations',
           '$activeAnimations / $maxAnimations',
-          activeAnimations <= maxAnimations ? Colors.green : Colors.red,
+          style: widget.textStyle?.copyWith(color: textColor) ?? 
+                 TextStyle(color: textColor, fontSize: 12, fontFamily: 'monospace'),
         ),
-        _buildMetricRow(
-          context,
-          'Frame Time',
+        Text(
           '${frameTime}ms',
-          frameTime <= 16 ? Colors.green : frameTime <= 20 ? Colors.orange : Colors.red,
-        ),
-        _buildMetricRow(
-          context,
-          'Performance',
-          metrics['isPerformanceGood'] ? 'Good' : 'Degraded',
-          metrics['isPerformanceGood'] ? Colors.green : Colors.orange,
+          style: widget.textStyle?.copyWith(color: textColor) ?? 
+                 TextStyle(color: textColor, fontSize: 10, fontFamily: 'monospace'),
         ),
       ],
     );
   }
 
-  Widget _buildFullDetails(BuildContext context) {
-    final metrics = _performanceData!['performanceProfile']['performanceMetrics'] 
-        as Map<String, dynamic>;
-    final profile = _performanceData!['performanceProfile'] as Map<String, dynamic>;
-    final animationMetrics = _performanceData!['animationMetrics'] as Map<String, dynamic>;
+  Widget _buildDetailedView(Color textColor) {
+    final profile = _currentMetrics['profile'] as Map<String, dynamic>? ?? {};
+    final activeAnimations = _currentMetrics['currentActiveAnimations'] ?? 0;
+    final maxAnimations = AnimationPerformanceService.maxSimultaneousAnimations;
+    final frameTime = _currentMetrics['averageFrameTimeMs'] ?? 16;
+    final isGood = _currentMetrics['isPerformanceGood'] ?? true;
+    final animationLevel = profile['animationLevel'] ?? 'normal';
+    final batterySaver = profile['batterySaver'] ?? false;
+
+    final baseTextStyle = widget.textStyle?.copyWith(color: textColor) ?? 
+                         TextStyle(color: textColor, fontSize: 10, fontFamily: 'monospace');
 
     return Column(
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildBasicMetrics(context),
-        const SizedBox(height: 12),
-        
-        // Performance Profile
-        _buildSectionHeader(context, 'Performance Profile'),
-        _buildMetricRow(context, 'Animation Level', profile['animationLevel']),
-        _buildMetricRow(context, 'Battery Saver', profile['batterySaver'].toString()),
-        _buildMetricRow(context, 'Complex Animations', 
-                       profile['shouldUseComplexAnimations'].toString()),
-        _buildMetricRow(context, 'Staggered Animations', 
-                       profile['shouldUseStaggeredAnimations'].toString()),
-        
-        const SizedBox(height: 12),
-        
-        // Animation Statistics
-        _buildSectionHeader(context, 'Animation Statistics'),
-        _buildMetricRow(context, 'Total Created', 
-                       metrics['totalAnimationsCreated'].toString()),
-        _buildMetricRow(context, 'Performance Scale', 
-                       '${(metrics['performanceScale'] * 100).toInt()}%'),
-        
-        if (animationMetrics.isNotEmpty) ...[
-          const SizedBox(height: 12),
-          _buildSectionHeader(context, 'Animation Types'),
-          ...animationMetrics.entries.map((entry) =>
-            _buildMetricRow(context, entry.key, entry.value.toString()),
-          ),
-        ],
+        Text('Animations: $activeAnimations / $maxAnimations', style: baseTextStyle),
+        Text('Frame Time: ${frameTime}ms', style: baseTextStyle),
+        Text('Performance: ${isGood ? "Good" : "Poor"}', style: baseTextStyle),
+        Text('Level: $animationLevel', style: baseTextStyle),
+        if (batterySaver) Text('Battery Saver: ON', style: baseTextStyle.copyWith(color: Colors.orange)),
       ],
-    );
-  }
-
-  Widget _buildSectionHeader(BuildContext context, String title) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 12,
-          color: (widget.textColor ?? Theme.of(context).colorScheme.onSurface)
-                 .withOpacity(0.8),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMetricRow(BuildContext context, String label, String value, [Color? valueColor]) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: (widget.textColor ?? Theme.of(context).colorScheme.onSurface)
-                     .withOpacity(0.7),
-            ),
-          ),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-              color: valueColor ?? 
-                     (widget.textColor ?? Theme.of(context).colorScheme.onSurface),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
 
-/// A simple floating performance monitor for debugging
+/// Floating performance monitor that can be positioned anywhere
 class FloatingPerformanceMonitor extends StatelessWidget {
   const FloatingPerformanceMonitor({
     this.position = FloatingMonitorPosition.topRight,
     this.showFullDetails = false,
+    this.margin = const EdgeInsets.all(16.0),
+    this.refreshInterval = const Duration(milliseconds: 250),
     super.key,
   });
 
   final FloatingMonitorPosition position;
   final bool showFullDetails;
+  final EdgeInsets margin;
+  final Duration refreshInterval;
 
   @override
   Widget build(BuildContext context) {
+    final positionArgs = _getPositionArgs();
     return Positioned(
-      top: position == FloatingMonitorPosition.topLeft || 
-           position == FloatingMonitorPosition.topRight ? 50 : null,
-      bottom: position == FloatingMonitorPosition.bottomLeft || 
-              position == FloatingMonitorPosition.bottomRight ? 50 : null,
-      left: position == FloatingMonitorPosition.topLeft || 
-            position == FloatingMonitorPosition.bottomLeft ? 16 : null,
-      right: position == FloatingMonitorPosition.topRight || 
-             position == FloatingMonitorPosition.bottomRight ? 16 : null,
+      top: positionArgs['top'],
+      bottom: positionArgs['bottom'],
+      left: positionArgs['left'],
+      right: positionArgs['right'],
       child: AnimationPerformanceMonitor(
         showFullDetails: showFullDetails,
-        backgroundColor: Colors.black.withOpacity(0.8),
-        textColor: Colors.white,
+        refreshInterval: refreshInterval,
       ),
     );
   }
+
+  Map<String, double?> _getPositionArgs() {
+    switch (position) {
+      case FloatingMonitorPosition.topLeft:
+        return {'top': margin.top, 'left': margin.left};
+      case FloatingMonitorPosition.topRight:
+        return {'top': margin.top, 'right': margin.right};
+      case FloatingMonitorPosition.bottomLeft:
+        return {'bottom': margin.bottom, 'left': margin.left};
+      case FloatingMonitorPosition.bottomRight:
+        return {'bottom': margin.bottom, 'right': margin.right};
+      case FloatingMonitorPosition.centerLeft:
+        return {'top': 0, 'bottom': 0, 'left': margin.left};
+      case FloatingMonitorPosition.centerRight:
+        return {'top': 0, 'bottom': 0, 'right': margin.right};
+    }
+  }
 }
 
-enum FloatingMonitorPosition {
-  topLeft,
-  topRight,
-  bottomLeft,
-  bottomRight,
-}
-
-/// Extension to easily add performance monitoring to any widget tree
+/// Extension to easily add performance monitoring to any widget
 extension PerformanceMonitorExtension on Widget {
-  /// Add a floating performance monitor to this widget
+  /// Wraps this widget with a floating performance monitor
   Widget withPerformanceMonitor({
     FloatingMonitorPosition position = FloatingMonitorPosition.topRight,
     bool showFullDetails = false,
+    EdgeInsets margin = const EdgeInsets.all(16.0),
+    Duration refreshInterval = const Duration(milliseconds: 250),
     bool enabled = true,
   }) {
-    if (!enabled) return this;
-    
+    if (!enabled) {
+      return this;
+    }
+
     return Stack(
       children: [
         this,
         FloatingPerformanceMonitor(
           position: position,
           showFullDetails: showFullDetails,
+          margin: margin,
+          refreshInterval: refreshInterval,
         ),
       ],
     );

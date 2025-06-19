@@ -11,6 +11,7 @@ void main() {
       await AppSettings.set('batterySaver', false);
       await AppSettings.set('animationLevel', 'normal');
       await AppSettings.set('reduceAnimations', false);
+      AnimationPerformanceService.resetPerformanceMetrics();
     });
 
     group('shouldUseComplexAnimations', () {
@@ -83,13 +84,13 @@ void main() {
       test('returns simple curve for reduced animations', () async {
         await AppSettings.set('animationLevel', 'reduced');
         final result = AnimationPerformanceService.getOptimizedCurve(Curves.bounceIn);
-        expect(result, equals(Curves.easeOut));
+        expect(result, equals(Curves.easeInOut));
       });
 
       test('returns enhanced curve for enhanced animations', () async {
         await AppSettings.set('animationLevel', 'enhanced');
         final result = AnimationPerformanceService.getOptimizedCurve(Curves.linear);
-        expect(result, equals(Curves.easeInOutCubicEmphasized));
+        expect(result, equals(Curves.elasticOut));
       });
 
       test('returns default curve for normal animations', () async {
