@@ -70,18 +70,7 @@ Future<void> configureDependencies() async {
     getIt.registerSingleton<SharedPreferences>(sharedPreferences);
   }
   
-  // Get device ID
-  final deviceInfo = DeviceInfoPlugin();
-  String deviceId;
-  if (Platform.isAndroid) {
-    final androidInfo = await deviceInfo.androidInfo;
-    deviceId = androidInfo.id;
-  } else if (Platform.isIOS) {
-    final iosInfo = await deviceInfo.iosInfo;
-    deviceId = iosInfo.identifierForVendor ?? 'unknown-ios';
-  } else {
-    deviceId = 'unknown-platform';
-  }
+  // Device ID setup removed as it was not being used
   
   // Register Database Service with our custom implementation
   final databaseService = DatabaseService();
@@ -256,8 +245,7 @@ Future<void> configureTestDependencies() async {
     getIt.registerSingleton<SharedPreferences>(sharedPreferences);
   }
   
-  // Use test device ID
-  const deviceId = 'test-device-id';
+  // Device ID setup removed as it was not being used
   
   // Register Database Service with test implementation (in-memory)
   final databaseService = DatabaseService.forTesting();

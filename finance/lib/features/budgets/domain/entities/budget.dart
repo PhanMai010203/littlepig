@@ -1,5 +1,4 @@
 import 'package:equatable/equatable.dart';
-import 'budget_enums.dart';
 
 enum BudgetPeriod { daily, weekly, monthly, yearly }
 

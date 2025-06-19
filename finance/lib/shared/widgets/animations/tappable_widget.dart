@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'animation_utils.dart';
 import '../../../core/services/platform_service.dart';
+import '../../../core/services/animation_performance_service.dart';
 
 /// A widget that provides customizable tap feedback with animations
-/// Part of the Phase 2 Animation Widget Library
+/// Phase 6.2 implementation with performance optimization
 class TappableWidget extends StatefulWidget {
   const TappableWidget({
     required this.child,
@@ -77,7 +78,7 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _handleTapDown(TapDownDetails details) {
-    if (!AnimationUtils.shouldAnimate()) return;
+    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation()) return;
     
     _controller.forward();
   }
@@ -95,11 +96,15 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _handleTap() {
-    if (widget.hapticFeedback && PlatformService.supportsHaptics) {
+    // Use performance service to determine if haptic feedback should be used
+    if (widget.hapticFeedback && 
+        PlatformService.supportsHaptics &&
+        AnimationPerformanceService.shouldUseHapticFeedback) {
       HapticFeedback.lightImpact();
     }
     
-    if (widget.bounceOnTap) {
+    // Only animate bounce if performance allows
+    if (widget.bounceOnTap && AnimationUtils.canStartAnimation()) {
       _animateBounce();
     }
     
@@ -107,7 +112,10 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _handleLongPress() {
-    if (widget.hapticFeedback && PlatformService.supportsHaptics) {
+    // Use performance service to determine if haptic feedback should be used
+    if (widget.hapticFeedback && 
+        PlatformService.supportsHaptics &&
+        AnimationPerformanceService.shouldUseHapticFeedback) {
       HapticFeedback.mediumImpact();
     }
     
@@ -115,7 +123,10 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _handleDoubleTap() {
-    if (widget.hapticFeedback && PlatformService.supportsHaptics) {
+    // Use performance service to determine if haptic feedback should be used
+    if (widget.hapticFeedback && 
+        PlatformService.supportsHaptics &&
+        AnimationPerformanceService.shouldUseHapticFeedback) {
       HapticFeedback.lightImpact();
     }
     
@@ -123,7 +134,7 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _animateBounce() async {
-    if (!AnimationUtils.shouldAnimate()) return;
+    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation()) return;
     
     await _controller.forward();
     await _controller.reverse();

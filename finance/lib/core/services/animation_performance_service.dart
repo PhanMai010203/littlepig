@@ -8,8 +8,14 @@ import '../settings/app_settings.dart';
 /// - Device capabilities and power state
 /// - Platform-specific optimizations
 /// - Battery saver mode integration
+/// - Real-time performance monitoring
 class AnimationPerformanceService {
   AnimationPerformanceService._();
+  
+  static int _totalAnimationsCreated = 0;
+  static int _currentActiveAnimations = 0;
+  static final List<Duration> _recentFrameTimes = [];
+  static const int _maxFrameTimeHistory = 60; // Keep last 60 frame times
   
   /// Check if complex animations should be used
   /// 
@@ -21,10 +27,11 @@ class AnimationPerformanceService {
   static bool get shouldUseComplexAnimations {
     return !AppSettings.getWithDefault<bool>('batterySaver', false) &&
            AppSettings.getWithDefault<String>('animationLevel', 'normal') != 'none' &&
-           AppSettings.getWithDefault<bool>('appAnimations', true);
+           AppSettings.getWithDefault<bool>('appAnimations', true) &&
+           _isPerformanceGood();
   }
   
-  /// Get optimized animation duration based on settings
+  /// Get optimized animation duration based on settings and performance
   /// 
   /// Applies performance scaling based on animation level:
   /// - none: Duration.zero (no animation)
@@ -41,16 +48,19 @@ class AnimationPerformanceService {
       return Duration.zero;
     }
     
+    // Apply performance-based scaling
+    final performanceScale = _getPerformanceScale();
+    
     switch (level) {
       case 'none':
         return Duration.zero;
       case 'reduced':
-        return Duration(milliseconds: (standard.inMilliseconds * 0.5).round());
+        return Duration(milliseconds: (standard.inMilliseconds * 0.5 * performanceScale).round());
       case 'enhanced':
-        return Duration(milliseconds: (standard.inMilliseconds * 1.2).round());
+        return Duration(milliseconds: (standard.inMilliseconds * 1.2 * performanceScale).round());
       case 'normal':
       default:
-        return standard;
+        return Duration(milliseconds: (standard.inMilliseconds * performanceScale).round());
     }
   }
   
@@ -59,6 +69,7 @@ class AnimationPerformanceService {
   /// Returns appropriate curves for different performance levels
   static Curve getOptimizedCurve(Curve defaultCurve) {
     final level = AppSettings.getWithDefault<String>('animationLevel', 'normal');
+    final performanceGood = _isPerformanceGood();
     
     switch (level) {
       case 'none':
@@ -66,10 +77,18 @@ class AnimationPerformanceService {
       case 'reduced':
         return Curves.easeOut; // Simple, fast curve
       case 'enhanced':
-        return Curves.easeInOutCubicEmphasized; // Material 3 enhanced curve
+        if (performanceGood) {
+          return Curves.easeInOutCubicEmphasized; // Material 3 enhanced curve
+        } else {
+          return Curves.easeInOut; // Fallback to simpler curve
+        }
       case 'normal':
       default:
-        return defaultCurve;
+        if (performanceGood) {
+          return defaultCurve;
+        } else {
+          return Curves.easeInOut; // Fallback to simpler curve
+        }
     }
   }
   
@@ -78,7 +97,9 @@ class AnimationPerformanceService {
   /// Staggered animations can be performance-intensive with many items
   static bool get shouldUseStaggeredAnimations {
     final level = AppSettings.getWithDefault<String>('animationLevel', 'normal');
-    return shouldUseComplexAnimations && (level == 'normal' || level == 'enhanced');
+    return shouldUseComplexAnimations && 
+           (level == 'normal' || level == 'enhanced') &&
+           _currentActiveAnimations < maxSimultaneousAnimations ~/ 2; // Reserve capacity
   }
   
   /// Get maximum number of simultaneous animations based on performance
@@ -90,16 +111,19 @@ class AnimationPerformanceService {
     
     if (batterySaver) return 1;
     
+    // Adjust based on current performance
+    final performanceMultiplier = _isPerformanceGood() ? 1.0 : 0.5;
+    
     switch (level) {
       case 'none':
         return 0;
       case 'reduced':
-        return 2;
+        return (2 * performanceMultiplier).round();
       case 'enhanced':
-        return 8;
+        return (8 * performanceMultiplier).round();
       case 'normal':
       default:
-        return 4;
+        return (4 * performanceMultiplier).round();
     }
   }
   
@@ -112,6 +136,72 @@ class AnimationPerformanceService {
     final batterySaver = AppSettings.getWithDefault<bool>('batterySaver', false);
     
     return appAnimations && !batterySaver && (level == 'normal' || level == 'enhanced');
+  }
+  
+  /// Register animation creation for tracking
+  static void registerAnimationCreated() {
+    _totalAnimationsCreated++;
+  }
+  
+  /// Register animation start for tracking
+  static void registerAnimationStart() {
+    _currentActiveAnimations++;
+  }
+  
+  /// Register animation end for tracking
+  static void registerAnimationEnd() {
+    if (_currentActiveAnimations > 0) {
+      _currentActiveAnimations--;
+    }
+  }
+  
+  /// Record frame time for performance monitoring
+  static void recordFrameTime(Duration frameTime) {
+    _recentFrameTimes.add(frameTime);
+    if (_recentFrameTimes.length > _maxFrameTimeHistory) {
+      _recentFrameTimes.removeAt(0);
+    }
+  }
+  
+  /// Get average frame time for performance assessment
+  static Duration get averageFrameTime {
+    if (_recentFrameTimes.isEmpty) return const Duration(milliseconds: 16); // 60fps
+    
+    final totalMs = _recentFrameTimes.fold<int>(0, (sum, time) => sum + time.inMicroseconds);
+    return Duration(microseconds: totalMs ~/ _recentFrameTimes.length);
+  }
+  
+  /// Check if performance is currently good
+  static bool _isPerformanceGood() {
+    // Consider performance good if average frame time is under 20ms (50fps)
+    return averageFrameTime.inMilliseconds < 20 && _currentActiveAnimations < maxSimultaneousAnimations;
+  }
+  
+  /// Get performance scale factor based on current performance
+  static double _getPerformanceScale() {
+    if (!_isPerformanceGood()) {
+      return 0.8; // Reduce duration by 20% when performance is poor
+    }
+    return 1.0;
+  }
+  
+  /// Get current performance metrics
+  static Map<String, dynamic> get performanceMetrics {
+    return {
+      'totalAnimationsCreated': _totalAnimationsCreated,
+      'currentActiveAnimations': _currentActiveAnimations,
+      'averageFrameTimeMs': averageFrameTime.inMilliseconds,
+      'isPerformanceGood': _isPerformanceGood(),
+      'performanceScale': _getPerformanceScale(),
+      'frameTimeHistory': _recentFrameTimes.map((t) => t.inMilliseconds).toList(),
+    };
+  }
+  
+  /// Reset performance metrics (for testing or debugging)
+  static void resetPerformanceMetrics() {
+    _totalAnimationsCreated = 0;
+    _currentActiveAnimations = 0;
+    _recentFrameTimes.clear();
   }
   
   /// Get performance profile summary for debugging
@@ -127,6 +217,7 @@ class AnimationPerformanceService {
       'shouldUseStaggeredAnimations': shouldUseStaggeredAnimations,
       'maxSimultaneousAnimations': maxSimultaneousAnimations,
       'shouldUseHapticFeedback': shouldUseHapticFeedback,
+      'performanceMetrics': performanceMetrics,
     };
   }
 } 

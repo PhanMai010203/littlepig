@@ -13,6 +13,8 @@ import '../../../../shared/widgets/language_selector.dart';
 import '../../../../core/services/dialog_service.dart';
 import '../../../../core/services/animation_performance_service.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
+import '../../../../shared/widgets/animations/animation_performance_monitor.dart';
+import '../../../../shared/widgets/animations/animation_utils.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -106,6 +108,13 @@ class _SettingsPageState extends State<SettingsPage> {
                   );
                 },
               ),
+              _buildDivider(),
+              
+              // Debug Section (Phase 6.2)
+              _buildSectionHeader('Debug & Performance'),
+              _buildPerformanceMonitorTile(),
+              _buildPerformanceMetricsTile(),
+              _buildResetMetricsTile(),
               _buildDivider(),
               
               // App Info Section
@@ -665,6 +674,216 @@ class _SettingsPageState extends State<SettingsPage> {
       ),
       trailing: const Icon(Icons.info_outline),
       onTap: () => _showAboutDialog(),
+    );
+  }
+
+  /// Phase 6.2: Performance monitor tile
+  Widget _buildPerformanceMonitorTile() {
+    return ListTile(
+      leading: const Icon(Icons.monitor),
+      title: const AppText(
+        'Performance Monitor',
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+      ),
+      subtitle: const AppText(
+        'Show real-time animation performance information',
+        fontSize: 12,
+        colorName: 'textLight',
+      ),
+      trailing: const Icon(Icons.visibility),
+      onTap: () => _showPerformanceMonitor(),
+    );
+  }
+
+  /// Phase 6.2: Performance metrics tile
+  Widget _buildPerformanceMetricsTile() {
+    return ListTile(
+      leading: const Icon(Icons.analytics),
+      title: const AppText(
+        'Performance Metrics',
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+      ),
+      subtitle: const AppText(
+        'View detailed animation performance statistics',
+        fontSize: 12,
+        colorName: 'textLight',
+      ),
+      trailing: const Icon(Icons.bar_chart),
+      onTap: () => _showPerformanceMetrics(),
+    );
+  }
+
+  /// Phase 6.2: Reset metrics tile
+  Widget _buildResetMetricsTile() {
+    return ListTile(
+      leading: const Icon(Icons.refresh),
+      title: const AppText(
+        'Reset Performance Metrics',
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+      ),
+      subtitle: const AppText(
+        'Clear all animation performance tracking data',
+        fontSize: 12,
+        colorName: 'textLight',
+      ),
+      trailing: const Icon(Icons.clear_all),
+      onTap: () => _resetPerformanceMetrics(),
+    );
+  }
+
+  /// Phase 6.2: Show performance monitor dialog
+  void _showPerformanceMonitor() {
+    DialogService.showPopup<void>(
+      context,
+      const AnimationPerformanceMonitor(
+        showFullDetails: true,
+        refreshInterval: Duration(milliseconds: 250),
+      ),
+      title: 'Real-time Performance Monitor',
+      subtitle: 'Live animation performance data',
+      icon: Icons.monitor,
+      showCloseButton: true,
+      barrierDismissible: true,
+      animationType: DialogService.defaultPopupAnimation,
+    );
+  }
+
+  /// Phase 6.2: Show performance metrics dialog
+  void _showPerformanceMetrics() {
+    final metrics = AnimationUtils.getPerformanceMetrics();
+    final debugInfo = AnimationUtils.getAnimationDebugInfo();
+    
+    DialogService.showPopup<void>(
+      context,
+      SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Current Performance
+            AppText(
+              'Current Performance:',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              colorName: 'text',
+            ),
+            const SizedBox(height: 8),
+            
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: getColor(context, 'surfaceContainer'),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  _buildMetricRow('Active Animations', '${metrics['activeAnimations']}'),
+                  _buildMetricRow('Max Simultaneous', '${metrics['maxSimultaneousAnimations']}'),
+                  _buildMetricRow('Performance Status', 
+                    metrics['performanceProfile']['performanceMetrics']['isPerformanceGood'] 
+                      ? 'Good' : 'Degraded'),
+                  _buildMetricRow('Frame Time', 
+                    '${metrics['performanceProfile']['performanceMetrics']['averageFrameTimeMs']}ms'),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 16),
+            
+            // Settings Summary
+            AppText(
+              'Animation Settings:',
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              colorName: 'text',
+            ),
+            const SizedBox(height: 8),
+            
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: getColor(context, 'surfaceContainer'),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Column(
+                children: [
+                  _buildMetricRow('Animation Level', '${debugInfo['animationLevel']}'),
+                  _buildMetricRow('App Animations', '${debugInfo['appAnimations']}'),
+                  _buildMetricRow('Battery Saver', '${debugInfo['batterySaver']}'),
+                  _buildMetricRow('Complex Animations', '${debugInfo['shouldUseComplexAnimations']}'),
+                  _buildMetricRow('Staggered Animations', '${debugInfo['shouldUseStaggeredAnimations']}'),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Close button
+            Align(
+              alignment: Alignment.centerRight,
+              child: FilledButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: AppText(
+                  'Close',
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  textColor: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      title: 'Performance Metrics',
+      subtitle: 'Animation performance statistics',
+      icon: Icons.analytics,
+      showCloseButton: true,
+      barrierDismissible: true,
+      animationType: DialogService.defaultPopupAnimation,
+    );
+  }
+
+  /// Helper method to build metric rows
+  Widget _buildMetricRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          AppText(
+            label,
+            fontSize: 12,
+            colorName: 'textLight',
+          ),
+          AppText(
+            value,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            colorName: 'text',
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Phase 6.2: Reset performance metrics
+  void _resetPerformanceMetrics() {
+    AnimationUtils.resetPerformanceMetrics();
+    AnimationPerformanceService.resetPerformanceMetrics();
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: AppText(
+          'Performance metrics have been reset',
+          fontSize: 14,
+          textColor: Colors.white,
+        ),
+        backgroundColor: getColor(context, 'primary'),
+        duration: const Duration(seconds: 2),
+      ),
     );
   }
 

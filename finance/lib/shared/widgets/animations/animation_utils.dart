@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/services/platform_service.dart';
+import '../../../core/services/animation_performance_service.dart';
 
 /// Core animation utilities for the Finance app animation framework
-/// Phase 1 implementation following the plan specifications
+/// Phase 6.2 implementation with AnimationPerformanceService integration
 class AnimationUtils {
+  static int _activeAnimationCount = 0;
+  static final Map<String, int> _animationMetrics = {};
+  
   /// Check if animations should be enabled based on user settings and platform
   static bool shouldAnimate() {
     // Check user preferences first
@@ -21,77 +25,70 @@ class AnimationUtils {
     return true;
   }
 
-  /// Get animation duration based on settings and platform
+  /// Get animation duration based on settings and platform with performance optimization
   static Duration getDuration([Duration? fallback]) {
     if (!shouldAnimate()) return Duration.zero;
     
     // Get base duration
     final baseDuration = fallback ?? PlatformService.platformAnimationDuration;
     
-    // Apply animation level modifications
-    return _getOptimizedDuration(baseDuration);
+    // Use AnimationPerformanceService for optimization
+    return AnimationPerformanceService.getOptimizedDuration(baseDuration);
   }
 
-  /// Get optimized duration based on animation level setting
-  static Duration _getOptimizedDuration(Duration standard) {
-    final level = AppSettings.animationLevel;
-    
-    switch (level) {
-      case 'none':
-        return Duration.zero;
-      case 'reduced':
-        return Duration(milliseconds: (standard.inMilliseconds * 0.5).round());
-      case 'enhanced':
-        return Duration(milliseconds: (standard.inMilliseconds * 1.2).round());
-      case 'normal':
-      default:
-        return standard;
-    }
-  }
-
-  /// Get animation curve based on platform and settings
+  /// Get animation curve based on platform and settings with performance optimization
   static Curve getCurve([Curve? fallback]) {
     if (!shouldAnimate()) return Curves.linear;
     
-    final level = AppSettings.animationLevel;
     final platformCurve = fallback ?? PlatformService.platformCurve;
     
-    switch (level) {
-      case 'reduced':
-        return Curves.easeInOut; // Simpler curve for reduced animations
-      case 'enhanced':
-        return Curves.elasticOut; // More dramatic curve for enhanced
-      case 'normal':
-      default:
-        return platformCurve;
-    }
+    // Use AnimationPerformanceService for optimization
+    return AnimationPerformanceService.getOptimizedCurve(platformCurve);
   }
 
   /// Check if complex animations should be used
   static bool shouldUseComplexAnimations() {
-    return shouldAnimate() && 
-           PlatformService.supportsComplexAnimations &&
-           AppSettings.animationLevel != 'reduced';
+    return AnimationPerformanceService.shouldUseComplexAnimations && 
+           PlatformService.supportsComplexAnimations;
   }
 
-  /// Get delay for staggered animations
+  /// Check if staggered animations should be used with performance consideration
+  static bool shouldUseStaggeredAnimations() {
+    return AnimationPerformanceService.shouldUseStaggeredAnimations;
+  }
+
+  /// Get delay for staggered animations with performance optimization
   static Duration getStaggerDelay(int index, {Duration? baseDelay}) {
-    if (!shouldAnimate()) return Duration.zero;
+    if (!shouldAnimate() || !shouldUseStaggeredAnimations()) return Duration.zero;
     
     final base = baseDelay ?? const Duration(milliseconds: 50);
-    final level = AppSettings.animationLevel;
-    
-    switch (level) {
-      case 'reduced':
-        return Duration(milliseconds: (base.inMilliseconds * 0.5).round());
-      case 'enhanced':
-        return Duration(milliseconds: (base.inMilliseconds * 1.5).round());
-      default:
-        return base;
+    return AnimationPerformanceService.getOptimizedDuration(
+      Duration(milliseconds: base.inMilliseconds * index),
+    );
+  }
+
+  /// Check if we can start a new animation (respects max concurrent limit)
+  static bool canStartAnimation() {
+    final maxConcurrent = AnimationPerformanceService.maxSimultaneousAnimations;
+    return _activeAnimationCount < maxConcurrent;
+  }
+
+  /// Register animation start for performance tracking
+  static void registerAnimationStart(String? debugLabel) {
+    _activeAnimationCount++;
+    if (debugLabel != null) {
+      _animationMetrics[debugLabel] = (_animationMetrics[debugLabel] ?? 0) + 1;
     }
   }
 
-  /// Create an optimized AnimationController
+  /// Register animation end for performance tracking
+  static void registerAnimationEnd(String? debugLabel) {
+    if (_activeAnimationCount > 0) {
+      _activeAnimationCount--;
+    }
+  }
+
+  /// Create an optimized AnimationController with performance tracking
   static AnimationController createController({
     required TickerProvider vsync,
     Duration? duration,
@@ -101,12 +98,23 @@ class AnimationUtils {
     final animDuration = getDuration(duration);
     final reverseAnimDuration = getDuration(reverseDuration ?? animDuration);
     
-    return AnimationController(
+    final controller = AnimationController(
       duration: animDuration,
       reverseDuration: reverseAnimDuration,
       vsync: vsync,
       debugLabel: debugLabel,
     );
+
+    // Add performance tracking listeners
+    controller.addStatusListener((status) {
+      if (status == AnimationStatus.forward || status == AnimationStatus.reverse) {
+        registerAnimationStart(debugLabel);
+      } else if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+        registerAnimationEnd(debugLabel);
+      }
+    });
+    
+    return controller;
   }
 
   /// Create an optimized CurvedAnimation
@@ -252,7 +260,25 @@ class AnimationUtils {
     );
   }
 
-  /// Debug method to get animation status
+  /// Get current performance metrics for debugging
+  static Map<String, dynamic> getPerformanceMetrics() {
+    return {
+      'activeAnimations': _activeAnimationCount,
+      'maxSimultaneousAnimations': AnimationPerformanceService.maxSimultaneousAnimations,
+      'animationMetrics': Map.from(_animationMetrics),
+      'performanceProfile': AnimationPerformanceService.getPerformanceProfile(),
+      'shouldUseComplexAnimations': shouldUseComplexAnimations(),
+      'shouldUseStaggeredAnimations': shouldUseStaggeredAnimations(),
+    };
+  }
+
+  /// Reset performance metrics (for testing or debugging)
+  static void resetPerformanceMetrics() {
+    _activeAnimationCount = 0;
+    _animationMetrics.clear();
+  }
+
+  /// Debug method to get animation status with performance info
   static Map<String, dynamic> getAnimationDebugInfo() {
     return {
       'shouldAnimate': shouldAnimate(),
@@ -261,9 +287,11 @@ class AnimationUtils {
       'reduceAnimations': AppSettings.reduceAnimations,
       'batterySaver': AppSettings.batterySaver,
       'shouldUseComplexAnimations': shouldUseComplexAnimations(),
+      'shouldUseStaggeredAnimations': shouldUseStaggeredAnimations(),
       'platformInfo': PlatformService.getPlatformInfo(),
       'defaultDuration': getDuration().inMilliseconds,
       'defaultCurve': getCurve().toString(),
+      'performanceMetrics': getPerformanceMetrics(),
     };
   }
 } 

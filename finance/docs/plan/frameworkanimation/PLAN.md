@@ -440,7 +440,7 @@ void main() {
 ```
 
 #### 7.2 Documentation Updates
-- Update `FRAMEWORK_DESCRIPTION.md` with animation patterns
+- Update `FRAMEWORK_DESCRIPTION.md` with animation patterns, so Frontend Dev know how to make use of the templates, and features implemented
 - Create animation component documentation
 - Add usage examples for dialog framework
 
