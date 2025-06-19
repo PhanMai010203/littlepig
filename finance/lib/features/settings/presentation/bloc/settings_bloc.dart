@@ -2,6 +2,7 @@ import 'package:bloc/bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import '../../../../core/settings/app_settings.dart';
 
 part 'settings_event.dart';
 part 'settings_state.dart';
@@ -26,12 +27,11 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     _LoadSettings event,
     Emitter<SettingsState> emit,
   ) {
-    // In a real app, load settings from shared preferences
     emit(SettingsState(
-      themeMode: ThemeMode.system,
-      analyticsEnabled: true,
-      autoBackupEnabled: false,
-      notificationsEnabled: true,
+      themeMode: AppSettings.themeMode,
+      analyticsEnabled: AppSettings.getWithDefault<bool>('analyticsEnabled', true),
+      autoBackupEnabled: AppSettings.getWithDefault<bool>('autoBackupEnabled', false),
+      notificationsEnabled: AppSettings.getWithDefault<bool>('notificationsEnabled', true),
     ));
   }
 
@@ -40,7 +40,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) {
     emit(state.copyWith(themeMode: event.themeMode));
-    // In a real app, save to shared preferences
+    AppSettings.setThemeMode(event.themeMode);
   }
 
   void _onAnalyticsToggled(
@@ -48,7 +48,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) {
     emit(state.copyWith(analyticsEnabled: event.enabled));
-    // In a real app, save to shared preferences
+    AppSettings.set('analyticsEnabled', event.enabled);
   }
 
   void _onAutoBackupToggled(
@@ -56,7 +56,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) {
     emit(state.copyWith(autoBackupEnabled: event.enabled));
-    // In a real app, save to shared preferences
+    AppSettings.set('autoBackupEnabled', event.enabled);
   }
 
   void _onNotificationsToggled(
@@ -64,6 +64,6 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     Emitter<SettingsState> emit,
   ) {
     emit(state.copyWith(notificationsEnabled: event.enabled));
-    // In a real app, save to shared preferences
+    AppSettings.set('notificationsEnabled', event.enabled);
   }
 } 
