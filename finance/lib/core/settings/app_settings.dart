@@ -125,6 +125,9 @@ class AppSettings {
       'batterySaver': false,
       'outlinedIcons': false,
       'appAnimations': true,
+      
+      // Haptic feedback settings
+      'hapticFeedback': true, // Independent haptic feedback control
 
       // Accessibility
       'highContrast': false,
@@ -230,6 +233,14 @@ class AppSettings {
 
   static Future<void> setReduceAnimations(bool enabled) async {
     await set('reduceAnimations', enabled);
+  }
+
+  static bool get hapticFeedback {
+    return get<bool>('hapticFeedback') ?? true;
+  }
+
+  static Future<void> setHapticFeedback(bool enabled) async {
+    await set('hapticFeedback', enabled);
   }
 
   /// Debug method to print all settings

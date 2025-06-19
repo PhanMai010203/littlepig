@@ -141,18 +141,15 @@ class AnimationPerformanceService {
 
   /// Check if haptic feedback should be used with animations
   ///
-  /// Combines with animation settings for consistent experience
+  /// Combines haptic setting with animation settings for consistent experience
   static bool get shouldUseHapticFeedback {
-    final level =
-        AppSettings.getWithDefault<String>('animationLevel', 'normal');
-    final appAnimations =
-        AppSettings.getWithDefault<bool>('appAnimations', true);
+    final hapticFeedback =
+        AppSettings.getWithDefault<bool>('hapticFeedback', true);
     final batterySaver =
         AppSettings.getWithDefault<bool>('batterySaver', false);
 
-    return appAnimations &&
-        !batterySaver &&
-        (level == 'normal' || level == 'enhanced');
+    // Independent haptic control with battery saver override
+    return hapticFeedback && !batterySaver;
   }
 
   /// Register animation creation for tracking
@@ -227,6 +224,7 @@ class AnimationPerformanceService {
       'batterySaver': AppSettings.getWithDefault<bool>('batterySaver', false),
       'reduceAnimations':
           AppSettings.getWithDefault<bool>('reduceAnimations', false),
+      'hapticFeedback': AppSettings.hapticFeedback,
       'shouldUseComplexAnimations': shouldUseComplexAnimations,
       'shouldUseStaggeredAnimations': shouldUseStaggeredAnimations,
       'maxSimultaneousAnimations': maxSimultaneousAnimations,
