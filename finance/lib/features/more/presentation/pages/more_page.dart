@@ -42,7 +42,6 @@ class MorePage extends StatelessWidget {
               );
             },
           ),
-          
           _SectionHeader(title: 'Analytics'),
           _MenuItem(
             icon: Icons.analytics,
@@ -64,7 +63,15 @@ class MorePage extends StatelessWidget {
               );
             },
           ),
-          
+          _SectionHeader(title: 'Developer'),
+          _MenuItem(
+            icon: Icons.developer_mode,
+            title: 'Framework Demo',
+            subtitle: 'Explore all framework capabilities',
+            onTap: () {
+              context.push('/demo');
+            },
+          ),
           _SectionHeader(title: 'Support'),
           _MenuItem(
             icon: Icons.help,
@@ -104,9 +111,9 @@ class _SectionHeader extends StatelessWidget {
       child: Text(
         title,
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-          color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.w600,
-        ),
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
       ),
     );
   }
@@ -147,4 +154,4 @@ class _MenuItem extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
     );
   }
-} 
+}
