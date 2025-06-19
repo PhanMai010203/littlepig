@@ -7,89 +7,83 @@ import '../services/currency_service.dart';
 class CurrencyDemo {
   static Future<void> runDemo() async {
     print('=== Currency System Demo ===');
-    
+
     try {
       // Initialize dependencies
       await configureDependencies();
-      
+
       final currencyService = getIt<CurrencyService>();
-      
+
       print('\n1. Loading all currencies...');
       final allCurrencies = await currencyService.getAllCurrencies();
       print('Found ${allCurrencies.length} currencies');
-      
+
       if (allCurrencies.isNotEmpty) {
         print('Sample currencies:');
         for (final currency in allCurrencies.take(5)) {
           print('  ${currency.code} - ${currency.name} (${currency.symbol})');
         }
       }
-      
+
       print('\n2. Searching for US currencies...');
       final usCurrencies = await currencyService.searchCurrencies('US');
       print('Found ${usCurrencies.length} US-related currencies:');
       for (final currency in usCurrencies.take(3)) {
         print('  ${currency.code} - ${currency.name}');
       }
-      
+
       print('\n3. Getting popular currencies...');
       final popularCurrencies = await currencyService.getPopularCurrencies();
       print('Found ${popularCurrencies.length} popular currencies:');
       for (final currency in popularCurrencies.take(5)) {
         print('  ${currency.code} - ${currency.name}');
       }
-      
+
       print('\n4. Currency formatting tests...');
       final testAmount = 1234.56;
-      
+
       final usd = await currencyService.getCurrency('USD');
       if (usd != null) {
-        final formatted = currencyService.formatAmount(amount: testAmount, currencyCode: 'USD');
+        final formatted = currencyService.formatAmount(
+            amount: testAmount, currencyCode: 'USD');
         print('USD: $formatted');
       }
-      
+
       final eur = await currencyService.getCurrency('EUR');
       if (eur != null) {
-        final formatted = currencyService.formatAmount(amount: testAmount, currencyCode: 'EUR');
+        final formatted = currencyService.formatAmount(
+            amount: testAmount, currencyCode: 'EUR');
         print('EUR: $formatted');
       }
-      
+
       final vnd = await currencyService.getCurrency('VND');
       if (vnd != null) {
-        final formatted = currencyService.formatAmount(amount: testAmount, currencyCode: 'VND');
+        final formatted = currencyService.formatAmount(
+            amount: testAmount, currencyCode: 'VND');
         print('VND: $formatted');
       }
-        print('\n5. Exchange rate operations...');
+      print('\n5. Exchange rate operations...');
       await currencyService.setCustomExchangeRate(
-        fromCurrency: 'USD', 
-        toCurrency: 'EUR', 
-        rate: 0.85
-      );
+          fromCurrency: 'USD', toCurrency: 'EUR', rate: 0.85);
       print('Set custom USD -> EUR rate: 0.85');
-      
+
       final rate = await currencyService.getExchangeRate(
-        fromCurrency: 'USD', 
-        toCurrency: 'EUR'
-      );
+          fromCurrency: 'USD', toCurrency: 'EUR');
       if (rate != null) {
         print('Retrieved rate: ${rate.rate} (custom: ${rate.isCustom})');
-        
+
         final converted = await currencyService.convertAmount(
-          amount: 100.0, 
-          fromCurrency: 'USD', 
-          toCurrency: 'EUR'
-        );
+            amount: 100.0, fromCurrency: 'USD', toCurrency: 'EUR');
         print('Converted 100 USD to EUR: $converted');
       }
-      
+
       print('\n=== Demo completed successfully! ===');
-      
     } catch (e, stackTrace) {
       print('Error during demo: $e');
       print('Stack trace: $stackTrace');
     }
   }
-  
+
   /// Widget that can be added to the app to run the demo
   static Widget buildDemoWidget() {
     return Scaffold(

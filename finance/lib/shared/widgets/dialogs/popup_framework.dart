@@ -6,7 +6,7 @@ import '../animations/slide_in.dart';
 import '../animations/animation_utils.dart';
 
 /// PopupFramework Widget - Phase 3.1 Implementation
-/// 
+///
 /// A reusable template for dialogs and popups with:
 /// - Material 3 design integration
 /// - Platform-aware layouts (iOS centered vs Android left-aligned)
@@ -46,79 +46,79 @@ class PopupFramework extends StatelessWidget {
 
   /// Main content widget
   final Widget child;
-  
+
   /// Dialog title text
   final String? title;
-  
-  /// Dialog subtitle text  
+
+  /// Dialog subtitle text
   final String? subtitle;
-  
+
   /// Custom subtitle widget (overrides subtitle text)
   final Widget? customSubtitleWidget;
-  
+
   /// Whether to apply padding to the child content
   final bool hasPadding;
-  
+
   /// Whether to add space under the title/subtitle section
   final bool underTitleSpace;
-  
+
   /// Whether to show a close button in the top-right
   final bool showCloseButton;
-  
+
   /// Optional icon to display before the title
   final IconData? icon;
-  
+
   /// Extra widget to display outside the main content area
   final Widget? outsideExtraWidget;
-  
+
   /// Background color (defaults to theme surface)
   final Color? backgroundColor;
-  
+
   /// Surface tint color for Material 3
   final Color? surfaceTintColor;
-  
+
   /// Shadow color
   final Color? shadowColor;
-  
+
   /// Dialog elevation
   final double? elevation;
-  
+
   /// Dialog shape
   final ShapeBorder? shape;
-  
+
   /// Dialog alignment on screen
   final Alignment? alignment;
-  
+
   /// Size constraints for the dialog
   final BoxConstraints? constraints;
-  
+
   /// Custom text style for title
   final TextStyle? titleTextStyle;
-  
+
   /// Custom text style for subtitle
   final TextStyle? subtitleTextStyle;
-  
+
   /// Icon color
   final Color? iconColor;
-  
+
   /// Custom close button icon
   final IconData? closeButtonIcon;
-  
+
   /// Callback when close button is pressed
   final VoidCallback? onClosePressed;
-  
+
   /// Semantic label for accessibility
   final String? semanticLabel;
-  
+
   /// Animation type for popup entrance
   final PopupAnimationType animationType;
-  
+
   /// Animation delay
   final Duration animationDelay;
-  
+
   /// Animation duration (overrides AnimationUtils)
   final Duration? animationDuration;
-  
+
   /// Animation curve (overrides AnimationUtils)
   final Curve? animationCurve;
 
@@ -127,21 +127,24 @@ class PopupFramework extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final textTheme = theme.textTheme;
-    
+
     // Platform-aware dialog properties
     final isIOS = PlatformService.getPlatform() == PlatformOS.isIOS;
     final isMobile = PlatformService.isMobile;
-    
+
     // Default dialog alignment based on platform
-    final dialogAlignment = alignment ?? 
-        (PlatformService.prefersCenteredDialogs ? Alignment.center : Alignment.bottomCenter);
-    
+    final dialogAlignment = alignment ??
+        (PlatformService.prefersCenteredDialogs
+            ? Alignment.center
+            : Alignment.bottomCenter);
+
     // Build the dialog content
-    Widget dialogContent = _buildDialogContent(context, theme, colorScheme, textTheme, isIOS, isMobile);
-    
+    Widget dialogContent = _buildDialogContent(
+        context, theme, colorScheme, textTheme, isIOS, isMobile);
+
     // Apply animation wrapper
     dialogContent = _applyAnimation(dialogContent);
-    
+
     // Wrap in Dialog widget
     return Dialog(
       backgroundColor: backgroundColor ?? colorScheme.surface,
@@ -169,36 +172,36 @@ class PopupFramework extends StatelessWidget {
     bool isMobile,
   ) {
     final List<Widget> contentChildren = [];
-    
+
     // Header section (title, subtitle, icon, close button)
-    final headerWidget = _buildHeader(
-      context, theme, colorScheme, textTheme, isIOS, isMobile
-    );
+    final headerWidget =
+        _buildHeader(context, theme, colorScheme, textTheme, isIOS, isMobile);
     if (headerWidget != null) {
       contentChildren.add(headerWidget);
-      
+
       if (underTitleSpace) {
         contentChildren.add(SizedBox(height: isMobile ? 16.0 : 12.0));
       }
     }
-    
+
     // Main content
     Widget mainContent = child;
     if (hasPadding) {
-      final padding = _getContentPadding(isMobile, hasHeader: headerWidget != null);
+      final padding =
+          _getContentPadding(isMobile, hasHeader: headerWidget != null);
       mainContent = Padding(
         padding: padding,
         child: mainContent,
       );
     }
     contentChildren.add(Flexible(child: mainContent));
-    
+
     // Outside extra widget
     if (outsideExtraWidget != null) {
       contentChildren.add(const SizedBox(height: 12.0));
       contentChildren.add(outsideExtraWidget!);
     }
-    
+
     return IntrinsicHeight(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -216,28 +219,33 @@ class PopupFramework extends StatelessWidget {
     bool isIOS,
     bool isMobile,
   ) {
-    if (title == null && subtitle == null && customSubtitleWidget == null && 
-        icon == null && !showCloseButton) {
+    if (title == null &&
+        subtitle == null &&
+        customSubtitleWidget == null &&
+        icon == null &&
+        !showCloseButton) {
       return null;
     }
-    
+
     final headerPadding = _getHeaderPadding(isMobile);
-    
+
     return Padding(
       padding: headerPadding,
       child: Column(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: isIOS ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+        crossAxisAlignment:
+            isIOS ? CrossAxisAlignment.center : CrossAxisAlignment.start,
         children: [
           // Title row with optional icon and close button
           if (title != null || icon != null || showCloseButton)
             _buildTitleRow(context, colorScheme, textTheme, isIOS),
-          
+
           // Subtitle
           if (subtitle != null || customSubtitleWidget != null)
             Padding(
               padding: EdgeInsets.only(top: isMobile ? 8.0 : 6.0),
-              child: customSubtitleWidget ?? _buildSubtitle(context, textTheme, isIOS),
+              child: customSubtitleWidget ??
+                  _buildSubtitle(context, textTheme, isIOS),
             ),
         ],
       ),
@@ -251,7 +259,7 @@ class PopupFramework extends StatelessWidget {
     bool isIOS,
   ) {
     final List<Widget> titleRowChildren = [];
-    
+
     // Icon
     if (icon != null) {
       titleRowChildren.add(
@@ -265,18 +273,19 @@ class PopupFramework extends StatelessWidget {
         titleRowChildren.add(const SizedBox(width: 12.0));
       }
     }
-    
+
     // Title
     if (title != null) {
       final titleWidget = Text(
         title!,
-        style: titleTextStyle ?? textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: colorScheme.onSurface,
-        ),
+        style: titleTextStyle ??
+            textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: colorScheme.onSurface,
+            ),
         textAlign: isIOS ? TextAlign.center : TextAlign.start,
       );
-      
+
       if (showCloseButton && !isIOS) {
         titleRowChildren.add(Expanded(child: titleWidget));
       } else {
@@ -285,7 +294,7 @@ class PopupFramework extends StatelessWidget {
     } else if (showCloseButton && !isIOS) {
       titleRowChildren.add(const Spacer());
     }
-    
+
     // Close button
     if (showCloseButton) {
       titleRowChildren.add(
@@ -300,7 +309,7 @@ class PopupFramework extends StatelessWidget {
         ),
       );
     }
-    
+
     if (isIOS && showCloseButton) {
       // Center the title content with close button positioned absolutely
       return Stack(
@@ -309,7 +318,8 @@ class PopupFramework extends StatelessWidget {
             Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: titleRowChildren.take(titleRowChildren.length - 1).toList(),
+                children:
+                    titleRowChildren.take(titleRowChildren.length - 1).toList(),
               ),
             ),
           Positioned(
@@ -320,7 +330,8 @@ class PopupFramework extends StatelessWidget {
       );
     } else {
       return Row(
-        mainAxisAlignment: isIOS ? MainAxisAlignment.center : MainAxisAlignment.start,
+        mainAxisAlignment:
+            isIOS ? MainAxisAlignment.center : MainAxisAlignment.start,
         children: titleRowChildren.map((child) {
           // Wrap text widgets with Flexible to prevent overflow
           if (child is Text) {
@@ -335,9 +346,10 @@ class PopupFramework extends StatelessWidget {
   Widget _buildSubtitle(BuildContext context, TextTheme textTheme, bool isIOS) {
     return Text(
       subtitle!,
-      style: subtitleTextStyle ?? textTheme.bodyMedium?.copyWith(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
-      ),
+      style: subtitleTextStyle ??
+          textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
       textAlign: isIOS ? TextAlign.center : TextAlign.start,
     );
   }
@@ -346,12 +358,12 @@ class PopupFramework extends StatelessWidget {
     if (!AnimationUtils.shouldAnimate()) {
       return content;
     }
-    
-    final duration = animationDuration ?? AnimationUtils.getDuration(
-      const Duration(milliseconds: 300)
-    );
-    final curve = animationCurve ?? AnimationUtils.getCurve(Curves.easeOutCubic);
-    
+
+    final duration = animationDuration ??
+        AnimationUtils.getDuration(const Duration(milliseconds: 300));
+    final curve =
+        animationCurve ?? AnimationUtils.getCurve(Curves.easeOutCubic);
+
     switch (animationType) {
       case PopupAnimationType.fadeIn:
         return FadeIn(
@@ -360,7 +372,7 @@ class PopupFramework extends StatelessWidget {
           curve: curve,
           child: content,
         );
-        
+
       case PopupAnimationType.scaleIn:
         return ScaleIn(
           delay: animationDelay,
@@ -368,7 +380,7 @@ class PopupFramework extends StatelessWidget {
           curve: curve,
           child: content,
         );
-        
+
       case PopupAnimationType.slideUp:
         return SlideIn(
           delay: animationDelay,
@@ -378,7 +390,7 @@ class PopupFramework extends StatelessWidget {
           distance: 0.3,
           child: content,
         );
-        
+
       case PopupAnimationType.slideDown:
         return SlideIn(
           delay: animationDelay,
@@ -388,7 +400,7 @@ class PopupFramework extends StatelessWidget {
           distance: 0.3,
           child: content,
         );
-        
+
       case PopupAnimationType.none:
         return content;
     }
@@ -403,7 +415,7 @@ class PopupFramework extends StatelessWidget {
 
   BoxConstraints _getDefaultConstraints(BuildContext context, bool isMobile) {
     final screenSize = MediaQuery.of(context).size;
-    
+
     if (isMobile) {
       return BoxConstraints(
         maxWidth: screenSize.width * 0.9,
@@ -514,4 +526,4 @@ extension PopupFrameworkExtension on Widget {
       child: this,
     );
   }
-} 
+}

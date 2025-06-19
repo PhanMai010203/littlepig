@@ -31,10 +31,10 @@ part 'app_database.g.dart';
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
-  
+
   // Constructor for opening a specific file (used for sync merging)
   AppDatabase.fromFile(File file) : super(NativeDatabase(file));
-  
+
   // Constructor for testing with in-memory database
   AppDatabase.forTesting(QueryExecutor executor) : super(executor);
 
@@ -43,32 +43,38 @@ class AppDatabase extends _$AppDatabase {
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
-    onCreate: (Migrator m) async {
-      await m.createAll();
-      await _insertDefaultCategories();
-    },
-    onUpgrade: (Migrator m, int from, int to) async {
-      if (from < 7) {
-        await m.createTable(syncEventLogTable);
-        await m.createTable(syncStateTable);
-        
-        await _addEventSourcingTriggers();
-      }
-      
-      // ✅ PHASE 4: Schema Cleanup Migration (v7 → v8)
-      if (from < 8) {
-        print('🧹 Starting Phase 4: Schema Cleanup Migration (v7 → v8)...');
-        final migration = SchemaCleanupMigration(this);
-        await migration.executeCleanup();
-        print('✅ Phase 4 migration completed successfully!');
-      }
-    },
-  );
+        onCreate: (Migrator m) async {
+          await m.createAll();
+          await _insertDefaultCategories();
+        },
+        onUpgrade: (Migrator m, int from, int to) async {
+          if (from < 7) {
+            await m.createTable(syncEventLogTable);
+            await m.createTable(syncStateTable);
+
+            await _addEventSourcingTriggers();
+          }
+
+          // ✅ PHASE 4: Schema Cleanup Migration (v7 → v8)
+          if (from < 8) {
+            print('🧹 Starting Phase 4: Schema Cleanup Migration (v7 → v8)...');
+            final migration = SchemaCleanupMigration(this);
+            await migration.executeCleanup();
+            print('✅ Phase 4 migration completed successfully!');
+          }
+        },
+      );
 
   Future<void> _addEventSourcingTriggers() async {
     final deviceId = await _getOrCreateDeviceId();
-    
-    for (final tableName in ['transactions', 'categories', 'accounts', 'budgets', 'attachments']) {
+
+    for (final tableName in [
+      'transactions',
+      'categories',
+      'accounts',
+      'budgets',
+      'attachments'
+    ]) {
       await customStatement('''
         CREATE TRIGGER IF NOT EXISTS ${tableName}_sync_insert
         AFTER INSERT ON $tableName
@@ -89,7 +95,7 @@ class AppDatabase extends _$AppDatabase {
           );
         END
       ''');
-      
+
       await customStatement('''
         CREATE TRIGGER IF NOT EXISTS ${tableName}_sync_update
         AFTER UPDATE ON $tableName
@@ -111,7 +117,7 @@ class AppDatabase extends _$AppDatabase {
           );
         END
       ''');
-      
+
       await customStatement('''
         CREATE TRIGGER IF NOT EXISTS ${tableName}_sync_delete
         AFTER DELETE ON $tableName
@@ -240,13 +246,13 @@ class AppDatabase extends _$AppDatabase {
 
   Future<String> _getOrCreateDeviceId() async {
     final existing = await (select(syncMetadataTable)
-      ..where((t) => t.key.equals('device_id')))
-      .getSingleOrNull();
-    
+          ..where((t) => t.key.equals('device_id')))
+        .getSingleOrNull();
+
     if (existing != null) {
       return existing.value;
     }
-    
+
     final deviceId = 'device_${DateTime.now().millisecondsSinceEpoch}';
     await into(syncMetadataTable).insert(
       SyncMetadataTableCompanion.insert(
@@ -254,7 +260,7 @@ class AppDatabase extends _$AppDatabase {
         value: deviceId,
       ),
     );
-    
+
     return deviceId;
   }
 

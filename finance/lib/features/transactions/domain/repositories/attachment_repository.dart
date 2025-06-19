@@ -21,10 +21,12 @@ abstract class AttachmentRepository {
   Future<void> insertOrUpdateFromSync(Attachment attachment);
 
   // File operations
-  Future<Attachment> compressAndStoreFile(String filePath, int transactionId, String fileName, {bool isCapturedFromCamera = false});
+  Future<Attachment> compressAndStoreFile(
+      String filePath, int transactionId, String fileName,
+      {bool isCapturedFromCamera = false});
   Future<bool> isFileExists(String filePath);
   Future<void> deleteLocalFile(String filePath);
-  
+
   // Cache management operations
   Future<void> cleanExpiredCache();
   Future<List<Attachment>> getExpiredCacheAttachments();

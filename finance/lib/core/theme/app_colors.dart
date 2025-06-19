@@ -16,7 +16,8 @@ AppColors getAppColors({
 }) {
   // Determine if using Material You theming
   bool useMaterialYou = AppSettings.get<bool>('materialYou') ?? false;
-  bool increaseContrast = AppSettings.get<bool>('increaseTextContrast') ?? false;
+  bool increaseContrast =
+      AppSettings.get<bool>('increaseTextContrast') ?? false;
 
   return brightness == Brightness.light
       ? AppColors(
@@ -24,42 +25,43 @@ AppColors getAppColors({
             // Basic colors
             "white": Colors.white,
             "black": Colors.black,
-            
+
             // Text colors
-            "text": Colors.black,            "textLight": increaseContrast
+            "text": Colors.black,
+            "textLight": increaseContrast
                 ? Colors.black.withValues(alpha: 0.7)
                 : useMaterialYou
                     ? Colors.black.withValues(alpha: 0.4)
                     : const Color(0xFF888888),
             "textSecondary": Colors.black.withValues(alpha: 0.6),
-            
+
             // Background colors
             "background": Colors.white,
             "surface": const Color(0xFFF7F7F7),
             "surfaceContainer": const Color(0xFFEBEBEB),
             "surfaceContainerHigh": const Color(0xFFE0E0E0),
-            
+
             // Accent colors
             "primary": accentColor,
             "primaryLight": _lightenColor(accentColor, 0.3),
             "primaryDark": _darkenColor(accentColor, 0.2),
-            
+
             // Semantic colors
             "success": const Color(0xFF59A849),
             "error": const Color(0xFFCA5A5A),
             "warning": const Color(0xFFCA995A),
             "info": const Color(0xFF58A4C2),
-            
+
             // Border and divider colors
             "border": useMaterialYou
                 ? const Color(0x0F000000)
                 : const Color(0xFFF0F0F0),
             "divider": const Color(0xFFE0E0E0),
-            
+
             // Shadow colors
             "shadow": const Color(0x655A5A5A),
             "shadowLight": const Color(0x2D5A5A5A),
-            
+
             // Special purpose colors
             "overlay": Colors.black.withValues(alpha: 0.5),
             "disabled": Colors.grey.shade400,
@@ -70,44 +72,44 @@ AppColors getAppColors({
             // Basic colors (inverted for dark mode)
             "white": Colors.black,
             "black": Colors.white,
-            
+
             // Text colors
-            "text": Colors.white,            "textLight": increaseContrast
+            "text": Colors.white,
+            "textLight": increaseContrast
                 ? Colors.white.withValues(alpha: 0.65)
                 : useMaterialYou
                     ? Colors.white.withValues(alpha: 0.25)
                     : const Color(0xFF494949),
             "textSecondary": Colors.white.withValues(alpha: 0.6),
-            
+
             // Background colors
             "background": const Color(0xFF121212),
             "surface": const Color(0xFF1E1E1E),
             "surfaceContainer": const Color(0xFF242424),
             "surfaceContainerHigh": const Color(0xFF2C2C2C),
-            
+
             // Accent colors
             "primary": accentColor,
             "primaryLight": _lightenColor(accentColor, 0.2),
             "primaryDark": _darkenColor(accentColor, 0.3),
-            
+
             // Semantic colors
             "success": const Color(0xFF62CA77),
             "error": const Color(0xFFDA7272),
             "warning": const Color(0xFFDA9C72),
             "info": const Color(0xFF7DB6CC),
-            
+
             // Border and divider colors
             "border": useMaterialYou
                 ? const Color(0x13FFFFFF)
                 : const Color(0x6F363636),
             "divider": const Color(0xFF383838),
-            
+
             // Shadow colors
             "shadow": const Color(0x69BDBDBD),
-            "shadowLight": useMaterialYou
-                ? Colors.transparent
-                : const Color(0x28747474),
-            
+            "shadowLight":
+                useMaterialYou ? Colors.transparent : const Color(0x28747474),
+
             // Special purpose colors
             "overlay": Colors.white.withValues(alpha: 0.1),
             "disabled": Colors.grey.shade600,
@@ -188,13 +190,13 @@ Color dynamicPastel(
 }) {
   final brightness = Theme.of(context).brightness;
   final isDark = brightness == Brightness.dark;
-  
+
   if (inverse) {
-    return isDark 
+    return isDark
         ? lightenPastel(baseColor, amount: amountDark)
         : darkenPastel(baseColor, amount: amountLight);
   } else {
-    return isDark 
+    return isDark
         ? darkenPastel(baseColor, amount: amountDark)
         : lightenPastel(baseColor, amount: amountLight);
   }

@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 
 /// Platform detection and device capabilities service for animation framework
 /// Based on the plan specifications for Phase 1
-enum PlatformOS { 
-  isIOS, 
-  isAndroid, 
-  isWeb, 
+enum PlatformOS {
+  isIOS,
+  isAndroid,
+  isWeb,
   isDesktop,
   isLinux,
   isMacOS,
@@ -28,27 +28,27 @@ class PlatformService {
     if (kIsWeb) {
       return PlatformOS.isWeb;
     }
-    
+
     if (Platform.isIOS) {
       return PlatformOS.isIOS;
     }
-    
+
     if (Platform.isAndroid) {
       return PlatformOS.isAndroid;
     }
-    
+
     if (Platform.isMacOS) {
       return PlatformOS.isMacOS;
     }
-    
+
     if (Platform.isWindows) {
       return PlatformOS.isWindows;
     }
-    
+
     if (Platform.isLinux) {
       return PlatformOS.isLinux;
     }
-    
+
     // Fallback to desktop for unknown platforms
     return PlatformOS.isDesktop;
   }
@@ -62,10 +62,10 @@ class PlatformService {
   /// Check if the current platform is desktop
   static bool get isDesktop {
     final platform = getPlatform();
-    return platform == PlatformOS.isMacOS || 
-           platform == PlatformOS.isWindows || 
-           platform == PlatformOS.isLinux ||
-           platform == PlatformOS.isDesktop;
+    return platform == PlatformOS.isMacOS ||
+        platform == PlatformOS.isWindows ||
+        platform == PlatformOS.isLinux ||
+        platform == PlatformOS.isDesktop;
   }
 
   /// Check if the current platform is web
@@ -119,23 +119,23 @@ class PlatformService {
     final mediaQuery = MediaQuery.of(context);
     final size = mediaQuery.size;
     final padding = mediaQuery.padding;
-    
+
     // Check for notch or dynamic island (iOS)
     if (getPlatform() == PlatformOS.isIOS) {
       return padding.top > 30; // Devices with notch/dynamic island
     }
-    
+
     // Check for full screen Android devices
     if (getPlatform() == PlatformOS.isAndroid) {
       final aspectRatio = size.height / size.width;
       return aspectRatio > 2.0; // Modern full-screen Android devices
     }
-    
+
     // For desktop/web, consider full screen if maximized
     if (isDesktop || isWeb) {
       return size.width > 1200 && size.height > 800;
     }
-    
+
     return false;
   }
 
@@ -143,21 +143,18 @@ class PlatformService {
   static EdgeInsets getPlatformSafePadding(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
     final padding = mediaQuery.padding;
-    
+
     switch (getPlatform()) {
       case PlatformOS.isIOS:
         // iOS handles safe areas well, trust the system
-        return EdgeInsets.fromLTRB(padding.left, padding.top, padding.right, padding.bottom);
-      
+        return EdgeInsets.fromLTRB(
+            padding.left, padding.top, padding.right, padding.bottom);
+
       case PlatformOS.isAndroid:
         // Android might need additional bottom padding for gesture navigation
-        return EdgeInsets.fromLTRB(
-          padding.left, 
-          padding.top, 
-          padding.right, 
-          padding.bottom + (padding.bottom > 0 ? 8 : 0)
-        );
-      
+        return EdgeInsets.fromLTRB(padding.left, padding.top, padding.right,
+            padding.bottom + (padding.bottom > 0 ? 8 : 0));
+
       default:
         // Desktop/web typically don't need safe area padding
         return EdgeInsets.zero;
@@ -190,4 +187,4 @@ class PlatformService {
       'platformAnimationDuration': platformAnimationDuration.inMilliseconds,
     };
   }
-} 
+}

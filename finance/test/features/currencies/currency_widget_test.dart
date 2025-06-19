@@ -13,7 +13,7 @@ void main() {
           ),
         ),
       );
-      
+
       expect(find.text('Currency Widget Test Placeholder'), findsOneWidget);
     });
   });

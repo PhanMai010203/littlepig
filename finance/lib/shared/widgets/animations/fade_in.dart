@@ -25,15 +25,14 @@ class FadeIn extends StatefulWidget {
   State<FadeIn> createState() => _FadeInState();
 }
 
-class _FadeInState extends State<FadeIn>
-    with SingleTickerProviderStateMixin {
+class _FadeInState extends State<FadeIn> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -61,12 +60,12 @@ class _FadeInState extends State<FadeIn>
       }
       return;
     }
-    
+
     // Respect delay only if animations are enabled
     if (AnimationUtils.shouldAnimate() && widget.delay > Duration.zero) {
       await Future.delayed(widget.delay);
     }
-    
+
     if (mounted && AnimationUtils.canStartAnimation()) {
       _controller.forward();
     } else if (mounted) {
@@ -99,4 +98,4 @@ class _FadeInState extends State<FadeIn>
       child: widget.child,
     );
   }
-} 
+}

@@ -36,10 +36,10 @@ class NavigationBloc extends Bloc<NavigationEvent, NavigationState> {
   ) {
     final updatedItems = List<NavigationItem>.from(state.navigationItems);
     updatedItems[event.index] = event.newItem;
-    
+
     emit(state.copyWith(
       navigationItems: updatedItems,
       isCustomizing: false,
     ));
   }
-} 
+}

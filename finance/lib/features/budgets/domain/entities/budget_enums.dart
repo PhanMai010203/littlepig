@@ -8,26 +8,10 @@ enum BudgetTransactionFilter {
 }
 
 /// Budget sharing types
-enum BudgetShareType {
-  personal,
-  shared,
-  household,
-  project
-}
+enum BudgetShareType { personal, shared, household, project }
 
 /// Member exclusion types
-enum MemberExclusionType {
-  none,
-  specific,
-  allExceptOwner
-}
+enum MemberExclusionType { none, specific, allExceptOwner }
 
 /// Budget period types for advanced scheduling
-enum BudgetPeriodType {
-  weekly,
-  biweekly,
-  monthly,
-  quarterly,
-  yearly,
-  custom
-} 
+enum BudgetPeriodType { weekly, biweekly, monthly, quarterly, yearly, custom }

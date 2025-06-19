@@ -32,13 +32,13 @@ class CurrencyLocalDataSourceImpl implements CurrencyLocalDataSource {
     try {
       // Load main currencies file
       await _loadMainCurrencies(currencies);
-      
+
       // Load additional currency info
       await _loadCurrencyInfo(currencies);
-      
+
       // Load detailed info
       await _loadDetailedInfo(currencies);
-      
+
       _cachedCurrencies = currencies;
       return currencies;
     } catch (e) {
@@ -48,15 +48,16 @@ class CurrencyLocalDataSourceImpl implements CurrencyLocalDataSource {
     }
   }
 
-  Future<void> _loadMainCurrencies(Map<String, CurrencyModel> currencies) async {
+  Future<void> _loadMainCurrencies(
+      Map<String, CurrencyModel> currencies) async {
     try {
       final String jsonString = await rootBundle.loadString(_currenciesPath);
       final Map<String, dynamic> json = jsonDecode(jsonString);
-      
+
       for (final entry in json.entries) {
         final code = entry.key.toLowerCase();
         final data = entry.value as Map<String, dynamic>;
-        
+
         final currency = CurrencyModel.fromJson(code, data);
         currencies[currency.code] = currency;
       }
@@ -67,9 +68,10 @@ class CurrencyLocalDataSourceImpl implements CurrencyLocalDataSource {
 
   Future<void> _loadCurrencyInfo(Map<String, CurrencyModel> currencies) async {
     try {
-      final String jsonString = await rootBundle.loadString(_currenciesInfoPath);
+      final String jsonString =
+          await rootBundle.loadString(_currenciesInfoPath);
       final List<dynamic> json = jsonDecode(jsonString);
-      
+
       for (final item in json) {
         if (item is Map<String, dynamic>) {
           final currency = CurrencyModel.fromCurrencyInfo(item);
@@ -80,7 +82,9 @@ class CurrencyLocalDataSourceImpl implements CurrencyLocalDataSource {
               currencies[currency.code] = CurrencyModel(
                 code: currency.code,
                 name: currency.name.isNotEmpty ? currency.name : existing.name,
-                symbol: currency.symbol.isNotEmpty ? currency.symbol : existing.symbol,
+                symbol: currency.symbol.isNotEmpty
+                    ? currency.symbol
+                    : existing.symbol,
                 symbolNative: existing.symbolNative,
                 countryName: currency.countryName ?? existing.countryName,
                 countryCode: existing.countryCode,
@@ -103,22 +107,24 @@ class CurrencyLocalDataSourceImpl implements CurrencyLocalDataSource {
 
   Future<void> _loadDetailedInfo(Map<String, CurrencyModel> currencies) async {
     try {
-      final String jsonString = await rootBundle.loadString(_currenciesInfo2Path);
+      final String jsonString =
+          await rootBundle.loadString(_currenciesInfo2Path);
       final Map<String, dynamic> json = jsonDecode(jsonString);
-      
+
       for (final entry in json.entries) {
         final code = entry.key.toUpperCase();
         final data = entry.value as Map<String, dynamic>;
-        
+
         final currency = CurrencyModel.fromDetailedInfo(code, data);
         final existing = currencies[code];
-        
+
         if (existing != null) {
           // Merge detailed information
           currencies[code] = CurrencyModel(
             code: code,
             name: currency.name.isNotEmpty ? currency.name : existing.name,
-            symbol: currency.symbol.isNotEmpty ? currency.symbol : existing.symbol,
+            symbol:
+                currency.symbol.isNotEmpty ? currency.symbol : existing.symbol,
             symbolNative: currency.symbolNative ?? existing.symbolNative,
             countryName: existing.countryName,
             countryCode: existing.countryCode,

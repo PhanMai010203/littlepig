@@ -53,7 +53,7 @@ class _TappableWidgetState extends State<TappableWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -78,64 +78,66 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _handleTapDown(TapDownDetails details) {
-    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation()) return;
-    
+    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation())
+      return;
+
     _controller.forward();
   }
 
   void _handleTapUp(TapUpDetails details) {
     if (!AnimationUtils.shouldAnimate()) return;
-    
+
     _controller.reverse();
   }
 
   void _handleTapCancel() {
     if (!AnimationUtils.shouldAnimate()) return;
-    
+
     _controller.reverse();
   }
 
   void _handleTap() {
     // Use performance service to determine if haptic feedback should be used
-    if (widget.hapticFeedback && 
+    if (widget.hapticFeedback &&
         PlatformService.supportsHaptics &&
         AnimationPerformanceService.shouldUseHapticFeedback) {
       HapticFeedback.lightImpact();
     }
-    
+
     // Only animate bounce if performance allows
     if (widget.bounceOnTap && AnimationUtils.canStartAnimation()) {
       _animateBounce();
     }
-    
+
     widget.onTap?.call();
   }
 
   void _handleLongPress() {
     // Use performance service to determine if haptic feedback should be used
-    if (widget.hapticFeedback && 
+    if (widget.hapticFeedback &&
         PlatformService.supportsHaptics &&
         AnimationPerformanceService.shouldUseHapticFeedback) {
       HapticFeedback.mediumImpact();
     }
-    
+
     widget.onLongPress?.call();
   }
 
   void _handleDoubleTap() {
     // Use performance service to determine if haptic feedback should be used
-    if (widget.hapticFeedback && 
+    if (widget.hapticFeedback &&
         PlatformService.supportsHaptics &&
         AnimationPerformanceService.shouldUseHapticFeedback) {
       HapticFeedback.lightImpact();
     }
-    
+
     widget.onDoubleTap?.call();
   }
 
   void _animateBounce() async {
-    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation()) return;
-    
+    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation())
+      return;
+
     await _controller.forward();
     await _controller.reverse();
   }
@@ -198,11 +200,18 @@ class _TappableWidgetState extends State<TappableWidget>
     }
 
     // Wrap with appropriate gesture detector
-    if (widget.onTap != null || widget.onLongPress != null || widget.onDoubleTap != null) {
+    if (widget.onTap != null ||
+        widget.onLongPress != null ||
+        widget.onDoubleTap != null) {
       return GestureDetector(
-        onTapDown: widget.animationType != TapAnimationType.none ? _handleTapDown : null,
-        onTapUp: widget.animationType != TapAnimationType.none ? _handleTapUp : null,
-        onTapCancel: widget.animationType != TapAnimationType.none ? _handleTapCancel : null,
+        onTapDown: widget.animationType != TapAnimationType.none
+            ? _handleTapDown
+            : null,
+        onTapUp:
+            widget.animationType != TapAnimationType.none ? _handleTapUp : null,
+        onTapCancel: widget.animationType != TapAnimationType.none
+            ? _handleTapCancel
+            : null,
         onTap: widget.onTap != null ? _handleTap : null,
         onLongPress: widget.onLongPress != null ? _handleLongPress : null,
         onDoubleTap: widget.onDoubleTap != null ? _handleDoubleTap : null,
@@ -257,4 +266,4 @@ extension TappableWidgetExtension on Widget {
       child: this,
     );
   }
-} 
+}

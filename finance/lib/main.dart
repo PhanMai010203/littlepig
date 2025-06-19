@@ -11,27 +11,27 @@ import 'core/theme/material_you.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize EasyLocalization
   await EasyLocalization.ensureInitialized();
-  
+
   // Initialize app settings system
   await AppSettings.initialize();
-    // Initialize Material You system
+  // Initialize Material You system
   await MaterialYouManager.initialize();
-  
+
   // Configure dependency injection (includes database initialization)
   await configureDependencies();
-  
+
   // Set up Bloc observer for debugging
   Bloc.observer = AppBlocObserver();
-  
+
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
-  
+
   runApp(
     EasyLocalization(
       supportedLocales: const [

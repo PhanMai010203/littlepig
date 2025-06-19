@@ -48,7 +48,8 @@ class CurrencyModel extends Currency {
   }
 
   /// Creates a CurrencyModel from the currenciesInfo2.json format
-  factory CurrencyModel.fromDetailedInfo(String code, Map<String, dynamic> json) {
+  factory CurrencyModel.fromDetailedInfo(
+      String code, Map<String, dynamic> json) {
     return CurrencyModel(
       code: code.toUpperCase(),
       name: json['name'] ?? '',

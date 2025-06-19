@@ -89,7 +89,8 @@ void main() {
       expect(result, isFalse);
     });
 
-    test('compressEvent - should remove null values and empty strings', () async {
+    test('compressEvent - should remove null values and empty strings',
+        () async {
       final event = SyncEvent(
         eventId: 'test-event-1',
         deviceId: 'device-123',
@@ -109,7 +110,7 @@ void main() {
       );
 
       final compressedEvent = await eventProcessor.compressEvent(event);
-      
+
       expect(compressedEvent.data.containsKey('nullField'), isFalse);
       expect(compressedEvent.data.containsKey('emptyField'), isFalse);
       expect(compressedEvent.data.containsKey('amount'), isTrue);
@@ -144,11 +145,12 @@ void main() {
 
       final events = [event1, event2];
       final uniqueEvents = await eventProcessor.deduplicateEvents(events);
-      
+
       expect(uniqueEvents.length, equals(1));
     });
 
-    test('deduplicateEvents - should keep newer version of same record', () async {
+    test('deduplicateEvents - should keep newer version of same record',
+        () async {
       final oldEvent = SyncEvent(
         eventId: 'event-1',
         deviceId: 'device-123',
@@ -175,16 +177,17 @@ void main() {
 
       final events = [oldEvent, newEvent];
       final uniqueEvents = await eventProcessor.deduplicateEvents(events);
-      
+
       expect(uniqueEvents.length, equals(1));
       expect(uniqueEvents.first.eventId, equals('event-2'));
       expect(uniqueEvents.first.data['amount'], equals(150.0));
     });
 
-    test('registerEventListener - should register and trigger listeners', () async {
+    test('registerEventListener - should register and trigger listeners',
+        () async {
       bool listenerCalled = false;
       String? receivedEventType;
-      
+
       eventProcessor.registerEventListener('transactions:create', (event) {
         listenerCalled = true;
         receivedEventType = '${event.tableName}:${event.operation}';
@@ -220,7 +223,7 @@ void main() {
       );
 
       bool eventReceived = false;
-      
+
       // Listen to the broadcast stream
       eventProcessor.eventBroadcastStream.listen((broadcastEvent) {
         eventReceived = true;
@@ -228,10 +231,10 @@ void main() {
       });
 
       await eventProcessor.broadcastEvent(event);
-      
+
       // Give the stream time to process
       await Future.delayed(Duration(milliseconds: 10));
       expect(eventReceived, isTrue);
     });
   });
-} 
+}

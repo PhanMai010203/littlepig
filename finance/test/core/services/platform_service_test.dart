@@ -14,10 +14,11 @@ void main() {
         final isMobile = PlatformService.isMobile;
         final isDesktop = PlatformService.isDesktop;
         final isWeb = PlatformService.isWeb;
-        
+
         // Only one should be true at a time
         final trueCount = [isMobile, isDesktop, isWeb].where((x) => x).length;
-        expect(trueCount, equals(1), reason: 'Exactly one platform type should be true');
+        expect(trueCount, equals(1),
+            reason: 'Exactly one platform type should be true');
       });
 
       test('supportsMaterial3 should always be true', () {
@@ -25,7 +26,8 @@ void main() {
       });
 
       test('supportsHaptics should match mobile platform', () {
-        expect(PlatformService.supportsHaptics, equals(PlatformService.isMobile));
+        expect(
+            PlatformService.supportsHaptics, equals(PlatformService.isMobile));
       });
     });
 
@@ -43,11 +45,13 @@ void main() {
 
       test('supportsComplexAnimations should be platform appropriate', () {
         final supportsComplex = PlatformService.supportsComplexAnimations;
-        
+
         if (PlatformService.isWeb) {
-          expect(supportsComplex, isFalse, reason: 'Web should not support complex animations by default');
+          expect(supportsComplex, isFalse,
+              reason: 'Web should not support complex animations by default');
         } else {
-          expect(supportsComplex, isTrue, reason: 'Mobile and desktop should support complex animations');
+          expect(supportsComplex, isTrue,
+              reason: 'Mobile and desktop should support complex animations');
         }
       });
     });
@@ -55,9 +59,11 @@ void main() {
     group('UI Preferences', () {
       test('prefersCenteredDialogs should be platform appropriate', () {
         final prefersCentered = PlatformService.prefersCenteredDialogs;
-        
-        if (PlatformService.getPlatform() == PlatformOS.isIOS || PlatformService.isDesktop) {
-          expect(prefersCentered, isTrue, reason: 'iOS and desktop should prefer centered dialogs');
+
+        if (PlatformService.getPlatform() == PlatformOS.isIOS ||
+            PlatformService.isDesktop) {
+          expect(prefersCentered, isTrue,
+              reason: 'iOS and desktop should prefer centered dialogs');
         }
         // Android can have either preference, so we don't test that
       });
@@ -66,7 +72,7 @@ void main() {
     group('Debug Information', () {
       test('getPlatformInfo should return complete information', () {
         final info = PlatformService.getPlatformInfo();
-        
+
         expect(info, isA<Map<String, dynamic>>());
         expect(info.containsKey('platform'), isTrue);
         expect(info.containsKey('isMobile'), isTrue);
@@ -82,7 +88,8 @@ void main() {
     });
 
     group('Screen Size Detection', () {
-      testWidgets('getIsFullScreen should handle different screen sizes', (tester) async {
+      testWidgets('getIsFullScreen should handle different screen sizes',
+          (tester) async {
         // Test with a mock widget to get a BuildContext
         Widget testWidget = MaterialApp(
           home: Builder(
@@ -97,7 +104,8 @@ void main() {
         await tester.pumpWidget(testWidget);
       });
 
-      testWidgets('getPlatformSafePadding should return valid padding', (tester) async {
+      testWidgets('getPlatformSafePadding should return valid padding',
+          (tester) async {
         Widget testWidget = MaterialApp(
           home: Builder(
             builder: (context) {
@@ -117,25 +125,29 @@ void main() {
         // This test will only run correctly on iOS, but we can test the logic
         if (PlatformService.getPlatform() == PlatformOS.isIOS) {
           expect(PlatformService.platformCurve, equals(Curves.easeInOutCubic));
-          expect(PlatformService.platformAnimationDuration, equals(const Duration(milliseconds: 350)));
+          expect(PlatformService.platformAnimationDuration,
+              equals(const Duration(milliseconds: 350)));
           expect(PlatformService.prefersCenteredDialogs, isTrue);
         }
       });
 
       test('Android platform should have appropriate settings', () {
         if (PlatformService.getPlatform() == PlatformOS.isAndroid) {
-          expect(PlatformService.platformCurve, equals(Curves.easeInOutCubicEmphasized));
-          expect(PlatformService.platformAnimationDuration, equals(const Duration(milliseconds: 300)));
+          expect(PlatformService.platformCurve,
+              equals(Curves.easeInOutCubicEmphasized));
+          expect(PlatformService.platformAnimationDuration,
+              equals(const Duration(milliseconds: 300)));
         }
       });
 
       test('Web platform should have appropriate settings', () {
         if (PlatformService.getPlatform() == PlatformOS.isWeb) {
           expect(PlatformService.platformCurve, equals(Curves.easeInOut));
-          expect(PlatformService.platformAnimationDuration, equals(const Duration(milliseconds: 200)));
+          expect(PlatformService.platformAnimationDuration,
+              equals(const Duration(milliseconds: 200)));
           expect(PlatformService.supportsComplexAnimations, isFalse);
         }
       });
     });
   });
-} 
+}

@@ -6,7 +6,7 @@ import '../../core/settings/app_settings.dart';
 /// Fallback fonts for specific locales (Asian languages)
 const Set<String> fallbackFontLocales = {
   "zh",
-  "zh_Hant", 
+  "zh_Hant",
   "ja",
   "ko",
 };
@@ -48,7 +48,8 @@ class AppText extends StatelessWidget {
     this.maxFontSize,
     this.minFontSize,
     this.overflow,
-    this.softWrap,    this.overflowReplacement,
+    this.softWrap,
+    this.overflowReplacement,
     this.letterSpacing,
     this.height,
   });
@@ -56,11 +57,15 @@ class AppText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Determine final text color
-    Color finalTextColor = textColor ?? 
-        (colorName != null ? getColor(context, colorName!) : getColor(context, "text"));
-    
+    Color finalTextColor = textColor ??
+        (colorName != null
+            ? getColor(context, colorName!)
+            : getColor(context, "text"));
+
     // Apply contrast enhancement if enabled
-    if (AppSettings.getWithDefault<bool>('increaseTextContrast', false)) {      double threshold = Theme.of(context).brightness == Brightness.light ? 0.7 : 0.65;
+    if (AppSettings.getWithDefault<bool>('increaseTextContrast', false)) {
+      double threshold =
+          Theme.of(context).brightness == Brightness.light ? 0.7 : 0.65;
       if ((finalTextColor.a * 255.0).round() < (255 * threshold).round()) {
         finalTextColor = finalTextColor.withValues(alpha: threshold);
       }
@@ -69,7 +74,7 @@ class AppText extends StatelessWidget {
     // Get current locale and font settings
     String locale = AppSettings.getWithDefault<String>('locale', 'system');
     String fontFamily = AppSettings.getWithDefault<String>('font', 'Inter');
-    
+
     // Smart font fallback system (like budget app)
     String finalFontFamily = _getFinalFontFamily(fontFamily, locale);
     List<String> fontFallbacks = _getFontFallbacks(fontFamily, locale);
@@ -171,13 +176,16 @@ class AppText extends StatelessWidget {
       switch (locale) {
         case 'zh':
         case 'zh_Hant':
-          fallbacks.addAll(['PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei']);
+          fallbacks
+              .addAll(['PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei']);
           break;
         case 'ja':
-          fallbacks.addAll(['Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo']);
+          fallbacks
+              .addAll(['Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo']);
           break;
         case 'ko':
-          fallbacks.addAll(['Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK KR']);
+          fallbacks.addAll(
+              ['Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans CJK KR']);
           break;
       }
     }
@@ -185,7 +193,8 @@ class AppText extends StatelessWidget {
     // Add general fallbacks based on font family
     switch (fontFamily) {
       case 'Avenir':
-        fallbacks.addAll(['Avenir Next', 'Helvetica Neue', 'Helvetica', 'Arial']);
+        fallbacks
+            .addAll(['Avenir Next', 'Helvetica Neue', 'Helvetica', 'Arial']);
         break;
       case 'Inter':
         fallbacks.addAll(['SF Pro Text', 'Roboto', 'Helvetica Neue', 'Arial']);
@@ -203,7 +212,8 @@ class AppText extends StatelessWidget {
 
 /// Convenience methods for common text styles
 class AppTextStyles {
-  static Widget heading(String text, {
+  static Widget heading(
+    String text, {
     String? colorName,
     Color? textColor,
     double fontSize = 24,
@@ -218,7 +228,8 @@ class AppTextStyles {
     );
   }
 
-  static Widget subheading(String text, {
+  static Widget subheading(
+    String text, {
     String? colorName,
     Color? textColor,
     double fontSize = 18,
@@ -233,7 +244,8 @@ class AppTextStyles {
     );
   }
 
-  static Widget body(String text, {
+  static Widget body(
+    String text, {
     String? colorName,
     Color? textColor,
     double fontSize = 16,
@@ -248,7 +260,8 @@ class AppTextStyles {
     );
   }
 
-  static Widget caption(String text, {
+  static Widget caption(
+    String text, {
     String? colorName,
     Color? textColor,
     double fontSize = 12,
@@ -263,7 +276,8 @@ class AppTextStyles {
     );
   }
 
-  static Widget button(String text, {
+  static Widget button(
+    String text, {
     String? colorName,
     Color? textColor,
     double fontSize = 16,

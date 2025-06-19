@@ -49,7 +49,8 @@ void main() {
           syncId: 'advanced-sync-id',
         );
 
-        expect(transaction.transactionType, equals(TransactionType.subscription));
+        expect(
+            transaction.transactionType, equals(TransactionType.subscription));
         expect(transaction.specialType, equals(TransactionSpecialType.credit));
         expect(transaction.recurrence, equals(TransactionRecurrence.monthly));
         expect(transaction.isRecurring, isTrue);
@@ -204,7 +205,7 @@ void main() {
       test('all entities should only contain syncId as sync field', () {
         // This test ensures no entity has legacy sync fields
         // If this test passes, it confirms Phase 4.2 requirements are met
-        
+
         final transaction = Transaction(
           title: 'Validation Test',
           amount: 100.0,
@@ -277,7 +278,8 @@ void main() {
         expect(attachment.isUploaded, isTrue);
       });
 
-      test('entities should serialize/deserialize correctly with only syncId', () {
+      test('entities should serialize/deserialize correctly with only syncId',
+          () {
         final transaction = Transaction(
           title: 'Serialization Test',
           amount: 250.0,
@@ -291,7 +293,7 @@ void main() {
 
         // Copy the transaction to simulate serialization/deserialization
         final serialized = transaction.copyWith();
-        
+
         expect(serialized.syncId, equals(transaction.syncId));
         expect(serialized.title, equals(transaction.title));
         expect(serialized.amount, equals(transaction.amount));

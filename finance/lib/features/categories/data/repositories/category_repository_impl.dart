@@ -53,7 +53,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<Category> createCategory(Category category) async {
     final now = DateTime.now();
     final syncId = category.syncId.isEmpty ? _uuid.v4() : category.syncId;
-    
+
     final companion = CategoriesTableCompanion.insert(
       name: category.name,
       icon: category.icon,
@@ -65,8 +65,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
       syncId: syncId,
     );
 
-    final id = await _database.into(_database.categoriesTable).insert(companion);
-    
+    final id =
+        await _database.into(_database.categoriesTable).insert(companion);
+
     return category.copyWith(
       id: id,
       syncId: syncId,
@@ -90,7 +91,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     await (_database.update(_database.categoriesTable)
           ..where((tbl) => tbl.id.equals(category.id!)))
         .write(companion);
-    
+
     return category.copyWith(updatedAt: now);
   }
 
@@ -117,7 +118,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   @override
   Future<void> insertOrUpdateFromSync(Category category) async {
     final existing = await getCategoryBySyncId(category.syncId);
-    
+
     if (existing == null) {
       // Insert new category from sync
       final companion = CategoriesTableCompanion.insert(
@@ -142,7 +143,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         isDefault: Value(category.isDefault),
         updatedAt: Value(category.updatedAt),
       );
-      
+
       await (_database.update(_database.categoriesTable)
             ..where((tbl) => tbl.id.equals(existing.id!)))
           .write(companion);

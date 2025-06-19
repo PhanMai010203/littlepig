@@ -38,7 +38,7 @@ class _AnimatedExpandedState extends State<AnimatedExpanded>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -76,7 +76,7 @@ class _AnimatedExpandedState extends State<AnimatedExpanded>
   @override
   void didUpdateWidget(AnimatedExpanded oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.expand != widget.expand) {
       if (widget.expand) {
         _controller.forward();
@@ -105,8 +105,10 @@ class _AnimatedExpandedState extends State<AnimatedExpanded>
         return ClipRect(
           child: Align(
             alignment: widget.alignment,
-            heightFactor: widget.axis == Axis.vertical ? _sizeAnimation.value : null,
-            widthFactor: widget.axis == Axis.horizontal ? _sizeAnimation.value : null,
+            heightFactor:
+                widget.axis == Axis.vertical ? _sizeAnimation.value : null,
+            widthFactor:
+                widget.axis == Axis.horizontal ? _sizeAnimation.value : null,
             child: Opacity(
               opacity: _fadeAnimation.value,
               child: child,
@@ -142,4 +144,4 @@ extension AnimatedExpandedExtension on Widget {
       child: this,
     );
   }
-} 
+}

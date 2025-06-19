@@ -87,7 +87,7 @@ class AppPageTransitions {
         final curve = AnimationUtils.shouldUseComplexAnimations()
             ? Curves.elasticOut
             : Curves.easeInOutBack;
-            
+
         return ScaleTransition(
           scale: CurvedAnimation(
             parent: animation,
@@ -298,4 +298,4 @@ extension PageTransitionExtension on Widget {
       key: key,
     );
   }
-} 
+}

@@ -8,7 +8,7 @@ import '../../../core/services/animation_performance_service.dart';
 class AnimationUtils {
   static int _activeAnimationCount = 0;
   static final Map<String, int> _animationMetrics = {};
-  
+
   /// Check if animations should be enabled based on user settings and platform
   static bool shouldAnimate() {
     // Check user preferences first
@@ -16,22 +16,23 @@ class AnimationUtils {
     if (AppSettings.reduceAnimations) return false;
     if (AppSettings.batterySaver) return false;
     if (AppSettings.animationLevel == 'none') return false;
-    
+
     // Check platform capabilities
     if (PlatformService.isWeb && !PlatformService.supportsComplexAnimations) {
-      return AppSettings.animationLevel == 'enhanced'; // Only if explicitly enabled
+      return AppSettings.animationLevel ==
+          'enhanced'; // Only if explicitly enabled
     }
-    
+
     return true;
   }
 
   /// Get animation duration based on settings and platform with performance optimization
   static Duration getDuration([Duration? fallback]) {
     if (!shouldAnimate()) return Duration.zero;
-    
+
     // Get base duration
     final baseDuration = fallback ?? PlatformService.platformAnimationDuration;
-    
+
     // Use AnimationPerformanceService for optimization
     return AnimationPerformanceService.getOptimizedDuration(baseDuration);
   }
@@ -39,17 +40,17 @@ class AnimationUtils {
   /// Get animation curve based on platform and settings with performance optimization
   static Curve getCurve([Curve? fallback]) {
     if (!shouldAnimate()) return Curves.linear;
-    
+
     final platformCurve = fallback ?? PlatformService.platformCurve;
-    
+
     // Use AnimationPerformanceService for optimization
     return AnimationPerformanceService.getOptimizedCurve(platformCurve);
   }
 
   /// Check if complex animations should be used
   static bool shouldUseComplexAnimations() {
-    return AnimationPerformanceService.shouldUseComplexAnimations && 
-           PlatformService.supportsComplexAnimations;
+    return AnimationPerformanceService.shouldUseComplexAnimations &&
+        PlatformService.supportsComplexAnimations;
   }
 
   /// Check if staggered animations should be used with performance consideration
@@ -60,13 +61,13 @@ class AnimationUtils {
   /// Get delay for staggered animations with performance optimization
   static Duration getStaggerDelay(int index, {Duration? baseDelay}) {
     if (!shouldAnimate()) return Duration.zero;
-    
+
     final base = baseDelay ?? const Duration(milliseconds: 50);
     if (index == 0) {
       // For index 0, apply optimization to the base delay
       return AnimationPerformanceService.getOptimizedDuration(base);
     }
-    
+
     return AnimationPerformanceService.getOptimizedDuration(
       Duration(milliseconds: base.inMilliseconds * (index + 1)),
     );
@@ -102,7 +103,7 @@ class AnimationUtils {
   }) {
     final animDuration = getDuration(duration);
     final reverseAnimDuration = getDuration(reverseDuration ?? animDuration);
-    
+
     final controller = AnimationController(
       duration: animDuration,
       reverseDuration: reverseAnimDuration,
@@ -112,13 +113,15 @@ class AnimationUtils {
 
     // Add performance tracking listeners
     controller.addStatusListener((status) {
-      if (status == AnimationStatus.forward || status == AnimationStatus.reverse) {
+      if (status == AnimationStatus.forward ||
+          status == AnimationStatus.reverse) {
         registerAnimationStart(debugLabel);
-      } else if (status == AnimationStatus.completed || status == AnimationStatus.dismissed) {
+      } else if (status == AnimationStatus.completed ||
+          status == AnimationStatus.dismissed) {
         registerAnimationEnd(debugLabel);
       }
     });
-    
+
     return controller;
   }
 
@@ -147,7 +150,7 @@ class AnimationUtils {
         builder: (context) => builder(context, child),
       );
     }
-    
+
     return AnimatedBuilder(
       animation: animation,
       builder: builder,
@@ -269,7 +272,8 @@ class AnimationUtils {
   static Map<String, dynamic> getPerformanceMetrics() {
     return {
       'activeAnimations': _activeAnimationCount,
-      'maxSimultaneousAnimations': AnimationPerformanceService.maxSimultaneousAnimations,
+      'maxSimultaneousAnimations':
+          AnimationPerformanceService.maxSimultaneousAnimations,
       'animationMetrics': Map.from(_animationMetrics),
       'performanceProfile': AnimationPerformanceService.getPerformanceProfile(),
       'shouldUseComplexAnimations': shouldUseComplexAnimations(),
@@ -299,4 +303,4 @@ class AnimationUtils {
       'performanceMetrics': getPerformanceMetrics(),
     };
   }
-} 
+}

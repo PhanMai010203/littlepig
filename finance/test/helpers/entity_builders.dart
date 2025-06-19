@@ -7,11 +7,10 @@ import '../../lib/features/categories/domain/entities/category.dart';
 import '../../lib/features/transactions/domain/entities/attachment.dart';
 
 /// ✅ PHASE 4.3: Test Entity Builders
-/// 
+///
 /// Provides helper methods to create clean test entities with only syncId sync fields.
 /// All entities use Phase 4 structure - no legacy sync fields (deviceId, isSynced, version, lastSyncAt).
 class TestEntityBuilders {
-  
   /// Creates a test transaction with essential fields and proper syncId
   static Transaction createTestTransaction({
     String? syncId,
@@ -44,7 +43,7 @@ class TestEntityBuilders {
       // ✅ PHASE 4: Only essential fields, no legacy sync fields
     );
   }
-  
+
   /// Creates a subscription transaction for testing recurring transactions
   static Transaction createTestSubscription({
     String? syncId,
@@ -110,7 +109,7 @@ class TestEntityBuilders {
     final now = DateTime.now();
     final start = startDate ?? DateTime(now.year, now.month, 1);
     final end = endDate ?? DateTime(now.year, now.month + 1, 0);
-    
+
     return Budget(
       syncId: syncId ?? 'test-budget-${now.millisecondsSinceEpoch}',
       name: name,
@@ -255,7 +254,7 @@ class TestEntityBuilders {
         title: 'Salary',
         amount: 3000.0,
         categoryId: 1, // Salary category
-        accountId: 1,  // First account
+        accountId: 1, // First account
       ),
       createTestTransaction(
         title: 'Groceries',
@@ -270,11 +269,11 @@ class TestEntityBuilders {
         accountId: 1,
       ),
     ];
-    
+
     return {
       'accounts': accounts,
       'categories': categories,
       'transactions': transactions,
     };
   }
-} 
+}

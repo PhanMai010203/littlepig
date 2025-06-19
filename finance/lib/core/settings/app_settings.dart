@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppSettings {
   static Map<String, dynamic> _settings = {};
   static SharedPreferences? _prefs;
-  
+
   /// Initialize the settings system - call this in main()
   static Future<bool> initialize() async {
     _prefs = await SharedPreferences.getInstance();
@@ -33,19 +33,21 @@ class AppSettings {
   }
 
   /// Update a setting and persist it
-  static Future<bool> set(String key, dynamic value, {
+  static Future<bool> set(
+    String key,
+    dynamic value, {
     bool notifyListeners = true,
   }) async {
     bool isChanged = _settings[key] != value;
     _settings[key] = value;
-    
+
     await _saveSettings();
-    
+
     if (isChanged && notifyListeners) {
       // Trigger app rebuild for theme changes
       _notifyAppStateChange();
     }
-    
+
     return true;
   }
 
@@ -66,7 +68,8 @@ class AppSettings {
     try {
       final settingsJson = _prefs?.getString('app_settings');
       if (settingsJson != null) {
-        final loadedSettings = json.decode(settingsJson) as Map<String, dynamic>;
+        final loadedSettings =
+            json.decode(settingsJson) as Map<String, dynamic>;
         _settings = _mergeWithDefaults(loadedSettings);
       } else {
         _settings = _getDefaultSettings();
@@ -91,11 +94,11 @@ class AppSettings {
   static Map<String, dynamic> _mergeWithDefaults(Map<String, dynamic> loaded) {
     final defaults = _getDefaultSettings();
     final merged = Map<String, dynamic>.from(defaults);
-    
+
     loaded.forEach((key, value) {
       merged[key] = value;
     });
-    
+
     return merged;
   }
 
@@ -104,28 +107,28 @@ class AppSettings {
     return {
       // Theme settings
       'themeMode': 'system', // 'light', 'dark', 'system'
-      'materialYou': false,   // User can enable if supported
+      'materialYou': false, // User can enable if supported
       'useSystemAccent': false, // User can enable if supported
       'accentColor': '0xFF2196F3', // Default blue fallback
-      
+
       // Text settings
       'font': 'Avenir', // 'system', 'Avenir', 'Inter', 'DMSans', etc.
       'fontSize': 16.0,
       'increaseTextContrast': false,
-      
+
       // Localization
       'locale': 'system', // 'system' or locale code like 'en', 'es'
-      
+
       // Enhanced animation settings (Phase 1)
       'reduceAnimations': false,
       'animationLevel': 'normal', // 'none', 'reduced', 'normal', 'enhanced'
       'batterySaver': false,
       'outlinedIcons': false,
       'appAnimations': true,
-      
+
       // Accessibility
       'highContrast': false,
-      
+
       // App behavior
       'firstLaunch': true,
       'lastVersion': '1.0.0',
@@ -134,12 +137,12 @@ class AppSettings {
 
   /// Callback for app state changes - override this in your main app
   static VoidCallback? _onAppStateChanged;
-  
+
   /// Set the callback for when settings change
   static void setAppStateChangeCallback(VoidCallback callback) {
     _onAppStateChanged = callback;
   }
-  
+
   /// Notify app of state changes
   static void _notifyAppStateChange() {
     _onAppStateChanged?.call();
@@ -166,8 +169,10 @@ class AppSettings {
       return Colors.blue; // Fallback
     }
   }
+
   static Future<void> setAccentColor(Color color) async {
-    await set('accentColor', '0x${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}');
+    await set('accentColor',
+        '0x${color.toARGB32().toRadixString(16).padLeft(8, '0').toUpperCase()}');
   }
 
   static Future<void> setThemeMode(ThemeMode mode) async {
@@ -235,4 +240,4 @@ class AppSettings {
     });
     print('==================');
   }
-} 
+}

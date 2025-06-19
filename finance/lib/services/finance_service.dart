@@ -53,7 +53,7 @@ class FinanceService {
   Future<void> checkSyncStatus() async {
     final isSignedIn = await _syncService.isSignedIn();
     print('Sync service signed in: $isSignedIn');
-    
+
     if (isSignedIn) {
       final email = await _syncService.getCurrentUserEmail();
       print('Signed in as: $email');
@@ -63,7 +63,7 @@ class FinanceService {
   /// Example: Perform sync
   Future<void> performSync() async {
     final isSignedIn = await _syncService.isSignedIn();
-    
+
     if (!isSignedIn) {
       final signInSuccess = await _syncService.signIn();
       if (!signInSuccess) {
@@ -71,15 +71,19 @@ class FinanceService {
         return;
       }
     }
-    
+
     // Upload local changes
     final uploadResult = await _syncService.syncToCloud();
-    print('Upload result: ${uploadResult.success ? 'Success' : 'Failed - ${uploadResult.error}'}');
-    
+    print(
+        'Upload result: ${uploadResult.success ? 'Success' : 'Failed - ${uploadResult.error}'}');
+
     // Download remote changes
     final downloadResult = await _syncService.syncFromCloud();
-    print('Download result: ${downloadResult.success ? 'Success' : 'Failed - ${downloadResult.error}'}');
-  }  /// Example: Listen to sync status changes
+    print(
+        'Download result: ${downloadResult.success ? 'Success' : 'Failed - ${downloadResult.error}'}');
+  }
+
+  /// Example: Listen to sync status changes
   void listenToSyncStatus() {
     _syncService.syncStatusStream.listen((status) {
       print('Sync status changed: $status');

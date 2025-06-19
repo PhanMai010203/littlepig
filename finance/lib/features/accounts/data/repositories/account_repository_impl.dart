@@ -44,19 +44,18 @@ class AccountRepositoryImpl implements AccountRepository {
   Future<Account> createAccount(Account account) async {
     final now = DateTime.now();
     final syncId = account.syncId.isEmpty ? _uuid.v4() : account.syncId;
-      final companion = AccountsTableCompanion.insert(
+    final companion = AccountsTableCompanion.insert(
       name: account.name,
       balance: Value(account.balance),
       currency: Value(account.currency),
       isDefault: Value(account.isDefault),
-
       syncId: syncId,
       createdAt: Value(account.createdAt),
       updatedAt: Value(now),
     );
 
     final id = await _database.into(_database.accountsTable).insert(companion);
-    
+
     return account.copyWith(
       id: id,
       syncId: syncId,
@@ -79,7 +78,7 @@ class AccountRepositoryImpl implements AccountRepository {
     await (_database.update(_database.accountsTable)
           ..where((tbl) => tbl.id.equals(account.id!)))
         .write(companion);
-    
+
     return account.copyWith(updatedAt: now);
   }
 
@@ -96,10 +95,9 @@ class AccountRepositoryImpl implements AccountRepository {
     await (_database.update(_database.accountsTable)
           ..where((tbl) => tbl.id.equals(accountId)))
         .write(AccountsTableCompanion(
-          balance: Value(amount),
-          updatedAt: Value(now),
-
-        ));
+      balance: Value(amount),
+      updatedAt: Value(now),
+    ));
   }
 
   @override
@@ -118,7 +116,7 @@ class AccountRepositoryImpl implements AccountRepository {
   @override
   Future<void> insertOrUpdateFromSync(Account account) async {
     final existing = await getAccountBySyncId(account.syncId);
-      if (existing == null) {
+    if (existing == null) {
       // Insert new account from sync
       final companion = AccountsTableCompanion.insert(
         name: account.name,
@@ -140,7 +138,7 @@ class AccountRepositoryImpl implements AccountRepository {
         isDefault: Value(account.isDefault),
         updatedAt: Value(account.updatedAt),
       );
-      
+
       await (_database.update(_database.accountsTable)
             ..where((tbl) => tbl.id.equals(existing.id!)))
           .write(companion);

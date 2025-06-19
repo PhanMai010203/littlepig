@@ -52,15 +52,16 @@ class MockExchangeRateLocalDataSource implements ExchangeRateLocalDataSource {
   @override
   Future<void> saveCustomExchangeRate(ExchangeRateModel rate) async {
     // Remove existing custom rate for the same pair
-    _customRates.removeWhere((r) => 
+    _customRates.removeWhere((r) =>
         r.fromCurrency == rate.fromCurrency && r.toCurrency == rate.toCurrency);
     _customRates.add(rate);
   }
 
   @override
-  Future<void> removeCustomExchangeRate(String fromCurrency, String toCurrency) async {
-    _customRates.removeWhere((r) => 
-        r.fromCurrency == fromCurrency && r.toCurrency == toCurrency);
+  Future<void> removeCustomExchangeRate(
+      String fromCurrency, String toCurrency) async {
+    _customRates.removeWhere(
+        (r) => r.fromCurrency == fromCurrency && r.toCurrency == toCurrency);
   }
 
   @override

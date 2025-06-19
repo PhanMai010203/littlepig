@@ -37,14 +37,14 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.useLatest);
         expect(resolution.resolvedData!['amount'], 200);
       });
 
       test('should order by timestamp if sequence numbers are equal', () async {
         final baseTime = DateTime.now();
-        
+
         final event1 = SyncEvent(
           eventId: 'event1',
           deviceId: 'device1',
@@ -70,14 +70,15 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.useLatest);
         expect(resolution.resolvedData!['amount'], 200);
       });
 
-      test('should order by device ID if timestamp and sequence are equal', () async {
+      test('should order by device ID if timestamp and sequence are equal',
+          () async {
         final baseTime = DateTime.now();
-        
+
         final event1 = SyncEvent(
           eventId: 'event1',
           deviceId: 'device_b',
@@ -103,9 +104,10 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.useLatest);
-        expect(resolution.resolvedData!['amount'], 100); // device_b comes after device_a
+        expect(resolution.resolvedData!['amount'],
+            100); // device_b comes after device_a
       });
     });
 
@@ -136,7 +138,7 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.merge);
         expect(resolution.resolvedData!['title'], 'Updated Title');
         expect(resolution.resolvedData!['note'], 'Updated Note');
@@ -168,7 +170,7 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.useLatest);
         expect(resolution.resolvedData!['amount'], 200);
       });
@@ -201,7 +203,7 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.merge);
         expect(resolution.resolvedData!['note'], contains('Original note'));
         expect(resolution.resolvedData!['note'], contains('Additional note'));
@@ -236,7 +238,7 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.merge);
         expect(resolution.resolvedData!['spent'], 200.0);
       });
@@ -269,7 +271,7 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event1, event2]);
-        
+
         expect(resolution.type, ConflictResolutionType.merge);
         expect(resolution.resolvedData!['balance'], 1200.0);
       });
@@ -308,7 +310,8 @@ void main() {
     });
 
     group('Manual Resolution Detection', () {
-      test('should require manual resolution for delete vs update conflicts', () {
+      test('should require manual resolution for delete vs update conflicts',
+          () {
         final events = [
           SyncEvent(
             eventId: 'event1',
@@ -339,23 +342,27 @@ void main() {
       });
 
       test('should require manual resolution for too many conflicts', () {
-        final events = List.generate(6, (index) => SyncEvent(
-          eventId: 'event$index',
-          deviceId: 'device$index',
-          tableName: 'transactions',
-          recordId: 'txn1',
-          operation: 'update',
-          data: {'amount': index * 100},
-          timestamp: DateTime.now().add(Duration(seconds: index)),
-          sequenceNumber: index + 1,
-          hash: 'hash$index',
-        ));
+        final events = List.generate(
+            6,
+            (index) => SyncEvent(
+                  eventId: 'event$index',
+                  deviceId: 'device$index',
+                  tableName: 'transactions',
+                  recordId: 'txn1',
+                  operation: 'update',
+                  data: {'amount': index * 100},
+                  timestamp: DateTime.now().add(Duration(seconds: index)),
+                  sequenceNumber: index + 1,
+                  hash: 'hash$index',
+                ));
 
         final requiresManual = resolver.requiresManualResolution(events);
         expect(requiresManual, isTrue);
       });
 
-      test('should require manual resolution for critical field conflicts in transactions', () {
+      test(
+          'should require manual resolution for critical field conflicts in transactions',
+          () {
         final events = [
           SyncEvent(
             eventId: 'event1',
@@ -401,7 +408,7 @@ void main() {
         );
 
         final resolution = await resolver.resolveCRDT([event]);
-        
+
         expect(resolution.type, ConflictResolutionType.useLatest);
         expect(resolution.resolvedData!['amount'], 100);
       });
@@ -416,4 +423,4 @@ void main() {
       });
     });
   });
-} 
+}

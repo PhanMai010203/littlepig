@@ -29,9 +29,9 @@ class MainShell extends StatelessWidget {
             onTap: (index) {
               // Update navigation state
               context.read<NavigationBloc>().add(
-                NavigationEvent.navigationIndexChanged(index),
-              );
-              
+                    NavigationEvent.navigationIndexChanged(index),
+                  );
+
               // Navigate to the selected route
               final route = state.navigationItems[index].routePath;
               context.go(route);
@@ -64,8 +64,8 @@ class MainShell extends StatelessWidget {
         availableItems: availableItems,
         onItemSelected: (newItem) {
           context.read<NavigationBloc>().add(
-            NavigationEvent.navigationItemReplaced(index, newItem),
-          );
+                NavigationEvent.navigationItemReplaced(index, newItem),
+              );
           Navigator.of(context).pop();
         },
       ),
@@ -78,4 +78,4 @@ class MainShell extends StatelessWidget {
       barrierDismissible: true,
     );
   }
-} 
+}

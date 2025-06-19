@@ -22,7 +22,8 @@ class FilePickerService {
       // Authorize Google Drive access
       final account = await _googleSignIn.signIn();
       if (account == null) {
-        throw Exception('Google Drive authorization required to add attachments');
+        throw Exception(
+            'Google Drive authorization required to add attachments');
       }
     }
 
@@ -50,12 +51,14 @@ class FilePickerService {
           break;
       }
 
-      if (selectedFiles.isEmpty) return [];      // Process each file according to the flow
+      if (selectedFiles.isEmpty)
+        return []; // Process each file according to the flow
       final attachments = <Attachment>[];
       for (final file in selectedFiles) {
         // Determine if this is a camera-captured image
         final isCameraImage = attachmentSource == AttachmentSourceType.camera;
-        final attachment = await _processFile(file, transactionId, isCapturedFromCamera: isCameraImage);
+        final attachment = await _processFile(file, transactionId,
+            isCapturedFromCamera: isCameraImage);
         attachments.add(attachment);
       }
 
@@ -74,7 +77,7 @@ class FilePickerService {
         maxWidth: 1920,
         maxHeight: 1080,
       );
-      
+
       return image != null ? File(image.path) : null;
     } catch (e) {
       throw Exception('Failed to take photo: $e');
@@ -89,7 +92,7 @@ class FilePickerService {
         maxWidth: 1920,
         maxHeight: 1080,
       );
-      
+
       return images.map((xFile) => File(xFile.path)).toList();
     } catch (e) {
       throw Exception('Failed to select from gallery: $e');
@@ -111,14 +114,16 @@ class FilePickerService {
             .map((file) => File(file.path!))
             .toList();
       }
-      
+
       return [];
     } catch (e) {
       throw Exception('Failed to select files: $e');
     }
   }
+
   /// Process file according to the flow: compress if image, upload to Google Drive
-  Future<Attachment> _processFile(File file, int transactionId, {bool isCapturedFromCamera = false}) async {
+  Future<Attachment> _processFile(File file, int transactionId,
+      {bool isCapturedFromCamera = false}) async {
     try {
       // Step 1: Compress and store file (handles image compression)
       final attachment = await _attachmentRepository.compressAndStoreFile(
@@ -129,18 +134,21 @@ class FilePickerService {
       );
 
       // Step 2: Create attachment record in database
-      final createdAttachment = await _attachmentRepository.createAttachment(attachment);
+      final createdAttachment =
+          await _attachmentRepository.createAttachment(attachment);
 
       // Step 3: Upload to Google Drive
       await _attachmentRepository.uploadToGoogleDrive(createdAttachment);
 
       // Step 4: Generate Google Drive link and update attachment
-      final updatedAttachment = await _attachmentRepository.getAttachmentById(createdAttachment.id!);
+      final updatedAttachment =
+          await _attachmentRepository.getAttachmentById(createdAttachment.id!);
       if (updatedAttachment?.googleDriveFileId != null) {
-        final googleDriveLink = await _attachmentRepository.getGoogleDriveDownloadLink(
+        final googleDriveLink =
+            await _attachmentRepository.getGoogleDriveDownloadLink(
           updatedAttachment!.googleDriveFileId!,
         );
-        
+
         if (googleDriveLink != null) {
           final finalAttachment = updatedAttachment.copyWith(
             googleDriveLink: googleDriveLink,
@@ -158,7 +166,8 @@ class FilePickerService {
 
   /// Delete attachment and move file to Google Drive trash
   Future<void> deleteAttachment(int attachmentId) async {
-    final attachment = await _attachmentRepository.getAttachmentById(attachmentId);
+    final attachment =
+        await _attachmentRepository.getAttachmentById(attachmentId);
     if (attachment == null) return;
 
     try {
@@ -167,7 +176,8 @@ class FilePickerService {
 
       // Move file to Google Drive trash if it exists
       if (attachment.googleDriveFileId != null) {
-        await _attachmentRepository.deleteFromGoogleDrive(attachment.googleDriveFileId!);
+        await _attachmentRepository
+            .deleteFromGoogleDrive(attachment.googleDriveFileId!);
       }
 
       // Delete local file if it exists
@@ -206,11 +216,13 @@ class FilePickerService {
 
   /// Extract filename from file path
   String _getFileName(String filePath) {
-    return filePath.split('/').last;  }
+    return filePath.split('/').last;
+  }
 
   /// Get the best available file path for viewing an attachment (local cache or Google Drive)
   Future<String?> getAttachmentViewPath(int attachmentId) async {
-    final attachment = await _attachmentRepository.getAttachmentById(attachmentId);
+    final attachment =
+        await _attachmentRepository.getAttachmentById(attachmentId);
     if (attachment == null) return null;
 
     // Try to get local file path (handles cache validation and Google Drive download)

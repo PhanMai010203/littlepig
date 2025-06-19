@@ -7,7 +7,7 @@ import '../animations/animation_utils.dart';
 import '../../../core/settings/app_settings.dart';
 
 /// BottomSheetService - Phase 3.3 Implementation
-/// 
+///
 /// A service for showing bottom sheets with:
 /// - Smart snapping behavior
 /// - Responsive content sizing
@@ -18,7 +18,7 @@ class BottomSheetService {
   BottomSheetService._();
 
   /// Show a custom bottom sheet with smart snapping
-  /// 
+  ///
   /// Returns a Future that completes with the result when the sheet is dismissed.
   /// [T] is the type of value that can be returned from the sheet.
   static Future<T?> showCustomBottomSheet<T>(
@@ -63,13 +63,13 @@ class BottomSheetService {
     final theme = Theme.of(context);
     final mediaQuery = MediaQuery.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     // Calculate effective sizes
     final effectiveSnapSizes = snapSizes ?? _getDefaultSnapSizes();
     final effectiveInitialSize = initialSize ?? effectiveSnapSizes.first;
     final effectiveMinSize = minSize ?? effectiveSnapSizes.first;
     final effectiveMaxSize = maxSize ?? effectiveSnapSizes.last;
-    
+
     // Create the bottom sheet content
     Widget sheetContent = _buildBottomSheetContent(
       context,
@@ -85,9 +85,10 @@ class BottomSheetService {
       theme: theme,
       colorScheme: colorScheme,
     );
-    
+
     // Apply animation if enabled
-    if (AnimationUtils.shouldAnimate() && animationType != BottomSheetAnimationType.none) {
+    if (AnimationUtils.shouldAnimate() &&
+        animationType != BottomSheetAnimationType.none) {
       sheetContent = _applyBottomSheetAnimation(
         sheetContent,
         animationType,
@@ -95,7 +96,7 @@ class BottomSheetService {
         animationCurve,
       );
     }
-    
+
     // Handle keyboard avoidance
     if (avoidKeyboard) {
       sheetContent = _wrapWithKeyboardAvoidance(
@@ -104,12 +105,12 @@ class BottomSheetService {
         keyboardPadding,
       );
     }
-    
+
     // Handle scrolling if needed
     if (expandToFillViewport) {
       sheetContent = _wrapWithScrolling(sheetContent, scrollController);
     }
-    
+
     // Apply constraints if provided
     if (constraints != null) {
       sheetContent = ConstrainedBox(
@@ -117,7 +118,7 @@ class BottomSheetService {
         child: sheetContent,
       );
     }
-    
+
     // Apply semantics
     if (semanticLabel != null) {
       sheetContent = Semantics(
@@ -125,7 +126,7 @@ class BottomSheetService {
         child: sheetContent,
       );
     }
-    
+
     if (snapSizes != null && snapSizes.length > 1) {
       // Use DraggableScrollableSheet for snapping behavior
       return _showDraggableBottomSheet<T>(
@@ -208,8 +209,8 @@ class BottomSheetService {
             subtitle: option.subtitle != null ? Text(option.subtitle!) : null,
             trailing: option.trailing,
             enabled: option.enabled,
-            onTap: option.enabled 
-                ? () => Navigator.of(context).pop(option.value) 
+            onTap: option.enabled
+                ? () => Navigator.of(context).pop(option.value)
                 : null,
           );
         }).toList(),
@@ -237,13 +238,13 @@ class BottomSheetService {
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     final effectiveConfirmText = confirmText ?? 'Confirm';
     final effectiveCancelText = cancelText ?? 'Cancel';
-    final effectiveConfirmColor = isDangerous 
+    final effectiveConfirmColor = isDangerous
         ? (confirmColor ?? colorScheme.error)
         : (confirmColor ?? colorScheme.primary);
-    
+
     return showCustomBottomSheet<bool>(
       context,
       Column(
@@ -278,8 +279,8 @@ class BottomSheetService {
                   onPressed: () => Navigator.of(context).pop(true),
                   style: FilledButton.styleFrom(
                     backgroundColor: effectiveConfirmColor,
-                    foregroundColor: isDangerous 
-                        ? colorScheme.onError 
+                    foregroundColor: isDangerous
+                        ? colorScheme.onError
                         : colorScheme.onPrimary,
                   ),
                   child: Text(effectiveConfirmText),
@@ -318,12 +319,12 @@ class BottomSheetService {
     required ColorScheme colorScheme,
   }) {
     final List<Widget> contentChildren = [];
-    
+
     // Drag handle
     if (showDragHandle) {
       contentChildren.add(_buildDragHandle(theme, colorScheme));
     }
-    
+
     // Header
     final headerWidget = _buildHeader(
       context,
@@ -339,7 +340,7 @@ class BottomSheetService {
     if (headerWidget != null) {
       contentChildren.add(headerWidget);
     }
-    
+
     // Main content
     Widget mainContent = child;
     if (padding != null) {
@@ -349,7 +350,8 @@ class BottomSheetService {
       );
     } else {
       // Default padding
-      final hasHeader = title != null || subtitle != null || customTitleWidget != null;
+      final hasHeader =
+          title != null || subtitle != null || customTitleWidget != null;
       final defaultPadding = EdgeInsets.fromLTRB(
         24.0,
         hasHeader ? 0.0 : (showDragHandle ? 8.0 : 24.0),
@@ -361,9 +363,9 @@ class BottomSheetService {
         child: mainContent,
       );
     }
-    
+
     contentChildren.add(Flexible(child: mainContent));
-    
+
     return SafeArea(
       top: false,
       child: Column(
@@ -403,10 +405,13 @@ class BottomSheetService {
     required ThemeData theme,
     required ColorScheme colorScheme,
   }) {
-    if (title == null && subtitle == null && customTitleWidget == null && !showCloseButton) {
+    if (title == null &&
+        subtitle == null &&
+        customTitleWidget == null &&
+        !showCloseButton) {
       return null;
     }
-    
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 16.0),
       child: Column(
@@ -431,10 +436,10 @@ class BottomSheetService {
                   )
                 else
                   const Spacer(),
-                
                 if (showCloseButton)
                   IconButton(
-                    onPressed: onClosePressed ?? () => Navigator.of(context).pop(),
+                    onPressed:
+                        onClosePressed ?? () => Navigator.of(context).pop(),
                     icon: Icon(closeButtonIcon ?? Icons.close),
                     iconSize: 20.0,
                     visualDensity: VisualDensity.compact,
@@ -444,7 +449,7 @@ class BottomSheetService {
                   ),
               ],
             ),
-          
+
           // Subtitle
           if (subtitle != null)
             Padding(
@@ -468,11 +473,11 @@ class BottomSheetService {
     Duration? animationDuration,
     Curve? animationCurve,
   ) {
-    final duration = animationDuration ?? AnimationUtils.getDuration(
-      const Duration(milliseconds: 300)
-    );
-    final curve = animationCurve ?? AnimationUtils.getCurve(Curves.easeOutCubic);
-    
+    final duration = animationDuration ??
+        AnimationUtils.getDuration(const Duration(milliseconds: 300));
+    final curve =
+        animationCurve ?? AnimationUtils.getCurve(Curves.easeOutCubic);
+
     switch (animationType) {
       case BottomSheetAnimationType.slideUp:
         return SlideIn(
@@ -482,14 +487,14 @@ class BottomSheetService {
           curve: curve,
           child: content,
         );
-        
+
       case BottomSheetAnimationType.fadeIn:
         return FadeIn(
           duration: duration,
           curve: curve,
           child: content,
         );
-        
+
       case BottomSheetAnimationType.none:
         return content;
     }
@@ -510,7 +515,8 @@ class BottomSheetService {
   }
 
   /// Wrap content with scrolling capability
-  static Widget _wrapWithScrolling(Widget content, ScrollController? scrollController) {
+  static Widget _wrapWithScrolling(
+      Widget content, ScrollController? scrollController) {
     return SingleChildScrollView(
       controller: scrollController,
       child: content,
@@ -538,7 +544,7 @@ class BottomSheetService {
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return showModalBottomSheet<T>(
       context: context,
       isDismissible: isDismissible,
@@ -549,7 +555,7 @@ class BottomSheetService {
       elevation: 0,
       builder: (context) {
         onOpened?.call();
-        
+
         return DraggableScrollableSheet(
           initialChildSize: initialSize,
           minChildSize: minSize,
@@ -560,7 +566,8 @@ class BottomSheetService {
             return Container(
               decoration: BoxDecoration(
                 color: backgroundColor ?? colorScheme.surface,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16.0)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(16.0)),
                 boxShadow: [
                   BoxShadow(
                     color: colorScheme.shadow.withOpacity(0.1),
@@ -597,7 +604,7 @@ class BottomSheetService {
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return showModalBottomSheet<T>(
       context: context,
       isDismissible: isDismissible,
@@ -606,9 +613,10 @@ class BottomSheetService {
       isScrollControlled: isScrollControlled,
       backgroundColor: backgroundColor ?? colorScheme.surface,
       elevation: elevation,
-      shape: shape ?? const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-      ),
+      shape: shape ??
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+          ),
       builder: (context) {
         onOpened?.call();
         return content;
@@ -621,13 +629,13 @@ class BottomSheetService {
 
   /// Get the default bottom sheet animation type based on platform and settings
   static BottomSheetAnimationType get defaultBottomSheetAnimation {
-    if (!AppSettings.appAnimations || 
-        AppSettings.reduceAnimations || 
+    if (!AppSettings.appAnimations ||
+        AppSettings.reduceAnimations ||
         AppSettings.batterySaver ||
         AppSettings.animationLevel == 'none') {
       return BottomSheetAnimationType.none;
     }
-    
+
     switch (AppSettings.animationLevel) {
       case 'reduced':
         return BottomSheetAnimationType.fadeIn;
@@ -659,19 +667,19 @@ class BottomSheetOption<T> {
 
   /// The title text for the option
   final String title;
-  
+
   /// The subtitle text (optional)
   final String? subtitle;
-  
+
   /// The value to return when this option is selected
   final T value;
-  
+
   /// Optional icon to display
   final IconData? icon;
-  
+
   /// Optional trailing widget
   final Widget? trailing;
-  
+
   /// Whether this option is enabled
   final bool enabled;
 }
@@ -702,7 +710,8 @@ extension BottomSheetServiceExtension on BuildContext {
       enableDrag: enableDrag,
       showDragHandle: showDragHandle,
       showCloseButton: showCloseButton,
-      animationType: animationType ?? BottomSheetService.defaultBottomSheetAnimation,
+      animationType:
+          animationType ?? BottomSheetService.defaultBottomSheetAnimation,
     );
   }
 
@@ -765,4 +774,4 @@ extension BottomSheetServiceExtension on BuildContext {
       isDangerous: isDangerous,
     );
   }
-} 
+}

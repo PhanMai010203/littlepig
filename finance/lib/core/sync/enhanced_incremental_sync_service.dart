@@ -26,15 +26,15 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
   final EventProcessor _eventProcessor;
   final SyncStateManager _stateManager;
   final CRDTConflictResolver _conflictResolver;
-  
+
   // Real-time streams for Team B
-  final StreamController<SyncEvent> _eventStreamController = 
+  final StreamController<SyncEvent> _eventStreamController =
       StreamController<SyncEvent>.broadcast();
-  
+
   String? _deviceId;
   bool _isSyncing = false;
   Timer? _periodicSyncTimer;
-  
+
   EnhancedIncrementalSyncService(this._database)
       : _eventProcessor = EventProcessor(_database),
         _stateManager = SyncStateManager(_database),
@@ -61,15 +61,15 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       // Initialize all components
       await _stateManager.initialize();
       _deviceId = await _getOrCreateDeviceId();
-      
+
       // Subscribe to event processor streams
       _eventProcessor.eventBroadcastStream.listen((event) {
         _eventStreamController.add(event);
       });
-      
+
       // Set up periodic sync
       _setupPeriodicSync();
-      
+
       return true;
     } catch (e) {
       return false;
@@ -128,7 +128,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
 
       // Get unsynced events
       final unsyncedEvents = await _stateManager.getUnsyncedEvents();
-      
+
       if (unsyncedEvents.isEmpty) {
         await _stateManager.completeSync(
           success: true,
@@ -151,46 +151,47 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       for (final event in unsyncedEvents) {
         await _eventProcessor.processEvent(event);
         processedEvents.add(event);
-        
+
         await _stateManager.updateProgress(
           processedEvents: processedEvents.length,
-          statusMessage: 'Processed ${processedEvents.length}/${unsyncedEvents.length} events',
+          statusMessage:
+              'Processed ${processedEvents.length}/${unsyncedEvents.length} events',
         );
       }
 
       // Deduplicate events for efficiency
-      final deduplicatedEvents = await _eventProcessor.deduplicateEvents(processedEvents);
-      
+      final deduplicatedEvents =
+          await _eventProcessor.deduplicateEvents(processedEvents);
+
       await _stateManager.updateProgress(
-        statusMessage: 'Uploading ${deduplicatedEvents.length} optimized events...',
+        statusMessage:
+            'Uploading ${deduplicatedEvents.length} optimized events...',
       );
 
       // Upload to Google Drive
       final uploadCount = await _uploadEventsToCloud(deduplicatedEvents);
-      
+
       // Mark events as synced
-      await _stateManager.markEventsSynced(
-        deduplicatedEvents.map((e) => e.eventId).toList()
-      );
+      await _stateManager
+          .markEventsSynced(deduplicatedEvents.map((e) => e.eventId).toList());
 
       await _stateManager.completeSync(
         success: true,
         message: 'Successfully synced $uploadCount events',
       );
 
-             return interfaces.SyncResult.success(
-         uploadedCount: uploadCount,
-         downloadedCount: 0,
-         conflictCount: 0,
-         duration: DateTime.now().difference(startTime),
-       );
-
+      return interfaces.SyncResult.success(
+        uploadedCount: uploadCount,
+        downloadedCount: 0,
+        conflictCount: 0,
+        duration: DateTime.now().difference(startTime),
+      );
     } catch (e) {
       await _stateManager.completeSync(
         success: false,
         message: 'Upload failed: ${e.toString()}',
       );
-      
+
       return interfaces.SyncResult.error(
         error: e.toString(),
         duration: DateTime.now().difference(startTime),
@@ -222,7 +223,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
 
       // Download events from cloud
       final remoteEvents = await _downloadEventsFromCloud();
-      
+
       if (remoteEvents.isEmpty) {
         await _stateManager.completeSync(
           success: true,
@@ -251,53 +252,54 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       final processedEvents = <SyncEvent>[];
       for (int i = 0; i < remoteEvents.length; i++) {
         final event = remoteEvents[i];
-        
+
         // Check for conflicts with local events
         final conflicts = await _detectConflicts(event);
-        
+
         if (conflicts.isNotEmpty) {
           await _stateManager.startSync(
             state: SyncState.resolving_conflicts,
             statusMessage: 'Resolving conflicts...',
           );
-          
+
           final resolution = await _conflictResolver.resolveCRDT(conflicts);
           conflictCount++;
-          
+
           // Apply resolved conflict
           await _applyConflictResolution(event, resolution);
         } else {
           // No conflicts, process normally
           await _eventProcessor.processEvent(event);
         }
-        
+
         processedEvents.add(event);
-        
+
         await _stateManager.updateProgress(
           processedEvents: processedEvents.length,
           conflictCount: conflictCount,
-          statusMessage: 'Processed ${processedEvents.length}/${remoteEvents.length} events',
+          statusMessage:
+              'Processed ${processedEvents.length}/${remoteEvents.length} events',
         );
       }
 
       await _stateManager.completeSync(
         success: true,
-        message: 'Successfully processed ${processedEvents.length} events with $conflictCount conflicts resolved',
+        message:
+            'Successfully processed ${processedEvents.length} events with $conflictCount conflicts resolved',
       );
 
-             return interfaces.SyncResult.success(
-         uploadedCount: 0,
-         downloadedCount: processedEvents.length,
-         conflictCount: conflictCount,
-         duration: DateTime.now().difference(startTime),
-       );
-
+      return interfaces.SyncResult.success(
+        uploadedCount: 0,
+        downloadedCount: processedEvents.length,
+        conflictCount: conflictCount,
+        duration: DateTime.now().difference(startTime),
+      );
     } catch (e) {
       await _stateManager.completeSync(
         success: false,
         message: 'Download failed: ${e.toString()}',
       );
-      
+
       return interfaces.SyncResult.error(
         error: e.toString(),
         duration: DateTime.now().difference(startTime),
@@ -311,27 +313,26 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
   @override
   Future<interfaces.SyncResult> performFullSync() async {
     final startTime = DateTime.now();
-    
+
     try {
       // Upload local changes first
       final uploadResult = await syncToCloud();
       if (!uploadResult.success) {
         return uploadResult;
       }
-      
+
       // Then download remote changes
       final downloadResult = await syncFromCloud();
       if (!downloadResult.success) {
         return downloadResult;
       }
-      
-             return interfaces.SyncResult.success(
-         uploadedCount: uploadResult.uploadedCount,
-         downloadedCount: downloadResult.downloadedCount,
-         conflictCount: downloadResult.conflictCount,
-         duration: DateTime.now().difference(startTime),
-       );
-      
+
+      return interfaces.SyncResult.success(
+        uploadedCount: uploadResult.uploadedCount,
+        downloadedCount: downloadResult.downloadedCount,
+        conflictCount: downloadResult.conflictCount,
+        duration: DateTime.now().difference(startTime),
+      );
     } catch (e) {
       return interfaces.SyncResult.error(
         error: e.toString(),
@@ -351,14 +352,15 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     final client = authenticatedClient(
       http.Client(),
       AccessCredentials(
-        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '', DateTime.now().add(Duration(hours: 1))),
+        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
+            DateTime.now().add(Duration(hours: 1))),
         null,
         _scopes,
       ),
     );
 
     final driveApi = drive.DriveApi(client);
-    
+
     try {
       // Create events batch
       final eventsBatch = SyncEventBatch(
@@ -366,13 +368,15 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
         timestamp: DateTime.now(),
         events: events,
       );
-      
+
       // Upload to dedicated sync folder
-      final syncFolderId = await _ensureFolderExists(driveApi, GoogleDriveSyncService.SYNC_FOLDER);
-      final fileName = 'events_${_deviceId}_${DateTime.now().millisecondsSinceEpoch}.json';
-      
+      final syncFolderId = await _ensureFolderExists(
+          driveApi, GoogleDriveSyncService.SYNC_FOLDER);
+      final fileName =
+          'events_${_deviceId}_${DateTime.now().millisecondsSinceEpoch}.json';
+
       await _uploadEventBatch(driveApi, syncFolderId, fileName, eventsBatch);
-      
+
       return events.length;
     } finally {
       client.close();
@@ -390,31 +394,33 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     final client = authenticatedClient(
       http.Client(),
       AccessCredentials(
-        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '', DateTime.now().add(Duration(hours: 1))),
+        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
+            DateTime.now().add(Duration(hours: 1))),
         null,
         _scopes,
       ),
     );
 
     final driveApi = drive.DriveApi(client);
-    
+
     try {
       final events = <SyncEvent>[];
-      
+
       // Download event files from other devices
-      final syncFolderId = await _ensureFolderExists(driveApi, GoogleDriveSyncService.SYNC_FOLDER);
+      final syncFolderId = await _ensureFolderExists(
+          driveApi, GoogleDriveSyncService.SYNC_FOLDER);
       final eventFiles = await _listEventFiles(driveApi, syncFolderId);
-      
+
       for (final file in eventFiles) {
         if (file.name?.startsWith('events_${_deviceId}_') == true) {
           continue; // Skip our own files
         }
-        
+
         final fileContent = await _downloadFile(driveApi, file.id!);
         final batch = SyncEventBatch.fromJson(jsonDecode(fileContent));
         events.addAll(batch.events);
       }
-      
+
       return events;
     } finally {
       client.close();
@@ -424,22 +430,24 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
   /// Detect conflicts between remote and local events
   Future<List<SyncEvent>> _detectConflicts(SyncEvent remoteEvent) async {
     final query = _database.select(_database.syncEventLogTable)
-      ..where((tbl) => tbl.tableNameField.equals(remoteEvent.tableName) & 
-                      tbl.recordId.equals(remoteEvent.recordId))
+      ..where((tbl) =>
+          tbl.tableNameField.equals(remoteEvent.tableName) &
+          tbl.recordId.equals(remoteEvent.recordId))
       ..orderBy([(tbl) => OrderingTerm.desc(tbl.timestamp)]);
-    
+
     final localEvents = await query.get();
-    
+
     if (localEvents.isEmpty) {
       return []; // No conflicts
     }
-    
+
     // Check for temporal conflicts (events around the same time)
     final conflictWindow = Duration(minutes: 5);
     final conflicts = <SyncEvent>[];
-    
+
     for (final localEvent in localEvents) {
-      final timeDiff = remoteEvent.timestamp.difference(localEvent.timestamp).abs();
+      final timeDiff =
+          remoteEvent.timestamp.difference(localEvent.timestamp).abs();
       if (timeDiff <= conflictWindow) {
         conflicts.add(SyncEvent(
           eventId: localEvent.eventId,
@@ -454,16 +462,17 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
         ));
       }
     }
-    
+
     if (conflicts.isNotEmpty) {
       conflicts.add(remoteEvent);
     }
-    
+
     return conflicts;
   }
 
   /// Apply conflict resolution
-  Future<void> _applyConflictResolution(SyncEvent baseEvent, ConflictResolution resolution) async {
+  Future<void> _applyConflictResolution(
+      SyncEvent baseEvent, ConflictResolution resolution) async {
     switch (resolution.type) {
       case ConflictResolutionType.merge:
       case ConflictResolutionType.useLatest:
@@ -487,7 +496,8 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
         break;
       case ConflictResolutionType.manualResolution:
         // Log for manual review - Team B will handle UI
-        print('Manual resolution required for ${baseEvent.tableName}:${baseEvent.recordId}');
+        print(
+            'Manual resolution required for ${baseEvent.tableName}:${baseEvent.recordId}');
         break;
     }
   }
@@ -511,16 +521,19 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     return 'device_${DateTime.now().millisecondsSinceEpoch}';
   }
 
-  Future<String> _ensureFolderExists(drive.DriveApi driveApi, String folderName) async {
+  Future<String> _ensureFolderExists(
+      drive.DriveApi driveApi, String folderName) async {
     // Implementation similar to GoogleDriveSyncService
     return 'folder_id';
   }
 
-  Future<void> _uploadEventBatch(drive.DriveApi driveApi, String folderId, String fileName, SyncEventBatch batch) async {
+  Future<void> _uploadEventBatch(drive.DriveApi driveApi, String folderId,
+      String fileName, SyncEventBatch batch) async {
     // Implementation similar to original
   }
 
-  Future<List<drive.File>> _listEventFiles(drive.DriveApi driveApi, String folderId) async {
+  Future<List<drive.File>> _listEventFiles(
+      drive.DriveApi driveApi, String folderId) async {
     // Implementation similar to original
     return [];
   }
@@ -537,4 +550,4 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     _eventProcessor.dispose();
     _stateManager.dispose();
   }
-} 
+}

@@ -22,7 +22,7 @@ class Budget extends Equatable {
   final List<String>? walletFks;
   final List<String>? currencyFks;
 
-  // Shared budget support  
+  // Shared budget support
   final String? sharedReferenceBudgetPk;
   final List<String>? budgetFksExclude;
 
@@ -51,7 +51,7 @@ class Budget extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     required this.syncId,
-    
+
     // Advanced filtering parameters
     this.excludeDebtCreditInstallments = false,
     this.excludeObjectiveInstallments = false,
@@ -80,7 +80,7 @@ class Budget extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? syncId,
-    
+
     // Advanced filtering parameters
     bool? excludeDebtCreditInstallments,
     bool? excludeObjectiveInstallments,
@@ -108,20 +108,28 @@ class Budget extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncId: syncId ?? this.syncId,
-      
+
       // Advanced filtering assignments
-      excludeDebtCreditInstallments: excludeDebtCreditInstallments ?? this.excludeDebtCreditInstallments,
-      excludeObjectiveInstallments: excludeObjectiveInstallments ?? this.excludeObjectiveInstallments,
+      excludeDebtCreditInstallments:
+          excludeDebtCreditInstallments ?? this.excludeDebtCreditInstallments,
+      excludeObjectiveInstallments:
+          excludeObjectiveInstallments ?? this.excludeObjectiveInstallments,
       walletFks: walletFks ?? this.walletFks,
       currencyFks: currencyFks ?? this.currencyFks,
-      sharedReferenceBudgetPk: sharedReferenceBudgetPk ?? this.sharedReferenceBudgetPk,
+      sharedReferenceBudgetPk:
+          sharedReferenceBudgetPk ?? this.sharedReferenceBudgetPk,
       budgetFksExclude: budgetFksExclude ?? this.budgetFksExclude,
       normalizeToCurrency: normalizeToCurrency ?? this.normalizeToCurrency,
       isIncomeBudget: isIncomeBudget ?? this.isIncomeBudget,
-      includeTransferInOutWithSameCurrency: includeTransferInOutWithSameCurrency ?? this.includeTransferInOutWithSameCurrency,
-      includeUpcomingTransactionFromBudget: includeUpcomingTransactionFromBudget ?? this.includeUpcomingTransactionFromBudget,
+      includeTransferInOutWithSameCurrency:
+          includeTransferInOutWithSameCurrency ??
+              this.includeTransferInOutWithSameCurrency,
+      includeUpcomingTransactionFromBudget:
+          includeUpcomingTransactionFromBudget ??
+              this.includeUpcomingTransactionFromBudget,
       dateCreatedOriginal: dateCreatedOriginal ?? this.dateCreatedOriginal,
-      budgetTransactionFilters: budgetTransactionFilters ?? this.budgetTransactionFilters,
+      budgetTransactionFilters:
+          budgetTransactionFilters ?? this.budgetTransactionFilters,
     );
   }
 
@@ -143,7 +151,7 @@ class Budget extends Equatable {
         createdAt,
         updatedAt,
         syncId,
-        
+
         // Advanced filtering props
         excludeDebtCreditInstallments,
         excludeObjectiveInstallments,

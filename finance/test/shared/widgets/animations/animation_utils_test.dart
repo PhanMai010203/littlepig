@@ -20,31 +20,36 @@ void main() {
         expect(AnimationUtils.shouldAnimate(), isTrue);
       });
 
-      test('shouldAnimate() returns false when appAnimations is disabled', () async {
+      test('shouldAnimate() returns false when appAnimations is disabled',
+          () async {
         await AppSettings.setAppAnimations(false);
         expect(AnimationUtils.shouldAnimate(), isFalse);
       });
 
-      test('shouldAnimate() returns false when reduceAnimations is enabled', () async {
+      test('shouldAnimate() returns false when reduceAnimations is enabled',
+          () async {
         await AppSettings.setReduceAnimations(true);
         expect(AnimationUtils.shouldAnimate(), isFalse);
       });
 
-      test('shouldAnimate() returns false when batterySaver is enabled', () async {
+      test('shouldAnimate() returns false when batterySaver is enabled',
+          () async {
         await AppSettings.setBatterySaver(true);
         expect(AnimationUtils.shouldAnimate(), isFalse);
       });
 
-      test('shouldAnimate() returns false when animationLevel is none', () async {
+      test('shouldAnimate() returns false when animationLevel is none',
+          () async {
         await AppSettings.setAnimationLevel('none');
         expect(AnimationUtils.shouldAnimate(), isFalse);
       });
 
       test('shouldAnimate() respects platform capabilities for web', () async {
         // If running on web with no complex animation support
-        if (PlatformService.isWeb && !PlatformService.supportsComplexAnimations) {
+        if (PlatformService.isWeb &&
+            !PlatformService.supportsComplexAnimations) {
           expect(AnimationUtils.shouldAnimate(), isFalse);
-          
+
           // Should return true only if explicitly enhanced
           await AppSettings.setAnimationLevel('enhanced');
           expect(AnimationUtils.shouldAnimate(), isTrue);
@@ -70,19 +75,20 @@ void main() {
         expect(duration, equals(fallback));
       });
 
-      test('getDuration() modifies duration based on animation level', () async {
+      test('getDuration() modifies duration based on animation level',
+          () async {
         const baseDuration = Duration(milliseconds: 300);
-        
+
         // Reduced level
         await AppSettings.setAnimationLevel('reduced');
         final reducedDuration = AnimationUtils.getDuration(baseDuration);
         expect(reducedDuration.inMilliseconds, equals(150)); // 50% of base
-        
+
         // Enhanced level
         await AppSettings.setAnimationLevel('enhanced');
         final enhancedDuration = AnimationUtils.getDuration(baseDuration);
         expect(enhancedDuration.inMilliseconds, equals(360)); // 120% of base
-        
+
         // Normal level
         await AppSettings.setAnimationLevel('normal');
         final normalDuration = AnimationUtils.getDuration(baseDuration);
@@ -112,14 +118,15 @@ void main() {
         // Reduced level
         await AppSettings.setAnimationLevel('reduced');
         expect(AnimationUtils.getCurve(), equals(Curves.easeInOut));
-        
+
         // Enhanced level
         await AppSettings.setAnimationLevel('enhanced');
         expect(AnimationUtils.getCurve(), equals(Curves.elasticOut));
-        
+
         // Normal level
         await AppSettings.setAnimationLevel('normal');
-        expect(AnimationUtils.getCurve(), equals(PlatformService.platformCurve));
+        expect(
+            AnimationUtils.getCurve(), equals(PlatformService.platformCurve));
       });
     });
 
@@ -130,12 +137,16 @@ void main() {
         }
       });
 
-      test('shouldUseComplexAnimations() returns false when animations disabled', () async {
+      test(
+          'shouldUseComplexAnimations() returns false when animations disabled',
+          () async {
         await AppSettings.setAppAnimations(false);
         expect(AnimationUtils.shouldUseComplexAnimations(), isFalse);
       });
 
-      test('shouldUseComplexAnimations() returns true on reduced level if performance is good', () async {
+      test(
+          'shouldUseComplexAnimations() returns true on reduced level if performance is good',
+          () async {
         await AppSettings.setAnimationLevel('reduced');
         // It returns true because 'reduced' is not 'none' and performance is good by default in tests
         expect(AnimationUtils.shouldUseComplexAnimations(), isTrue);
@@ -149,37 +160,43 @@ void main() {
     });
 
     group('Staggered Animation Control', () {
-      test('shouldUseStaggeredAnimations() returns false on reduced level', () async {
+      test('shouldUseStaggeredAnimations() returns false on reduced level',
+          () async {
         await AppSettings.setAnimationLevel('reduced');
         expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
       });
 
-      test('shouldUseStaggeredAnimations() is context-aware of active animations', () async {
+      test(
+          'shouldUseStaggeredAnimations() is context-aware of active animations',
+          () async {
         await AppSettings.setAnimationLevel('normal');
-        
+
         // Initially should allow staggered animations
         expect(AnimationUtils.shouldUseStaggeredAnimations(), isTrue);
-        
+
         // Simulate many active animations to reach the limit
         for (int i = 0; i < 5; i++) {
           AnimationPerformanceService.registerAnimationStart();
         }
-        
+
         // Should now return false due to too many active animations
         expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
-        
+
         // Clean up
         for (int i = 0; i < 5; i++) {
           AnimationPerformanceService.registerAnimationEnd();
         }
       });
 
-      test('shouldUseStaggeredAnimations() returns false when animations disabled', () async {
+      test(
+          'shouldUseStaggeredAnimations() returns false when animations disabled',
+          () async {
         await AppSettings.setAppAnimations(false);
         expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
       });
 
-      test('shouldUseStaggeredAnimations() returns false in battery saver mode', () async {
+      test('shouldUseStaggeredAnimations() returns false in battery saver mode',
+          () async {
         await AppSettings.setBatterySaver(true);
         expect(AnimationUtils.shouldUseStaggeredAnimations(), isFalse);
       });
@@ -202,23 +219,27 @@ void main() {
         expect(delay, equals(baseDelay));
       });
 
-      test('getStaggerDelay() modifies delay based on animation level', () async {
+      test('getStaggerDelay() modifies delay based on animation level',
+          () async {
         const baseDelay = Duration(milliseconds: 100);
-        
+
         // Reduced level
         await AppSettings.setAnimationLevel('reduced');
-        final reducedDelay = AnimationUtils.getStaggerDelay(0, baseDelay: baseDelay);
+        final reducedDelay =
+            AnimationUtils.getStaggerDelay(0, baseDelay: baseDelay);
         expect(reducedDelay.inMilliseconds, equals(50)); // 50% of base
-        
+
         // Enhanced level
         await AppSettings.setAnimationLevel('enhanced');
-        final enhancedDelay = AnimationUtils.getStaggerDelay(0, baseDelay: baseDelay);
+        final enhancedDelay =
+            AnimationUtils.getStaggerDelay(0, baseDelay: baseDelay);
         expect(enhancedDelay.inMilliseconds, equals(120)); // 120% of base
       });
     });
 
     group('Animation Controller Creation', () {
-      testWidgets('createController() creates valid controller', (tester) async {
+      testWidgets('createController() creates valid controller',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -228,11 +249,12 @@ void main() {
                   duration: const Duration(milliseconds: 200),
                   debugLabel: 'test_controller',
                 );
-                
+
                 expect(controller, isA<AnimationController>());
-                expect(controller.duration, equals(const Duration(milliseconds: 200)));
+                expect(controller.duration,
+                    equals(const Duration(milliseconds: 200)));
                 expect(controller.debugLabel, equals('test_controller'));
-                
+
                 controller.dispose();
                 return Container();
               },
@@ -241,9 +263,10 @@ void main() {
         );
       });
 
-      testWidgets('createController() respects animation settings', (tester) async {
+      testWidgets('createController() respects animation settings',
+          (tester) async {
         await AppSettings.setAppAnimations(false);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -252,9 +275,9 @@ void main() {
                   vsync: tester,
                   duration: const Duration(milliseconds: 200),
                 );
-                
+
                 expect(controller.duration, equals(Duration.zero));
-                
+
                 controller.dispose();
                 return Container();
               },
@@ -265,7 +288,8 @@ void main() {
     });
 
     group('Curved Animation Creation', () {
-      testWidgets('createCurvedAnimation() creates valid curved animation', (tester) async {
+      testWidgets('createCurvedAnimation() creates valid curved animation',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -274,15 +298,15 @@ void main() {
                   duration: const Duration(milliseconds: 200),
                   vsync: tester,
                 );
-                
+
                 final curvedAnimation = AnimationUtils.createCurvedAnimation(
                   parent: controller,
                   curve: Curves.easeIn,
                 );
-                
+
                 expect(curvedAnimation, isA<CurvedAnimation>());
                 expect(curvedAnimation.curve, equals(Curves.easeIn));
-                
+
                 controller.dispose();
                 return Container();
               },
@@ -293,16 +317,17 @@ void main() {
     });
 
     group('Widget Wrappers', () {
-      testWidgets('animatedContainer() creates AnimatedContainer', (tester) async {
+      testWidgets('animatedContainer() creates AnimatedContainer',
+          (tester) async {
         Widget container = AnimationUtils.animatedContainer(
           width: 100,
           height: 100,
           color: Colors.red,
           duration: const Duration(milliseconds: 200),
         );
-        
+
         expect(container, isA<AnimatedContainer>());
-        
+
         await tester.pumpWidget(MaterialApp(home: container));
         expect(find.byType(AnimatedContainer), findsOneWidget);
       });
@@ -313,9 +338,9 @@ void main() {
           opacity: 0.5,
           duration: const Duration(milliseconds: 200),
         );
-        
+
         expect(opacity, isA<AnimatedOpacity>());
-        
+
         await tester.pumpWidget(MaterialApp(home: opacity));
         expect(find.byType(AnimatedOpacity), findsOneWidget);
       });
@@ -326,9 +351,9 @@ void main() {
           scale: 1.5,
           duration: const Duration(milliseconds: 200),
         );
-        
+
         expect(scale, isA<AnimatedScale>());
-        
+
         await tester.pumpWidget(MaterialApp(home: scale));
         expect(find.byType(AnimatedScale), findsOneWidget);
       });
@@ -340,7 +365,7 @@ void main() {
         await AppSettings.setReduceAnimations(true);
         await AppSettings.setBatterySaver(true);
         await AppSettings.setAnimationLevel('none');
-        
+
         expect(AnimationUtils.shouldAnimate(), isFalse);
         expect(AnimationUtils.getDuration().inMilliseconds, equals(0));
         expect(AnimationUtils.getCurve(), equals(Curves.linear));
@@ -350,9 +375,9 @@ void main() {
       test('settings override platform preferences appropriately', () async {
         const baseDuration = Duration(milliseconds: 300);
         await AppSettings.setAnimationLevel('enhanced');
-        
+
         final duration = AnimationUtils.getDuration(baseDuration);
-        
+
         // Should use the 'enhanced' multiplier, not the platform default
         expect(duration.inMilliseconds, 360);
       });
@@ -361,7 +386,7 @@ void main() {
     group('Debug Information', () {
       test('getAnimationDebugInfo() returns complete information', () {
         final debugInfo = AnimationUtils.getAnimationDebugInfo();
-        
+
         expect(debugInfo, isA<Map<String, dynamic>>());
         expect(debugInfo.containsKey('shouldAnimate'), isTrue);
         expect(debugInfo.containsKey('animationLevel'), isTrue);
@@ -377,13 +402,14 @@ void main() {
       test('debug info reflects current settings state', () async {
         await AppSettings.setAnimationLevel('enhanced');
         await AppSettings.setBatterySaver(true);
-        
+
         final debugInfo = AnimationUtils.getAnimationDebugInfo();
-        
+
         expect(debugInfo['animationLevel'], equals('enhanced'));
         expect(debugInfo['batterySaver'], isTrue);
-        expect(debugInfo['shouldAnimate'], isFalse); // Because batterySaver is true
+        expect(debugInfo['shouldAnimate'],
+            isFalse); // Because batterySaver is true
       });
     });
   });
-} 
+}

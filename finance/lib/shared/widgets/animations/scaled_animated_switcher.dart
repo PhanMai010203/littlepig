@@ -34,7 +34,6 @@ class ScaledAnimatedSwitcher extends StatefulWidget {
 }
 
 class _ScaledAnimatedSwitcherState extends State<ScaledAnimatedSwitcher> {
-  
   Widget _defaultTransitionBuilder(Widget child, Animation<double> animation) {
     final scaleAnimation = Tween<double>(
       begin: widget.scaleIn,
@@ -54,7 +53,8 @@ class _ScaledAnimatedSwitcherState extends State<ScaledAnimatedSwitcher> {
     );
   }
 
-  Widget _defaultLayoutBuilder(Widget? currentChild, List<Widget> previousChildren) {
+  Widget _defaultLayoutBuilder(
+      Widget? currentChild, List<Widget> previousChildren) {
     return Stack(
       alignment: widget.alignment,
       children: <Widget>[
@@ -110,4 +110,4 @@ extension ScaledAnimatedSwitcherExtension on Widget {
       child: this,
     );
   }
-} 
+}

@@ -55,7 +55,7 @@ class CurrencyFormatter {
     bool compact = false,
   }) {
     final locale = _getLocaleForCurrency(currency.code);
-    
+
     if (compact) {
       return NumberFormat.compactCurrency(
         locale: locale,
@@ -122,13 +122,67 @@ class CurrencyFormatter {
   static bool _shouldPlaceSymbolAfter(String currencyCode) {
     // Some currencies traditionally place symbol after the amount
     const Set<String> symbolAfterCurrencies = {
-      'EUR', 'PLN', 'CZK', 'HUF', 'RON', 'BGN', 'HRK', 'RSD', 'MKD',
-      'ALL', 'BAM', 'TRY', 'UAH', 'BYN', 'MDL', 'GEL', 'AMD', 'AZN',
-      'KZT', 'UZS', 'KGS', 'TJS', 'TMT', 'MNT', 'VND', 'LAK', 'KHR',
-      'MMK', 'IDR', 'MYR', 'PHP', 'THB', 'SGD', 'BND', 'KRW', 'JPY',
-      'CNY', 'TWD', 'HKD', 'MOP', 'INR', 'PKR', 'LKR', 'NPR', 'BTN',
-      'BDT', 'MVR', 'AFN', 'IRR', 'IQD', 'SYP', 'LBP', 'JOD', 'PSE',
-      'KWD', 'BHD', 'QAR', 'AED', 'OMR', 'YER', 'SAR',
+      'EUR',
+      'PLN',
+      'CZK',
+      'HUF',
+      'RON',
+      'BGN',
+      'HRK',
+      'RSD',
+      'MKD',
+      'ALL',
+      'BAM',
+      'TRY',
+      'UAH',
+      'BYN',
+      'MDL',
+      'GEL',
+      'AMD',
+      'AZN',
+      'KZT',
+      'UZS',
+      'KGS',
+      'TJS',
+      'TMT',
+      'MNT',
+      'VND',
+      'LAK',
+      'KHR',
+      'MMK',
+      'IDR',
+      'MYR',
+      'PHP',
+      'THB',
+      'SGD',
+      'BND',
+      'KRW',
+      'JPY',
+      'CNY',
+      'TWD',
+      'HKD',
+      'MOP',
+      'INR',
+      'PKR',
+      'LKR',
+      'NPR',
+      'BTN',
+      'BDT',
+      'MVR',
+      'AFN',
+      'IRR',
+      'IQD',
+      'SYP',
+      'LBP',
+      'JOD',
+      'PSE',
+      'KWD',
+      'BHD',
+      'QAR',
+      'AED',
+      'OMR',
+      'YER',
+      'SAR',
     };
 
     return symbolAfterCurrencies.contains(currencyCode.toUpperCase());
@@ -141,7 +195,7 @@ class CurrencyFormatter {
     bool useNativeSymbol = true,
   }) {
     final symbol = useNativeSymbol ? currency.displaySymbol : currency.symbol;
-    
+
     if (showCode && symbol.isNotEmpty) {
       return '$symbol (${currency.code})';
     } else if (showCode) {

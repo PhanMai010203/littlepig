@@ -22,7 +22,8 @@ class SlideFadeTransition extends StatefulWidget {
     this.direction = SlideFadeDirection.up,
     this.offset = 0.3,
     this.curve = Curves.easeOutCubic,
-    this.fadeInPoint = 0.0, // When fade starts (0.0 = immediately, 0.5 = halfway)
+    this.fadeInPoint =
+        0.0, // When fade starts (0.0 = immediately, 0.5 = halfway)
     this.slideDistance = 30.0, // Distance in logical pixels
     super.key,
   });
@@ -151,4 +152,4 @@ extension SlideFadeTransitionExtension on Widget {
       child: this,
     );
   }
-} 
+}

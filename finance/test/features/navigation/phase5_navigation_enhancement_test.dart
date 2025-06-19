@@ -18,19 +18,21 @@ void main() {
       // Reset settings before each test
       SharedPreferences.setMockInitialValues({});
       await AppSettings.initialize();
-      
+
       // Initialize EasyLocalization for testing
       await EasyLocalization.ensureInitialized();
     });
 
     group('NavigationCustomizationContent Widget', () {
-      testWidgets('NavigationCustomizationContent displays correctly with available items', (tester) async {
+      testWidgets(
+          'NavigationCustomizationContent displays correctly with available items',
+          (tester) async {
         const currentItem = NavigationItem.home;
         const availableItems = [NavigationItem.goals, NavigationItem.analytics];
-        
+
         bool selectedCalled = false;
         NavigationItem? selectedItem;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             localizationsDelegates: const [
@@ -55,23 +57,25 @@ void main() {
 
         // Check that content is displayed
         expect(find.byType(NavigationCustomizationContent), findsOneWidget);
-        
+
         // Check that available items are displayed
         expect(find.text('Goals'), findsOneWidget);
         expect(find.text('Analytics'), findsOneWidget);
-        
+
         // Test item selection
         await tester.tap(find.text('Goals'));
         await tester.pumpAndSettle();
-        
+
         expect(selectedCalled, isTrue);
         expect(selectedItem, equals(NavigationItem.goals));
       });
 
-      testWidgets('NavigationCustomizationContent shows empty state when no items available', (tester) async {
+      testWidgets(
+          'NavigationCustomizationContent shows empty state when no items available',
+          (tester) async {
         const currentItem = NavigationItem.home;
         const availableItems = <NavigationItem>[];
-        
+
         await tester.pumpWidget(
           MaterialApp(
             localizationsDelegates: const [
@@ -95,10 +99,11 @@ void main() {
         expect(find.byIcon(Icons.check_circle), findsOneWidget);
       });
 
-      testWidgets('NavigationCustomizationContent animations work correctly', (tester) async {
+      testWidgets('NavigationCustomizationContent animations work correctly',
+          (tester) async {
         const currentItem = NavigationItem.home;
         const availableItems = [NavigationItem.goals];
-        
+
         await tester.pumpWidget(
           MaterialApp(
             localizationsDelegates: const [
@@ -118,15 +123,17 @@ void main() {
 
         // Initial pump
         await tester.pump();
-        
+
         // Pump frames to test animations
         await tester.pump(const Duration(milliseconds: 100)); // FadeIn delay
-        await tester.pump(const Duration(milliseconds: 200)); // Second FadeIn delay
+        await tester
+            .pump(const Duration(milliseconds: 200)); // Second FadeIn delay
         await tester.pump(const Duration(milliseconds: 300)); // SlideIn delay
-        await tester.pump(const Duration(milliseconds: 50));  // SlideIn index delay
-        
+        await tester
+            .pump(const Duration(milliseconds: 50)); // SlideIn index delay
+
         await tester.pumpAndSettle();
-        
+
         // Verify content is visible after animations
         expect(find.text('Goals'), findsOneWidget);
       });
@@ -149,9 +156,10 @@ void main() {
         expect(find.text('Test Body'), findsOneWidget);
       });
 
-      testWidgets('PageTemplate title animation works on change', (tester) async {
+      testWidgets('PageTemplate title animation works on change',
+          (tester) async {
         String title = 'Initial Title';
-        
+
         await tester.pumpWidget(
           StatefulBuilder(
             builder: (context, setState) {
@@ -181,14 +189,14 @@ void main() {
 
         // Initial state
         expect(find.text('Initial Title'), findsOneWidget);
-        
+
         // Change title
         await tester.tap(find.text('Change Title'));
         await tester.pump();
-        
+
         // During animation, both titles might be present
         await tester.pump(const Duration(milliseconds: 100));
-        
+
         // After animation completes
         await tester.pumpAndSettle();
         expect(find.text('Updated Title'), findsOneWidget);
@@ -197,19 +205,19 @@ void main() {
 
       testWidgets('PageTemplate back button works correctly', (tester) async {
         bool backPressed = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             routes: {
               '/': (context) => const Text('Home'),
               '/test': (context) => PageTemplate(
-                title: 'Test Page',
-                body: const Text('Test Body'),
-                onBackPressed: () {
-                  backPressed = true;
-                  Navigator.pop(context);
-                },
-              ),
+                    title: 'Test Page',
+                    body: const Text('Test Body'),
+                    onBackPressed: () {
+                      backPressed = true;
+                      Navigator.pop(context);
+                    },
+                  ),
             },
             initialRoute: '/test',
           ),
@@ -220,7 +228,7 @@ void main() {
         // Find and tap back button
         final backButton = find.byIcon(Icons.arrow_back);
         expect(backButton, findsOneWidget);
-        
+
         await tester.tap(backButton);
         expect(backPressed, isTrue);
       });
@@ -228,7 +236,7 @@ void main() {
       testWidgets('PageTemplate respects animation settings', (tester) async {
         // Test with animations disabled
         await AppSettings.set('appAnimations', false);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: PageTemplate(
@@ -267,7 +275,7 @@ void main() {
 
       testWidgets('MainShell handles navigation state changes', (tester) async {
         late NavigationBloc navigationBloc;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: BlocProvider(
@@ -287,20 +295,22 @@ void main() {
         // Check initial state
         expect(navigationBloc.state.currentIndex, equals(0));
         expect(navigationBloc.state.navigationItems.length, equals(4));
-        
+
         // Test navigation item replacement
         navigationBloc.add(
           const NavigationEvent.navigationItemReplaced(0, NavigationItem.goals),
         );
-        
+
         await tester.pump();
-        
-        expect(navigationBloc.state.navigationItems[0], equals(NavigationItem.goals));
+
+        expect(navigationBloc.state.navigationItems[0],
+            equals(NavigationItem.goals));
       });
     });
 
     group('Animation Integration Tests', () {
-      testWidgets('TappableWidget integration works in navigation', (tester) async {
+      testWidgets('TappableWidget integration works in navigation',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: BlocProvider(
@@ -319,11 +329,12 @@ void main() {
         expect(navigationItems, findsWidgets);
       });
 
-      testWidgets('Animation settings affect navigation components', (tester) async {
+      testWidgets('Animation settings affect navigation components',
+          (tester) async {
         // Test with different animation levels
         for (final level in ['none', 'reduced', 'normal', 'enhanced']) {
           await AppSettings.set('animationLevel', level);
-          
+
           await tester.pumpWidget(
             MaterialApp(
               home: BlocProvider(
@@ -342,10 +353,11 @@ void main() {
         }
       });
 
-      testWidgets('Performance optimization works with battery saver', (tester) async {
+      testWidgets('Performance optimization works with battery saver',
+          (tester) async {
         // Enable battery saver mode
         await AppSettings.set('batterySaver', true);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: PageTemplate(
@@ -364,7 +376,8 @@ void main() {
     });
 
     group('Error Handling and Edge Cases', () {
-      testWidgets('NavigationCustomizationContent handles null safely', (tester) async {
+      testWidgets('NavigationCustomizationContent handles null safely',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             localizationsDelegates: const [
@@ -406,4 +419,4 @@ void main() {
       });
     });
   });
-} 
+}

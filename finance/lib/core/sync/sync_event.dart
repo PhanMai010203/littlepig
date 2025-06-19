@@ -202,9 +202,8 @@ class SyncEventBatch {
     return SyncEventBatch(
       deviceId: json['deviceId'],
       timestamp: DateTime.parse(json['timestamp']),
-      events: (json['events'] as List)
-          .map((e) => SyncEvent.fromJson(e))
-          .toList(),
+      events:
+          (json['events'] as List).map((e) => SyncEvent.fromJson(e)).toList(),
     );
   }
 
@@ -215,4 +214,4 @@ class SyncEventBatch {
       'events': events.map((e) => e.toJson()).toList(),
     };
   }
-} 
+}

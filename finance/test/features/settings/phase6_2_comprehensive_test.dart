@@ -10,14 +10,16 @@ import 'package:finance/shared/widgets/animations/slide_in.dart';
 import 'package:finance/shared/widgets/animations/tappable_widget.dart';
 
 void main() {
-  group('Phase 6.2 Comprehensive Tests - Animation Performance Monitoring & Integration', () {
+  group(
+      'Phase 6.2 Comprehensive Tests - Animation Performance Monitoring & Integration',
+      () {
     setUp(() async {
       // Reset all settings and performance metrics before each test
       await AppSettings.set('appAnimations', true);
       await AppSettings.set('batterySaver', false);
       await AppSettings.set('animationLevel', 'normal');
       await AppSettings.set('reduceAnimations', false);
-      
+
       // Reset performance tracking
       AnimationPerformanceService.resetPerformanceMetrics();
       AnimationUtils.resetPerformanceMetrics();
@@ -42,7 +44,8 @@ void main() {
         expect(find.text('16ms'), findsOneWidget);
       });
 
-      testWidgets('detailed monitor shows comprehensive information', (tester) async {
+      testWidgets('detailed monitor shows comprehensive information',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -86,7 +89,8 @@ void main() {
         expect(find.byType(AnimationPerformanceMonitor), findsOneWidget);
       });
 
-      testWidgets('monitor updates performance data in real-time', (tester) async {
+      testWidgets('monitor updates performance data in real-time',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -104,7 +108,7 @@ void main() {
 
         // Simulate performance change
         AnimationPerformanceService.registerAnimationStart();
-        
+
         // Wait for refresh
         await tester.pumpAndSettle();
         expect(find.text('Animations: 1 / 4'), findsOneWidget); // Should update
@@ -135,10 +139,12 @@ void main() {
 
         // Should find container with custom styling
         final container = tester.widget<Container>(
-          find.descendant(
-            of: find.byType(AnimationPerformanceMonitor),
-            matching: find.byType(Container),
-          ).first,
+          find
+              .descendant(
+                of: find.byType(AnimationPerformanceMonitor),
+                matching: find.byType(Container),
+              )
+              .first,
         );
 
         expect(container.decoration, isA<BoxDecoration>());
@@ -165,7 +171,12 @@ void main() {
         await tester.pump();
 
         // Should wrap content in Stack with FloatingPerformanceMonitor
-        expect(find.byWidgetPredicate((widget) => widget is Stack && widget.children.any((child) => child is FloatingPerformanceMonitor)), findsOneWidget);
+        expect(
+            find.byWidgetPredicate((widget) =>
+                widget is Stack &&
+                widget.children
+                    .any((child) => child is FloatingPerformanceMonitor)),
+            findsOneWidget);
         expect(find.byType(FloatingPerformanceMonitor), findsOneWidget);
         expect(find.text('Test Content'), findsOneWidget);
       });
@@ -193,7 +204,8 @@ void main() {
     });
 
     group('Real-time Performance Tracking Integration', () {
-      testWidgets('AnimationUtils tracks animation metrics correctly', (tester) async {
+      testWidgets('AnimationUtils tracks animation metrics correctly',
+          (tester) async {
         // Create multiple animations to test tracking
         await tester.pumpWidget(
           MaterialApp(
@@ -220,18 +232,21 @@ void main() {
         await tester.pump(Duration(milliseconds: 100));
 
         final metrics = AnimationUtils.getPerformanceMetrics();
-        
+
         // Should track active animations
         expect(metrics['activeAnimations'], isA<int>());
         expect(metrics['animationMetrics'], isA<Map>());
         expect(metrics['performanceProfile'], isA<Map>());
-        
+
         // Should have animation type tracking
         final animationMetricsRaw = metrics['animationMetrics'];
-        final animationMetrics = Map<String, dynamic>.from(animationMetricsRaw as Map);
-        expect(animationMetrics.containsKey('FadeIn') || 
-               animationMetrics.containsKey('ScaleIn') || 
-               animationMetrics.containsKey('SlideIn'), isTrue);
+        final animationMetrics =
+            Map<String, dynamic>.from(animationMetricsRaw as Map);
+        expect(
+            animationMetrics.containsKey('FadeIn') ||
+                animationMetrics.containsKey('ScaleIn') ||
+                animationMetrics.containsKey('SlideIn'),
+            isTrue);
       });
 
       testWidgets('performance service tracks frame times', (tester) async {
@@ -241,7 +256,7 @@ void main() {
         AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 15));
 
         final metrics = AnimationPerformanceService.performanceMetrics;
-        
+
         expect(metrics['averageFrameTimeMs'], isA<int>());
         expect(metrics['frameTimeHistory'], isA<List>());
         expect(metrics['isPerformanceGood'], isA<bool>());
@@ -250,23 +265,24 @@ void main() {
 
       testWidgets('concurrent animation limiting works', (tester) async {
         await AppSettings.set('animationLevel', 'reduced'); // Max 2 concurrent
-        
+
         // Test that canStartAnimation respects limits
         expect(AnimationUtils.canStartAnimation(), isTrue);
-        
+
         // Simulate starting animations
         AnimationUtils.registerAnimationStart('Test1');
         expect(AnimationUtils.canStartAnimation(), isTrue);
-        
+
         AnimationUtils.registerAnimationStart('Test2');
         expect(AnimationUtils.canStartAnimation(), isFalse); // Should hit limit
-        
+
         // Clean up
         AnimationUtils.registerAnimationEnd('Test1');
         AnimationUtils.registerAnimationEnd('Test2');
       });
 
-      testWidgets('staggered animation logic respects capacity', (tester) async {
+      testWidgets('staggered animation logic respects capacity',
+          (tester) async {
         await AppSettings.setAnimationLevel('enhanced'); // Max 8 animations
 
         // Use up most of the animation capacity
@@ -275,18 +291,21 @@ void main() {
         }
 
         // Staggered animations should now be disabled to preserve performance
-        expect(AnimationPerformanceService.shouldUseStaggeredAnimations, isFalse);
+        expect(
+            AnimationPerformanceService.shouldUseStaggeredAnimations, isFalse);
 
         // Clean up
         AnimationPerformanceService.resetPerformanceMetrics();
-        expect(AnimationPerformanceService.shouldUseStaggeredAnimations, isTrue);
+        expect(
+            AnimationPerformanceService.shouldUseStaggeredAnimations, isTrue);
       });
     });
 
     group('Animation Widget Performance Integration', () {
-      testWidgets('TappableWidget integrates with performance service', (tester) async {
+      testWidgets('TappableWidget integrates with performance service',
+          (tester) async {
         await AppSettings.set('animationLevel', 'enhanced');
-        
+
         bool tapped = false;
         await tester.pumpWidget(
           MaterialApp(
@@ -310,14 +329,15 @@ void main() {
         await tester.pump();
 
         expect(tapped, isTrue);
-        
+
         // Should respect performance settings for haptic feedback
         expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
       });
 
-      testWidgets('animation widgets respect performance limits', (tester) async {
+      testWidgets('animation widgets respect performance limits',
+          (tester) async {
         await AppSettings.set('animationLevel', 'none');
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -338,11 +358,11 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // With animations disabled, widgets should render immediately
         expect(find.text('Fade Test'), findsOneWidget);
         expect(find.text('Scale Test'), findsOneWidget);
-        
+
         // Verify no animations are tracked
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['activeAnimations'], equals(0));
@@ -350,15 +370,19 @@ void main() {
     });
 
     group('Battery Saver Integration Tests', () {
-      testWidgets('battery saver mode overrides all animation settings', (tester) async {
+      testWidgets('battery saver mode overrides all animation settings',
+          (tester) async {
         await AppSettings.set('batterySaver', true);
         await AppSettings.set('animationLevel', 'enhanced');
 
         // Check performance service outputs
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
-        expect(AnimationPerformanceService.getOptimizedDuration(Duration(milliseconds: 100)), Duration.zero);
+        expect(
+            AnimationPerformanceService.getOptimizedDuration(
+                Duration(milliseconds: 100)),
+            Duration.zero);
         expect(AnimationPerformanceService.maxSimultaneousAnimations, 1);
-        
+
         // Check monitor UI
         await tester.pumpWidget(
           MaterialApp(
@@ -390,7 +414,7 @@ void main() {
 
         // Change setting
         await AppSettings.set('animationLevel', 'enhanced');
-        
+
         await tester.pumpAndSettle();
         expect(find.text('Level: enhanced'), findsOneWidget);
       });
@@ -400,21 +424,21 @@ void main() {
         await AppSettings.set('appAnimations', true);
         await AppSettings.set('batterySaver', false);
         await AppSettings.set('reduceAnimations', false);
-        
+
         final profile = AnimationPerformanceService.getPerformanceProfile();
-        
+
         // Verify all settings are reflected
         expect(profile['animationLevel'], equals('enhanced'));
         expect(profile['appAnimations'], isTrue);
         expect(profile['batterySaver'], isFalse);
         expect(profile['reduceAnimations'], isFalse);
-        
+
         // Verify computed values
         expect(profile['shouldUseComplexAnimations'], isTrue);
         expect(profile['shouldUseStaggeredAnimations'], isTrue);
         expect(profile['maxSimultaneousAnimations'], equals(8));
         expect(profile['shouldUseHapticFeedback'], isTrue);
-        
+
         // Verify performance metrics are included
         expect(profile['performanceMetrics'], isA<Map<String, dynamic>>());
         final metrics = profile['performanceMetrics'] as Map<String, dynamic>;
@@ -430,49 +454,58 @@ void main() {
         // Record good frame times
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 10; i++) {
-          AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 16));
+          AnimationPerformanceService.recordFrameTime(
+              Duration(milliseconds: 16));
         }
-        
+
         final goodProfile = AnimationPerformanceService.getPerformanceProfile();
-        final goodMetrics = goodProfile['performanceMetrics'] as Map<String, dynamic>;
+        final goodMetrics =
+            goodProfile['performanceMetrics'] as Map<String, dynamic>;
         expect(goodMetrics['performanceScale'], equals(1.0));
-        
+
         // Record poor frame times
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 10; i++) {
-          AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 30));
+          AnimationPerformanceService.recordFrameTime(
+              Duration(milliseconds: 30));
         }
-        
+
         final poorProfile = AnimationPerformanceService.getPerformanceProfile();
-        final poorMetrics = poorProfile['performanceMetrics'] as Map<String, dynamic>;
+        final poorMetrics =
+            poorProfile['performanceMetrics'] as Map<String, dynamic>;
         expect(poorMetrics['performanceScale'], equals(0.8));
       });
 
       test('duration optimization applies performance scaling', () {
         const testDuration = Duration(milliseconds: 300);
-        
+
         // Test with good performance
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 5; i++) {
-          AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 16));
+          AnimationPerformanceService.recordFrameTime(
+              Duration(milliseconds: 16));
         }
-        
-        final goodDuration = AnimationPerformanceService.getOptimizedDuration(testDuration);
+
+        final goodDuration =
+            AnimationPerformanceService.getOptimizedDuration(testDuration);
         expect(goodDuration.inMilliseconds, equals(300)); // Full duration
-        
+
         // Test with poor performance
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 5; i++) {
-          AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 30));
+          AnimationPerformanceService.recordFrameTime(
+              Duration(milliseconds: 30));
         }
-        
-        final poorDuration = AnimationPerformanceService.getOptimizedDuration(testDuration);
+
+        final poorDuration =
+            AnimationPerformanceService.getOptimizedDuration(testDuration);
         expect(poorDuration.inMilliseconds, equals(240)); // 80% of 300ms
       });
     });
 
     group('Error Handling and Edge Cases', () {
-      testWidgets('monitor handles null performance data gracefully', (tester) async {
+      testWidgets('monitor handles null performance data gracefully',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -482,7 +515,7 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Should not crash and should display some content
         expect(find.byType(AnimationPerformanceMonitor), findsOneWidget);
       });
@@ -490,35 +523,39 @@ void main() {
       test('performance service handles extreme values', () {
         // Test with very high frame times
         AnimationPerformanceService.resetPerformanceMetrics();
-        AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 1000));
-        
+        AnimationPerformanceService.recordFrameTime(
+            Duration(milliseconds: 1000));
+
         final metrics = AnimationPerformanceService.performanceMetrics;
         expect(metrics['isPerformanceGood'], isFalse);
         expect(metrics['performanceScale'], equals(0.8));
-        
+
         // Test with zero frame times
         AnimationPerformanceService.resetPerformanceMetrics();
         AnimationPerformanceService.recordFrameTime(Duration.zero);
-        
+
         final zeroMetrics = AnimationPerformanceService.performanceMetrics;
         expect(zeroMetrics['averageFrameTimeMs'], equals(0));
-        expect(zeroMetrics['isPerformanceGood'], isTrue); // Zero is considered good
+        expect(zeroMetrics['isPerformanceGood'],
+            isTrue); // Zero is considered good
       });
 
       test('animation registration handles negative counts gracefully', () {
         AnimationPerformanceService.resetPerformanceMetrics();
-        
+
         // Try to end more animations than started
         AnimationPerformanceService.registerAnimationEnd();
         AnimationPerformanceService.registerAnimationEnd();
-        
+
         final metrics = AnimationPerformanceService.performanceMetrics;
-        expect(metrics['currentActiveAnimations'], equals(0)); // Should not go negative
+        expect(metrics['currentActiveAnimations'],
+            equals(0)); // Should not go negative
       });
     });
 
     group('Integration with Existing Animation Framework', () {
-      testWidgets('monitor works with all animation widget types', (tester) async {
+      testWidgets('monitor works with all animation widget types',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -542,7 +579,7 @@ void main() {
     group('Performance Benchmarks', () {
       test('monitoring overhead is minimal', () {
         final stopwatch = Stopwatch()..start();
-        
+
         // Simulate frequent performance calls
         for (int i = 0; i < 1000; i++) {
           AnimationPerformanceService.getPerformanceProfile();
@@ -550,9 +587,9 @@ void main() {
           AnimationPerformanceService.shouldUseComplexAnimations;
           AnimationPerformanceService.maxSimultaneousAnimations;
         }
-        
+
         stopwatch.stop();
-        
+
         // Should complete quickly (less than 200ms for 1000 calls)
         expect(stopwatch.elapsedMilliseconds, lessThan(200));
       });
@@ -561,18 +598,20 @@ void main() {
         // Set up consistent state
         AnimationPerformanceService.resetPerformanceMetrics();
         AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 16));
-        
+
         // Get multiple snapshots
         final profile1 = AnimationPerformanceService.getPerformanceProfile();
         final profile2 = AnimationPerformanceService.getPerformanceProfile();
         final metrics1 = AnimationUtils.getPerformanceMetrics();
         final metrics2 = AnimationUtils.getPerformanceMetrics();
-        
+
         // Should be consistent
         expect(profile1['animationLevel'], equals(profile2['animationLevel']));
-        expect(profile1['maxSimultaneousAnimations'], equals(profile2['maxSimultaneousAnimations']));
-        expect(metrics1['activeAnimations'], equals(metrics2['activeAnimations']));
+        expect(profile1['maxSimultaneousAnimations'],
+            equals(profile2['maxSimultaneousAnimations']));
+        expect(
+            metrics1['activeAnimations'], equals(metrics2['activeAnimations']));
       });
     });
   });
-} 
+}

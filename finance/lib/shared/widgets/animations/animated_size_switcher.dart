@@ -28,11 +28,11 @@ class AnimatedSizeSwitcher extends StatefulWidget {
 class _AnimatedSizeSwitcherState extends State<AnimatedSizeSwitcher>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -43,7 +43,7 @@ class _AnimatedSizeSwitcherState extends State<AnimatedSizeSwitcher>
   @override
   void didUpdateWidget(AnimatedSizeSwitcher oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Trigger animation when child changes
     if (widget.child.key != oldWidget.child.key ||
         widget.child.runtimeType != oldWidget.child.runtimeType) {
@@ -73,7 +73,8 @@ class _AnimatedSizeSwitcherState extends State<AnimatedSizeSwitcher>
         duration: AnimationUtils.getDuration(widget.duration),
         reverseDuration: AnimationUtils.getDuration(widget.duration),
         switchInCurve: AnimationUtils.getCurve(widget.curve),
-        switchOutCurve: AnimationUtils.getCurve(widget.reverseCurve ?? widget.curve),
+        switchOutCurve:
+            AnimationUtils.getCurve(widget.reverseCurve ?? widget.curve),
         layoutBuilder: (currentChild, previousChildren) {
           return Stack(
             alignment: widget.alignment,
@@ -114,4 +115,4 @@ extension AnimatedSizeSwitcherExtension on Widget {
       child: this,
     );
   }
-} 
+}

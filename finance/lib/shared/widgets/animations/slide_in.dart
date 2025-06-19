@@ -31,21 +31,21 @@ class SlideIn extends StatefulWidget {
   final Duration duration;
   final Curve curve;
   final SlideDirection direction;
-  final double distance; // Multiplier for slide distance (1.0 = full screen width/height)
+  final double
+      distance; // Multiplier for slide distance (1.0 = full screen width/height)
 
   @override
   State<SlideIn> createState() => _SlideInState();
 }
 
-class _SlideInState extends State<SlideIn>
-    with SingleTickerProviderStateMixin {
+class _SlideInState extends State<SlideIn> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
 
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -94,12 +94,12 @@ class _SlideInState extends State<SlideIn>
       }
       return;
     }
-    
+
     // Respect delay only if animations are enabled
     if (AnimationUtils.shouldAnimate() && widget.delay > Duration.zero) {
       await Future.delayed(widget.delay);
     }
-    
+
     if (mounted && AnimationUtils.canStartAnimation()) {
       _controller.forward();
     } else if (mounted) {
@@ -135,4 +135,4 @@ class _SlideInState extends State<SlideIn>
       child: widget.child,
     );
   }
-} 
+}

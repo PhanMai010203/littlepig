@@ -39,4 +39,4 @@ class AppBlocObserver extends BlocObserver {
     super.onClose(bloc);
     log('onClose -- ${bloc.runtimeType}');
   }
-} 
+}

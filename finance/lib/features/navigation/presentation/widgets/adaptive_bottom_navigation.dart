@@ -21,7 +21,8 @@ class AdaptiveBottomNavigation extends StatefulWidget {
   final ValueChanged<int>? onLongPress;
 
   @override
-  State<AdaptiveBottomNavigation> createState() => _AdaptiveBottomNavigationState();
+  State<AdaptiveBottomNavigation> createState() =>
+      _AdaptiveBottomNavigationState();
 }
 
 class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
@@ -30,7 +31,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
   late List<Animation<double>> _scaleAnimations;
   late AnimationController _indicatorController;
   late Animation<double> _indicatorAnimation;
-  
+
   int _previousIndex = 0;
 
   @override
@@ -74,13 +75,13 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
   @override
   void didUpdateWidget(AdaptiveBottomNavigation oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.items.length != widget.items.length) {
       // Dispose old controllers and reinitialize
       _disposeControllers();
       _initializeAnimations();
     }
-    
+
     if (oldWidget.currentIndex != widget.currentIndex) {
       _animateIndicator(oldWidget.currentIndex, widget.currentIndex);
     }
@@ -95,7 +96,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
       parent: _indicatorController,
       curve: Curves.easeInOutCubic,
     ));
-    
+
     _indicatorController.forward(from: 0.0);
   }
 
@@ -115,7 +116,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
   void _handleTap(int index) {
     // Call onTap immediately for instant response
     widget.onTap(index);
-    
+
     // Trigger bounce animation asynchronously
     _playBounceAnimation(index);
   }
@@ -149,12 +150,15 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
                   AnimatedBuilder(
                     animation: _indicatorAnimation,
                     builder: (context, child) {
-                      final itemWidth = constraints.maxWidth / widget.items.length;
-                      final indicatorWidth = itemWidth * 0.7; // 70% of item width
+                      final itemWidth =
+                          constraints.maxWidth / widget.items.length;
+                      final indicatorWidth =
+                          itemWidth * 0.7; // 70% of item width
                       final indicatorHeight = 40.0;
-                      final leftPosition = (_indicatorAnimation.value * itemWidth) + 
-                                         (itemWidth - indicatorWidth) / 2;
-                      
+                      final leftPosition =
+                          (_indicatorAnimation.value * itemWidth) +
+                              (itemWidth - indicatorWidth) / 2;
+
                       return Positioned(
                         left: leftPosition,
                         top: 8,
@@ -162,7 +166,8 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
                           width: indicatorWidth,
                           height: indicatorHeight,
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primaryContainer,
+                            color:
+                                Theme.of(context).colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
@@ -182,8 +187,8 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
                           isSelected: isSelected,
                           scaleAnimation: _scaleAnimations[index],
                           onTap: () => _handleTap(index),
-                          onLongPress: widget.onLongPress != null 
-                              ? () => widget.onLongPress!(index) 
+                          onLongPress: widget.onLongPress != null
+                              ? () => widget.onLongPress!(index)
                               : null,
                         ),
                       );
@@ -245,7 +250,10 @@ class _AnimatedNavigationItem extends StatelessWidget {
                         colorFilter: ColorFilter.mode(
                           isSelected
                               ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
                           BlendMode.srcIn,
                         ),
                       ),
@@ -256,15 +264,24 @@ class _AnimatedNavigationItem extends StatelessWidget {
                   AnimatedDefaultTextStyle(
                     duration: const Duration(milliseconds: 200),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    ) ?? TextStyle(
-                      color: isSelected
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
-                    ),
+                              color: isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(context)
+                                      .colorScheme
+                                      .onSurface
+                                      .withValues(alpha: 0.6),
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
+                            ) ??
+                        TextStyle(
+                          color: isSelected
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.6),
+                        ),
                     child: Text(
                       item.label.tr(),
                       textAlign: TextAlign.center,
@@ -280,4 +297,4 @@ class _AnimatedNavigationItem extends StatelessWidget {
       },
     );
   }
-} 
+}

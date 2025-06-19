@@ -125,7 +125,7 @@ void main() {
         );
 
         final compressed = await eventProcessor.compressEvent(event);
-        
+
         expect(compressed.data.containsKey('note'), isFalse);
         expect(compressed.data.containsKey('description'), isFalse);
         expect(compressed.data['title'], equals('Test Transaction'));
@@ -133,7 +133,8 @@ void main() {
         expect(compressed.data['categoryId'], equals(1));
       });
 
-      test('should normalize transaction amounts to 2 decimal places', () async {
+      test('should normalize transaction amounts to 2 decimal places',
+          () async {
         final event = SyncEvent(
           eventId: 'test-event-1',
           deviceId: 'test-device',
@@ -150,7 +151,7 @@ void main() {
         );
 
         final compressed = await eventProcessor.compressEvent(event);
-        
+
         expect(compressed.data['amount'], equals(100.12));
       });
 
@@ -172,7 +173,7 @@ void main() {
         );
 
         final compressed = await eventProcessor.compressEvent(event);
-        
+
         expect(compressed.data['title'], equals('Test Transaction'));
         expect(compressed.data['note'], equals('This is a note'));
       });
@@ -206,14 +207,14 @@ void main() {
         ];
 
         final deduplicated = await eventProcessor.deduplicateEvents(events);
-        
+
         expect(deduplicated.length, equals(1));
         expect(deduplicated.first.eventId, equals('event-1'));
       });
 
       test('should keep newer version of same record', () async {
         final baseTime = DateTime.now();
-        
+
         final events = [
           SyncEvent(
             eventId: 'event-1',
@@ -240,7 +241,7 @@ void main() {
         ];
 
         final deduplicated = await eventProcessor.deduplicateEvents(events);
-        
+
         expect(deduplicated.length, equals(1));
         expect(deduplicated.first.eventId, equals('event-2'));
         expect(deduplicated.first.data['amount'], equals(200.0));
@@ -273,7 +274,7 @@ void main() {
         ];
 
         final deduplicated = await eventProcessor.deduplicateEvents(events);
-        
+
         expect(deduplicated.length, equals(2));
       });
     });
@@ -299,9 +300,10 @@ void main() {
 
         // Should not throw
         await eventProcessor.processEvent(event);
-        
+
         // Verify event was stored
-        final storedEvents = await database.select(database.syncEventLogTable).get();
+        final storedEvents =
+            await database.select(database.syncEventLogTable).get();
         expect(storedEvents.length, equals(1));
         expect(storedEvents.first.eventId, equals('test-event-1'));
       });
@@ -327,9 +329,10 @@ void main() {
         // Process same event twice
         await eventProcessor.processEvent(event);
         await eventProcessor.processEvent(event);
-        
+
         // Should only store once
-        final storedEvents = await database.select(database.syncEventLogTable).get();
+        final storedEvents =
+            await database.select(database.syncEventLogTable).get();
         expect(storedEvents.length, equals(1));
       });
 
@@ -357,7 +360,7 @@ void main() {
       test('should broadcast events to stream', () async {
         final events = <SyncEvent>[];
         eventProcessor.eventBroadcastStream.listen(events.add);
-        
+
         final event = SyncEvent(
           eventId: 'test-event-1',
           deviceId: 'test-device',
@@ -371,10 +374,10 @@ void main() {
         );
 
         await eventProcessor.broadcastEvent(event);
-        
+
         // Give stream time to process
         await Future.delayed(Duration(milliseconds: 10));
-        
+
         expect(events.length, equals(1));
         expect(events.first.eventId, equals('test-event-1'));
       });
@@ -384,15 +387,16 @@ void main() {
       test('should trigger registered event listeners', () async {
         // Clean up any existing events first
         await database.delete(database.syncEventLogTable).go();
-        
+
         var callbackCalled = false;
         var receivedEvent;
-        
-        eventProcessor.registerEventListener('transactions:create', (SyncEvent event) {
+
+        eventProcessor.registerEventListener('transactions:create',
+            (SyncEvent event) {
           callbackCalled = true;
           receivedEvent = event;
         });
-        
+
         final event = SyncEvent(
           eventId: 'test-event-1',
           deviceId: 'test-device',
@@ -411,7 +415,7 @@ void main() {
         );
 
         await eventProcessor.processEvent(event);
-        
+
         expect(callbackCalled, isTrue);
         expect(receivedEvent.eventId, equals('test-event-1'));
       });
@@ -419,13 +423,13 @@ void main() {
       test('should trigger general listeners', () async {
         // Clean up any existing events first
         await database.delete(database.syncEventLogTable).go();
-        
+
         var callbackCalled = false;
-        
+
         eventProcessor.registerEventListener('*', (SyncEvent event) {
           callbackCalled = true;
         });
-        
+
         final event = SyncEvent(
           eventId: 'test-event-1',
           deviceId: 'test-device',
@@ -444,7 +448,7 @@ void main() {
         );
 
         await eventProcessor.processEvent(event);
-        
+
         expect(callbackCalled, isTrue);
       });
     });
@@ -512,7 +516,8 @@ void main() {
     });
 
     group('Table-Specific Optimization', () {
-      test('should optimize attachment events by removing temp paths', () async {
+      test('should optimize attachment events by removing temp paths',
+          () async {
         final event = SyncEvent(
           eventId: 'test-event-1',
           deviceId: 'test-device',
@@ -532,7 +537,7 @@ void main() {
         );
 
         final compressed = await eventProcessor.compressEvent(event);
-        
+
         expect(compressed.data.containsKey('tempPath'), isFalse);
         expect(compressed.data.containsKey('localCachePath'), isFalse);
         expect(compressed.data['filename'], equals('test.jpg'));
@@ -545,9 +550,9 @@ void main() {
       test('should process 1000 events in under 1 second', () async {
         // Clean up any existing events first
         await database.delete(database.syncEventLogTable).go();
-        
+
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 1000; i++) {
           final event = SyncEvent(
             eventId: 'event-$i',
@@ -563,22 +568,24 @@ void main() {
             sequenceNumber: i + 1,
             hash: 'hash-$i',
           );
-          
+
           await eventProcessor.processEvent(event);
         }
-        
+
         stopwatch.stop();
-        
-        expect(stopwatch.elapsedMilliseconds, lessThan(1500)); // Allow 1.5 seconds for better reliability
-        
+
+        expect(stopwatch.elapsedMilliseconds,
+            lessThan(1500)); // Allow 1.5 seconds for better reliability
+
         // Verify all events were stored
-        final storedEvents = await database.select(database.syncEventLogTable).get();
+        final storedEvents =
+            await database.select(database.syncEventLogTable).get();
         expect(storedEvents.length, equals(1000));
       });
 
       test('should deduplicate 10k events efficiently', () async {
         final events = <SyncEvent>[];
-        
+
         // Create 10k events with many duplicates
         for (int i = 0; i < 10000; i++) {
           events.add(SyncEvent(
@@ -593,14 +600,14 @@ void main() {
             hash: 'hash-${i % 100}',
           ));
         }
-        
+
         final stopwatch = Stopwatch()..start();
         final deduplicated = await eventProcessor.deduplicateEvents(events);
         stopwatch.stop();
-        
+
         expect(stopwatch.elapsedMilliseconds, lessThan(500));
         expect(deduplicated.length, equals(100));
       });
     });
   });
-} 
+}

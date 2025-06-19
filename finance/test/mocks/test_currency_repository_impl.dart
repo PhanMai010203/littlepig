@@ -18,42 +18,44 @@ class TestCurrencyRepositoryImpl extends CurrencyRepositoryImpl {
     CurrencyLocalDataSource currencyLocalDataSource,
     ExchangeRateRemoteDataSource exchangeRateRemoteDataSource,
     ExchangeRateLocalDataSource exchangeRateLocalDataSource,
-  ) : super(currencyLocalDataSource, exchangeRateRemoteDataSource, exchangeRateLocalDataSource);
+  ) : super(currencyLocalDataSource, exchangeRateRemoteDataSource,
+            exchangeRateLocalDataSource);
   @override
   Future<Map<String, ExchangeRate>> getExchangeRates() async {
     // First try to get cached rates
-    final cachedRates = await exchangeRateLocalDataSource.getCachedExchangeRates();
+    final cachedRates =
+        await exchangeRateLocalDataSource.getCachedExchangeRates();
     final lastUpdate = await exchangeRateLocalDataSource.getLastUpdateTime();
-    
+
     // Check if cached rates are fresh (less than 6 hours old)
-    final isCacheFresh = lastUpdate != null && 
+    final isCacheFresh = lastUpdate != null &&
         DateTime.now().difference(lastUpdate) < const Duration(hours: 6);
-    
+
     // If cache is fresh, use it
     if (cachedRates.isNotEmpty && isCacheFresh) {
       return cachedRates.map((key, value) => MapEntry(key, value.toEntity()));
     }
-    
+
     // Try to fetch fresh data from remote
     try {
       final remoteRates = await exchangeRateRemoteDataSource.getExchangeRates();
-      
+
       // Cache the fresh rates
       await exchangeRateLocalDataSource.cacheExchangeRates(remoteRates);
-      
+
       return remoteRates.map((key, value) => MapEntry(key, value.toEntity()));
     } catch (e) {
       print('Failed to fetch remote exchange rates: $e');
-      
+
       // Check if cached rates are still usable (less than 7 days old)
-      final isCacheUsable = lastUpdate != null && 
+      final isCacheUsable = lastUpdate != null &&
           DateTime.now().difference(lastUpdate) < const Duration(days: 7);
-      
+
       if (cachedRates.isNotEmpty && isCacheUsable) {
         print('Using stale cached rates (offline mode)');
         return cachedRates.map((key, value) => MapEntry(key, value.toEntity()));
       }
-      
+
       // Last resort: use test fallback rates
       print('Using test fallback exchange rates');
       return _getTestFallbackExchangeRates();
@@ -63,7 +65,7 @@ class TestCurrencyRepositoryImpl extends CurrencyRepositoryImpl {
   /// Gets test fallback exchange rates
   Future<Map<String, ExchangeRate>> _getTestFallbackExchangeRates() async {
     final Map<String, ExchangeRate> rates = {};
-    
+
     for (final entry in _testFallbackRates.entries) {
       rates[entry.key] = ExchangeRate.withCurrentTime(
         fromCurrency: 'USD',
@@ -72,7 +74,7 @@ class TestCurrencyRepositoryImpl extends CurrencyRepositoryImpl {
         isCustom: false,
       );
     }
-    
+
     return rates;
   }
 }

@@ -10,8 +10,11 @@ import 'package:finance/services/currency_service.dart';
 import 'package:finance/features/budgets/data/services/budget_csv_service.dart';
 
 class MockTransactionRepository extends Mock implements TransactionRepository {}
+
 class MockAccountRepository extends Mock implements AccountRepository {}
+
 class MockCurrencyService extends Mock implements CurrencyService {}
+
 class MockBudgetCsvService extends Mock implements BudgetCsvService {}
 
 void main() {
@@ -27,7 +30,7 @@ void main() {
       mockAccountRepository = MockAccountRepository();
       mockCurrencyService = MockCurrencyService();
       mockBudgetCsvService = MockBudgetCsvService();
-      
+
       service = BudgetFilterServiceImpl(
         mockTransactionRepository,
         mockAccountRepository,
@@ -67,7 +70,8 @@ void main() {
       ];
 
       // Act
-      final filtered = await service.excludeDebtCreditTransactions(transactions);
+      final filtered =
+          await service.excludeDebtCreditTransactions(transactions);
 
       // Assert
       expect(filtered, hasLength(1));
@@ -77,34 +81,36 @@ void main() {
     test('should normalize currency amounts correctly', () async {
       // Arrange
       when(() => mockCurrencyService.convertAmount(
-        amount: 100.0,
-        fromCurrency: 'EUR',
-        toCurrency: 'USD',
-      )).thenAnswer((_) async => 110.0);
+            amount: 100.0,
+            fromCurrency: 'EUR',
+            toCurrency: 'USD',
+          )).thenAnswer((_) async => 110.0);
 
       // Act
-      final result = await service.normalizeAmountToCurrency(100.0, 'EUR', 'USD');
+      final result =
+          await service.normalizeAmountToCurrency(100.0, 'EUR', 'USD');
 
       // Assert
       expect(result, equals(110.0));
       verify(() => mockCurrencyService.convertAmount(
-        amount: 100.0,
-        fromCurrency: 'EUR',
-        toCurrency: 'USD',
-      )).called(1);
+            amount: 100.0,
+            fromCurrency: 'EUR',
+            toCurrency: 'USD',
+          )).called(1);
     });
 
     test('should return same amount when currencies are equal', () async {
       // Act
-      final result = await service.normalizeAmountToCurrency(100.0, 'USD', 'USD');
+      final result =
+          await service.normalizeAmountToCurrency(100.0, 'USD', 'USD');
 
       // Assert
       expect(result, equals(100.0));
       verifyNever(() => mockCurrencyService.convertAmount(
-        amount: any(named: 'amount'),
-        fromCurrency: any(named: 'fromCurrency'),
-        toCurrency: any(named: 'toCurrency'),
-      ));
+            amount: any(named: 'amount'),
+            fromCurrency: any(named: 'fromCurrency'),
+            toCurrency: any(named: 'toCurrency'),
+          ));
     });
 
     test('should filter transactions by wallet IDs', () async {
@@ -214,13 +220,16 @@ void main() {
       );
 
       // Act
-      final shouldInclude = await service.shouldIncludeTransaction(budget, transaction);
+      final shouldInclude =
+          await service.shouldIncludeTransaction(budget, transaction);
 
       // Assert
       expect(shouldInclude, isTrue);
     });
 
-    test('should exclude transaction if it is credit and budget excludes credit', () async {
+    test(
+        'should exclude transaction if it is credit and budget excludes credit',
+        () async {
       // Arrange
       final budget = Budget(
         name: 'Test Budget',
@@ -251,7 +260,8 @@ void main() {
       );
 
       // Act
-      final shouldInclude = await service.shouldIncludeTransaction(budget, transaction);
+      final shouldInclude =
+          await service.shouldIncludeTransaction(budget, transaction);
 
       // Assert
       expect(shouldInclude, isFalse);
@@ -260,16 +270,17 @@ void main() {
     test('should handle error in currency conversion gracefully', () async {
       // Arrange
       when(() => mockCurrencyService.convertAmount(
-        amount: 100.0,
-        fromCurrency: 'INVALID',
-        toCurrency: 'USD',
-      )).thenThrow(Exception('Currency not found'));
+            amount: 100.0,
+            fromCurrency: 'INVALID',
+            toCurrency: 'USD',
+          )).thenThrow(Exception('Currency not found'));
 
       // Act
-      final result = await service.normalizeAmountToCurrency(100.0, 'INVALID', 'USD');
+      final result =
+          await service.normalizeAmountToCurrency(100.0, 'INVALID', 'USD');
 
       // Assert - should return original amount as fallback
       expect(result, equals(100.0));
     });
   });
-} 
+}

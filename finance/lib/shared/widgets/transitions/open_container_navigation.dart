@@ -71,7 +71,7 @@ class OpenContainerNavigation extends StatelessWidget {
 
     // Use simpler transition for reduced animations
     final effectiveTransitionType = _getEffectiveTransitionType();
-    
+
     return OpenContainer(
       transitionType: effectiveTransitionType,
       transitionDuration: AnimationUtils.getDuration(
@@ -129,7 +129,7 @@ class OpenContainerNavigation extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.0),
       );
     }
-    
+
     return RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(8.0),
     );
@@ -345,4 +345,4 @@ extension OpenContainerExtension on Widget {
       backgroundColor: backgroundColor,
     );
   }
-} 
+}

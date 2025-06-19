@@ -16,18 +16,19 @@ void main() {
     });
 
     group('AppPageTransitions', () {
-      testWidgets('slideTransitionPage creates CustomTransitionPage', (tester) async {
+      testWidgets('slideTransitionPage creates CustomTransitionPage',
+          (tester) async {
         const testChild = Scaffold(body: Text('Slide Test Page'));
-        
+
         final page = AppPageTransitions.slideTransitionPage(
           child: testChild,
           name: 'test',
           direction: SlideDirection.fromRight,
         );
-        
+
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test that the page can be used in navigation
         await tester.pumpWidget(
           MaterialApp.router(
@@ -41,21 +42,22 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Slide Test Page'), findsOneWidget);
       });
 
-      testWidgets('fadeTransitionPage creates CustomTransitionPage', (tester) async {
+      testWidgets('fadeTransitionPage creates CustomTransitionPage',
+          (tester) async {
         const testChild = Scaffold(body: Text('Fade Test Page'));
-        
+
         final page = AppPageTransitions.fadeTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -69,22 +71,23 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Fade Test Page'), findsOneWidget);
       });
 
-      testWidgets('scaleTransitionPage creates CustomTransitionPage', (tester) async {
+      testWidgets('scaleTransitionPage creates CustomTransitionPage',
+          (tester) async {
         const testChild = Scaffold(body: Text('Scale Test Page'));
-        
+
         final page = AppPageTransitions.scaleTransitionPage(
           child: testChild,
           name: 'test',
           alignment: Alignment.center,
         );
-        
+
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -98,22 +101,23 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Scale Test Page'), findsOneWidget);
       });
 
-      testWidgets('slideFadeTransitionPage creates CustomTransitionPage', (tester) async {
+      testWidgets('slideFadeTransitionPage creates CustomTransitionPage',
+          (tester) async {
         const testChild = Scaffold(body: Text('SlideFade Test Page'));
-        
+
         final page = AppPageTransitions.slideFadeTransitionPage(
           child: testChild,
           name: 'test',
           direction: SlideDirection.fromBottom,
         );
-        
+
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -127,21 +131,21 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('SlideFade Test Page'), findsOneWidget);
       });
 
       testWidgets('noTransitionPage creates NoTransitionPage', (tester) async {
         const testChild = Scaffold(body: Text('No Transition Test Page'));
-        
+
         final page = AppPageTransitions.noTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         expect(page, isA<NoTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -155,34 +159,35 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('No Transition Test Page'), findsOneWidget);
       });
 
-      testWidgets('platformTransitionPage respects animation settings', (tester) async {
+      testWidgets('platformTransitionPage respects animation settings',
+          (tester) async {
         const testChild = Scaffold(body: Text('Platform Test Page'));
-        
+
         // Test with animations disabled
         await AppSettings.setAppAnimations(false);
-        
+
         final pageNoAnimation = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         expect(pageNoAnimation, isA<NoTransitionPage>());
-        
+
         // Test with animations enabled
         await AppSettings.setAppAnimations(true);
         await AppSettings.setReduceAnimations(false);
         await AppSettings.setBatterySaver(false);
         await AppSettings.setAnimationLevel('normal');
-        
+
         final pageWithAnimation = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         expect(pageWithAnimation, isA<CustomTransitionPage>());
       });
 
@@ -198,15 +203,15 @@ void main() {
     group('PageTransitionExtension', () {
       testWidgets('slideTransition extension works', (tester) async {
         const testWidget = Scaffold(body: Text('Extension Slide Test'));
-        
+
         final page = testWidget.slideTransition(
           name: 'test',
           direction: SlideDirection.fromLeft,
         );
-        
+
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -220,18 +225,18 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Extension Slide Test'), findsOneWidget);
       });
 
       testWidgets('fadeTransition extension works', (tester) async {
         const testWidget = Scaffold(body: Text('Extension Fade Test'));
-        
+
         final page = testWidget.fadeTransition(name: 'test');
-        
+
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -245,21 +250,21 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Extension Fade Test'), findsOneWidget);
       });
 
       testWidgets('scaleTransition extension works', (tester) async {
         const testWidget = Scaffold(body: Text('Extension Scale Test'));
-        
+
         final page = testWidget.scaleTransition(
           name: 'test',
           alignment: Alignment.topLeft,
         );
-        
+
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -273,18 +278,18 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Extension Scale Test'), findsOneWidget);
       });
 
       testWidgets('platformTransition extension works', (tester) async {
         const testWidget = Scaffold(body: Text('Extension Platform Test'));
-        
+
         final page = testWidget.platformTransition(name: 'test');
-        
+
         expect(page, isA<Page>());
         expect(page.name, equals('test'));
-        
+
         // Test navigation functionality
         await tester.pumpWidget(
           MaterialApp.router(
@@ -298,7 +303,7 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.text('Extension Platform Test'), findsOneWidget);
       });
     });
@@ -323,11 +328,12 @@ void main() {
         expect(find.text('Open Page'), findsNothing);
       });
 
-      testWidgets('opens page when tapped with animations enabled', (tester) async {
+      testWidgets('opens page when tapped with animations enabled',
+          (tester) async {
         await AppSettings.setAppAnimations(true);
         await AppSettings.setReduceAnimations(false);
         await AppSettings.setBatterySaver(false);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: OpenContainerNavigation(
@@ -343,7 +349,7 @@ void main() {
         );
 
         expect(find.text('Closed Container'), findsOneWidget);
-        
+
         // Tap to open
         await tester.tap(find.text('Closed Container'));
         await tester.pumpAndSettle();
@@ -351,9 +357,10 @@ void main() {
         expect(find.text('Open Page'), findsOneWidget);
       });
 
-      testWidgets('falls back to standard navigation when animations disabled', (tester) async {
+      testWidgets('falls back to standard navigation when animations disabled',
+          (tester) async {
         await AppSettings.setAppAnimations(false);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: OpenContainerNavigation(
@@ -369,7 +376,7 @@ void main() {
         );
 
         expect(find.text('Closed Container'), findsOneWidget);
-        
+
         // Tap to open
         await tester.tap(find.text('Closed Container'));
         await tester.pumpAndSettle();
@@ -379,7 +386,7 @@ void main() {
 
       testWidgets('calls onOpen callback', (tester) async {
         bool onOpenCalled = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: OpenContainerNavigation(
@@ -422,7 +429,7 @@ void main() {
 
       testWidgets('opens page when card is tapped', (tester) async {
         await AppSettings.setAppAnimations(true);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -466,7 +473,7 @@ void main() {
 
       testWidgets('opens page when list tile is tapped', (tester) async {
         await AppSettings.setAppAnimations(true);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -488,13 +495,13 @@ void main() {
     group('OpenContainerExtension', () {
       testWidgets('openContainerNavigation extension works', (tester) async {
         const testWidget = Text('Test Widget');
-        
+
         final containerWidget = testWidget.openContainerNavigation(
           openPage: const Scaffold(body: Text('Open Page')),
         );
-        
+
         expect(containerWidget, isA<OpenContainerNavigation>());
-        
+
         await tester.pumpWidget(
           MaterialApp(home: Scaffold(body: containerWidget)),
         );
@@ -504,13 +511,13 @@ void main() {
 
       testWidgets('openContainerCard extension works', (tester) async {
         const testWidget = Text('Test Widget');
-        
+
         final cardWidget = testWidget.openContainerCard(
           openPage: const Scaffold(body: Text('Open Page')),
         );
-        
+
         expect(cardWidget, isA<OpenContainerCard>());
-        
+
         await tester.pumpWidget(
           MaterialApp(home: Scaffold(body: cardWidget)),
         );
@@ -522,7 +529,7 @@ void main() {
     group('Animation Integration', () {
       testWidgets('respects animation level settings', (tester) async {
         const testChild = Scaffold(body: Text('Animation Level Test'));
-        
+
         // Test none level
         await AppSettings.setAnimationLevel('none');
         final pageNone = AppPageTransitions.platformTransitionPage(
@@ -530,13 +537,13 @@ void main() {
           name: 'test',
         );
         expect(pageNone, isA<NoTransitionPage>());
-        
+
         // Test normal level
         await AppSettings.setAnimationLevel('normal');
         await AppSettings.setAppAnimations(true);
         await AppSettings.setReduceAnimations(false);
         await AppSettings.setBatterySaver(false);
-        
+
         final pageNormal = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
@@ -546,45 +553,46 @@ void main() {
 
       testWidgets('respects battery saver mode', (tester) async {
         const testChild = Scaffold(body: Text('Battery Saver Test'));
-        
+
         await AppSettings.setBatterySaver(true);
-        
+
         final page = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         expect(page, isA<NoTransitionPage>());
       });
 
       testWidgets('respects reduce animations setting', (tester) async {
         const testChild = Scaffold(body: Text('Reduce Animations Test'));
-        
+
         await AppSettings.setReduceAnimations(true);
-        
+
         final page = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         expect(page, isA<NoTransitionPage>());
       });
     });
 
     group('Platform Integration', () {
-      testWidgets('platform detection affects transition choice', (tester) async {
+      testWidgets('platform detection affects transition choice',
+          (tester) async {
         const testChild = Scaffold(body: Text('Platform Detection Test'));
-        
+
         await AppSettings.setAppAnimations(true);
         await AppSettings.setReduceAnimations(false);
         await AppSettings.setBatterySaver(false);
         await AppSettings.setAnimationLevel('normal');
-        
+
         final page = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         // Should create a CustomTransitionPage when animations are enabled
         expect(page, isA<CustomTransitionPage>());
         expect(page.name, equals('test'));
@@ -594,48 +602,49 @@ void main() {
     group('Performance', () {
       testWidgets('no-transition pages have zero overhead', (tester) async {
         const testChild = Scaffold(body: Text('Performance Test'));
-        
+
         await AppSettings.setAppAnimations(false);
-        
+
         final stopwatch = Stopwatch()..start();
-        
+
         for (int i = 0; i < 100; i++) {
           AppPageTransitions.noTransitionPage(
             child: testChild,
             name: 'test_$i',
           );
         }
-        
+
         stopwatch.stop();
-        
+
         // Should be very fast (less than 10ms for 100 pages)
         expect(stopwatch.elapsedMilliseconds, lessThan(10));
       });
 
-      testWidgets('transition pages respect animation settings for performance', (tester) async {
+      testWidgets('transition pages respect animation settings for performance',
+          (tester) async {
         const testChild = Scaffold(body: Text('Performance Settings Test'));
-        
+
         // Test with battery saver (should use no transition for performance)
         await AppSettings.setBatterySaver(true);
-        
+
         final batteryPage = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         expect(batteryPage, isA<NoTransitionPage>());
-        
+
         // Test with reduced animations (should use simpler transitions)
         await AppSettings.setBatterySaver(false);
         await AppSettings.setAnimationLevel('reduced');
         await AppSettings.setAppAnimations(true);
         await AppSettings.setReduceAnimations(false);
-        
+
         final reducedPage = AppPageTransitions.platformTransitionPage(
           child: testChild,
           name: 'test',
         );
-        
+
         // Should still create a transition page, but with reduced complexity
         expect(reducedPage, isA<CustomTransitionPage>());
       });

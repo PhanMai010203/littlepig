@@ -3,7 +3,7 @@ import 'dart:async';
 import '../../features/transactions/domain/repositories/attachment_repository.dart';
 
 /// Service responsible for managing local file cache
-/// 
+///
 /// This service handles:
 /// - Cleaning expired cache files (camera-captured images after 30 days)
 /// - Managing storage space
@@ -29,7 +29,7 @@ class CacheManagementService {
   }
 
   /// Clean expired cache files
-  /// 
+  ///
   /// This removes:
   /// - Camera-captured images older than 30 days
   /// - Local files that are no longer accessible
@@ -44,16 +44,18 @@ class CacheManagementService {
 
   /// Get cache statistics
   Future<CacheStats> getCacheStats() async {
-    final expiredAttachments = await _attachmentRepository.getExpiredCacheAttachments();
+    final expiredAttachments =
+        await _attachmentRepository.getExpiredCacheAttachments();
     final allAttachments = await _attachmentRepository.getAllAttachments();
-    
+
     int cachedFiles = 0;
     int totalCacheSize = 0;
     int expiredFiles = expiredAttachments.length;
     int expiredSize = 0;
 
     for (final attachment in allAttachments) {
-      if (attachment.filePath != null && await _attachmentRepository.isFileExists(attachment.filePath!)) {
+      if (attachment.filePath != null &&
+          await _attachmentRepository.isFileExists(attachment.filePath!)) {
         cachedFiles++;
         if (attachment.fileSizeBytes != null) {
           totalCacheSize += attachment.fileSizeBytes!;
@@ -78,11 +80,12 @@ class CacheManagementService {
   /// Force cleanup of all cache files (for troubleshooting or storage management)
   Future<void> clearAllCache() async {
     final allAttachments = await _attachmentRepository.getAllAttachments();
-    
+
     for (final attachment in allAttachments) {
-      if (attachment.filePath != null && await _attachmentRepository.isFileExists(attachment.filePath!)) {
+      if (attachment.filePath != null &&
+          await _attachmentRepository.isFileExists(attachment.filePath!)) {
         await _attachmentRepository.deleteLocalFile(attachment.filePath!);
-        
+
         // Update attachment to remove local file path
         final updatedAttachment = attachment.copyWith(
           filePath: null,
@@ -95,12 +98,14 @@ class CacheManagementService {
 
   /// Clean cache for a specific attachment
   Future<void> clearAttachmentCache(int attachmentId) async {
-    final attachment = await _attachmentRepository.getAttachmentById(attachmentId);
+    final attachment =
+        await _attachmentRepository.getAttachmentById(attachmentId);
     if (attachment == null) return;
 
-    if (attachment.filePath != null && await _attachmentRepository.isFileExists(attachment.filePath!)) {
+    if (attachment.filePath != null &&
+        await _attachmentRepository.isFileExists(attachment.filePath!)) {
       await _attachmentRepository.deleteLocalFile(attachment.filePath!);
-      
+
       // Update attachment to remove local file path
       final updatedAttachment = attachment.copyWith(
         filePath: null,

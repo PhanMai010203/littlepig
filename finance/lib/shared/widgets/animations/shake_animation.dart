@@ -35,7 +35,7 @@ class _ShakeAnimationState extends State<ShakeAnimation>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -58,7 +58,7 @@ class _ShakeAnimationState extends State<ShakeAnimation>
   @override
   void didUpdateWidget(ShakeAnimation oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Trigger shake when trigger value changes
     if (widget.trigger != oldWidget.trigger && widget.trigger != null) {
       shake();
@@ -67,14 +67,14 @@ class _ShakeAnimationState extends State<ShakeAnimation>
 
   void _startShake() {
     if (!mounted || !AnimationUtils.shouldAnimate()) return;
-    
+
     _controller.forward(from: 0.0);
   }
 
   /// Public method to trigger shake manually
   void shake() {
     if (!AnimationUtils.shouldAnimate()) return;
-    
+
     _controller.forward(from: 0.0);
   }
 
@@ -86,12 +86,16 @@ class _ShakeAnimationState extends State<ShakeAnimation>
 
   double _getShakeValue() {
     final progress = _shakeAnimation.value;
-    
+
     // Create a shake pattern based on sine wave
     final shakePhase = progress * widget.shakeCount * 2 * 3.14159;
     final shakeDecay = 1.0 - progress; // Fade out the shake
-    
-    return widget.shakeOffset * shakeDecay * (progress * 4 * (1 - progress)) * (progress < 1 ? 1 : 0) * (shakePhase.abs() < 3.14159 ? 1 : -1);
+
+    return widget.shakeOffset *
+        shakeDecay *
+        (progress * 4 * (1 - progress)) *
+        (progress < 1 ? 1 : 0) *
+        (shakePhase.abs() < 3.14159 ? 1 : -1);
   }
 
   @override
@@ -141,4 +145,4 @@ extension ShakeAnimationExtension on Widget {
       child: this,
     );
   }
-} 
+}

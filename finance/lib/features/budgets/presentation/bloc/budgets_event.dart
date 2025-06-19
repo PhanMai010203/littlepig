@@ -79,4 +79,4 @@ class ExportMultipleBudgets extends BudgetsEvent {
   const ExportMultipleBudgets(this.budgets);
   @override
   List<Object?> get props => [budgets];
-} 
+}

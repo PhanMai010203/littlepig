@@ -35,7 +35,7 @@ class BudgetsPage extends StatelessWidget {
           final spent = (index + 1) * 120.0;
           final budget = (index + 1) * 200.0;
           final percentage = spent / budget;
-          
+
           return Card(
             margin: const EdgeInsets.only(bottom: 16),
             child: Padding(
@@ -48,9 +48,10 @@ class BudgetsPage extends StatelessWidget {
                     children: [
                       Text(
                         'Budget ${index + 1}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
                       ),
                       Icon(
                         Icons.category,
@@ -67,16 +68,21 @@ class BudgetsPage extends StatelessWidget {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       Text(
-                        '\$${budget.toStringAsFixed(2)} budget',                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
+                        '\$${budget.toStringAsFixed(2)} budget',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withValues(alpha: 0.7),
+                            ),
                       ),
                     ],
                   ),
                   const SizedBox(height: 8),
                   LinearProgressIndicator(
                     value: percentage > 1.0 ? 1.0 : percentage,
-                    backgroundColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    backgroundColor:
+                        Theme.of(context).colorScheme.surfaceContainerHighest,
                     valueColor: AlwaysStoppedAnimation<Color>(
                       percentage > 0.9
                           ? Colors.red
@@ -89,13 +95,13 @@ class BudgetsPage extends StatelessWidget {
                   Text(
                     '${(percentage * 100).toStringAsFixed(1)}% used',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: percentage > 0.9
-                          ? Colors.red
-                          : percentage > 0.7
-                              ? Colors.orange
-                              : Colors.green,
-                      fontWeight: FontWeight.w500,
-                    ),
+                          color: percentage > 0.9
+                              ? Colors.red
+                              : percentage > 0.7
+                                  ? Colors.orange
+                                  : Colors.green,
+                          fontWeight: FontWeight.w500,
+                        ),
                   ),
                 ],
               ),
@@ -105,4 +111,4 @@ class BudgetsPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

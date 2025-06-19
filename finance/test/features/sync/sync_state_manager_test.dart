@@ -135,27 +135,27 @@ void main() {
       test('should get device information list', () async {
         // Add some test devices
         await database.into(database.syncStateTable).insert(
-          SyncStateTableCompanion.insert(
-            deviceId: 'android_device_1',
-            lastSyncTime: DateTime.now(),
-            lastSequenceNumber: const Value(10),
-            status: const Value('idle'),
-          ),
-        );
+              SyncStateTableCompanion.insert(
+                deviceId: 'android_device_1',
+                lastSyncTime: DateTime.now(),
+                lastSequenceNumber: const Value(10),
+                status: const Value('idle'),
+              ),
+            );
 
         await database.into(database.syncStateTable).insert(
-          SyncStateTableCompanion.insert(
-            deviceId: 'ios_device_2',
-            lastSyncTime: DateTime.now().subtract(Duration(hours: 1)),
-            lastSequenceNumber: const Value(5),
-            status: const Value('completed'),
-          ),
-        );
+              SyncStateTableCompanion.insert(
+                deviceId: 'ios_device_2',
+                lastSyncTime: DateTime.now().subtract(Duration(hours: 1)),
+                lastSequenceNumber: const Value(5),
+                status: const Value('completed'),
+              ),
+            );
 
         final deviceInfos = await stateManager.getDeviceInfoList();
-        
+
         expect(deviceInfos.length, greaterThanOrEqualTo(2));
-        
+
         final androidDevice = deviceInfos.firstWhere(
           (d) => d.deviceId == 'android_device_1',
         );
@@ -167,13 +167,13 @@ void main() {
       test('should filter out old devices', () async {
         // Add an old device (over 30 days)
         await database.into(database.syncStateTable).insert(
-          SyncStateTableCompanion.insert(
-            deviceId: 'old_device',
-            lastSyncTime: DateTime.now().subtract(Duration(days: 35)),
-            lastSequenceNumber: const Value(1),
-            status: const Value('idle'),
-          ),
-        );
+              SyncStateTableCompanion.insert(
+                deviceId: 'old_device',
+                lastSyncTime: DateTime.now().subtract(Duration(days: 35)),
+                lastSequenceNumber: const Value(1),
+                status: const Value('idle'),
+              ),
+            );
 
         final activeDevices = await stateManager.getActiveDevices();
         expect(activeDevices, isNot(contains('old_device')));
@@ -184,7 +184,7 @@ void main() {
       test('should get unsynced events', () async {
         // Clean up any existing events first
         await database.delete(database.syncEventLogTable).go();
-        
+
         // Create some test events
         final events = [
           EventSourcingTestHelpers.createTestEvent(
@@ -215,7 +215,7 @@ void main() {
         }
 
         final unsyncedEvents = await stateManager.getUnsyncedEvents();
-        
+
         expect(unsyncedEvents.length, equals(2)); // Only unsynced events
         expect(unsyncedEvents[0].tableName, equals('transactions'));
         expect(unsyncedEvents[1].tableName, equals('budgets'));
@@ -224,7 +224,7 @@ void main() {
       test('should mark events as synced', () async {
         // Clean up any existing events first
         await database.delete(database.syncEventLogTable).go();
-        
+
         // Create test events
         final eventIds = ['event-1', 'event-2', 'event-3'];
         for (final eventId in eventIds) {
@@ -236,8 +236,8 @@ void main() {
             isSynced: false,
           );
           await database.into(database.syncEventLogTable).insert(
-            testEvent.copyWith(eventId: Value(eventId)),
-          );
+                testEvent.copyWith(eventId: Value(eventId)),
+              );
         }
 
         // Mark first two as synced
@@ -245,9 +245,12 @@ void main() {
 
         // Check results
         final syncedEvents = await (database.select(database.syncEventLogTable)
-          ..where((tbl) => tbl.isSynced.equals(true))).get();
-        final unsyncedEvents = await (database.select(database.syncEventLogTable)
-          ..where((tbl) => tbl.isSynced.equals(false))).get();
+              ..where((tbl) => tbl.isSynced.equals(true)))
+            .get();
+        final unsyncedEvents =
+            await (database.select(database.syncEventLogTable)
+                  ..where((tbl) => tbl.isSynced.equals(false)))
+                .get();
 
         expect(syncedEvents.length, equals(2));
         expect(unsyncedEvents.length, equals(1));
@@ -259,7 +262,7 @@ void main() {
       test('should calculate comprehensive sync metrics', () async {
         // Clean up any existing events first
         await database.delete(database.syncEventLogTable).go();
-        
+
         // Add some test events
         final now = DateTime.now();
         final events = [
@@ -284,7 +287,8 @@ void main() {
             tableName: 'transactions',
             recordId: 'txn-2',
             data: {'amount': 200.0},
-            timestamp: now.subtract(Duration(days: 40)), // Outside 30-day window
+            timestamp:
+                now.subtract(Duration(days: 40)), // Outside 30-day window
             isSynced: true,
           ),
         ];
@@ -294,8 +298,9 @@ void main() {
         }
 
         final metrics = await stateManager.getSyncMetrics();
-        
-        expect(metrics.totalEventsSynced, equals(2)); // Only events within 30 days
+
+        expect(
+            metrics.totalEventsSynced, equals(2)); // Only events within 30 days
         expect(metrics.eventsByTable['transactions'], equals(1));
         expect(metrics.eventsByTable['budgets'], equals(1));
         expect(metrics.syncEfficiency, equals(1.0)); // All events synced
@@ -305,7 +310,7 @@ void main() {
       test('should calculate sync efficiency correctly', () async {
         // Clean up any existing events first
         await database.delete(database.syncEventLogTable).go();
-        
+
         // Add mixed synced/unsynced events
         final events = [
           // Synced events
@@ -335,7 +340,7 @@ void main() {
         }
 
         final metrics = await stateManager.getSyncMetrics();
-        
+
         // 2 out of 3 events synced = 66.7% efficiency
         expect(metrics.syncEfficiency, closeTo(0.67, 0.01));
       });
@@ -344,44 +349,45 @@ void main() {
     group('Data Cleanup', () {
       test('should clean up old sync data', () async {
         final oldDate = DateTime.now().subtract(Duration(days: 100));
-        
+
         // Add old synced event
         await database.into(database.syncEventLogTable).insert(
-          EventSourcingTestHelpers.createTestEvent(
-            operation: 'create',
-            tableName: 'transactions',
-            recordId: 'old-txn',
-            timestamp: oldDate,
-            isSynced: true,
-          ),
-        );
+              EventSourcingTestHelpers.createTestEvent(
+                operation: 'create',
+                tableName: 'transactions',
+                recordId: 'old-txn',
+                timestamp: oldDate,
+                isSynced: true,
+              ),
+            );
 
         // Add old device state
         await database.into(database.syncStateTable).insert(
-          SyncStateTableCompanion.insert(
-            deviceId: 'old-device',
-            lastSyncTime: oldDate,
-            lastSequenceNumber: const Value(1),
-            status: const Value('idle'),
-          ),
-        );
+              SyncStateTableCompanion.insert(
+                deviceId: 'old-device',
+                lastSyncTime: oldDate,
+                lastSequenceNumber: const Value(1),
+                status: const Value('idle'),
+              ),
+            );
 
         // Add recent data that should not be deleted
         await database.into(database.syncEventLogTable).insert(
-          EventSourcingTestHelpers.createTestEvent(
-            operation: 'create',
-            tableName: 'transactions',
-            recordId: 'recent-txn',
-            timestamp: DateTime.now(),
-            isSynced: true,
-          ),
-        );
+              EventSourcingTestHelpers.createTestEvent(
+                operation: 'create',
+                tableName: 'transactions',
+                recordId: 'recent-txn',
+                timestamp: DateTime.now(),
+                isSynced: true,
+              ),
+            );
 
         await stateManager.cleanupOldSyncData();
 
         // Check that old data was removed
         final events = await database.select(database.syncEventLogTable).get();
-        final deviceStates = await database.select(database.syncStateTable).get();
+        final deviceStates =
+            await database.select(database.syncStateTable).get();
 
         expect(events.any((e) => e.recordId == 'old-txn'), isFalse);
         expect(events.any((e) => e.recordId == 'recent-txn'), isTrue);
@@ -406,9 +412,10 @@ void main() {
         await Future.delayed(Duration(milliseconds: 10));
 
         expect(progressUpdates.length, greaterThanOrEqualTo(4));
-        
+
         // Check percentage calculations
-        final percentages = progressUpdates.map((p) => p.progressPercentage).toList();
+        final percentages =
+            progressUpdates.map((p) => p.progressPercentage).toList();
         expect(percentages, contains(25.0)); // 50/200
         expect(percentages, contains(50.0)); // 100/200
         expect(percentages, contains(100.0)); // 200/200
@@ -502,7 +509,8 @@ void main() {
 
         final errorProgress = progressUpdates.last;
         expect(errorProgress.state, equals(SyncState.error));
-        expect(errorProgress.statusMessage, equals('Network connection failed'));
+        expect(
+            errorProgress.statusMessage, equals('Network connection failed'));
       });
     });
 
@@ -534,4 +542,4 @@ void main() {
       });
     });
   });
-} 
+}

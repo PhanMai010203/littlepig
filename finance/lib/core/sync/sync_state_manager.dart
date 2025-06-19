@@ -103,11 +103,11 @@ class DeviceInfo {
 /// Manages sync state, progress tracking, and device coordination
 class SyncStateManager {
   final AppDatabase _database;
-  final StreamController<SyncProgress> _progressController = 
+  final StreamController<SyncProgress> _progressController =
       StreamController<SyncProgress>.broadcast();
-  final StreamController<SyncState> _stateController = 
+  final StreamController<SyncState> _stateController =
       StreamController<SyncState>.broadcast();
-  
+
   String? _currentDeviceId;
   SyncState _currentState = SyncState.idle;
   SyncProgress _currentProgress = SyncProgress(
@@ -141,14 +141,14 @@ class SyncStateManager {
   /// Update sync progress for a device
   Future<void> updateSyncProgress(String deviceId, int sequenceNumber) async {
     await _database.into(_database.syncStateTable).insert(
-      SyncStateTableCompanion.insert(
-        deviceId: deviceId,
-        lastSyncTime: DateTime.now(),
-        lastSequenceNumber: Value(sequenceNumber),
-        status: Value(_currentState.name),
-      ),
-      mode: InsertMode.insertOrReplace,
-    );
+          SyncStateTableCompanion.insert(
+            deviceId: deviceId,
+            lastSyncTime: DateTime.now(),
+            lastSequenceNumber: Value(sequenceNumber),
+            status: Value(_currentState.name),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
 
     // Update progress if this is the current device
     if (deviceId == _currentDeviceId) {
@@ -159,10 +159,10 @@ class SyncStateManager {
   /// Get list of all active devices
   Future<List<String>> getActiveDevices() async {
     final cutoffTime = DateTime.now().subtract(Duration(days: 30));
-    
+
     final query = _database.select(_database.syncStateTable)
       ..where((tbl) => tbl.lastSyncTime.isBiggerThanValue(cutoffTime));
-    
+
     final devices = await query.get();
     return devices.map((d) => d.deviceId).toList();
   }
@@ -170,13 +170,13 @@ class SyncStateManager {
   /// Get detailed device information
   Future<List<DeviceInfo>> getDeviceInfoList() async {
     final cutoffTime = DateTime.now().subtract(Duration(days: 30));
-    
+
     final query = _database.select(_database.syncStateTable)
       ..where((tbl) => tbl.lastSyncTime.isBiggerThanValue(cutoffTime))
       ..orderBy([(tbl) => OrderingTerm.desc(tbl.lastSyncTime)]);
-    
+
     final devices = await query.get();
-    
+
     return devices.map((device) {
       return DeviceInfo(
         deviceId: device.deviceId,
@@ -193,41 +193,44 @@ class SyncStateManager {
   Future<SyncMetrics> getSyncMetrics() async {
     final now = DateTime.now();
     final last30Days = now.subtract(Duration(days: 30));
-    
+
     // Get total events synced in last 30 days
     final totalEventsQuery = _database.select(_database.syncEventLogTable)
-      ..where((tbl) => tbl.timestamp.isBiggerThanValue(last30Days) & tbl.isSynced.equals(true));
+      ..where((tbl) =>
+          tbl.timestamp.isBiggerThanValue(last30Days) &
+          tbl.isSynced.equals(true));
     final totalEvents = await totalEventsQuery.get();
-    
+
     // Calculate events by table
     final eventsByTable = <String, int>{};
     for (final event in totalEvents) {
-      eventsByTable[event.tableNameField] = 
+      eventsByTable[event.tableNameField] =
           (eventsByTable[event.tableNameField] ?? 0) + 1;
     }
-    
+
     // Get conflict resolution data
-    final conflictEvents = totalEvents.where((e) => 
-        e.data.contains('conflict_resolved')).length;
-    
+    final conflictEvents =
+        totalEvents.where((e) => e.data.contains('conflict_resolved')).length;
+
     // Calculate average sync time (mock for now)
     final averageSyncTime = Duration(seconds: 5);
-    
+
     // Get last successful sync
     final lastSyncQuery = _database.select(_database.syncStateTable)
       ..where((tbl) => tbl.deviceId.equals(_currentDeviceId!))
       ..limit(1);
     final lastSync = await lastSyncQuery.getSingleOrNull();
-    
+
     // Calculate sync efficiency - get ALL events (synced and unsynced) in last 30 days
     final allEventsQuery = _database.select(_database.syncEventLogTable)
       ..where((tbl) => tbl.timestamp.isBiggerThanValue(last30Days));
     final allEvents = await allEventsQuery.get();
-    
+
     final totalEventsCount = allEvents.length;
     final syncedEventsCount = allEvents.where((e) => e.isSynced).length;
-    final efficiency = totalEventsCount > 0 ? syncedEventsCount / totalEventsCount : 1.0;
-    
+    final efficiency =
+        totalEventsCount > 0 ? syncedEventsCount / totalEventsCount : 1.0;
+
     return SyncMetrics(
       totalEventsSynced: totalEvents.length,
       conflictsResolved: conflictEvents,
@@ -258,7 +261,7 @@ class SyncStateManager {
 
     _stateController.add(_currentState);
     _progressController.add(_currentProgress);
-    
+
     await _updateDeviceState(state);
   }
 
@@ -268,9 +271,10 @@ class SyncStateManager {
     int? conflictCount,
     String? statusMessage,
   }) async {
-    final newProcessedEvents = processedEvents ?? _currentProgress.processedEvents;
+    final newProcessedEvents =
+        processedEvents ?? _currentProgress.processedEvents;
     final newConflictCount = conflictCount ?? _currentProgress.conflictCount;
-    
+
     final progressPercentage = _currentProgress.totalEvents > 0
         ? (newProcessedEvents / _currentProgress.totalEvents) * 100
         : 0.0;
@@ -292,7 +296,7 @@ class SyncStateManager {
     String? message,
   }) async {
     final finalState = success ? SyncState.completed : SyncState.error;
-    
+
     _currentState = finalState;
     _currentProgress = _currentProgress.copyWith(
       state: finalState,
@@ -303,9 +307,9 @@ class SyncStateManager {
 
     _stateController.add(_currentState);
     _progressController.add(_currentProgress);
-    
+
     await _updateDeviceState(finalState);
-    
+
     // Reset to idle after a delay
     Timer(Duration(seconds: 3), () async {
       if (!_stateController.isClosed) {
@@ -321,9 +325,9 @@ class SyncStateManager {
     final query = _database.select(_database.syncEventLogTable)
       ..where((tbl) => tbl.isSynced.equals(false))
       ..orderBy([(tbl) => OrderingTerm.asc(tbl.sequenceNumber)]);
-    
+
     final events = await query.get();
-    
+
     return events.map((event) {
       return SyncEvent(
         eventId: event.eventId,
@@ -362,31 +366,35 @@ class SyncStateManager {
   /// Clean up old sync data
   Future<void> cleanupOldSyncData() async {
     final cutoffTime = DateTime.now().subtract(Duration(days: 90));
-    
+
     // Delete old synced events
     await (_database.delete(_database.syncEventLogTable)
-      ..where((tbl) => tbl.timestamp.isSmallerThanValue(cutoffTime) & 
-                      tbl.isSynced.equals(true))).go();
-    
+          ..where((tbl) =>
+              tbl.timestamp.isSmallerThanValue(cutoffTime) &
+              tbl.isSynced.equals(true)))
+        .go();
+
     // Delete inactive device states
     await (_database.delete(_database.syncStateTable)
-      ..where((tbl) => tbl.lastSyncTime.isSmallerThanValue(cutoffTime))).go();
+          ..where((tbl) => tbl.lastSyncTime.isSmallerThanValue(cutoffTime)))
+        .go();
   }
 
   /// Get or create unique device ID
   Future<String> _getOrCreateDeviceId() async {
     // Try to get existing device ID from sync state
     final existingState = await (_database.select(_database.syncStateTable)
-      ..limit(1)).getSingleOrNull();
-    
+          ..limit(1))
+        .getSingleOrNull();
+
     if (existingState != null) {
       return existingState.deviceId;
     }
-    
+
     // Generate new device ID
     final deviceInfo = DeviceInfoPlugin();
     String deviceId;
-    
+
     if (Platform.isAndroid) {
       final androidInfo = await deviceInfo.androidInfo;
       deviceId = 'android_${androidInfo.id}';
@@ -397,49 +405,49 @@ class SyncStateManager {
       // Fallback for other platforms
       deviceId = 'device_${DateTime.now().millisecondsSinceEpoch}';
     }
-    
+
     return deviceId;
   }
 
   /// Initialize device state in database
   Future<void> _initializeDeviceState() async {
     if (_currentDeviceId == null) return;
-    
+
     await _database.into(_database.syncStateTable).insert(
-      SyncStateTableCompanion.insert(
-        deviceId: _currentDeviceId!,
-        lastSyncTime: DateTime.now(),
-        lastSequenceNumber: Value(0),
-        status: Value(SyncState.idle.name),
-      ),
-      mode: InsertMode.insertOrIgnore,
-    );
+          SyncStateTableCompanion.insert(
+            deviceId: _currentDeviceId!,
+            lastSyncTime: DateTime.now(),
+            lastSequenceNumber: Value(0),
+            status: Value(SyncState.idle.name),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
   }
 
   /// Update device sync state
   Future<void> _updateDeviceState(SyncState state) async {
     if (_currentDeviceId == null) return;
-    
+
     await (_database.update(_database.syncStateTable)
-      ..where((tbl) => tbl.deviceId.equals(_currentDeviceId!)))
+          ..where((tbl) => tbl.deviceId.equals(_currentDeviceId!)))
         .write(SyncStateTableCompanion(
-          lastSyncTime: Value(DateTime.now()),
-          status: Value(state.name),
-        ));
+      lastSyncTime: Value(DateTime.now()),
+      status: Value(state.name),
+    ));
   }
 
   /// Update current progress from database
   Future<void> _updateCurrentProgress() async {
     final unsyncedEvents = await getUnsyncedEvents();
     final totalEvents = unsyncedEvents.length;
-    
+
     // This is a simplified progress calculation
     // In a real implementation, you'd track more detailed progress
     _currentProgress = _currentProgress.copyWith(
       totalEvents: totalEvents,
       timestamp: DateTime.now(),
     );
-    
+
     _progressController.add(_currentProgress);
   }
 
@@ -482,4 +490,4 @@ class SyncStateManager {
     _progressController.close();
     _stateController.close();
   }
-} 
+}

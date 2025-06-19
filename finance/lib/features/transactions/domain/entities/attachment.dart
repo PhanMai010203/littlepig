@@ -17,7 +17,8 @@ class Attachment extends Equatable {
   final bool isUploaded;
   final bool isDeleted;
   final bool isCapturedFromCamera; // For cache management
-  final DateTime? localCacheExpiry; // When local cache expires (30 days for camera images)
+  final DateTime?
+      localCacheExpiry; // When local cache expires (30 days for camera images)
   final String syncId;
 
   const Attachment({
@@ -79,12 +80,13 @@ class Attachment extends Equatable {
   bool get isImage => type == AttachmentType.image;
   bool get isDocument => type == AttachmentType.document;
   bool get isAvailable => !isDeleted && isUploaded && googleDriveLink != null;
-  
+
   // Check if local file should be cached (only camera-captured images for 30 days)
   bool get shouldCacheLocally => isCapturedFromCamera && isImage;
-  
+
   // Check if local cache is still valid
-  bool get isLocalCacheValid => localCacheExpiry != null && DateTime.now().isBefore(localCacheExpiry!);
+  bool get isLocalCacheValid =>
+      localCacheExpiry != null && DateTime.now().isBefore(localCacheExpiry!);
 
   @override
   List<Object?> get props => [

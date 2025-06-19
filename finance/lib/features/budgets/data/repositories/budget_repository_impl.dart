@@ -53,7 +53,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   Future<Budget> createBudget(Budget budget) async {
     final now = DateTime.now();
     final syncId = budget.syncId.isEmpty ? _uuid.v4() : budget.syncId;
-    
+
     final companion = BudgetsTableCompanion.insert(
       name: budget.name,
       amount: budget.amount,
@@ -66,32 +66,33 @@ class BudgetRepositoryImpl implements BudgetRepository {
       syncId: syncId,
       createdAt: Value(budget.createdAt),
       updatedAt: Value(now),
-      
+
       // Advanced filtering fields
-      budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
-        ? jsonEncode(budget.budgetTransactionFilters) 
-        : null),
-      excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
+      budgetTransactionFilters: Value(budget.budgetTransactionFilters != null
+          ? jsonEncode(budget.budgetTransactionFilters)
+          : null),
+      excludeDebtCreditInstallments:
+          Value(budget.excludeDebtCreditInstallments),
       excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
-      walletFks: Value(budget.walletFks != null 
-        ? jsonEncode(budget.walletFks) 
-        : null),
-      currencyFks: Value(budget.currencyFks != null 
-        ? jsonEncode(budget.currencyFks) 
-        : null),
+      walletFks:
+          Value(budget.walletFks != null ? jsonEncode(budget.walletFks) : null),
+      currencyFks: Value(
+          budget.currencyFks != null ? jsonEncode(budget.currencyFks) : null),
       sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
-      budgetFksExclude: Value(budget.budgetFksExclude != null 
-        ? jsonEncode(budget.budgetFksExclude) 
-        : null),
+      budgetFksExclude: Value(budget.budgetFksExclude != null
+          ? jsonEncode(budget.budgetFksExclude)
+          : null),
       normalizeToCurrency: Value(budget.normalizeToCurrency),
       isIncomeBudget: Value(budget.isIncomeBudget),
-      includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
-      includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+      includeTransferInOutWithSameCurrency:
+          Value(budget.includeTransferInOutWithSameCurrency),
+      includeUpcomingTransactionFromBudget:
+          Value(budget.includeUpcomingTransactionFromBudget),
       dateCreatedOriginal: Value(budget.dateCreatedOriginal),
     );
 
     final id = await _database.into(_database.budgetsTable).insert(companion);
-    
+
     return budget.copyWith(
       id: id,
       syncId: syncId,
@@ -113,34 +114,35 @@ class BudgetRepositoryImpl implements BudgetRepository {
       endDate: Value(budget.endDate),
       isActive: Value(budget.isActive),
       updatedAt: Value(now),
-      
+
       // Advanced filtering fields
-      budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
-        ? jsonEncode(budget.budgetTransactionFilters) 
-        : null),
-      excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
+      budgetTransactionFilters: Value(budget.budgetTransactionFilters != null
+          ? jsonEncode(budget.budgetTransactionFilters)
+          : null),
+      excludeDebtCreditInstallments:
+          Value(budget.excludeDebtCreditInstallments),
       excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
-      walletFks: Value(budget.walletFks != null 
-        ? jsonEncode(budget.walletFks) 
-        : null),
-      currencyFks: Value(budget.currencyFks != null 
-        ? jsonEncode(budget.currencyFks) 
-        : null),
+      walletFks:
+          Value(budget.walletFks != null ? jsonEncode(budget.walletFks) : null),
+      currencyFks: Value(
+          budget.currencyFks != null ? jsonEncode(budget.currencyFks) : null),
       sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
-      budgetFksExclude: Value(budget.budgetFksExclude != null 
-        ? jsonEncode(budget.budgetFksExclude) 
-        : null),
+      budgetFksExclude: Value(budget.budgetFksExclude != null
+          ? jsonEncode(budget.budgetFksExclude)
+          : null),
       normalizeToCurrency: Value(budget.normalizeToCurrency),
       isIncomeBudget: Value(budget.isIncomeBudget),
-      includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
-      includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+      includeTransferInOutWithSameCurrency:
+          Value(budget.includeTransferInOutWithSameCurrency),
+      includeUpcomingTransactionFromBudget:
+          Value(budget.includeUpcomingTransactionFromBudget),
       dateCreatedOriginal: Value(budget.dateCreatedOriginal),
     );
 
     await (_database.update(_database.budgetsTable)
           ..where((tbl) => tbl.id.equals(budget.id!)))
         .write(companion);
-    
+
     return budget.copyWith(updatedAt: now);
   }
 
@@ -157,9 +159,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
     await (_database.update(_database.budgetsTable)
           ..where((tbl) => tbl.id.equals(budgetId)))
         .write(BudgetsTableCompanion(
-          spent: Value(spentAmount),
-          updatedAt: Value(now),
-        ));
+      spent: Value(spentAmount),
+      updatedAt: Value(now),
+    ));
   }
 
   @override
@@ -180,7 +182,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   @override
   Future<void> insertOrUpdateFromSync(Budget budget) async {
     final existing = await getBudgetBySyncId(budget.syncId);
-    
+
     if (existing == null) {
       // Insert new budget from sync
       final companion = BudgetsTableCompanion.insert(
@@ -195,27 +197,29 @@ class BudgetRepositoryImpl implements BudgetRepository {
         createdAt: Value(budget.createdAt),
         updatedAt: Value(budget.updatedAt),
         syncId: budget.syncId,
-        
+
         // Advanced filtering fields
-        budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
-          ? jsonEncode(budget.budgetTransactionFilters) 
-          : null),
-        excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
-        excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
-        walletFks: Value(budget.walletFks != null 
-          ? jsonEncode(budget.walletFks) 
-          : null),
-        currencyFks: Value(budget.currencyFks != null 
-          ? jsonEncode(budget.currencyFks) 
-          : null),
+        budgetTransactionFilters: Value(budget.budgetTransactionFilters != null
+            ? jsonEncode(budget.budgetTransactionFilters)
+            : null),
+        excludeDebtCreditInstallments:
+            Value(budget.excludeDebtCreditInstallments),
+        excludeObjectiveInstallments:
+            Value(budget.excludeObjectiveInstallments),
+        walletFks: Value(
+            budget.walletFks != null ? jsonEncode(budget.walletFks) : null),
+        currencyFks: Value(
+            budget.currencyFks != null ? jsonEncode(budget.currencyFks) : null),
         sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
-        budgetFksExclude: Value(budget.budgetFksExclude != null 
-          ? jsonEncode(budget.budgetFksExclude) 
-          : null),
+        budgetFksExclude: Value(budget.budgetFksExclude != null
+            ? jsonEncode(budget.budgetFksExclude)
+            : null),
         normalizeToCurrency: Value(budget.normalizeToCurrency),
         isIncomeBudget: Value(budget.isIncomeBudget),
-        includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
-        includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+        includeTransferInOutWithSameCurrency:
+            Value(budget.includeTransferInOutWithSameCurrency),
+        includeUpcomingTransactionFromBudget:
+            Value(budget.includeUpcomingTransactionFromBudget),
         dateCreatedOriginal: Value(budget.dateCreatedOriginal),
       );
       await _database.into(_database.budgetsTable).insert(companion);
@@ -232,30 +236,32 @@ class BudgetRepositoryImpl implements BudgetRepository {
         endDate: Value(budget.endDate),
         isActive: Value(budget.isActive),
         updatedAt: Value(budget.updatedAt),
-        
+
         // Advanced filtering fields
-        budgetTransactionFilters: Value(budget.budgetTransactionFilters != null 
-          ? jsonEncode(budget.budgetTransactionFilters) 
-          : null),
-        excludeDebtCreditInstallments: Value(budget.excludeDebtCreditInstallments),
-        excludeObjectiveInstallments: Value(budget.excludeObjectiveInstallments),
-        walletFks: Value(budget.walletFks != null 
-          ? jsonEncode(budget.walletFks) 
-          : null),
-        currencyFks: Value(budget.currencyFks != null 
-          ? jsonEncode(budget.currencyFks) 
-          : null),
+        budgetTransactionFilters: Value(budget.budgetTransactionFilters != null
+            ? jsonEncode(budget.budgetTransactionFilters)
+            : null),
+        excludeDebtCreditInstallments:
+            Value(budget.excludeDebtCreditInstallments),
+        excludeObjectiveInstallments:
+            Value(budget.excludeObjectiveInstallments),
+        walletFks: Value(
+            budget.walletFks != null ? jsonEncode(budget.walletFks) : null),
+        currencyFks: Value(
+            budget.currencyFks != null ? jsonEncode(budget.currencyFks) : null),
         sharedReferenceBudgetPk: Value(budget.sharedReferenceBudgetPk),
-        budgetFksExclude: Value(budget.budgetFksExclude != null 
-          ? jsonEncode(budget.budgetFksExclude) 
-          : null),
+        budgetFksExclude: Value(budget.budgetFksExclude != null
+            ? jsonEncode(budget.budgetFksExclude)
+            : null),
         normalizeToCurrency: Value(budget.normalizeToCurrency),
         isIncomeBudget: Value(budget.isIncomeBudget),
-        includeTransferInOutWithSameCurrency: Value(budget.includeTransferInOutWithSameCurrency),
-        includeUpcomingTransactionFromBudget: Value(budget.includeUpcomingTransactionFromBudget),
+        includeTransferInOutWithSameCurrency:
+            Value(budget.includeTransferInOutWithSameCurrency),
+        includeUpcomingTransactionFromBudget:
+            Value(budget.includeUpcomingTransactionFromBudget),
         dateCreatedOriginal: Value(budget.dateCreatedOriginal),
       );
-      
+
       await (_database.update(_database.budgetsTable)
             ..where((tbl) => tbl.id.equals(existing.id!)))
           .write(companion);
@@ -276,22 +282,31 @@ class BudgetRepositoryImpl implements BudgetRepository {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       syncId: data.syncId,
-      
+
       // Advanced filtering fields
       excludeDebtCreditInstallments: data.excludeDebtCreditInstallments,
       excludeObjectiveInstallments: data.excludeObjectiveInstallments,
-      walletFks: data.walletFks != null ? List<String>.from(jsonDecode(data.walletFks!)) : null,
-      currencyFks: data.currencyFks != null ? List<String>.from(jsonDecode(data.currencyFks!)) : null,
+      walletFks: data.walletFks != null
+          ? List<String>.from(jsonDecode(data.walletFks!))
+          : null,
+      currencyFks: data.currencyFks != null
+          ? List<String>.from(jsonDecode(data.currencyFks!))
+          : null,
       sharedReferenceBudgetPk: data.sharedReferenceBudgetPk,
-      budgetFksExclude: data.budgetFksExclude != null ? List<String>.from(jsonDecode(data.budgetFksExclude!)) : null,
+      budgetFksExclude: data.budgetFksExclude != null
+          ? List<String>.from(jsonDecode(data.budgetFksExclude!))
+          : null,
       normalizeToCurrency: data.normalizeToCurrency,
       isIncomeBudget: data.isIncomeBudget,
-      includeTransferInOutWithSameCurrency: data.includeTransferInOutWithSameCurrency,
-      includeUpcomingTransactionFromBudget: data.includeUpcomingTransactionFromBudget,
+      includeTransferInOutWithSameCurrency:
+          data.includeTransferInOutWithSameCurrency,
+      includeUpcomingTransactionFromBudget:
+          data.includeUpcomingTransactionFromBudget,
       dateCreatedOriginal: data.dateCreatedOriginal,
-      budgetTransactionFilters: data.budgetTransactionFilters != null 
-        ? Map<String, dynamic>.from(jsonDecode(data.budgetTransactionFilters!)) 
-        : null,
+      budgetTransactionFilters: data.budgetTransactionFilters != null
+          ? Map<String, dynamic>.from(
+              jsonDecode(data.budgetTransactionFilters!))
+          : null,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart' as flutter_colorpicker;
+import 'package:flutter_colorpicker/flutter_colorpicker.dart'
+    as flutter_colorpicker;
 import 'package:easy_localization/easy_localization.dart';
 
 import '../bloc/settings_bloc.dart';
@@ -26,7 +27,8 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(      appBar: AppBar(
+    return Scaffold(
+      appBar: AppBar(
         title: AppText(
           'settings.title'.tr(),
           fontSize: 20,
@@ -36,39 +38,40 @@ class _SettingsPageState extends State<SettingsPage> {
       body: BlocBuilder<SettingsBloc, SettingsState>(
         builder: (context, state) {
           return ListView(
-            children: [              // Theme Section
+            children: [
+              // Theme Section
               _buildSectionHeader('settings.theme'.tr()),
               _buildThemeModeSetting(),
               _buildDivider(),
-              
+
               // Language Section
               _buildSectionHeader('settings.localization'.tr()),
               const LanguageSelector(),
               _buildDivider(),
-              
+
               // Colors Section
               _buildSectionHeader('settings.colors'.tr()),
               _buildAccentColorSelector(),
               _buildCustomColorPicker(),
               _buildMaterialYouSettings(),
               _buildDivider(),
-              
+
               // Text Section
               _buildSectionHeader('Text'),
               _buildFontSelector(),
               _buildContrastSetting(),
               _buildDivider(),
-              
+
               // Accessibility Section
               _buildSectionHeader('Accessibility'),
               _buildReduceAnimationsSetting(),
               _buildDivider(),
-              
+
               // Animation Framework Section (Phase 6.1)
               _buildSectionHeader('Animations'),
               _buildAnimationFrameworkSettings(),
               _buildDivider(),
-              
+
               // Data & Privacy Section
               _buildSectionHeader('Data & Privacy'),
               SwitchListTile(
@@ -78,8 +81,8 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: state.analyticsEnabled,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                    SettingsEvent.analyticsToggled(value),
-                  );
+                        SettingsEvent.analyticsToggled(value),
+                      );
                 },
               ),
               SwitchListTile(
@@ -89,12 +92,12 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: state.autoBackupEnabled,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                    SettingsEvent.autoBackupToggled(value),
-                  );
+                        SettingsEvent.autoBackupToggled(value),
+                      );
                 },
               ),
               _buildDivider(),
-              
+
               // Notifications Section
               _buildSectionHeader('Notifications'),
               SwitchListTile(
@@ -104,19 +107,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 value: state.notificationsEnabled,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
-                    SettingsEvent.notificationsToggled(value),
-                  );
+                        SettingsEvent.notificationsToggled(value),
+                      );
                 },
               ),
               _buildDivider(),
-              
+
               // Debug Section (Phase 6.2)
               _buildSectionHeader('Debug & Performance'),
               _buildPerformanceMonitorTile(),
               _buildPerformanceMetricsTile(),
               _buildResetMetricsTile(),
               _buildDivider(),
-              
+
               // App Info Section
               _buildSectionHeader('App Info'),
               ListTile(
@@ -212,17 +215,16 @@ class _SettingsPageState extends State<SettingsPage> {
           await AppTheme.setThemeMode(mode);
           // Update BLoC as well for consistency
           context.read<SettingsBloc>().add(
-            SettingsEvent.themeModeChanged(mode),
-          );
+                SettingsEvent.themeModeChanged(mode),
+              );
           setState(() {});
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: isSelected
               ? getColor(context, 'primary')
               : getColor(context, 'surfaceContainer'),
-          foregroundColor: isSelected
-              ? Colors.white
-              : getColor(context, 'text'),
+          foregroundColor:
+              isSelected ? Colors.white : getColor(context, 'text'),
           padding: const EdgeInsets.symmetric(vertical: 12),
         ),
         child: Column(
@@ -232,9 +234,7 @@ class _SettingsPageState extends State<SettingsPage> {
             AppText(
               label,
               fontSize: 12,
-              textColor: isSelected
-                  ? Colors.white
-                  : getColor(context, 'text'),
+              textColor: isSelected ? Colors.white : getColor(context, 'text'),
             ),
           ],
         ),
@@ -259,7 +259,8 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
-            runSpacing: 8,            children: colors.map((color) {
+            runSpacing: 8,
+            children: colors.map((color) {
               final isSelected = color.toARGB32() == currentColor.toARGB32();
               return GestureDetector(
                 onTap: () async {
@@ -278,7 +279,8 @@ class _SettingsPageState extends State<SettingsPage> {
                           : Colors.transparent,
                       width: 2,
                     ),
-                    boxShadow: [                      BoxShadow(
+                    boxShadow: [
+                      BoxShadow(
                         color: Colors.black.withValues(alpha: 0.1),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
@@ -337,7 +339,7 @@ class _SettingsPageState extends State<SettingsPage> {
             fontWeight: FontWeight.bold,
           ),
           const SizedBox(height: 8),
-          
+
           // Material You toggle
           SwitchListTile(
             title: const AppText('Material You'),
@@ -355,7 +357,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 : null,
             contentPadding: EdgeInsets.zero,
           ),
-          
+
           // System accent toggle
           SwitchListTile(
             title: const AppText('Use System Accent'),
@@ -417,7 +419,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildContrastSetting() {
-    final isEnabled = AppSettings.getWithDefault<bool>('increaseTextContrast', false);
+    final isEnabled =
+        AppSettings.getWithDefault<bool>('increaseTextContrast', false);
 
     return SwitchListTile(
       title: const AppText(
@@ -440,7 +443,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildReduceAnimationsSetting() {
-    final isEnabled = AppSettings.getWithDefault<bool>('reduceAnimations', false);
+    final isEnabled =
+        AppSettings.getWithDefault<bool>('reduceAnimations', false);
 
     return SwitchListTile(
       title: const AppText(
@@ -464,10 +468,14 @@ class _SettingsPageState extends State<SettingsPage> {
 
   /// Phase 6.1: Enhanced Animation Framework Settings
   Widget _buildAnimationFrameworkSettings() {
-    final appAnimations = AppSettings.getWithDefault<bool>('appAnimations', true);
-    final batterySaver = AppSettings.getWithDefault<bool>('batterySaver', false);
-    final animationLevel = AppSettings.getWithDefault<String>('animationLevel', 'normal');
-    final outlinedIcons = AppSettings.getWithDefault<bool>('outlinedIcons', false);
+    final appAnimations =
+        AppSettings.getWithDefault<bool>('appAnimations', true);
+    final batterySaver =
+        AppSettings.getWithDefault<bool>('batterySaver', false);
+    final animationLevel =
+        AppSettings.getWithDefault<String>('animationLevel', 'normal');
+    final outlinedIcons =
+        AppSettings.getWithDefault<bool>('outlinedIcons', false);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -553,7 +561,9 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
 
           // Performance info (when relevant)
-          if (batterySaver || !appAnimations || animationLevel == 'reduced') ...[
+          if (batterySaver ||
+              !appAnimations ||
+              animationLevel == 'reduced') ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
@@ -588,9 +598,21 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildAnimationLevelSelector(String currentLevel) {
     final levels = [
       {'value': 'none', 'label': 'None', 'description': 'No animations'},
-      {'value': 'reduced', 'label': 'Reduced', 'description': 'Minimal animations'},
-      {'value': 'normal', 'label': 'Normal', 'description': 'Standard animations'},
-      {'value': 'enhanced', 'label': 'Enhanced', 'description': 'Rich animations'},
+      {
+        'value': 'reduced',
+        'label': 'Reduced',
+        'description': 'Minimal animations'
+      },
+      {
+        'value': 'normal',
+        'label': 'Normal',
+        'description': 'Standard animations'
+      },
+      {
+        'value': 'enhanced',
+        'label': 'Enhanced',
+        'description': 'Rich animations'
+      },
     ];
 
     return Wrap(
@@ -624,9 +646,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   level['label']!,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
-                  textColor: isSelected
-                      ? Colors.white
-                      : getColor(context, 'text'),
+                  textColor:
+                      isSelected ? Colors.white : getColor(context, 'text'),
                 ),
                 const SizedBox(height: 2),
                 AppText(
@@ -646,7 +667,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   String _getPerformanceInfo() {
     final profile = AnimationPerformanceService.getPerformanceProfile();
-    
+
     if (!profile['appAnimations']) {
       return 'All animations disabled for maximum performance';
     } else if (profile['batterySaver']) {
@@ -656,7 +677,7 @@ class _SettingsPageState extends State<SettingsPage> {
     } else if (profile['animationLevel'] == 'enhanced') {
       return 'Enhanced animations: Full effects and transitions enabled';
     }
-    
+
     return 'Normal animation level: Balanced performance and experience';
   }
 
@@ -755,7 +776,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void _showPerformanceMetrics() {
     final metrics = AnimationUtils.getPerformanceMetrics();
     final debugInfo = AnimationUtils.getAnimationDebugInfo();
-    
+
     DialogService.showPopup<void>(
       context,
       SingleChildScrollView(
@@ -771,7 +792,7 @@ class _SettingsPageState extends State<SettingsPage> {
               colorName: 'text',
             ),
             const SizedBox(height: 8),
-            
+
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -780,19 +801,24 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Column(
                 children: [
-                  _buildMetricRow('Active Animations', '${metrics['activeAnimations']}'),
-                  _buildMetricRow('Max Simultaneous', '${metrics['maxSimultaneousAnimations']}'),
-                  _buildMetricRow('Performance Status', 
-                    metrics['performanceProfile']['performanceMetrics']['isPerformanceGood'] 
-                      ? 'Good' : 'Degraded'),
-                  _buildMetricRow('Frame Time', 
-                    '${metrics['performanceProfile']['performanceMetrics']['averageFrameTimeMs']}ms'),
+                  _buildMetricRow(
+                      'Active Animations', '${metrics['activeAnimations']}'),
+                  _buildMetricRow('Max Simultaneous',
+                      '${metrics['maxSimultaneousAnimations']}'),
+                  _buildMetricRow(
+                      'Performance Status',
+                      metrics['performanceProfile']['performanceMetrics']
+                              ['isPerformanceGood']
+                          ? 'Good'
+                          : 'Degraded'),
+                  _buildMetricRow('Frame Time',
+                      '${metrics['performanceProfile']['performanceMetrics']['averageFrameTimeMs']}ms'),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 16),
-            
+
             // Settings Summary
             AppText(
               'Animation Settings:',
@@ -801,7 +827,7 @@ class _SettingsPageState extends State<SettingsPage> {
               colorName: 'text',
             ),
             const SizedBox(height: 8),
-            
+
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -810,17 +836,22 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               child: Column(
                 children: [
-                  _buildMetricRow('Animation Level', '${debugInfo['animationLevel']}'),
-                  _buildMetricRow('App Animations', '${debugInfo['appAnimations']}'),
-                  _buildMetricRow('Battery Saver', '${debugInfo['batterySaver']}'),
-                  _buildMetricRow('Complex Animations', '${debugInfo['shouldUseComplexAnimations']}'),
-                  _buildMetricRow('Staggered Animations', '${debugInfo['shouldUseStaggeredAnimations']}'),
+                  _buildMetricRow(
+                      'Animation Level', '${debugInfo['animationLevel']}'),
+                  _buildMetricRow(
+                      'App Animations', '${debugInfo['appAnimations']}'),
+                  _buildMetricRow(
+                      'Battery Saver', '${debugInfo['batterySaver']}'),
+                  _buildMetricRow('Complex Animations',
+                      '${debugInfo['shouldUseComplexAnimations']}'),
+                  _buildMetricRow('Staggered Animations',
+                      '${debugInfo['shouldUseStaggeredAnimations']}'),
                 ],
               ),
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Close button
             Align(
               alignment: Alignment.centerRight,
@@ -873,7 +904,7 @@ class _SettingsPageState extends State<SettingsPage> {
   void _resetPerformanceMetrics() {
     AnimationUtils.resetPerformanceMetrics();
     AnimationPerformanceService.resetPerformanceMetrics();
-    
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: AppText(
@@ -902,7 +933,7 @@ class _SettingsPageState extends State<SettingsPage> {
             colorName: 'text',
           ),
           const SizedBox(height: 16),
-          
+
           // Features list
           AppText(
             'Key Features:',
@@ -911,8 +942,15 @@ class _SettingsPageState extends State<SettingsPage> {
             colorName: 'text',
           ),
           const SizedBox(height: 8),
-          
-          ...['Multi-currency support', 'Cloud synchronization', 'Budget tracking', 'Advanced animations', 'Material You theming', 'Accessibility support']
+
+          ...[
+            'Multi-currency support',
+            'Cloud synchronization',
+            'Budget tracking',
+            'Advanced animations',
+            'Material You theming',
+            'Accessibility support'
+          ]
               .map((feature) => Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(
@@ -934,9 +972,9 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ))
               .toList(),
-          
+
           const SizedBox(height: 16),
-          
+
           // Legal and version info
           Container(
             padding: const EdgeInsets.all(12),
@@ -989,9 +1027,9 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 20),
-          
+
           // Close button
           Align(
             alignment: Alignment.centerRight,
@@ -1018,7 +1056,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
   void _showColorPicker() async {
     Color selectedColor = AppSettings.accentColor;
-    
+
     // Phase 6.1: Replace standard showDialog with PopupFramework
     await DialogService.showPopup<void>(
       context,

@@ -52,7 +52,7 @@ class _AnimatedScaleOpacityState extends State<AnimatedScaleOpacity>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -86,7 +86,7 @@ class _AnimatedScaleOpacityState extends State<AnimatedScaleOpacity>
   @override
   void didUpdateWidget(AnimatedScaleOpacity oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.visible != widget.visible) {
       if (widget.visible) {
         _controller.forward();
@@ -134,8 +134,8 @@ class _AnimatedScaleOpacityState extends State<AnimatedScaleOpacity>
   Widget build(BuildContext context) {
     // Skip animation wrapper if animations are disabled
     if (!AnimationUtils.shouldAnimate()) {
-      return widget.visible 
-          ? widget.child 
+      return widget.visible
+          ? widget.child
           : Visibility(
               visible: false,
               maintainState: widget.maintainState,
@@ -209,4 +209,4 @@ extension AnimatedScaleOpacityExtension on Widget {
       child: this,
     );
   }
-} 
+}

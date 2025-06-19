@@ -15,7 +15,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         syncId: 'test-sync-id',
-        
+
         // Advanced fields
         transactionType: TransactionType.subscription,
         specialType: null,
@@ -48,7 +48,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         syncId: 'test-sync-id-2',
-        
+
         // Advanced fields
         transactionType: TransactionType.loan,
         specialType: TransactionSpecialType.credit,
@@ -80,7 +80,7 @@ void main() {
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         syncId: 'test-sync-id-3',
-        
+
         // Advanced fields
         transactionType: TransactionType.loan,
         specialType: TransactionSpecialType.debt,
@@ -99,7 +99,8 @@ void main() {
       expect(transaction.paid, true);
     });
 
-    test('should provide correct available actions based on state and type', () {
+    test('should provide correct available actions based on state and type',
+        () {
       // Test regular completed transaction
       final regularTransaction = Transaction(
         title: 'Regular Expense',
@@ -112,19 +113,26 @@ void main() {
         syncId: 'test-sync-id-4',
       );
 
-      expect(regularTransaction.availableActions, contains(TransactionAction.edit));
-      expect(regularTransaction.availableActions, contains(TransactionAction.delete));
-      expect(regularTransaction.availableActions, isNot(contains(TransactionAction.pay)));
+      expect(regularTransaction.availableActions,
+          contains(TransactionAction.edit));
+      expect(regularTransaction.availableActions,
+          contains(TransactionAction.delete));
+      expect(regularTransaction.availableActions,
+          isNot(contains(TransactionAction.pay)));
 
       // Test pending transaction
       final pendingTransaction = regularTransaction.copyWith(
         transactionState: TransactionState.pending,
       );
 
-      expect(pendingTransaction.availableActions, contains(TransactionAction.pay));
-      expect(pendingTransaction.availableActions, contains(TransactionAction.skip));
-      expect(pendingTransaction.availableActions, contains(TransactionAction.edit));
-      expect(pendingTransaction.availableActions, contains(TransactionAction.delete));
+      expect(
+          pendingTransaction.availableActions, contains(TransactionAction.pay));
+      expect(pendingTransaction.availableActions,
+          contains(TransactionAction.skip));
+      expect(pendingTransaction.availableActions,
+          contains(TransactionAction.edit));
+      expect(pendingTransaction.availableActions,
+          contains(TransactionAction.delete));
     });
 
     test('should copy transaction with new advanced fields', () {
@@ -171,16 +179,23 @@ void main() {
 
       // Test special types
       expect(TransactionSpecialType.values.length, 2);
-      expect(TransactionSpecialType.values, contains(TransactionSpecialType.credit));
-      expect(TransactionSpecialType.values, contains(TransactionSpecialType.debt));
+      expect(TransactionSpecialType.values,
+          contains(TransactionSpecialType.credit));
+      expect(
+          TransactionSpecialType.values, contains(TransactionSpecialType.debt));
 
       // Test recurrence types
       expect(TransactionRecurrence.values.length, 5);
-      expect(TransactionRecurrence.values, contains(TransactionRecurrence.none));
-      expect(TransactionRecurrence.values, contains(TransactionRecurrence.daily));
-      expect(TransactionRecurrence.values, contains(TransactionRecurrence.weekly));
-      expect(TransactionRecurrence.values, contains(TransactionRecurrence.monthly));
-      expect(TransactionRecurrence.values, contains(TransactionRecurrence.yearly));
+      expect(
+          TransactionRecurrence.values, contains(TransactionRecurrence.none));
+      expect(
+          TransactionRecurrence.values, contains(TransactionRecurrence.daily));
+      expect(
+          TransactionRecurrence.values, contains(TransactionRecurrence.weekly));
+      expect(TransactionRecurrence.values,
+          contains(TransactionRecurrence.monthly));
+      expect(
+          TransactionRecurrence.values, contains(TransactionRecurrence.yearly));
 
       // Test states
       expect(TransactionState.values.length, 5);
@@ -188,8 +203,9 @@ void main() {
       expect(TransactionState.values, contains(TransactionState.pending));
       expect(TransactionState.values, contains(TransactionState.scheduled));
       expect(TransactionState.values, contains(TransactionState.cancelled));
-      expect(TransactionState.values, contains(TransactionState.actionRequired));
-      
+      expect(
+          TransactionState.values, contains(TransactionState.actionRequired));
+
       // Test actions
       expect(TransactionAction.values.length, 8);
       expect(TransactionAction.values, contains(TransactionAction.none));

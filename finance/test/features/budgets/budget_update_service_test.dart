@@ -11,10 +11,13 @@ import 'package:finance/features/transactions/domain/entities/transaction.dart';
 import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
 
 class MockBudgetRepository extends Mock implements BudgetRepository {}
+
 class MockBudgetFilterService extends Mock implements BudgetFilterService {}
+
 class MockBudgetAuthService extends Mock implements BudgetAuthService {}
 
 class FakeBudget extends Fake implements Budget {}
+
 class FakeTransaction extends Fake implements Transaction {}
 
 void main() {
@@ -27,16 +30,16 @@ void main() {
     late MockBudgetRepository mockBudgetRepository;
     late MockBudgetFilterService mockFilterService;
     late MockBudgetAuthService mockAuthService;
-    
+
     setUp(() {
       mockBudgetRepository = MockBudgetRepository();
       mockFilterService = MockBudgetFilterService();
       mockAuthService = MockBudgetAuthService();
-      
+
       // Setup default mock responses to prevent initialization errors
       when(() => mockBudgetRepository.getAllBudgets())
           .thenAnswer((_) async => []);
-      
+
       budgetUpdateService = BudgetUpdateServiceImpl(
         mockBudgetRepository,
         mockFilterService,
@@ -47,7 +50,7 @@ void main() {
     tearDown(() {
       budgetUpdateService.dispose();
     });
-    
+
     group('updateBudgetOnTransactionChange', () {
       test('should update budget when transaction is created', () async {
         // Arrange
@@ -62,7 +65,7 @@ void main() {
           updatedAt: DateTime.now(),
           syncId: 'test-sync',
         );
-        
+
         final budget = Budget(
           id: 1,
           name: 'Test Budget',
@@ -76,30 +79,30 @@ void main() {
           updatedAt: DateTime.now(),
           syncId: 'test-sync',
         );
-        
+
         // Reset and setup specific mocks for this test
         reset(mockBudgetRepository);
         reset(mockFilterService);
-        
+
         when(() => mockBudgetRepository.getAllBudgets())
             .thenAnswer((_) async => [budget]);
         when(() => mockFilterService.shouldIncludeTransaction(any(), any()))
             .thenAnswer((_) async => true);
         when(() => mockBudgetRepository.updateBudget(any()))
             .thenAnswer((_) async => budget.copyWith(spent: 100.0));
-        
+
         // Act
         await budgetUpdateService.updateBudgetOnTransactionChange(
-          transaction, 
-          TransactionChangeType.created
-        );
-        
+            transaction, TransactionChangeType.created);
+
         // Assert
-        verify(() => mockBudgetRepository.getAllBudgets()).called(2); // Called once during operation + once for stream update
-        verify(() => mockFilterService.shouldIncludeTransaction(any(), any())).called(2); // Called for each budget
+        verify(() => mockBudgetRepository.getAllBudgets())
+            .called(2); // Called once during operation + once for stream update
+        verify(() => mockFilterService.shouldIncludeTransaction(any(), any()))
+            .called(2); // Called for each budget
         verify(() => mockBudgetRepository.updateBudget(any())).called(1);
       });
-      
+
       test('should handle transaction deletion', () async {
         // Arrange
         final transaction = Transaction(
@@ -113,7 +116,7 @@ void main() {
           updatedAt: DateTime.now(),
           syncId: 'test-sync',
         );
-        
+
         final budget = Budget(
           id: 1,
           name: 'Test Budget',
@@ -127,31 +130,31 @@ void main() {
           updatedAt: DateTime.now(),
           syncId: 'test-sync',
         );
-        
+
         // Reset and setup specific mocks for this test
         reset(mockBudgetRepository);
         reset(mockFilterService);
-        
+
         when(() => mockBudgetRepository.getAllBudgets())
             .thenAnswer((_) async => [budget]);
         when(() => mockFilterService.shouldIncludeTransaction(any(), any()))
             .thenAnswer((_) async => true);
         when(() => mockBudgetRepository.updateBudget(any()))
             .thenAnswer((_) async => budget.copyWith(spent: 0.0));
-        
+
         // Act
         await budgetUpdateService.updateBudgetOnTransactionChange(
-          transaction, 
-          TransactionChangeType.deleted
-        );
-        
+            transaction, TransactionChangeType.deleted);
+
         // Assert
-        verify(() => mockBudgetRepository.getAllBudgets()).called(2); // Called once during operation + once for stream update
-        verify(() => mockFilterService.shouldIncludeTransaction(any(), any())).called(2); // Called for each budget
+        verify(() => mockBudgetRepository.getAllBudgets())
+            .called(2); // Called once during operation + once for stream update
+        verify(() => mockFilterService.shouldIncludeTransaction(any(), any()))
+            .called(2); // Called for each budget
         verify(() => mockBudgetRepository.updateBudget(any())).called(1);
       });
     });
-    
+
     group('recalculateBudgetSpentAmount', () {
       test('should recalculate single budget spent amount', () async {
         // Arrange
@@ -168,11 +171,11 @@ void main() {
           updatedAt: DateTime.now(),
           syncId: 'test-sync',
         );
-        
+
         // Reset and setup specific mocks for this test
         reset(mockBudgetRepository);
         reset(mockFilterService);
-        
+
         when(() => mockBudgetRepository.getBudgetById(1))
             .thenAnswer((_) async => budget);
         when(() => mockFilterService.calculateBudgetSpent(any()))
@@ -181,17 +184,17 @@ void main() {
             .thenAnswer((_) async => budget.copyWith(spent: 150.0));
         when(() => mockBudgetRepository.getAllBudgets())
             .thenAnswer((_) async => [budget.copyWith(spent: 150.0)]);
-        
+
         // Act
         await budgetUpdateService.recalculateBudgetSpentAmount(1);
-        
+
         // Assert
         verify(() => mockBudgetRepository.getBudgetById(1)).called(1);
         verify(() => mockFilterService.calculateBudgetSpent(budget)).called(1);
         verify(() => mockBudgetRepository.updateBudget(any())).called(1);
       });
     });
-    
+
     group('recalculateAllBudgetSpentAmounts', () {
       test('should recalculate all budget spent amounts', () async {
         // Arrange
@@ -223,11 +226,11 @@ void main() {
             syncId: 'test-sync-2',
           ),
         ];
-        
+
         // Reset and setup specific mocks for this test
         reset(mockBudgetRepository);
         reset(mockFilterService);
-        
+
         when(() => mockBudgetRepository.getAllBudgets())
             .thenAnswer((_) async => budgets);
         when(() => mockFilterService.calculateBudgetSpent(budgets[0]))
@@ -236,17 +239,18 @@ void main() {
             .thenAnswer((_) async => 75.0);
         when(() => mockBudgetRepository.updateBudget(any()))
             .thenAnswer((_) async => budgets[0]);
-        
+
         // Act
         await budgetUpdateService.recalculateAllBudgetSpentAmounts();
-        
+
         // Assert
-        verify(() => mockBudgetRepository.getAllBudgets()).called(2); // Once to get budgets, once to update streams
+        verify(() => mockBudgetRepository.getAllBudgets())
+            .called(2); // Once to get budgets, once to update streams
         verify(() => mockFilterService.calculateBudgetSpent(any())).called(2);
         verify(() => mockBudgetRepository.updateBudget(any())).called(2);
       });
     });
-    
+
     group('real-time streams', () {
       test('should emit real-time budget updates through stream', () async {
         // Arrange
@@ -263,13 +267,13 @@ void main() {
           updatedAt: DateTime.now(),
           syncId: 'test-sync',
         );
-        
+
         // Reset and setup specific mocks for this test
         reset(mockBudgetRepository);
-        
+
         when(() => mockBudgetRepository.getAllBudgets())
             .thenAnswer((_) async => [budget]);
-        
+
         // Act & Assert
         expect(
           budgetUpdateService.watchAllBudgetUpdates(),
@@ -277,7 +281,7 @@ void main() {
             [], // Initial empty emission from service start
           ]),
         );
-        
+
         expect(
           budgetUpdateService.watchBudgetSpentAmounts(),
           emitsInOrder([
@@ -286,44 +290,45 @@ void main() {
         );
       });
     });
-    
+
     group('authentication', () {
       test('should authenticate for biometric access', () async {
         // Arrange
         reset(mockAuthService);
-        
+
         when(() => mockAuthService.authenticateForBudgetAccess())
             .thenAnswer((_) async => true);
-        
+
         // Act
         final result = await budgetUpdateService.authenticateForBudgetAccess();
-        
+
         // Assert
         expect(result, isTrue);
         verify(() => mockAuthService.authenticateForBudgetAccess()).called(1);
       });
-      
+
       test('should handle authentication failure', () async {
         // Arrange
         reset(mockAuthService);
-        
+
         when(() => mockAuthService.authenticateForBudgetAccess())
             .thenAnswer((_) async => false);
-        
+
         // Act
         final result = await budgetUpdateService.authenticateForBudgetAccess();
-        
+
         // Assert
         expect(result, isFalse);
         verify(() => mockAuthService.authenticateForBudgetAccess()).called(1);
       });
     });
-    
+
     group('performance tracking', () {
       test('should handle performance tracking', () async {
         // Act
-        final metrics = await budgetUpdateService.getBudgetUpdatePerformanceMetrics();
-        
+        final metrics =
+            await budgetUpdateService.getBudgetUpdatePerformanceMetrics();
+
         // Assert
         expect(metrics, isA<Map<String, dynamic>>());
         expect(metrics.containsKey('operation_counts'), isTrue);
@@ -332,4 +337,4 @@ void main() {
       });
     });
   });
-} 
+}

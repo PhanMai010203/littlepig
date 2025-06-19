@@ -35,7 +35,8 @@ void main() {
         MaterialApp(
           home: Scaffold(
             body: FadeIn(
-              child: Container(key: const ValueKey('content'), color: Colors.blue),
+              child:
+                  Container(key: const ValueKey('content'), color: Colors.blue),
             ),
           ),
         ),
@@ -43,7 +44,7 @@ void main() {
 
       // In reduced animation mode, the widget should be immediately visible
       // and should not build an animation widget.
-      await tester.pump(); 
+      await tester.pump();
 
       final finder = find.byKey(const ValueKey('content'));
       expect(finder, findsOneWidget);
@@ -77,7 +78,8 @@ void main() {
 
       // Tap the button to show the dialog
       await tester.tap(find.byType(ElevatedButton));
-      await tester.pumpAndSettle(); // pumpAndSettle to allow animations to finish
+      await tester
+          .pumpAndSettle(); // pumpAndSettle to allow animations to finish
 
       // Verify the dialog is shown
       expect(find.byType(PopupFramework), findsOneWidget);
@@ -85,11 +87,12 @@ void main() {
       expect(find.text(dialogContentText), findsOneWidget);
     });
 
-    testWidgets('BottomSheetService shows a custom bottom sheet', (tester) async {
+    testWidgets('BottomSheetService shows a custom bottom sheet',
+        (tester) async {
       const sheetTitle = 'Test Bottom Sheet';
       const sheetContentText = 'This is a bottom sheet test.';
 
-       await tester.pumpWidget(
+      await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: Builder(
@@ -117,4 +120,4 @@ void main() {
       expect(find.text(sheetContentText), findsOneWidget);
     });
   });
-} 
+}

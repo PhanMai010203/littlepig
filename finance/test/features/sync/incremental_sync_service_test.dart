@@ -36,7 +36,7 @@ void main() {
         final query = database.select(database.syncMetadataTable)
           ..where((t) => t.key.equals('device_id'));
         final result = await query.getSingleOrNull();
-        
+
         expect(result, isNotNull);
         expect(result!.value, isNotEmpty);
         expect(result.value, startsWith('device_'));
@@ -47,21 +47,23 @@ void main() {
       test('should track unsynced events for new transactions', () async {
         // Insert a test transaction
         await database.into(database.transactionsTable).insert(
-          TransactionsTableCompanion.insert(
-            title: 'Test Transaction',
-            amount: 100.0,
-            categoryId: 1,
-            accountId: 1,
-            date: DateTime.now(),
-            syncId: 'test-txn-1',
-          ),
-        );
+              TransactionsTableCompanion.insert(
+                title: 'Test Transaction',
+                amount: 100.0,
+                categoryId: 1,
+                accountId: 1,
+                date: DateTime.now(),
+                syncId: 'test-txn-1',
+              ),
+            );
 
         // Database triggers may not work in test environment
         // Check if we can manually query the transaction
-        final transactionCount = await database.customSelect(
-          'SELECT COUNT(*) as count FROM transactions',
-        ).getSingle();
+        final transactionCount = await database
+            .customSelect(
+              'SELECT COUNT(*) as count FROM transactions',
+            )
+            .getSingle();
 
         expect(transactionCount.data['count'], greaterThan(0));
       });
@@ -120,7 +122,7 @@ void main() {
         }
 
         await subscription.cancel();
-        
+
         // Should have received at least one status update
         expect(statusList, isNotEmpty);
       });
@@ -132,11 +134,11 @@ void main() {
 
         // Set a sync time manually
         await database.into(database.syncMetadataTable).insert(
-          SyncMetadataTableCompanion.insert(
-            key: 'last_sync_time',
-            value: DateTime.now().toIso8601String(),
-          ),
-        );
+              SyncMetadataTableCompanion.insert(
+                key: 'last_sync_time',
+                value: DateTime.now().toIso8601String(),
+              ),
+            );
 
         final syncTime = await syncService.getLastSyncTime();
         expect(syncTime, isNotNull);
@@ -266,15 +268,15 @@ void main() {
         // First create a transaction
         final syncId = 'test-sync-id';
         await database.into(database.transactionsTable).insert(
-          TransactionsTableCompanion.insert(
-            title: 'Original Transaction',
-            amount: 100.0,
-            categoryId: 1,
-            accountId: 1,
-            date: DateTime.now(),
-            syncId: syncId,
-          ),
-        );
+              TransactionsTableCompanion.insert(
+                title: 'Original Transaction',
+                amount: 100.0,
+                categoryId: 1,
+                accountId: 1,
+                date: DateTime.now(),
+                syncId: syncId,
+              ),
+            );
 
         final updateData = {
           'title': 'Updated Transaction',
@@ -321,28 +323,30 @@ void main() {
       test('should update sync state after successful sync', () async {
         // Insert initial sync state
         await database.into(database.syncStateTable).insert(
-          SyncStateTableCompanion.insert(
-            deviceId: 'test-device',
-            lastSyncTime: DateTime.now().subtract(Duration(hours: 1)),
-            lastSequenceNumber: const Value(0),
-            status: const Value('idle'),
-          ),
-        );
+              SyncStateTableCompanion.insert(
+                deviceId: 'test-device',
+                lastSyncTime: DateTime.now().subtract(Duration(hours: 1)),
+                lastSequenceNumber: const Value(0),
+                status: const Value('idle'),
+              ),
+            );
 
         // Check initial state
-        final initialState = await database.select(database.syncStateTable).getSingle();
+        final initialState =
+            await database.select(database.syncStateTable).getSingle();
         expect(initialState.lastSequenceNumber, 0);
 
         // Update sequence number by updating the existing record
         await database.update(database.syncStateTable).write(
-          SyncStateTableCompanion(
-            lastSyncTime: Value(DateTime.now()),
-            lastSequenceNumber: const Value(5),
-            status: const Value('completed'),
-          ),
-        );
+              SyncStateTableCompanion(
+                lastSyncTime: Value(DateTime.now()),
+                lastSequenceNumber: const Value(5),
+                status: const Value('completed'),
+              ),
+            );
 
-        final updatedState = await database.select(database.syncStateTable).getSingle();
+        final updatedState =
+            await database.select(database.syncStateTable).getSingle();
         expect(updatedState.lastSequenceNumber, 5);
         expect(updatedState.status, 'completed');
       });
@@ -370,10 +374,10 @@ void main() {
       test('should handle network failures gracefully', () async {
         // Test that sync service doesn't crash on network errors
         expect(syncService.isSyncing, isFalse);
-        
+
         // Try to perform sync (may succeed or fail depending on setup)
         final result = await syncService.syncToCloud();
-        
+
         // Just verify we get a result without crashing
         expect(result, isNotNull);
         expect(result.timestamp, isNotNull);
@@ -383,17 +387,19 @@ void main() {
     group('Performance', () {
       test('should handle large event batches efficiently', () {
         // Create a large batch of events
-        final events = List.generate(1000, (index) => SyncEvent(
-          eventId: 'event$index',
-          deviceId: 'test-device',
-          tableName: 'transactions',
-          recordId: 'txn$index',
-          operation: 'create',
-          data: {'title': 'Transaction $index', 'amount': index * 10.0},
-          timestamp: DateTime.now().add(Duration(milliseconds: index)),
-          sequenceNumber: index + 1,
-          hash: 'hash$index',
-        ));
+        final events = List.generate(
+            1000,
+            (index) => SyncEvent(
+                  eventId: 'event$index',
+                  deviceId: 'test-device',
+                  tableName: 'transactions',
+                  recordId: 'txn$index',
+                  operation: 'create',
+                  data: {'title': 'Transaction $index', 'amount': index * 10.0},
+                  timestamp: DateTime.now().add(Duration(milliseconds: index)),
+                  sequenceNumber: index + 1,
+                  hash: 'hash$index',
+                ));
 
         final batch = SyncEventBatch(
           deviceId: 'test-device',
@@ -402,11 +408,11 @@ void main() {
         );
 
         expect(batch.events.length, 1000);
-        
+
         // Verify events can be serialized (for network transmission)
         final json = batch.toJson();
         expect(json['events'], hasLength(1000));
       });
     });
   });
-} 
+}

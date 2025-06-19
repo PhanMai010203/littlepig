@@ -38,7 +38,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   Future<Attachment> createAttachment(Attachment attachment) async {
     final now = DateTime.now();
     final syncId = attachment.syncId.isEmpty ? _uuid.v4() : attachment.syncId;
-    
+
     final companion = AttachmentsTableCompanion.insert(
       transactionId: attachment.transactionId,
       fileName: attachment.fileName,
@@ -57,8 +57,9 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       syncId: syncId,
     );
 
-    final id = await _database.into(_database.attachmentsTable).insert(companion);
-    
+    final id =
+        await _database.into(_database.attachmentsTable).insert(companion);
+
     return attachment.copyWith(
       id: id,
       syncId: syncId,
@@ -70,17 +71,20 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   Future<Attachment?> getAttachmentById(int id) async {
     final query = _database.select(_database.attachmentsTable)
       ..where((table) => table.id.equals(id));
-    
+
     final row = await query.getSingleOrNull();
     return row != null ? _mapRowToAttachment(row) : null;
   }
 
   @override
-  Future<List<Attachment>> getAttachmentsByTransaction(int transactionId) async {
+  Future<List<Attachment>> getAttachmentsByTransaction(
+      int transactionId) async {
     final query = _database.select(_database.attachmentsTable)
-      ..where((table) => table.transactionId.equals(transactionId) & table.isDeleted.equals(false))
+      ..where((table) =>
+          table.transactionId.equals(transactionId) &
+          table.isDeleted.equals(false))
       ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]);
-    
+
     final rows = await query.get();
     return rows.map(_mapRowToAttachment).toList();
   }
@@ -90,7 +94,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final query = _database.select(_database.attachmentsTable)
       ..where((table) => table.isDeleted.equals(false))
       ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]);
-    
+
     final rows = await query.get();
     return rows.map(_mapRowToAttachment).toList();
   }
@@ -118,21 +122,22 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     await (_database.update(_database.attachmentsTable)
           ..where((table) => table.id.equals(attachment.id!)))
         .write(companion);
-    
+
     return attachment.copyWith(updatedAt: now);
   }
 
   @override
   Future<void> deleteAttachment(int id) async {
     await (_database.delete(_database.attachmentsTable)
-      ..where((table) => table.id.equals(id))).go();
+          ..where((table) => table.id.equals(id)))
+        .go();
   }
 
   @override
   Future<void> markAsDeleted(int id) async {
     final update = _database.update(_database.attachmentsTable)
       ..where((table) => table.id.equals(id));
-    
+
     await update.write(AttachmentsTableCompanion(
       isDeleted: const Value(true),
       updatedAt: Value(DateTime.now()),
@@ -159,48 +164,51 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final client = authenticatedClient(
       http.Client(),
       AccessCredentials(
-        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '', 
-                   DateTime.now().add(const Duration(hours: 1))),
+        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
+            DateTime.now().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
     );
 
     final driveApi = drive.DriveApi(client);
-    
+
     try {
       // ✅ PHASE 1 FIX 1: Get transaction for organized folder structure
       final transaction = await _getTransactionForAttachment(attachment);
-      final folderPath = _getAttachmentPath(transaction.date, transaction.syncId);
-      
+      final folderPath =
+          _getAttachmentPath(transaction.date, transaction.syncId);
+
       // ✅ PHASE 1 FIX 1: Create organized folder hierarchy
       final folderId = await _ensureFolderExists(driveApi, folderPath);
-      
+
       // ✅ PHASE 1 FIX 1: Check for duplicates using file hash
       final fileHash = await _calculateFileHash(file);
-      final existingFile = await _findExistingFile(driveApi, fileHash, folderId);
-      
+      final existingFile =
+          await _findExistingFile(driveApi, fileHash, folderId);
+
       if (existingFile != null) {
         // File already exists - just update metadata
         await _updateAttachmentWithDriveInfo(attachment, existingFile);
         return;
       }
-      
+
       // ✅ PHASE 1 FIX 1: Generate collision-safe filename
-      final safeFileName = await _generateUniqueFileName(driveApi, attachment.fileName, folderId);
-      
+      final safeFileName = await _generateUniqueFileName(
+          driveApi, attachment.fileName, folderId);
+
       final driveFile = drive.File()
         ..name = safeFileName
-        ..parents = [folderId]  // ✅ Upload to organized folder structure
+        ..parents = [folderId] // ✅ Upload to organized folder structure
         ..appProperties = {
-          'fileHash': fileHash,  // ✅ For deduplication
+          'fileHash': fileHash, // ✅ For deduplication
           'originalName': attachment.fileName,
           'capturedFromCamera': attachment.isCapturedFromCamera.toString(),
           'uploadedAt': DateTime.now().toIso8601String(),
         };
 
       final media = drive.Media(file.openRead(), file.lengthSync());
-      
+
       final uploadedFile = await driveApi.files.create(
         driveFile,
         uploadMedia: media,
@@ -230,15 +238,15 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final client = authenticatedClient(
       http.Client(),
       AccessCredentials(
-        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '', 
-                   DateTime.now().add(const Duration(hours: 1))),
+        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
+            DateTime.now().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
     );
 
     final driveApi = drive.DriveApi(client);
-    
+
     try {
       // Move file to trash instead of permanent deletion
       await driveApi.files.update(
@@ -261,21 +269,21 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final client = authenticatedClient(
       http.Client(),
       AccessCredentials(
-        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '', 
-                   DateTime.now().add(const Duration(hours: 1))),
+        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
+            DateTime.now().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
     );
 
     final driveApi = drive.DriveApi(client);
-    
+
     try {
       final file = await driveApi.files.get(
         googleDriveFileId,
         $fields: 'webViewLink',
       ) as drive.File;
-      
+
       return file.webViewLink;
     } catch (e) {
       return null;
@@ -291,7 +299,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final query = _database.select(_database.attachmentsTable)
       ..where((table) => table.isDeleted.equals(false))
       ..orderBy([(table) => OrderingTerm.asc(table.createdAt)]);
-    
+
     final rows = await query.get();
     return rows.map(_mapRowToAttachment).toList();
   }
@@ -305,10 +313,11 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   @override
   Future<void> insertOrUpdateFromSync(Attachment attachment) async {
-    final existingAttachment = await (_database.select(_database.attachmentsTable)
-      ..where((table) => table.syncId.equals(attachment.syncId)))
-      .getSingleOrNull();
-    
+    final existingAttachment =
+        await (_database.select(_database.attachmentsTable)
+              ..where((table) => table.syncId.equals(attachment.syncId)))
+            .getSingleOrNull();
+
     if (existingAttachment == null) {
       await createAttachment(attachment);
     } else {
@@ -317,18 +326,20 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   }
 
   @override
-  Future<Attachment> compressAndStoreFile(String filePath, int transactionId, String fileName, {bool isCapturedFromCamera = false}) async {
+  Future<Attachment> compressAndStoreFile(
+      String filePath, int transactionId, String fileName,
+      {bool isCapturedFromCamera = false}) async {
     File file = File(filePath);
-    
+
     // Compress if it's an image captured from camera
     if (isCapturedFromCamera && _isImageFile(fileName)) {
       file = await _compressImage(file);
     }
-    
+
     final fileStats = await file.stat();
     final mimeType = mime(fileName);
     final deviceId = await _getDeviceId();
-    
+
     return Attachment(
       transactionId: transactionId,
       fileName: fileName,
@@ -341,8 +352,9 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       isUploaded: false,
       isDeleted: false,
       isCapturedFromCamera: isCapturedFromCamera,
-      localCacheExpiry: isCapturedFromCamera ? DateTime.now().add(const Duration(days: 30)) : null,
-      
+      localCacheExpiry: isCapturedFromCamera
+          ? DateTime.now().add(const Duration(days: 30))
+          : null,
       syncId: _uuid.v4(),
     );
   }
@@ -363,11 +375,11 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   @override
   Future<void> cleanExpiredCache() async {
     final expiredAttachments = await getExpiredCacheAttachments();
-    
+
     for (final attachment in expiredAttachments) {
       if (attachment.filePath != null) {
         await deleteLocalFile(attachment.filePath!);
-        
+
         // Update attachment to remove local file path
         final updatedAttachment = attachment.copyWith(
           filePath: null,
@@ -382,14 +394,13 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   Future<List<Attachment>> getExpiredCacheAttachments() async {
     final now = DateTime.now();
     final query = _database.select(_database.attachmentsTable)
-      ..where((table) => 
-        table.isCapturedFromCamera.equals(true) & 
-        table.localCacheExpiry.isNotNull() &
-        table.localCacheExpiry.isSmallerThanValue(now) &
-        table.filePath.isNotNull() &
-        table.isDeleted.equals(false)
-      );
-    
+      ..where((table) =>
+          table.isCapturedFromCamera.equals(true) &
+          table.localCacheExpiry.isNotNull() &
+          table.localCacheExpiry.isSmallerThanValue(now) &
+          table.filePath.isNotNull() &
+          table.isDeleted.equals(false));
+
     final rows = await query.get();
     return rows.map(_mapRowToAttachment).toList();
   }
@@ -397,21 +408,21 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
   @override
   Future<String?> getLocalFilePath(Attachment attachment) async {
     // Check if file exists locally and cache is still valid
-    if (attachment.filePath != null && 
+    if (attachment.filePath != null &&
         await isFileExists(attachment.filePath!) &&
         attachment.isLocalCacheValid) {
       return attachment.filePath;
     }
-    
+
     // If local file doesn't exist or cache expired, try to download from Google Drive
     if (attachment.googleDriveFileId != null && attachment.isUploaded) {
       await downloadFromGoogleDrive(attachment);
-      
+
       // Return the new local path after download
       final updatedAttachment = await getAttachmentById(attachment.id!);
       return updatedAttachment?.filePath;
     }
-    
+
     return null;
   }
 
@@ -430,15 +441,15 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final client = authenticatedClient(
       http.Client(),
       AccessCredentials(
-        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '', 
-                   DateTime.now().add(const Duration(hours: 1))),
+        AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
+            DateTime.now().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
     );
 
     final driveApi = drive.DriveApi(client);
-    
+
     try {
       // Download file content
       final media = await driveApi.files.get(
@@ -448,7 +459,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
       // Create local file path
       final tempDir = await getTemporaryDirectory();
-      final localFilePath = p.join(tempDir.path, 'cache_${attachment.id}_${attachment.fileName}');
+      final localFilePath =
+          p.join(tempDir.path, 'cache_${attachment.id}_${attachment.fileName}');
       final localFile = File(localFilePath);
 
       // Write downloaded content to local file
@@ -467,34 +479,35 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
         filePath: localFilePath,
         localCacheExpiry: cacheExpiry,
       );
-      
+
       await updateAttachment(updatedAttachment);
-      
     } finally {
       client.close();
     }
   }
 
   // ✅ PHASE 1 HELPER METHODS
-  
-  Future<TransactionsTableData> _getTransactionForAttachment(Attachment attachment) async {
+
+  Future<TransactionsTableData> _getTransactionForAttachment(
+      Attachment attachment) async {
     final transaction = await (_database.select(_database.transactionsTable)
-      ..where((t) => t.id.equals(attachment.transactionId)))
-      .getSingle();
+          ..where((t) => t.id.equals(attachment.transactionId)))
+        .getSingle();
     return transaction;
   }
 
-  Future<String> _ensureFolderExists(drive.DriveApi driveApi, String folderPath) async {
+  Future<String> _ensureFolderExists(
+      drive.DriveApi driveApi, String folderPath) async {
     final pathParts = folderPath.split('/');
     String currentParent = 'appDataFolder';
-    
+
     for (final folderName in pathParts) {
       if (folderName.isEmpty) continue;
-      
+
       final existingFolders = await driveApi.files.list(
         q: "name='$folderName' and '$currentParent' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false",
       );
-      
+
       if (existingFolders.files?.isNotEmpty == true) {
         currentParent = existingFolders.files!.first.id!;
       } else {
@@ -508,7 +521,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
         currentParent = newFolder.id!;
       }
     }
-    
+
     return currentParent;
   }
 
@@ -517,35 +530,40 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     return sha256.convert(bytes).toString();
   }
 
-  Future<drive.File?> _findExistingFile(drive.DriveApi driveApi, String fileHash, String folderId) async {
+  Future<drive.File?> _findExistingFile(
+      drive.DriveApi driveApi, String fileHash, String folderId) async {
     final existingFiles = await driveApi.files.list(
       q: "appProperties has { key='fileHash' and value='$fileHash' } and '$folderId' in parents and trashed=false",
     );
-    
-    return existingFiles.files?.isNotEmpty == true ? existingFiles.files!.first : null;
+
+    return existingFiles.files?.isNotEmpty == true
+        ? existingFiles.files!.first
+        : null;
   }
 
-  Future<String> _generateUniqueFileName(drive.DriveApi driveApi, String fileName, String folderId) async {
+  Future<String> _generateUniqueFileName(
+      drive.DriveApi driveApi, String fileName, String folderId) async {
     String baseName = p.basenameWithoutExtension(fileName);
     String extension = p.extension(fileName);
     String candidateName = fileName;
     int counter = 1;
-    
+
     while (true) {
       final existingFiles = await driveApi.files.list(
         q: "name='$candidateName' and '$folderId' in parents and trashed=false",
       );
-      
+
       if (existingFiles.files?.isEmpty == true) {
         return candidateName;
       }
-      
+
       candidateName = '${baseName}_$counter$extension';
       counter++;
     }
   }
 
-  Future<void> _updateAttachmentWithDriveInfo(Attachment attachment, drive.File driveFile) async {
+  Future<void> _updateAttachmentWithDriveInfo(
+      Attachment attachment, drive.File driveFile) async {
     final updatedAttachment = attachment.copyWith(
       googleDriveFileId: driveFile.id,
       isUploaded: true,
@@ -558,8 +576,9 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   Future<File> _compressImage(File file) async {
     final tempDir = await getTemporaryDirectory();
-    final targetPath = p.join(tempDir.path, 'compressed_${p.basename(file.path)}');
-    
+    final targetPath =
+        p.join(tempDir.path, 'compressed_${p.basename(file.path)}');
+
     final compressedFile = await FlutterImageCompress.compressAndGetFile(
       file.absolute.path,
       targetPath,
@@ -568,13 +587,14 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       minHeight: 1080,
       format: CompressFormat.jpeg,
     );
-    
+
     return compressedFile != null ? File(compressedFile.path) : file;
   }
 
   bool _isImageFile(String fileName) {
     final extension = p.extension(fileName).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].contains(extension);
+    return ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+        .contains(extension);
   }
 
   Future<String> _getDeviceId() async {
@@ -606,15 +626,15 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   AttachmentType _getAttachmentType(String? mimeType) {
     if (mimeType == null) return AttachmentType.other;
-    
+
     if (mimeType.startsWith('image/')) {
       return AttachmentType.image;
-    } else if (mimeType.contains('pdf') || 
-               mimeType.contains('document') || 
-               mimeType.contains('text')) {
+    } else if (mimeType.contains('pdf') ||
+        mimeType.contains('document') ||
+        mimeType.contains('text')) {
       return AttachmentType.document;
     }
-    
+
     return AttachmentType.other;
   }
 }

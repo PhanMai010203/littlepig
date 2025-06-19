@@ -1,34 +1,34 @@
 abstract class SyncService {
   /// Initialize sync service with authentication
   Future<bool> initialize();
-  
+
   /// Check if user is signed in to Google
   Future<bool> isSignedIn();
-  
+
   /// Sign in to Google and get Drive access
   Future<bool> signIn();
-  
+
   /// Sign out from Google
   Future<void> signOut();
-  
+
   /// Get current user's email
   Future<String?> getCurrentUserEmail();
-  
+
   /// Sync local changes to Google Drive
   Future<SyncResult> syncToCloud();
-  
+
   /// Download and merge changes from Google Drive
   Future<SyncResult> syncFromCloud();
-  
+
   /// Full bidirectional sync
   Future<SyncResult> performFullSync();
-  
+
   /// Get last sync timestamp
   Future<DateTime?> getLastSyncTime();
-  
+
   /// Check if sync is in progress
   bool get isSyncing;
-  
+
   /// Stream of sync status updates
   Stream<SyncStatus> get syncStatusStream;
 }

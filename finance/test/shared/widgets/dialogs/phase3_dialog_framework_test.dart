@@ -58,7 +58,7 @@ void main() {
       testWidgets('PopupFramework respects animation settings', (tester) async {
         // Disable animations
         await AppSettings.set('appAnimations', false);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -75,7 +75,8 @@ void main() {
         expect(find.text('Test Content'), findsOneWidget);
       });
 
-      testWidgets('PopupFramework handles different animation types', (tester) async {
+      testWidgets('PopupFramework handles different animation types',
+          (tester) async {
         for (final animationType in PopupAnimationType.values) {
           await tester.pumpWidget(
             MaterialApp(
@@ -90,8 +91,9 @@ void main() {
           );
 
           expect(find.byType(PopupFramework), findsOneWidget);
-          expect(find.text('Test Content ${animationType.name}'), findsOneWidget);
-          
+          expect(
+              find.text('Test Content ${animationType.name}'), findsOneWidget);
+
           // Clear the widget tree for next iteration
           await tester.pumpWidget(Container());
         }
@@ -143,7 +145,7 @@ void main() {
         void onClosePressedCallback() {
           closeCalled = true;
         }
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Material(
@@ -158,11 +160,11 @@ void main() {
         );
 
         await tester.pumpAndSettle();
-        
+
         // Find and tap the close button
         final closeButton = find.byType(IconButton);
         expect(closeButton, findsOneWidget);
-        
+
         // Use tapAt with the center of the button to ensure it's tappable
         final buttonRect = tester.getRect(closeButton);
         await tester.tapAt(buttonRect.center);
@@ -203,7 +205,7 @@ void main() {
 
       testWidgets('DialogService showConfirmationDialog works', (tester) async {
         bool? result;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -242,7 +244,7 @@ void main() {
 
       testWidgets('DialogService showInfoDialog works', (tester) async {
         bool? result;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -280,7 +282,7 @@ void main() {
 
       testWidgets('DialogService showErrorDialog works', (tester) async {
         bool? result;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -328,7 +330,7 @@ void main() {
 
       testWidgets('DialogService showLoadingDialog works', (tester) async {
         VoidCallback? dismissCallback;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -368,7 +370,7 @@ void main() {
 
       testWidgets('DialogService showCustomDialog works', (tester) async {
         String? result;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -419,18 +421,20 @@ void main() {
       testWidgets('DialogService animation settings work', (tester) async {
         // Test with animations disabled
         await AppSettings.set('appAnimations', false);
-        
+
         expect(DialogService.areDialogAnimationsEnabled, isFalse);
-        expect(DialogService.defaultPopupAnimation, equals(PopupAnimationType.none));
+        expect(DialogService.defaultPopupAnimation,
+            equals(PopupAnimationType.none));
 
         // Test with animations enabled
         await AppSettings.set('appAnimations', true);
         await AppSettings.set('reduceAnimations', false);
         await AppSettings.set('batterySaver', false);
         await AppSettings.set('animationLevel', 'normal');
-        
+
         expect(DialogService.areDialogAnimationsEnabled, isTrue);
-        expect(DialogService.defaultPopupAnimation, isNot(equals(PopupAnimationType.none)));
+        expect(DialogService.defaultPopupAnimation,
+            isNot(equals(PopupAnimationType.none)));
       });
 
       testWidgets('DialogService extension methods work', (tester) async {
@@ -455,18 +459,19 @@ void main() {
         // Test confirmation dialog display
         await tester.tap(find.text('Show Confirmation'));
         await tester.pumpAndSettle();
-        
+
         // Verify dialog is shown
         expect(find.text('Confirm'), findsWidgets);
         expect(find.text('Are you sure?'), findsOneWidget);
-        
+
         // Test that the dialog framework is working - just verify it displays
         expect(find.byType(Dialog), findsOneWidget);
       });
     });
 
     group('BottomSheetService', () {
-      testWidgets('BottomSheetService showSimpleBottomSheet works', (tester) async {
+      testWidgets('BottomSheetService showSimpleBottomSheet works',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -495,16 +500,18 @@ void main() {
         expect(find.text('Bottom Sheet Content'), findsOneWidget);
       });
 
-      testWidgets('BottomSheetService showOptionsBottomSheet works', (tester) async {
+      testWidgets('BottomSheetService showOptionsBottomSheet works',
+          (tester) async {
         String? selectedOption;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
               builder: (context) {
                 return ElevatedButton(
                   onPressed: () async {
-                    selectedOption = await BottomSheetService.showOptionsBottomSheet<String>(
+                    selectedOption =
+                        await BottomSheetService.showOptionsBottomSheet<String>(
                       context,
                       title: 'Select Option',
                       options: [
@@ -554,16 +561,18 @@ void main() {
         expect(selectedOption, equals('option1'));
       });
 
-      testWidgets('BottomSheetService showConfirmationBottomSheet works', (tester) async {
+      testWidgets('BottomSheetService showConfirmationBottomSheet works',
+          (tester) async {
         bool? result;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
               builder: (context) {
                 return ElevatedButton(
                   onPressed: () async {
-                    result = await BottomSheetService.showConfirmationBottomSheet(
+                    result =
+                        await BottomSheetService.showConfirmationBottomSheet(
                       context,
                       title: 'Confirm Action',
                       message: 'Are you sure you want to proceed?',
@@ -597,19 +606,22 @@ void main() {
       testWidgets('BottomSheetService animation settings work', (tester) async {
         // Test with animations disabled
         await AppSettings.set('appAnimations', false);
-        expect(BottomSheetService.defaultBottomSheetAnimation, equals(BottomSheetAnimationType.none));
+        expect(BottomSheetService.defaultBottomSheetAnimation,
+            equals(BottomSheetAnimationType.none));
 
         // Test with animations enabled
         await AppSettings.set('appAnimations', true);
         await AppSettings.set('reduceAnimations', false);
         await AppSettings.set('batterySaver', false);
         await AppSettings.set('animationLevel', 'normal');
-        
-        expect(BottomSheetService.defaultBottomSheetAnimation, isNot(equals(BottomSheetAnimationType.none)));
+
+        expect(BottomSheetService.defaultBottomSheetAnimation,
+            isNot(equals(BottomSheetAnimationType.none)));
 
         // Test reduced animations
         await AppSettings.set('animationLevel', 'reduced');
-        expect(BottomSheetService.defaultBottomSheetAnimation, equals(BottomSheetAnimationType.fadeIn));
+        expect(BottomSheetService.defaultBottomSheetAnimation,
+            equals(BottomSheetAnimationType.fadeIn));
       });
 
       testWidgets('BottomSheetService extension methods work', (tester) async {
@@ -642,7 +654,8 @@ void main() {
                     ),
                     ElevatedButton(
                       onPressed: () async {
-                        final result = await context.showBottomSheetConfirmation(
+                        final result =
+                            await context.showBottomSheetConfirmation(
                           title: 'Confirm',
                           message: 'Are you sure?',
                         );
@@ -667,20 +680,20 @@ void main() {
         // Test options sheet
         await tester.tap(find.text('Show Options'));
         await tester.pumpAndSettle();
-        
+
         expect(find.text('Options'), findsOneWidget);
         expect(find.text('Option A'), findsOneWidget);
-        
+
         await tester.tap(find.text('Option A'));
         await tester.pumpAndSettle();
 
         // Test confirmation sheet
         await tester.tap(find.text('Show Confirmation'));
         await tester.pumpAndSettle();
-        
+
         expect(find.text('Confirm'), findsWidgets);
         expect(find.text('Are you sure?'), findsOneWidget);
-        
+
         // Just verify the bottom sheet framework works
         expect(find.byType(BottomSheet), findsOneWidget);
       });
@@ -713,7 +726,8 @@ void main() {
     });
 
     group('Integration Tests', () {
-      testWidgets('Dialog and bottom sheet can be shown together', (tester) async {
+      testWidgets('Dialog and bottom sheet can be shown together',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -760,18 +774,19 @@ void main() {
         // Test with various animation levels
         for (final level in ['none', 'reduced', 'normal', 'enhanced']) {
           await AppSettings.set('animationLevel', level);
-          
+
           // Test that services respect the setting
           final dialogAnimation = DialogService.defaultPopupAnimation;
           final sheetAnimation = BottomSheetService.defaultBottomSheetAnimation;
-          
+
           if (level == 'none') {
             expect(dialogAnimation, equals(PopupAnimationType.none));
             expect(sheetAnimation, equals(BottomSheetAnimationType.none));
           } else {
             expect(dialogAnimation, isNot(equals(PopupAnimationType.none)));
             if (level != 'reduced') {
-              expect(sheetAnimation, isNot(equals(BottomSheetAnimationType.none)));
+              expect(
+                  sheetAnimation, isNot(equals(BottomSheetAnimationType.none)));
             }
           }
         }
@@ -781,11 +796,11 @@ void main() {
         // Test that platform detection affects dialog behavior
         final isMobile = PlatformService.isMobile;
         final prefersCentered = PlatformService.prefersCenteredDialogs;
-        
+
         // These should return consistent values
         expect(isMobile, isA<bool>());
         expect(prefersCentered, isA<bool>());
-        
+
         // Test platform info
         final platformInfo = PlatformService.getPlatformInfo();
         expect(platformInfo, isA<Map<String, dynamic>>());
@@ -796,7 +811,8 @@ void main() {
     });
 
     group('Error Handling and Edge Cases', () {
-      testWidgets('PopupFramework handles null values gracefully', (tester) async {
+      testWidgets('PopupFramework handles null values gracefully',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -820,13 +836,13 @@ void main() {
           isPrimary: true,
           closesDialog: true,
         );
-        
+
         const destructiveAction = DialogAction(
           label: 'Delete',
           isDestructive: true,
           closesDialog: true,
         );
-        
+
         const nonClosingAction = DialogAction(
           label: 'Non-closing',
           closesDialog: false,
@@ -835,14 +851,15 @@ void main() {
         expect(primaryAction.isPrimary, isTrue);
         expect(primaryAction.isDestructive, isFalse);
         expect(primaryAction.closesDialog, isTrue);
-        
+
         expect(destructiveAction.isDestructive, isTrue);
         expect(destructiveAction.isPrimary, isFalse);
-        
+
         expect(nonClosingAction.closesDialog, isFalse);
       });
 
-      testWidgets('BottomSheetService handles empty options list', (tester) async {
+      testWidgets('BottomSheetService handles empty options list',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Builder(
@@ -870,4 +887,4 @@ void main() {
       });
     });
   });
-} 
+}

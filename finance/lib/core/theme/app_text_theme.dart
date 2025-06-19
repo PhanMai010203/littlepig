@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTextTheme {
   static const String fontFamily = 'Inter';
-  
+
   static const TextTheme textTheme = TextTheme(
     // Display styles
     displayLarge: TextStyle(
@@ -26,7 +26,7 @@ class AppTextTheme {
       letterSpacing: 0,
       height: 1.22,
     ),
-    
+
     // Headline styles
     headlineLarge: TextStyle(
       fontFamily: fontFamily,
@@ -49,7 +49,7 @@ class AppTextTheme {
       letterSpacing: 0,
       height: 1.33,
     ),
-    
+
     // Title styles
     titleLarge: TextStyle(
       fontFamily: fontFamily,
@@ -72,7 +72,7 @@ class AppTextTheme {
       letterSpacing: 0.1,
       height: 1.43,
     ),
-    
+
     // Label styles
     labelLarge: TextStyle(
       fontFamily: fontFamily,
@@ -95,7 +95,7 @@ class AppTextTheme {
       letterSpacing: 0.5,
       height: 1.45,
     ),
-    
+
     // Body styles
     bodyLarge: TextStyle(
       fontFamily: fontFamily,
@@ -119,4 +119,4 @@ class AppTextTheme {
       height: 1.33,
     ),
   );
-} 
+}

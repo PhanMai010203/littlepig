@@ -42,7 +42,8 @@ class TransactionsPage extends StatelessWidget {
         itemBuilder: (context, index) {
           return Card(
             margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(                leading: CircleAvatar(
+            child: ListTile(
+              leading: CircleAvatar(
                 backgroundColor: index % 2 == 0
                     ? Colors.green.withValues(alpha: 0.2)
                     : Colors.red.withValues(alpha: 0.2),
@@ -52,7 +53,8 @@ class TransactionsPage extends StatelessWidget {
                 ),
               ),
               title: Text('Transaction ${index + 1}'),
-              subtitle: Text('${index % 2 == 0 ? 'Income' : 'Expense'} • Today'),
+              subtitle:
+                  Text('${index % 2 == 0 ? 'Income' : 'Expense'} • Today'),
               trailing: Text(
                 '${index % 2 == 0 ? '+' : '-'}\$${(index + 1) * 50}.00',
                 style: TextStyle(
@@ -72,4 +74,4 @@ class TransactionsPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

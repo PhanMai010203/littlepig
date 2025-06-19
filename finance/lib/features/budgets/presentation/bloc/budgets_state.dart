@@ -19,7 +19,7 @@ class BudgetsLoaded extends BudgetsState {
   final Map<int, bool> authenticatedBudgets;
   final bool isExporting;
   final String? exportStatus;
-  
+
   const BudgetsLoaded({
     required this.budgets,
     this.realTimeSpentAmounts = const {},
@@ -49,13 +49,13 @@ class BudgetsLoaded extends BudgetsState {
 
   @override
   List<Object?> get props => [
-    budgets,
-    realTimeSpentAmounts,
-    isRealTimeActive,
-    authenticatedBudgets,
-    isExporting,
-    exportStatus,
-  ];
+        budgets,
+        realTimeSpentAmounts,
+        isRealTimeActive,
+        authenticatedBudgets,
+        isExporting,
+        exportStatus,
+      ];
 }
 
 class BudgetsError extends BudgetsState {
@@ -93,4 +93,4 @@ class BudgetAuthenticationFailed extends BudgetsState {
 
   @override
   List<Object?> get props => [budgetId, reason];
-} 
+}

@@ -11,13 +11,14 @@ extension AccountCurrencyExtension on Account {
   }
 
   /// Formats the account balance with currency symbol
-  Future<String> formatBalance(CurrencyRepository currencyRepository, {
+  Future<String> formatBalance(
+    CurrencyRepository currencyRepository, {
     bool showSymbol = true,
     bool showCode = false,
     bool compact = false,
   }) async {
     final currencyEntity = await getCurrency(currencyRepository);
-    
+
     if (currencyEntity == null) {
       // Fallback formatting if currency not found
       return '$currency ${balance.toStringAsFixed(2)}';
@@ -56,9 +57,11 @@ extension AccountCurrencyExtension on Account {
     bool showCode = false,
     bool compact = false,
   }) async {
-    final convertedAmount = await convertBalanceTo(targetCurrency, currencyRepository);
-    final targetCurrencyEntity = await currencyRepository.getCurrencyByCode(targetCurrency);
-    
+    final convertedAmount =
+        await convertBalanceTo(targetCurrency, currencyRepository);
+    final targetCurrencyEntity =
+        await currencyRepository.getCurrencyByCode(targetCurrency);
+
     if (targetCurrencyEntity == null) {
       return '$targetCurrency ${convertedAmount.toStringAsFixed(2)}';
     }
@@ -87,8 +90,9 @@ extension AccountCurrencyExtension on Account {
     String targetCurrency,
     CurrencyRepository currencyRepository,
   ) async {
-    final convertedBalance = await convertBalanceTo(targetCurrency, currencyRepository);
-    
+    final convertedBalance =
+        await convertBalanceTo(targetCurrency, currencyRepository);
+
     return copyWith(
       currency: targetCurrency.toUpperCase(),
       balance: convertedBalance,

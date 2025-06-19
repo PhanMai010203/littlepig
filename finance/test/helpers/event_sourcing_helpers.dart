@@ -4,11 +4,10 @@ import '../../lib/core/database/app_database.dart';
 import '../../lib/core/sync/sync_event.dart';
 
 /// ✅ PHASE 4.3: Event Sourcing Test Helpers
-/// 
+///
 /// Provides utilities for testing event sourcing functionality in Phase 4.
 /// Creates test events, batches, and validates event sourcing infrastructure.
 class EventSourcingTestHelpers {
-  
   /// Creates a test sync event log entry
   static SyncEventLogTableCompanion createTestEvent({
     required String operation,
@@ -22,7 +21,7 @@ class EventSourcingTestHelpers {
   }) {
     final eventData = data ?? {};
     final now = timestamp ?? DateTime.now();
-    
+
     return SyncEventLogTableCompanion.insert(
       eventId: 'event-${now.millisecondsSinceEpoch}-${recordId}',
       deviceId: deviceId ?? 'test-device',
@@ -36,7 +35,7 @@ class EventSourcingTestHelpers {
       isSynced: Value(isSynced),
     );
   }
-  
+
   /// Creates a SyncEvent object for testing CRDT conflict resolution
   static SyncEvent createSyncEvent({
     required String operation,
@@ -49,7 +48,7 @@ class EventSourcingTestHelpers {
   }) {
     final eventData = data ?? {};
     final now = timestamp ?? DateTime.now();
-    
+
     return SyncEvent(
       eventId: 'event-${now.millisecondsSinceEpoch}-${recordId}',
       deviceId: deviceId ?? 'test-device',
@@ -62,7 +61,7 @@ class EventSourcingTestHelpers {
       hash: _generateTestHash(eventData),
     );
   }
-  
+
   /// Creates a batch of test events for the same record (for conflict testing)
   static List<SyncEvent> createConflictingEvents({
     required String recordId,
@@ -73,13 +72,14 @@ class EventSourcingTestHelpers {
     final events = <SyncEvent>[];
     final base = baseData ?? {};
     final baseTime = DateTime.now();
-    
+
     for (int i = 0; i < deviceIds.length; i++) {
       final deviceId = deviceIds[i];
       final eventData = Map<String, dynamic>.from(base);
       eventData['modified_by'] = deviceId;
-      eventData['modification_time'] = baseTime.add(Duration(milliseconds: i * 100)).toIso8601String();
-      
+      eventData['modification_time'] =
+          baseTime.add(Duration(milliseconds: i * 100)).toIso8601String();
+
       events.add(createSyncEvent(
         operation: 'update',
         tableName: tableName,
@@ -90,17 +90,17 @@ class EventSourcingTestHelpers {
         timestamp: baseTime.add(Duration(milliseconds: i * 100)),
       ));
     }
-    
+
     return events;
   }
-  
+
   /// Creates test events for a transaction lifecycle (create -> update -> delete)
   static List<SyncEvent> createTransactionLifecycleEvents({
     required String syncId,
     String deviceId = 'test-device',
   }) {
     final baseTime = DateTime.now();
-    
+
     return [
       // Create event
       createSyncEvent(
@@ -118,7 +118,7 @@ class EventSourcingTestHelpers {
         sequenceNumber: 1,
         timestamp: baseTime,
       ),
-      
+
       // Update event
       createSyncEvent(
         operation: 'update',
@@ -135,7 +135,7 @@ class EventSourcingTestHelpers {
         sequenceNumber: 2,
         timestamp: baseTime.add(const Duration(minutes: 1)),
       ),
-      
+
       // Delete event
       createSyncEvent(
         operation: 'delete',
@@ -148,7 +148,7 @@ class EventSourcingTestHelpers {
       ),
     ];
   }
-  
+
   /// Inserts a batch of test events into the database
   static Future<void> insertTestEventBatch(
     AppDatabase database,
@@ -158,7 +158,7 @@ class EventSourcingTestHelpers {
       await database.into(database.syncEventLogTable).insert(event);
     }
   }
-  
+
   /// Creates and inserts sync state for testing
   static Future<void> createTestSyncState(
     AppDatabase database, {
@@ -168,22 +168,22 @@ class EventSourcingTestHelpers {
     String status = 'idle',
   }) async {
     await database.into(database.syncStateTable).insert(
-      SyncStateTableCompanion.insert(
-        deviceId: deviceId,
-        lastSyncTime: lastSyncTime ?? DateTime.now(),
-        lastSequenceNumber: Value(lastSequenceNumber),
-        status: Value(status),
-      ),
-    );
+          SyncStateTableCompanion.insert(
+            deviceId: deviceId,
+            lastSyncTime: lastSyncTime ?? DateTime.now(),
+            lastSequenceNumber: Value(lastSequenceNumber),
+            status: Value(status),
+          ),
+        );
   }
-  
+
   /// Creates test events for multiple tables to test cross-table syncing
   static List<SyncEvent> createMultiTableEvents({
     String deviceId = 'test-device',
     DateTime? baseTime,
   }) {
     final base = baseTime ?? DateTime.now();
-    
+
     return [
       // Account creation
       createSyncEvent(
@@ -200,7 +200,7 @@ class EventSourcingTestHelpers {
         sequenceNumber: 1,
         timestamp: base,
       ),
-      
+
       // Category creation
       createSyncEvent(
         operation: 'create',
@@ -217,7 +217,7 @@ class EventSourcingTestHelpers {
         sequenceNumber: 2,
         timestamp: base.add(const Duration(seconds: 1)),
       ),
-      
+
       // Transaction creation (depends on account and category)
       createSyncEvent(
         operation: 'create',
@@ -234,7 +234,7 @@ class EventSourcingTestHelpers {
         sequenceNumber: 3,
         timestamp: base.add(const Duration(seconds: 2)),
       ),
-      
+
       // Budget creation
       createSyncEvent(
         operation: 'create',
@@ -253,7 +253,7 @@ class EventSourcingTestHelpers {
       ),
     ];
   }
-  
+
   /// Creates a SyncEventBatch for testing batch processing
   static SyncEventBatch createTestEventBatch({
     String deviceId = 'test-device',
@@ -266,7 +266,7 @@ class EventSourcingTestHelpers {
       events: events ?? createMultiTableEvents(deviceId: deviceId),
     );
   }
-  
+
   /// Validates that events were created correctly by database triggers
   static Future<bool> validateTriggersCreatedEvents(
     AppDatabase database, {
@@ -277,15 +277,15 @@ class EventSourcingTestHelpers {
     final query = database.select(database.syncEventLogTable)
       ..where((t) => t.tableNameField.equals(tableName))
       ..where((t) => t.operation.equals(operation));
-    
+
     if (recordId != null) {
       query.where((t) => t.recordId.equals(recordId));
     }
-    
+
     final events = await query.get();
     return events.isNotEmpty;
   }
-  
+
   /// Gets unsynced events from the database for testing
   static Future<List<SyncEventLogData>> getUnsyncedEvents(
     AppDatabase database, {
@@ -294,20 +294,20 @@ class EventSourcingTestHelpers {
   }) async {
     final query = database.select(database.syncEventLogTable)
       ..where((t) => t.isSynced.equals(false));
-    
+
     if (deviceId != null) {
       query.where((t) => t.deviceId.equals(deviceId));
     }
-    
+
     if (tableName != null) {
       query.where((t) => t.tableNameField.equals(tableName));
     }
-    
+
     query.orderBy([(t) => OrderingTerm.asc(t.sequenceNumber)]);
-    
+
     return await query.get();
   }
-  
+
   /// Marks test events as synced
   static Future<void> markEventsAsSynced(
     AppDatabase database,
@@ -315,13 +315,13 @@ class EventSourcingTestHelpers {
   ) async {
     for (final eventId in eventIds) {
       await (database.update(database.syncEventLogTable)
-        ..where((t) => t.eventId.equals(eventId)))
-        .write(const SyncEventLogTableCompanion(
-          isSynced: Value(true),
-        ));
+            ..where((t) => t.eventId.equals(eventId)))
+          .write(const SyncEventLogTableCompanion(
+        isSynced: Value(true),
+      ));
     }
   }
-  
+
   /// Cleans up test events from database
   static Future<void> cleanupTestEvents(
     AppDatabase database, {
@@ -330,38 +330,41 @@ class EventSourcingTestHelpers {
     if (deviceId != null) {
       // Delete specific device events
       await (database.delete(database.syncEventLogTable)
-        ..where((t) => t.deviceId.equals(deviceId)))
-        .go();
-      
+            ..where((t) => t.deviceId.equals(deviceId)))
+          .go();
+
       await (database.delete(database.syncStateTable)
-        ..where((t) => t.deviceId.equals(deviceId)))
-        .go();
+            ..where((t) => t.deviceId.equals(deviceId)))
+          .go();
     } else {
       // Delete all test events by using custom statement for pattern matching
       await database.customStatement(
-        "DELETE FROM sync_event_log WHERE device_id LIKE 'test-%'"
-      );
+          "DELETE FROM sync_event_log WHERE device_id LIKE 'test-%'");
       await database.customStatement(
-        "DELETE FROM sync_state WHERE device_id LIKE 'test-%'"
-      );
+          "DELETE FROM sync_state WHERE device_id LIKE 'test-%'");
     }
   }
-  
+
   /// Generates a simple test hash for event data
   static String _generateTestHash(Map<String, dynamic> data) {
     // Remove sync metadata before hashing
     final cleanData = Map<String, dynamic>.from(data);
     cleanData.removeWhere((key, value) => [
-      'sync_id', 'created_at', 'updated_at', 'device_id', 'is_synced', 'last_sync_at', 'version'
-    ].contains(key));
-    
+          'sync_id',
+          'created_at',
+          'updated_at',
+          'device_id',
+          'is_synced',
+          'last_sync_at',
+          'version'
+        ].contains(key));
+
     final sortedData = Map.fromEntries(
-      cleanData.entries.toList()..sort((a, b) => a.key.compareTo(b.key))
-    );
-    
+        cleanData.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
+
     return 'hash-${jsonEncode(sortedData).hashCode}';
   }
-  
+
   /// Creates test events for performance testing
   static List<SyncEvent> createLargeEventBatch({
     int count = 1000,
@@ -370,7 +373,7 @@ class EventSourcingTestHelpers {
   }) {
     final events = <SyncEvent>[];
     final baseTime = DateTime.now();
-    
+
     for (int i = 0; i < count; i++) {
       events.add(createSyncEvent(
         operation: 'create',
@@ -388,25 +391,25 @@ class EventSourcingTestHelpers {
         timestamp: baseTime.add(Duration(milliseconds: i)),
       ));
     }
-    
+
     return events;
   }
 }
 
 /// ✅ PHASE 4.3: Sync Event Batch
-/// 
+///
 /// Represents a batch of sync events for testing batch operations
 class SyncEventBatch {
   final String deviceId;
   final DateTime timestamp;
   final List<SyncEvent> events;
-  
+
   const SyncEventBatch({
     required this.deviceId,
     required this.timestamp,
     required this.events,
   });
-  
+
   /// Gets events grouped by table name
   Map<String, List<SyncEvent>> get eventsByTable {
     final grouped = <String, List<SyncEvent>>{};
@@ -415,7 +418,7 @@ class SyncEventBatch {
     }
     return grouped;
   }
-  
+
   /// Gets events grouped by record ID (for conflict detection)
   Map<String, List<SyncEvent>> get eventsByRecord {
     final grouped = <String, List<SyncEvent>>{};
@@ -425,9 +428,9 @@ class SyncEventBatch {
     }
     return grouped;
   }
-  
+
   /// Checks if this batch contains conflicts (multiple events for same record)
   bool get hasConflicts {
     return eventsByRecord.values.any((events) => events.length > 1);
   }
-} 
+}

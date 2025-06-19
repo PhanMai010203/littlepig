@@ -60,28 +60,28 @@ Future<void> configureDependencies() async {
   if (getIt.isRegistered<DatabaseService>()) {
     return;
   }
-  
+
   // Initialize injectable dependencies FIRST (for existing BLoCs)
   getIt.init();
-  
+
   // Register SharedPreferences
   final sharedPreferences = await SharedPreferences.getInstance();
   if (!getIt.isRegistered<SharedPreferences>()) {
     getIt.registerSingleton<SharedPreferences>(sharedPreferences);
   }
-  
+
   // Device ID setup removed as it was not being used
-  
+
   // Register Database Service with our custom implementation
   final databaseService = DatabaseService();
   getIt.registerSingleton<DatabaseService>(databaseService);
-  
+
   // Register Google Sign In
   final googleSignIn = GoogleSignIn(scopes: [
     'https://www.googleapis.com/auth/drive.file',
   ]);
   getIt.registerSingleton<GoogleSignIn>(googleSignIn);
-  
+
   // Register basic repositories first
   getIt.registerSingleton<AttachmentRepository>(
     AttachmentRepositoryImpl(databaseService.database, googleSignIn),
@@ -95,14 +95,14 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<BudgetRepository>(
     BudgetRepositoryImpl(databaseService.database),
   );
-  
+
   // Register TransactionRepository (Phase 4: no more deviceId parameter)
   getIt.registerSingleton<TransactionRepository>(
     TransactionRepositoryImpl(
       getIt<DatabaseService>().database,
     ),
   );
-  
+
   // Register Currency Data Sources
   getIt.registerSingleton<CurrencyLocalDataSource>(
     CurrencyLocalDataSourceImpl(),
@@ -113,7 +113,7 @@ Future<void> configureDependencies() async {
   getIt.registerSingleton<ExchangeRateLocalDataSource>(
     ExchangeRateLocalDataSourceImpl(),
   );
-  
+
   // Register Currency Repository
   getIt.registerSingleton<CurrencyRepository>(
     CurrencyRepositoryImpl(
@@ -122,182 +122,7 @@ Future<void> configureDependencies() async {
       getIt<ExchangeRateLocalDataSource>(),
     ),
   );
-  
-  // Register Currency Use Cases
-  getIt.registerSingleton<GetAllCurrencies>(
-    GetAllCurrencies(getIt<CurrencyRepository>()),
-  );
-  getIt.registerSingleton<GetPopularCurrencies>(
-    GetPopularCurrencies(getIt<CurrencyRepository>()),
-  );
-  getIt.registerSingleton<SearchCurrencies>(
-    SearchCurrencies(getIt<CurrencyRepository>()),
-  );
-  getIt.registerSingleton<ConvertCurrency>(
-    ConvertCurrency(getIt<CurrencyRepository>()),
-  );
-  getIt.registerSingleton<GetExchangeRates>(
-    GetExchangeRates(getIt<CurrencyRepository>()),
-  );
-  getIt.registerSingleton<SetCustomExchangeRate>(
-    SetCustomExchangeRate(getIt<CurrencyRepository>()),
-  );  getIt.registerSingleton<RefreshExchangeRates>(
-    RefreshExchangeRates(getIt<CurrencyRepository>()),
-  );
-  
-  // Register Currency Service
-  getIt.registerSingleton<CurrencyService>(
-    CurrencyService(
-      getIt<CurrencyRepository>(),
-      getIt<AccountRepository>(),
-    ),
-  );
-  
-  // Register Budget Services (basic services first)
-  getIt.registerSingleton<BudgetCsvService>(
-    BudgetCsvService(),
-  );
-  
-  // Register Budget Authentication Service (no dependencies)
-  getIt.registerSingleton<BudgetAuthService>(
-    BudgetAuthService(),
-  );
-  
-  // Register Budget Filter Service 
-  getIt.registerSingleton<BudgetFilterService>(
-    BudgetFilterServiceImpl(
-      getIt<TransactionRepository>(),
-      getIt<AccountRepository>(),
-      getIt<CurrencyService>(),
-      getIt<BudgetCsvService>(),
-    ),
-  );
-  
-  // Register Budget Update Service
-  getIt.registerSingleton<BudgetUpdateService>(
-    BudgetUpdateServiceImpl(
-      getIt<BudgetRepository>(),
-      getIt<BudgetFilterService>(),
-      getIt<BudgetAuthService>(),
-    ),
-  );
-  
-  // Update the TransactionRepository to include BudgetUpdateService
-  // This is a cleaner approach than unregister/re-register
-  final transactionRepo = getIt<TransactionRepository>() as TransactionRepositoryImpl;
-  transactionRepo.setBudgetUpdateService(getIt<BudgetUpdateService>());
-  
-  // Register File Picker Service
-  getIt.registerSingleton<FilePickerService>(
-    FilePickerService(
-      getIt<AttachmentRepository>(),
-      getIt<GoogleSignIn>(),
-    ),
-  );
-  
-  // Register Phase 3 & 4 Sync Services
-  getIt.registerSingleton<CRDTConflictResolver>(
-    CRDTConflictResolver(),
-  );
-  
-  getIt.registerSingleton<SchemaCleanupMigration>(
-    SchemaCleanupMigration(databaseService.database),
-  );
-  
-  // Register the new IncrementalSyncService (Phase 3)
-  final incrementalSyncService = IncrementalSyncService(databaseService.database);
-  await incrementalSyncService.initialize();
-  
-  // Keep the old GoogleDriveSyncService for backward compatibility if needed
-  final legacySyncService = GoogleDriveSyncService(databaseService.database);
-  await legacySyncService.initialize();
-  
-  // Use IncrementalSyncService as the primary sync service
-  getIt.registerSingleton<SyncService>(incrementalSyncService);
-  getIt.registerSingleton<GoogleDriveSyncService>(legacySyncService);
-}
 
-/// Reset all GetIt registrations (useful for testing or hot reload)
-Future<void> resetDependencies() async {
-  await getIt.reset();
-}
-
-/// Configure dependencies with reset option
-Future<void> configureDependenciesWithReset() async {
-  await resetDependencies();
-  await configureDependencies();
-}
-
-/// Configure dependencies for testing with in-memory database
-Future<void> configureTestDependencies() async {
-  // Configure drift to suppress multiple database warnings in tests
-  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-  
-  // Reset dependencies first to avoid conflicts
-  await resetDependencies();
-  
-  // Initialize injectable dependencies FIRST (for existing BLoCs)
-  getIt.init();
-  
-  // Register SharedPreferences
-  final sharedPreferences = await SharedPreferences.getInstance();
-  if (!getIt.isRegistered<SharedPreferences>()) {
-    getIt.registerSingleton<SharedPreferences>(sharedPreferences);
-  }
-  
-  // Device ID setup removed as it was not being used
-  
-  // Register Database Service with test implementation (in-memory)
-  final databaseService = DatabaseService.forTesting();
-  getIt.registerSingleton<DatabaseService>(databaseService);
-  
-  // Register Google Sign In
-  final googleSignIn = GoogleSignIn(scopes: [
-    'https://www.googleapis.com/auth/drive.file',
-  ]);
-  getIt.registerSingleton<GoogleSignIn>(googleSignIn);
-  
-  // Register basic repositories first
-  getIt.registerSingleton<AttachmentRepository>(
-    AttachmentRepositoryImpl(databaseService.database, googleSignIn),
-  );
-  getIt.registerSingleton<CategoryRepository>(
-    CategoryRepositoryImpl(databaseService.database),
-  );
-  getIt.registerSingleton<AccountRepository>(
-    AccountRepositoryImpl(databaseService.database),
-  );
-  getIt.registerSingleton<BudgetRepository>(
-    BudgetRepositoryImpl(databaseService.database),
-  );
-  
-  // Register TransactionRepository (Phase 4: no more deviceId parameter)
-  getIt.registerSingleton<TransactionRepository>(
-    TransactionRepositoryImpl(
-      getIt<DatabaseService>().database,
-    ),
-  );
-  
-  // Register Currency Data Sources
-  getIt.registerSingleton<CurrencyLocalDataSource>(
-    CurrencyLocalDataSourceImpl(),
-  );
-  getIt.registerSingleton<ExchangeRateRemoteDataSource>(
-    ExchangeRateRemoteDataSourceImpl(httpClient: http.Client()),
-  );
-  getIt.registerSingleton<ExchangeRateLocalDataSource>(
-    ExchangeRateLocalDataSourceImpl(),
-  );
-  
-  // Register Currency Repository
-  getIt.registerSingleton<CurrencyRepository>(
-    CurrencyRepositoryImpl(
-      getIt<CurrencyLocalDataSource>(),
-      getIt<ExchangeRateRemoteDataSource>(),
-      getIt<ExchangeRateLocalDataSource>(),
-    ),
-  );
-  
   // Register Currency Use Cases
   getIt.registerSingleton<GetAllCurrencies>(
     GetAllCurrencies(getIt<CurrencyRepository>()),
@@ -320,7 +145,7 @@ Future<void> configureTestDependencies() async {
   getIt.registerSingleton<RefreshExchangeRates>(
     RefreshExchangeRates(getIt<CurrencyRepository>()),
   );
-  
+
   // Register Currency Service
   getIt.registerSingleton<CurrencyService>(
     CurrencyService(
@@ -328,18 +153,18 @@ Future<void> configureTestDependencies() async {
       getIt<AccountRepository>(),
     ),
   );
-  
+
   // Register Budget Services (basic services first)
   getIt.registerSingleton<BudgetCsvService>(
     BudgetCsvService(),
   );
-  
+
   // Register Budget Authentication Service (no dependencies)
   getIt.registerSingleton<BudgetAuthService>(
     BudgetAuthService(),
   );
-  
-  // Register Budget Filter Service 
+
+  // Register Budget Filter Service
   getIt.registerSingleton<BudgetFilterService>(
     BudgetFilterServiceImpl(
       getIt<TransactionRepository>(),
@@ -348,7 +173,7 @@ Future<void> configureTestDependencies() async {
       getIt<BudgetCsvService>(),
     ),
   );
-  
+
   // Register Budget Update Service
   getIt.registerSingleton<BudgetUpdateService>(
     BudgetUpdateServiceImpl(
@@ -357,12 +182,13 @@ Future<void> configureTestDependencies() async {
       getIt<BudgetAuthService>(),
     ),
   );
-  
+
   // Update the TransactionRepository to include BudgetUpdateService
   // This is a cleaner approach than unregister/re-register
-  final transactionRepo = getIt<TransactionRepository>() as TransactionRepositoryImpl;
+  final transactionRepo =
+      getIt<TransactionRepository>() as TransactionRepositoryImpl;
   transactionRepo.setBudgetUpdateService(getIt<BudgetUpdateService>());
-  
+
   // Register File Picker Service
   getIt.registerSingleton<FilePickerService>(
     FilePickerService(
@@ -370,24 +196,203 @@ Future<void> configureTestDependencies() async {
       getIt<GoogleSignIn>(),
     ),
   );
-  
+
+  // Register Phase 3 & 4 Sync Services
+  getIt.registerSingleton<CRDTConflictResolver>(
+    CRDTConflictResolver(),
+  );
+
+  getIt.registerSingleton<SchemaCleanupMigration>(
+    SchemaCleanupMigration(databaseService.database),
+  );
+
+  // Register the new IncrementalSyncService (Phase 3)
+  final incrementalSyncService =
+      IncrementalSyncService(databaseService.database);
+  await incrementalSyncService.initialize();
+
+  // Keep the old GoogleDriveSyncService for backward compatibility if needed
+  final legacySyncService = GoogleDriveSyncService(databaseService.database);
+  await legacySyncService.initialize();
+
+  // Use IncrementalSyncService as the primary sync service
+  getIt.registerSingleton<SyncService>(incrementalSyncService);
+  getIt.registerSingleton<GoogleDriveSyncService>(legacySyncService);
+}
+
+/// Reset all GetIt registrations (useful for testing or hot reload)
+Future<void> resetDependencies() async {
+  await getIt.reset();
+}
+
+/// Configure dependencies with reset option
+Future<void> configureDependenciesWithReset() async {
+  await resetDependencies();
+  await configureDependencies();
+}
+
+/// Configure dependencies for testing with in-memory database
+Future<void> configureTestDependencies() async {
+  // Configure drift to suppress multiple database warnings in tests
+  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
+
+  // Reset dependencies first to avoid conflicts
+  await resetDependencies();
+
+  // Initialize injectable dependencies FIRST (for existing BLoCs)
+  getIt.init();
+
+  // Register SharedPreferences
+  final sharedPreferences = await SharedPreferences.getInstance();
+  if (!getIt.isRegistered<SharedPreferences>()) {
+    getIt.registerSingleton<SharedPreferences>(sharedPreferences);
+  }
+
+  // Device ID setup removed as it was not being used
+
+  // Register Database Service with test implementation (in-memory)
+  final databaseService = DatabaseService.forTesting();
+  getIt.registerSingleton<DatabaseService>(databaseService);
+
+  // Register Google Sign In
+  final googleSignIn = GoogleSignIn(scopes: [
+    'https://www.googleapis.com/auth/drive.file',
+  ]);
+  getIt.registerSingleton<GoogleSignIn>(googleSignIn);
+
+  // Register basic repositories first
+  getIt.registerSingleton<AttachmentRepository>(
+    AttachmentRepositoryImpl(databaseService.database, googleSignIn),
+  );
+  getIt.registerSingleton<CategoryRepository>(
+    CategoryRepositoryImpl(databaseService.database),
+  );
+  getIt.registerSingleton<AccountRepository>(
+    AccountRepositoryImpl(databaseService.database),
+  );
+  getIt.registerSingleton<BudgetRepository>(
+    BudgetRepositoryImpl(databaseService.database),
+  );
+
+  // Register TransactionRepository (Phase 4: no more deviceId parameter)
+  getIt.registerSingleton<TransactionRepository>(
+    TransactionRepositoryImpl(
+      getIt<DatabaseService>().database,
+    ),
+  );
+
+  // Register Currency Data Sources
+  getIt.registerSingleton<CurrencyLocalDataSource>(
+    CurrencyLocalDataSourceImpl(),
+  );
+  getIt.registerSingleton<ExchangeRateRemoteDataSource>(
+    ExchangeRateRemoteDataSourceImpl(httpClient: http.Client()),
+  );
+  getIt.registerSingleton<ExchangeRateLocalDataSource>(
+    ExchangeRateLocalDataSourceImpl(),
+  );
+
+  // Register Currency Repository
+  getIt.registerSingleton<CurrencyRepository>(
+    CurrencyRepositoryImpl(
+      getIt<CurrencyLocalDataSource>(),
+      getIt<ExchangeRateRemoteDataSource>(),
+      getIt<ExchangeRateLocalDataSource>(),
+    ),
+  );
+
+  // Register Currency Use Cases
+  getIt.registerSingleton<GetAllCurrencies>(
+    GetAllCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<GetPopularCurrencies>(
+    GetPopularCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<SearchCurrencies>(
+    SearchCurrencies(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<ConvertCurrency>(
+    ConvertCurrency(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<GetExchangeRates>(
+    GetExchangeRates(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<SetCustomExchangeRate>(
+    SetCustomExchangeRate(getIt<CurrencyRepository>()),
+  );
+  getIt.registerSingleton<RefreshExchangeRates>(
+    RefreshExchangeRates(getIt<CurrencyRepository>()),
+  );
+
+  // Register Currency Service
+  getIt.registerSingleton<CurrencyService>(
+    CurrencyService(
+      getIt<CurrencyRepository>(),
+      getIt<AccountRepository>(),
+    ),
+  );
+
+  // Register Budget Services (basic services first)
+  getIt.registerSingleton<BudgetCsvService>(
+    BudgetCsvService(),
+  );
+
+  // Register Budget Authentication Service (no dependencies)
+  getIt.registerSingleton<BudgetAuthService>(
+    BudgetAuthService(),
+  );
+
+  // Register Budget Filter Service
+  getIt.registerSingleton<BudgetFilterService>(
+    BudgetFilterServiceImpl(
+      getIt<TransactionRepository>(),
+      getIt<AccountRepository>(),
+      getIt<CurrencyService>(),
+      getIt<BudgetCsvService>(),
+    ),
+  );
+
+  // Register Budget Update Service
+  getIt.registerSingleton<BudgetUpdateService>(
+    BudgetUpdateServiceImpl(
+      getIt<BudgetRepository>(),
+      getIt<BudgetFilterService>(),
+      getIt<BudgetAuthService>(),
+    ),
+  );
+
+  // Update the TransactionRepository to include BudgetUpdateService
+  // This is a cleaner approach than unregister/re-register
+  final transactionRepo =
+      getIt<TransactionRepository>() as TransactionRepositoryImpl;
+  transactionRepo.setBudgetUpdateService(getIt<BudgetUpdateService>());
+
+  // Register File Picker Service
+  getIt.registerSingleton<FilePickerService>(
+    FilePickerService(
+      getIt<AttachmentRepository>(),
+      getIt<GoogleSignIn>(),
+    ),
+  );
+
   // Register Phase 3 & 4 Sync Services for Testing
   getIt.registerSingleton<CRDTConflictResolver>(
     CRDTConflictResolver(),
   );
-  
+
   getIt.registerSingleton<SchemaCleanupMigration>(
     SchemaCleanupMigration(databaseService.database),
   );
-  
+
   // Register the new IncrementalSyncService (Phase 3) for testing
-  final incrementalSyncService = IncrementalSyncService(databaseService.database);
+  final incrementalSyncService =
+      IncrementalSyncService(databaseService.database);
   await incrementalSyncService.initialize();
-  
+
   // Keep the old GoogleDriveSyncService for backward compatibility if needed
   final legacySyncService = GoogleDriveSyncService(databaseService.database);
   await legacySyncService.initialize();
-  
+
   // Use IncrementalSyncService as the primary sync service
   getIt.registerSingleton<SyncService>(incrementalSyncService);
   getIt.registerSingleton<GoogleDriveSyncService>(legacySyncService);

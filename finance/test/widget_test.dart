@@ -17,9 +17,10 @@ void main() {
   setUpAll(() {
     // Initialize Flutter binding for tests
     TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Mock SharedPreferences for testing environment
-    const MethodChannel channel = MethodChannel('plugins.flutter.io/shared_preferences');
+    const MethodChannel channel =
+        MethodChannel('plugins.flutter.io/shared_preferences');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       if (methodCall.method == 'getAll') {
@@ -27,11 +28,13 @@ void main() {
       }
       return null;
     });
-    
+
     // Mock path_provider for testing environment
-    const MethodChannel pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const MethodChannel pathProviderChannel =
+        MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(pathProviderChannel, (MethodCall methodCall) async {
+        .setMockMethodCallHandler(pathProviderChannel,
+            (MethodCall methodCall) async {
       if (methodCall.method == 'getApplicationDocumentsDirectory') {
         return '/tmp/test_documents';
       }
@@ -43,11 +46,13 @@ void main() {
       }
       return null;
     });
-    
-    // Mock device_info_plus for testing environment  
-    const MethodChannel deviceInfoChannel = MethodChannel('dev.fluttercommunity.plus/device_info');
+
+    // Mock device_info_plus for testing environment
+    const MethodChannel deviceInfoChannel =
+        MethodChannel('dev.fluttercommunity.plus/device_info');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(deviceInfoChannel, (MethodCall methodCall) async {
+        .setMockMethodCallHandler(deviceInfoChannel,
+            (MethodCall methodCall) async {
       if (methodCall.method == 'getAndroidDeviceInfo') {
         return <String, dynamic>{
           'id': 'test-device-id',
@@ -87,15 +92,18 @@ void main() {
 
   tearDownAll(() {
     // Clear method channel handlers
-    const MethodChannel('plugins.flutter.io/shared_preferences').setMockMethodCallHandler(null);
-    const MethodChannel('plugins.flutter.io/path_provider').setMockMethodCallHandler(null);
-    const MethodChannel('dev.fluttercommunity.plus/device_info').setMockMethodCallHandler(null);
+    const MethodChannel('plugins.flutter.io/shared_preferences')
+        .setMockMethodCallHandler(null);
+    const MethodChannel('plugins.flutter.io/path_provider')
+        .setMockMethodCallHandler(null);
+    const MethodChannel('dev.fluttercommunity.plus/device_info')
+        .setMockMethodCallHandler(null);
   });
 
   testWidgets('App loads successfully', (WidgetTester tester) async {
     // Initialize dependencies before testing
     await configureTestDependencies();
-    
+
     // Build a simplified version of our app for testing
     await tester.pumpWidget(
       MaterialApp(
@@ -109,7 +117,7 @@ void main() {
 
     // Wait for all widgets to settle
     await tester.pumpAndSettle();
-    
+
     // Basic verification that the app structure exists
     expect(find.byType(MaterialApp), findsOneWidget);
     expect(find.text('Test App'), findsOneWidget);

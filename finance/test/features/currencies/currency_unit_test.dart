@@ -49,10 +49,11 @@ void main() {
       );
       expect(formatted, contains('1,234.56'));
       expect(formatted, contains('\$'));
-    });    test('CurrencyFormatter should parse amounts correctly', () {
+    });
+    test('CurrencyFormatter should parse amounts correctly', () {
       const amount = 1234.56;
       const formatted = '\$1,234.56';
-      
+
       const currency = Currency(
         code: 'USD',
         name: 'US Dollar',
@@ -61,7 +62,7 @@ void main() {
         rounding: 0,
         isKnown: true,
       );
-      
+
       final parsed = CurrencyFormatter.parseAmount(formatted, currency);
       expect(parsed, closeTo(amount, 0.01));
     });

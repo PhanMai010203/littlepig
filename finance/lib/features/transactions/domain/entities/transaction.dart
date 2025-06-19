@@ -11,28 +11,28 @@ class Transaction extends Equatable {
   final DateTime date;
   final DateTime createdAt;
   final DateTime updatedAt;
-  
+
   // Advanced transaction fields
-  
+
   // Transaction type and special type
   final TransactionType transactionType;
   final TransactionSpecialType? specialType; // credit, debt, etc.
-  
+
   // Recurring/Subscription fields
   final TransactionRecurrence recurrence;
   final int? periodLength; // e.g., 1 for "every 1 month"
   final DateTime? endDate; // When to stop creating instances
   final DateTime? originalDateDue; // Original due date for recurring
-  
+
   // State and action management
   final TransactionState transactionState;
   final bool paid; // For loan/recurring logic
   final bool skipPaid; // Skip vs pay for recurring
   final bool? createdAnotherFutureTransaction; // Prevents duplicate creation
-  
+
   // Loan/Objective linking (for complex loans)
   final String? objectiveLoanFk; // Links to objectives table (future use)
-  
+
   // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   final String syncId;
 
@@ -46,7 +46,7 @@ class Transaction extends Equatable {
     required this.date,
     required this.createdAt,
     required this.updatedAt,
-    
+
     // Advanced fields with defaults for backward compatibility
     this.transactionType = TransactionType.expense,
     this.specialType,
@@ -59,7 +59,6 @@ class Transaction extends Equatable {
     this.skipPaid = false,
     this.createdAnotherFutureTransaction,
     this.objectiveLoanFk,
-    
     required this.syncId,
   });
   Transaction copyWith({
@@ -104,7 +103,8 @@ class Transaction extends Equatable {
       transactionState: transactionState ?? this.transactionState,
       paid: paid ?? this.paid,
       skipPaid: skipPaid ?? this.skipPaid,
-      createdAnotherFutureTransaction: createdAnotherFutureTransaction ?? this.createdAnotherFutureTransaction,
+      createdAnotherFutureTransaction: createdAnotherFutureTransaction ??
+          this.createdAnotherFutureTransaction,
       objectiveLoanFk: objectiveLoanFk ?? this.objectiveLoanFk,
       syncId: syncId ?? this.syncId,
     );
@@ -112,24 +112,25 @@ class Transaction extends Equatable {
 
   bool get isIncome => amount > 0;
   bool get isExpense => amount < 0;
-  
+
   // Advanced transaction type helpers
   bool get isRecurring => recurrence != TransactionRecurrence.none;
   bool get isSubscription => transactionType == TransactionType.subscription;
-  bool get isLoan => transactionType == TransactionType.loan || specialType != null;
+  bool get isLoan =>
+      transactionType == TransactionType.loan || specialType != null;
   bool get isCredit => specialType == TransactionSpecialType.credit;
   bool get isDebt => specialType == TransactionSpecialType.debt;
   bool get isPending => transactionState == TransactionState.pending;
   bool get isScheduled => transactionState == TransactionState.scheduled;
   bool get needsAction => transactionState == TransactionState.actionRequired;
-  
+
   /// Gets the available actions for this transaction based on its state and type
   List<TransactionAction> get availableActions {
     final actions = <TransactionAction>[];
-    
+
     // Basic actions always available
     actions.addAll([TransactionAction.edit, TransactionAction.delete]);
-    
+
     // State-based actions
     switch (transactionState) {
       case TransactionState.pending:
@@ -145,7 +146,8 @@ class Transaction extends Equatable {
         break;
       case TransactionState.actionRequired:
         if (isCredit) {
-          actions.add(paid ? TransactionAction.collect : TransactionAction.none);
+          actions
+              .add(paid ? TransactionAction.collect : TransactionAction.none);
         } else if (isDebt) {
           actions.add(paid ? TransactionAction.settle : TransactionAction.none);
         }
@@ -154,9 +156,10 @@ class Transaction extends Equatable {
         // Only basic actions for cancelled transactions
         break;
     }
-    
+
     return actions;
   }
+
   @override
   List<Object?> get props => [
         id,

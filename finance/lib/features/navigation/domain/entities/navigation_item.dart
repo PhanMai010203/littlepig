@@ -30,6 +30,7 @@ class NavigationItem extends Equatable {
       isDefault: isDefault ?? this.isDefault,
     );
   }
+
   @override
   List<Object?> get props => [id, label, iconPath, routePath, isDefault];
 
@@ -114,4 +115,4 @@ class NavigationItem extends Equatable {
     budgets,
     more,
   ];
-} 
+}

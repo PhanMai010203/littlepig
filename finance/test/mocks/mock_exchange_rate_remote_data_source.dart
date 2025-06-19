@@ -3,7 +3,7 @@ import 'package:finance/features/currencies/data/models/exchange_rate_model.dart
 
 class MockExchangeRateRemoteDataSource implements ExchangeRateRemoteDataSource {
   final bool shouldThrowError;
-  
+
   MockExchangeRateRemoteDataSource({this.shouldThrowError = true});
 
   @override
@@ -11,7 +11,7 @@ class MockExchangeRateRemoteDataSource implements ExchangeRateRemoteDataSource {
     if (shouldThrowError) {
       throw Exception('Mock network error for testing offline behavior');
     }
-    
+
     // Return mock exchange rates
     return {
       'EUR': ExchangeRateModel(
@@ -30,11 +30,12 @@ class MockExchangeRateRemoteDataSource implements ExchangeRateRemoteDataSource {
   }
 
   @override
-  Future<ExchangeRateModel?> getExchangeRate(String fromCurrency, String toCurrency) async {
+  Future<ExchangeRateModel?> getExchangeRate(
+      String fromCurrency, String toCurrency) async {
     if (shouldThrowError) {
       throw Exception('Mock network error for testing offline behavior');
     }
-    
+
     // Return mock exchange rate for specific pair
     if (fromCurrency == 'USD' && toCurrency == 'EUR') {
       return ExchangeRateModel(
@@ -51,7 +52,7 @@ class MockExchangeRateRemoteDataSource implements ExchangeRateRemoteDataSource {
         lastUpdated: DateTime.now(),
       );
     }
-    
+
     return null;
   }
 }

@@ -4,7 +4,7 @@ import 'platform_service.dart';
 import '../settings/app_settings.dart';
 
 /// DialogService - Phase 3.2 Implementation
-/// 
+///
 /// A service for showing dialogs and popups with:
 /// - Type-safe generic support
 /// - Integration with PopupFramework
@@ -13,9 +13,9 @@ import '../settings/app_settings.dart';
 /// - Consistent API across the app
 class DialogService {
   DialogService._();
-  
+
   /// Show a popup using PopupFramework
-  /// 
+  ///
   /// Returns a Future that completes with the result when the dialog is dismissed.
   /// [T] is the type of value that can be returned from the dialog.
   static Future<T?> showPopup<T>(
@@ -84,7 +84,7 @@ class DialogService {
       animationCurve: animationCurve,
       child: child,
     );
-    
+
     return showDialog<T>(
       context: context,
       barrierDismissible: barrierDismissible,
@@ -100,7 +100,7 @@ class DialogService {
   }
 
   /// Show a confirmation dialog with Yes/No buttons
-  /// 
+  ///
   /// Returns true if user confirms, false if they cancel, null if dismissed
   static Future<bool?> showConfirmationDialog(
     BuildContext context, {
@@ -116,13 +116,13 @@ class DialogService {
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     final effectiveConfirmText = confirmText ?? 'Confirm';
     final effectiveCancelText = cancelText ?? 'Cancel';
-    final effectiveConfirmColor = isDangerous 
+    final effectiveConfirmColor = isDangerous
         ? (confirmColor ?? colorScheme.error)
         : (confirmColor ?? colorScheme.primary);
-    
+
     return showPopup<bool>(
       context,
       Column(
@@ -131,8 +131,8 @@ class DialogService {
           Text(
             message,
             style: theme.textTheme.bodyMedium,
-            textAlign: PlatformService.getPlatform() == PlatformOS.isIOS 
-                ? TextAlign.center 
+            textAlign: PlatformService.getPlatform() == PlatformOS.isIOS
+                ? TextAlign.center
                 : TextAlign.start,
           ),
           const SizedBox(height: 24.0),
@@ -151,9 +151,8 @@ class DialogService {
                 onPressed: () => Navigator.of(context).pop(true),
                 style: FilledButton.styleFrom(
                   backgroundColor: effectiveConfirmColor,
-                  foregroundColor: isDangerous 
-                      ? colorScheme.onError 
-                      : colorScheme.onPrimary,
+                  foregroundColor:
+                      isDangerous ? colorScheme.onError : colorScheme.onPrimary,
                 ),
                 child: Text(effectiveConfirmText),
               ),
@@ -169,7 +168,7 @@ class DialogService {
   }
 
   /// Show an information dialog with OK button
-  /// 
+  ///
   /// Returns true when dismissed
   static Future<bool?> showInfoDialog(
     BuildContext context, {
@@ -181,7 +180,7 @@ class DialogService {
   }) {
     final theme = Theme.of(context);
     final effectiveButtonText = buttonText ?? 'OK';
-    
+
     return showPopup<bool>(
       context,
       Column(
@@ -190,8 +189,8 @@ class DialogService {
           Text(
             message,
             style: theme.textTheme.bodyMedium,
-            textAlign: PlatformService.getPlatform() == PlatformOS.isIOS 
-                ? TextAlign.center 
+            textAlign: PlatformService.getPlatform() == PlatformOS.isIOS
+                ? TextAlign.center
                 : TextAlign.start,
           ),
           const SizedBox(height: 24.0),
@@ -214,7 +213,7 @@ class DialogService {
   }
 
   /// Show an error dialog with OK button
-  /// 
+  ///
   /// Returns true when dismissed
   static Future<bool?> showErrorDialog(
     BuildContext context, {
@@ -228,7 +227,7 @@ class DialogService {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final effectiveButtonText = buttonText ?? 'OK';
-    
+
     return showPopup<bool>(
       context,
       StatefulBuilder(
@@ -240,8 +239,8 @@ class DialogService {
               Text(
                 message,
                 style: theme.textTheme.bodyMedium,
-                textAlign: PlatformService.getPlatform() == PlatformOS.isIOS 
-                    ? TextAlign.center 
+                textAlign: PlatformService.getPlatform() == PlatformOS.isIOS
+                    ? TextAlign.center
                     : TextAlign.start,
               ),
               if (details != null) ...[
@@ -303,7 +302,7 @@ class DialogService {
   }
 
   /// Show a loading dialog
-  /// 
+  ///
   /// Returns a function that can be called to dismiss the dialog
   static VoidCallback showLoadingDialog(
     BuildContext context, {
@@ -313,7 +312,7 @@ class DialogService {
     PopupAnimationType animationType = PopupAnimationType.fadeIn,
   }) {
     bool isDismissed = false;
-    
+
     showPopup<void>(
       context,
       Column(
@@ -335,7 +334,7 @@ class DialogService {
       barrierDismissible: barrierDismissible,
       showCloseButton: false,
     ).then((_) => isDismissed = true);
-    
+
     return () {
       if (!isDismissed && Navigator.of(context).canPop()) {
         Navigator.of(context).pop();
@@ -345,7 +344,7 @@ class DialogService {
   }
 
   /// Show a custom dialog with optional action buttons
-  /// 
+  ///
   /// Returns the result from the dialog
   static Future<T?> showCustomDialog<T>(
     BuildContext context, {
@@ -360,7 +359,7 @@ class DialogService {
     bool showCloseButton = false,
   }) {
     Widget dialogContent = content;
-    
+
     // Add actions if provided
     if (actions != null && actions.isNotEmpty) {
       dialogContent = Column(
@@ -374,7 +373,7 @@ class DialogService {
             children: actions.map((action) {
               return Padding(
                 padding: const EdgeInsets.only(left: 8.0),
-                child: action.isDestructive 
+                child: action.isDestructive
                     ? TextButton(
                         onPressed: () {
                           final result = action.onPressed?.call();
@@ -412,7 +411,7 @@ class DialogService {
         ],
       );
     }
-    
+
     return showPopup<T>(
       context,
       dialogContent,
@@ -427,10 +426,10 @@ class DialogService {
 
   /// Check if animations are enabled for dialogs
   static bool get areDialogAnimationsEnabled {
-    return AppSettings.appAnimations && 
-           !AppSettings.reduceAnimations && 
-           !AppSettings.batterySaver &&
-           AppSettings.animationLevel != 'none';
+    return AppSettings.appAnimations &&
+        !AppSettings.reduceAnimations &&
+        !AppSettings.batterySaver &&
+        AppSettings.animationLevel != 'none';
   }
 
   /// Get the default popup animation type based on platform and settings
@@ -438,15 +437,15 @@ class DialogService {
     if (!areDialogAnimationsEnabled) {
       return PopupAnimationType.none;
     }
-    
+
     switch (AppSettings.animationLevel) {
       case 'reduced':
         return PopupAnimationType.fadeIn;
       case 'enhanced':
         return PopupAnimationType.scaleIn;
       default:
-        return PlatformService.getPlatform() == PlatformOS.isIOS 
-            ? PopupAnimationType.scaleIn 
+        return PlatformService.getPlatform() == PlatformOS.isIOS
+            ? PopupAnimationType.scaleIn
             : PopupAnimationType.slideUp;
     }
   }
@@ -464,17 +463,17 @@ class DialogAction {
 
   /// The text label for the action button
   final String label;
-  
+
   /// Callback when the action is pressed
   /// The return value will be passed to Navigator.pop() if closesDialog is true
   final dynamic Function()? onPressed;
-  
+
   /// Whether this action should be styled as a primary button
   final bool isPrimary;
-  
+
   /// Whether this action should be styled as destructive/dangerous
   final bool isDestructive;
-  
+
   /// Whether pressing this action should close the dialog
   final bool closesDialog;
 }
@@ -576,4 +575,4 @@ extension DialogServiceExtension on BuildContext {
       barrierDismissible: barrierDismissible,
     );
   }
-} 
+}

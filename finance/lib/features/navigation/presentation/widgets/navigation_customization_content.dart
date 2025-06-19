@@ -8,7 +8,7 @@ import '../../../../shared/widgets/animations/fade_in.dart';
 import '../../../../shared/widgets/animations/slide_in.dart';
 
 /// Phase 5 Implementation: NavigationCustomizationContent
-/// 
+///
 /// A custom content widget for navigation customization dialog that provides:
 /// - Better visual design with animation integration
 /// - Enhanced user experience with TappableWidget
@@ -25,13 +25,13 @@ class NavigationCustomizationContent extends StatelessWidget {
 
   /// Index of the navigation item being customized
   final int currentIndex;
-  
+
   /// Current navigation item at this index
   final NavigationItem currentItem;
-  
+
   /// List of available items that can replace the current item
   final List<NavigationItem> availableItems;
-  
+
   /// Callback when a new item is selected
   final void Function(NavigationItem newItem) onItemSelected;
 
@@ -39,7 +39,7 @@ class NavigationCustomizationContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     if (availableItems.isEmpty) {
       return FadeIn(
         child: Column(
@@ -121,9 +121,9 @@ class NavigationCustomizationContent extends StatelessWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 20),
-        
+
         // Available items title
         FadeIn(
           delay: const Duration(milliseconds: 200),
@@ -134,14 +134,14 @@ class NavigationCustomizationContent extends StatelessWidget {
             ),
           ),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Available items list
         ...availableItems.asMap().entries.map((entry) {
           final index = entry.key;
           final item = entry.value;
-          
+
           return SlideIn(
             delay: Duration(milliseconds: 300 + (index * 50)),
             direction: SlideDirection.left,
@@ -161,15 +161,15 @@ class NavigationCustomizationContent extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                                             SvgPicture.asset(
-                         item.iconPath,
-                         width: 20,
-                         height: 20,
-                         colorFilter: ColorFilter.mode(
-                           colorScheme.onSurfaceVariant,
-                           BlendMode.srcIn,
-                         ),
-                       ),
+                      SvgPicture.asset(
+                        item.iconPath,
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          colorScheme.onSurfaceVariant,
+                          BlendMode.srcIn,
+                        ),
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -191,9 +191,9 @@ class NavigationCustomizationContent extends StatelessWidget {
             ),
           );
         }).toList(),
-        
+
         const SizedBox(height: 8),
-        
+
         // Help text
         FadeIn(
           delay: Duration(milliseconds: 400 + (availableItems.length * 50)),
@@ -208,4 +208,4 @@ class NavigationCustomizationContent extends StatelessWidget {
       ],
     );
   }
-} 
+}

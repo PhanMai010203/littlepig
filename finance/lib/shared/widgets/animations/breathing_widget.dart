@@ -35,11 +35,12 @@ class _BreathingWidgetState extends State<BreathingWidget>
   @override
   void initState() {
     super.initState();
-    
+
     final adjustedDuration = Duration(
-      milliseconds: (widget.duration.inMilliseconds / widget.breathingSpeed).round(),
+      milliseconds:
+          (widget.duration.inMilliseconds / widget.breathingSpeed).round(),
     );
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: adjustedDuration,
@@ -61,7 +62,7 @@ class _BreathingWidgetState extends State<BreathingWidget>
 
   void _startBreathing() {
     if (!mounted || !AnimationUtils.shouldAnimate()) return;
-    
+
     // Start continuous breathing animation
     _controller.repeat(reverse: true);
   }
@@ -135,4 +136,4 @@ extension BreathingWidgetExtension on Widget {
       child: this,
     );
   }
-} 
+}

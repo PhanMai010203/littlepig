@@ -178,7 +178,7 @@ class DefaultCategories {
 
   /// Get all default categories (income + expense)
   static List<DefaultCategory> get allCategories => [
-    ...incomeCategories,
-    ...expenseCategories,
-  ];
+        ...incomeCategories,
+        ...expenseCategories,
+      ];
 }

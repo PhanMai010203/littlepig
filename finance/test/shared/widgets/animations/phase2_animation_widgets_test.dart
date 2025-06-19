@@ -131,7 +131,7 @@ void main() {
             ),
           ),
         );
-        
+
         expect(find.byType(SlideFadeTransition), findsOneWidget);
         controller.dispose();
       });
@@ -205,10 +205,13 @@ void main() {
           MaterialApp(
             home: Column(
               children: [
-                FadeIn(child: Container(key: const ValueKey('fade'), width: 50, height: 50)),
+                FadeIn(
+                    child: Container(
+                        key: const ValueKey('fade'), width: 50, height: 50)),
                 BouncingWidget(
                   autoStart: false,
-                  child: Container(key: const ValueKey('bounce'), width: 50, height: 50),
+                  child: Container(
+                      key: const ValueKey('bounce'), width: 50, height: 50),
                 ),
               ],
             ),
@@ -216,7 +219,7 @@ void main() {
         );
 
         await tester.pump();
-        
+
         expect(find.byKey(const ValueKey('fade')), findsOneWidget);
         expect(find.byKey(const ValueKey('bounce')), findsOneWidget);
       });
@@ -228,10 +231,13 @@ void main() {
           MaterialApp(
             home: Column(
               children: [
-                SlideIn(child: Container(key: const ValueKey('slide'), width: 50, height: 50)),
+                SlideIn(
+                    child: Container(
+                        key: const ValueKey('slide'), width: 50, height: 50)),
                 BreathingWidget(
                   autoStart: false,
-                  child: Container(key: const ValueKey('breathing'), width: 50, height: 50),
+                  child: Container(
+                      key: const ValueKey('breathing'), width: 50, height: 50),
                 ),
               ],
             ),
@@ -239,10 +245,10 @@ void main() {
         );
 
         await tester.pump();
-        
+
         expect(find.byKey(const ValueKey('slide')), findsOneWidget);
         expect(find.byKey(const ValueKey('breathing')), findsOneWidget);
       });
     });
   });
-} 
+}

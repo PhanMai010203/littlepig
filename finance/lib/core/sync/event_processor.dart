@@ -10,13 +10,14 @@ import 'package:drift/drift.dart';
 class EventProcessor {
   final AppDatabase _database;
   final Map<String, Function> _eventListeners = {};
-  final StreamController<SyncEvent> _eventBroadcastController = 
+  final StreamController<SyncEvent> _eventBroadcastController =
       StreamController<SyncEvent>.broadcast();
-  
+
   EventProcessor(this._database);
 
   /// Stream for broadcasting processed events to Team B
-  Stream<SyncEvent> get eventBroadcastStream => _eventBroadcastController.stream;
+  Stream<SyncEvent> get eventBroadcastStream =>
+      _eventBroadcastController.stream;
 
   /// Process a single sync event with full validation and optimization
   Future<void> processEvent(SyncEvent event) async {
@@ -33,13 +34,13 @@ class EventProcessor {
 
     // Compress event data for storage efficiency
     final compressedEvent = await compressEvent(event);
-    
+
     // Store the processed event
     await _storeProcessedEvent(compressedEvent);
-    
+
     // Broadcast to registered listeners
     await broadcastEvent(compressedEvent);
-    
+
     // Trigger any registered event listeners
     await _triggerEventListeners(compressedEvent);
   }
@@ -74,7 +75,7 @@ class EventProcessor {
   /// Compress event data for storage efficiency
   Future<SyncEvent> compressEvent(SyncEvent event) async {
     final compressedData = <String, dynamic>{};
-    
+
     // Remove null values and empty strings to reduce size
     for (final entry in event.data.entries) {
       if (entry.value != null && entry.value.toString().isNotEmpty) {
@@ -83,10 +84,8 @@ class EventProcessor {
     }
 
     // Apply table-specific compression
-    final optimizedData = await _applyTableSpecificOptimization(
-      event.tableName, 
-      compressedData
-    );
+    final optimizedData =
+        await _applyTableSpecificOptimization(event.tableName, compressedData);
 
     return SyncEvent(
       eventId: event.eventId,
@@ -108,7 +107,7 @@ class EventProcessor {
 
     for (final event in events) {
       final recordKey = '${event.tableName}:${event.recordId}';
-      
+
       // Check if we've seen this exact event before
       final eventHash = event.hash;
       if (uniqueEvents.containsKey(eventHash)) {
@@ -118,7 +117,7 @@ class EventProcessor {
       // Check if this is a newer version of the same record
       if (recordVersions.containsKey(recordKey)) {
         final existing = recordVersions[recordKey]!;
-        
+
         // Compare timestamps and sequence numbers
         if (_isEventNewer(event, existing)) {
           // Remove old version and add new one
@@ -163,7 +162,7 @@ class EventProcessor {
   Future<bool> _isDuplicateEvent(SyncEvent event) async {
     final query = _database.select(_database.syncEventLogTable)
       ..where((tbl) => tbl.hash.equals(event.hash));
-    
+
     final existing = await query.getSingleOrNull();
     return existing != null;
   }
@@ -171,26 +170,26 @@ class EventProcessor {
   /// Store processed event in database
   Future<void> _storeProcessedEvent(SyncEvent event) async {
     await _database.into(_database.syncEventLogTable).insert(
-      SyncEventLogTableCompanion.insert(
-        eventId: event.eventId,
-        deviceId: event.deviceId,
-        tableNameField: event.tableName,
-        recordId: event.recordId,
-        operation: event.operation,
-        data: jsonEncode(event.data),
-        timestamp: event.timestamp,
-        sequenceNumber: event.sequenceNumber,
-        hash: event.hash,
-        isSynced: const Value(false),
-      ),
-      mode: InsertMode.insertOrReplace,
-    );
+          SyncEventLogTableCompanion.insert(
+            eventId: event.eventId,
+            deviceId: event.deviceId,
+            tableNameField: event.tableName,
+            recordId: event.recordId,
+            operation: event.operation,
+            data: jsonEncode(event.data),
+            timestamp: event.timestamp,
+            sequenceNumber: event.sequenceNumber,
+            hash: event.hash,
+            isSynced: const Value(false),
+          ),
+          mode: InsertMode.insertOrReplace,
+        );
   }
 
   /// Trigger registered event listeners
   Future<void> _triggerEventListeners(SyncEvent event) async {
     final eventType = '${event.tableName}:${event.operation}';
-    
+
     if (_eventListeners.containsKey(eventType)) {
       try {
         await _eventListeners[eventType]!(event);
@@ -231,10 +230,11 @@ class EventProcessor {
   bool _validateTransactionEvent(SyncEvent event) {
     if (event.operation == 'create' || event.operation == 'update') {
       // Required fields for transactions
-      if (!event.data.containsKey('amount') || !event.data.containsKey('title')) {
+      if (!event.data.containsKey('amount') ||
+          !event.data.containsKey('title')) {
         return false;
       }
-      
+
       // Amount should be a number
       final amount = event.data['amount'];
       if (amount != null && amount is! num) {
@@ -251,7 +251,7 @@ class EventProcessor {
       if (!event.data.containsKey('name') || !event.data.containsKey('limit')) {
         return false;
       }
-      
+
       // Budget limit should be positive
       final limit = event.data['limit'];
       if (limit != null && limit is num && limit <= 0) {
@@ -287,7 +287,8 @@ class EventProcessor {
   bool _validateAttachmentEvent(SyncEvent event) {
     if (event.operation == 'create' || event.operation == 'update') {
       // Required fields for attachments
-      if (!event.data.containsKey('filename') || !event.data.containsKey('filePath')) {
+      if (!event.data.containsKey('filename') ||
+          !event.data.containsKey('filePath')) {
         return false;
       }
     }
@@ -296,9 +297,7 @@ class EventProcessor {
 
   /// Apply table-specific data optimization
   Future<Map<String, dynamic>> _applyTableSpecificOptimization(
-    String tableName, 
-    Map<String, dynamic> data
-  ) async {
+      String tableName, Map<String, dynamic> data) async {
     switch (tableName) {
       case 'transactions':
         return _optimizeTransactionData(data);
@@ -318,12 +317,13 @@ class EventProcessor {
   /// Optimize transaction data
   Map<String, dynamic> _optimizeTransactionData(Map<String, dynamic> data) {
     final optimized = Map<String, dynamic>.from(data);
-    
+
     // Normalize amount precision to 2 decimal places
     if (optimized.containsKey('amount') && optimized['amount'] is num) {
-      optimized['amount'] = double.parse(optimized['amount'].toStringAsFixed(2));
+      optimized['amount'] =
+          double.parse(optimized['amount'].toStringAsFixed(2));
     }
-    
+
     // Trim whitespace from text fields
     if (optimized.containsKey('title')) {
       optimized['title'] = optimized['title'].toString().trim();
@@ -331,56 +331,57 @@ class EventProcessor {
     if (optimized.containsKey('note')) {
       optimized['note'] = optimized['note'].toString().trim();
     }
-    
+
     return optimized;
   }
 
   /// Optimize budget data
   Map<String, dynamic> _optimizeBudgetData(Map<String, dynamic> data) {
     final optimized = Map<String, dynamic>.from(data);
-    
+
     // Normalize limit and spent to 2 decimal places
     for (final field in ['limit', 'spent']) {
       if (optimized.containsKey(field) && optimized[field] is num) {
         optimized[field] = double.parse(optimized[field].toStringAsFixed(2));
       }
     }
-    
+
     return optimized;
   }
 
   /// Optimize category data
   Map<String, dynamic> _optimizeCategoryData(Map<String, dynamic> data) {
     final optimized = Map<String, dynamic>.from(data);
-    
+
     // Trim whitespace from name
     if (optimized.containsKey('name')) {
       optimized['name'] = optimized['name'].toString().trim();
     }
-    
+
     return optimized;
   }
 
   /// Optimize account data
   Map<String, dynamic> _optimizeAccountData(Map<String, dynamic> data) {
     final optimized = Map<String, dynamic>.from(data);
-    
+
     // Normalize balance to 2 decimal places
     if (optimized.containsKey('balance') && optimized['balance'] is num) {
-      optimized['balance'] = double.parse(optimized['balance'].toStringAsFixed(2));
+      optimized['balance'] =
+          double.parse(optimized['balance'].toStringAsFixed(2));
     }
-    
+
     return optimized;
   }
 
   /// Optimize attachment data
   Map<String, dynamic> _optimizeAttachmentData(Map<String, dynamic> data) {
     final optimized = Map<String, dynamic>.from(data);
-    
+
     // Remove temporary file paths that shouldn't be synced
     optimized.remove('tempPath');
     optimized.remove('localCachePath');
-    
+
     return optimized;
   }
 
@@ -394,12 +395,12 @@ class EventProcessor {
   bool _isEventNewer(SyncEvent event, Map<String, dynamic> existing) {
     final existingSequence = existing['sequenceNumber'] as int;
     final existingTimestamp = existing['timestamp'] as DateTime;
-    
+
     // Compare by sequence number first
     if (event.sequenceNumber != existingSequence) {
       return event.sequenceNumber > existingSequence;
     }
-    
+
     // Then by timestamp
     return event.timestamp.isAfter(existingTimestamp);
   }
@@ -409,4 +410,4 @@ class EventProcessor {
     _eventBroadcastController.close();
     _eventListeners.clear();
   }
-} 
+}

@@ -14,7 +14,7 @@ enum FloatingMonitorPosition {
 }
 
 /// AnimationPerformanceMonitor Widget - Phase 6.2 Implementation
-/// 
+///
 /// A real-time monitor for animation performance metrics
 /// Displays current animation state, frame rates, and optimization info
 class AnimationPerformanceMonitor extends StatefulWidget {
@@ -55,10 +55,12 @@ class AnimationPerformanceMonitor extends StatefulWidget {
   final TextStyle? textStyle;
 
   @override
-  State<AnimationPerformanceMonitor> createState() => _AnimationPerformanceMonitorState();
+  State<AnimationPerformanceMonitor> createState() =>
+      _AnimationPerformanceMonitorState();
 }
 
-class _AnimationPerformanceMonitorState extends State<AnimationPerformanceMonitor> {
+class _AnimationPerformanceMonitorState
+    extends State<AnimationPerformanceMonitor> {
   late Timer _timer;
   Map<String, dynamic> _currentMetrics = {};
 
@@ -91,13 +93,13 @@ class _AnimationPerformanceMonitorState extends State<AnimationPerformanceMonito
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    
-    final backgroundColor = widget.backgroundColor ?? 
+
+    final backgroundColor = widget.backgroundColor ??
         (isDark ? Colors.black87 : Colors.white.withOpacity(0.9));
-    final textColor = widget.textColor ?? 
-        (isDark ? Colors.white : Colors.black87);
-    final borderColor = widget.borderColor ?? 
-        (isDark ? Colors.white24 : Colors.black12);
+    final textColor =
+        widget.textColor ?? (isDark ? Colors.white : Colors.black87);
+    final borderColor =
+        widget.borderColor ?? (isDark ? Colors.white24 : Colors.black12);
 
     return Container(
       padding: widget.padding,
@@ -106,7 +108,9 @@ class _AnimationPerformanceMonitorState extends State<AnimationPerformanceMonito
         border: Border.all(color: borderColor),
         borderRadius: BorderRadius.circular(widget.borderRadius),
       ),
-      child: widget.showFullDetails ? _buildDetailedView(textColor) : _buildSummaryView(textColor),
+      child: widget.showFullDetails
+          ? _buildDetailedView(textColor)
+          : _buildSummaryView(textColor),
     );
   }
 
@@ -114,20 +118,22 @@ class _AnimationPerformanceMonitorState extends State<AnimationPerformanceMonito
     final activeAnimations = _currentMetrics['currentActiveAnimations'] ?? 0;
     final maxAnimations = AnimationPerformanceService.maxSimultaneousAnimations;
     final frameTime = _currentMetrics['averageFrameTimeMs'] ?? 16;
-    
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           '$activeAnimations / $maxAnimations',
-          style: widget.textStyle?.copyWith(color: textColor) ?? 
-                 TextStyle(color: textColor, fontSize: 12, fontFamily: 'monospace'),
+          style: widget.textStyle?.copyWith(color: textColor) ??
+              TextStyle(
+                  color: textColor, fontSize: 12, fontFamily: 'monospace'),
         ),
         Text(
           '${frameTime}ms',
-          style: widget.textStyle?.copyWith(color: textColor) ?? 
-                 TextStyle(color: textColor, fontSize: 10, fontFamily: 'monospace'),
+          style: widget.textStyle?.copyWith(color: textColor) ??
+              TextStyle(
+                  color: textColor, fontSize: 10, fontFamily: 'monospace'),
         ),
       ],
     );
@@ -142,18 +148,21 @@ class _AnimationPerformanceMonitorState extends State<AnimationPerformanceMonito
     final animationLevel = profile['animationLevel'] ?? 'normal';
     final batterySaver = profile['batterySaver'] ?? false;
 
-    final baseTextStyle = widget.textStyle?.copyWith(color: textColor) ?? 
-                         TextStyle(color: textColor, fontSize: 10, fontFamily: 'monospace');
+    final baseTextStyle = widget.textStyle?.copyWith(color: textColor) ??
+        TextStyle(color: textColor, fontSize: 10, fontFamily: 'monospace');
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Animations: $activeAnimations / $maxAnimations', style: baseTextStyle),
+        Text('Animations: $activeAnimations / $maxAnimations',
+            style: baseTextStyle),
         Text('Frame Time: ${frameTime}ms', style: baseTextStyle),
         Text('Performance: ${isGood ? "Good" : "Poor"}', style: baseTextStyle),
         Text('Level: $animationLevel', style: baseTextStyle),
-        if (batterySaver) Text('Battery Saver: ON', style: baseTextStyle.copyWith(color: Colors.orange)),
+        if (batterySaver)
+          Text('Battery Saver: ON',
+              style: baseTextStyle.copyWith(color: Colors.orange)),
       ],
     );
   }
@@ -233,4 +242,4 @@ extension PerformanceMonitorExtension on Widget {
       ],
     );
   }
-} 
+}

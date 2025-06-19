@@ -8,7 +8,8 @@ class BouncingWidget extends StatefulWidget {
     required this.child,
     this.duration = const Duration(milliseconds: 800),
     this.curve = Curves.elasticOut,
-    this.scaleFactor = 0.05, // How much the widget shrinks/expands during bounce
+    this.scaleFactor =
+        0.05, // How much the widget shrinks/expands during bounce
     this.autoStart = true,
     this.repeat = false,
     this.reverse = false,
@@ -35,7 +36,7 @@ class _BouncingWidgetState extends State<BouncingWidget>
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -75,7 +76,7 @@ class _BouncingWidgetState extends State<BouncingWidget>
   /// Public method to trigger bounce manually
   void bounce() {
     if (!AnimationUtils.shouldAnimate()) return;
-    
+
     _controller.reset();
     _startAnimation();
   }
@@ -132,4 +133,4 @@ extension BouncingWidgetExtension on Widget {
       child: this,
     );
   }
-} 
+}

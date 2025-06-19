@@ -6,7 +6,8 @@ import 'sync_event.dart';
 /// Implements intelligent conflict resolution using vector clocks and field-level merging
 class CRDTConflictResolver {
   /// Resolve conflicts between multiple sync events for the same record
-  Future<ConflictResolution> resolveCRDT(List<SyncEvent> conflictingEvents) async {
+  Future<ConflictResolution> resolveCRDT(
+      List<SyncEvent> conflictingEvents) async {
     if (conflictingEvents.isEmpty) {
       throw ArgumentError('Cannot resolve conflicts for empty event list');
     }
@@ -54,7 +55,7 @@ class CRDTConflictResolver {
     }
 
     // Check if they're for the same table and record
-    if (!events.every((event) => 
+    if (!events.every((event) =>
         event.tableName == events.first.tableName &&
         event.recordId == events.first.recordId)) {
       return false;
@@ -71,21 +72,26 @@ class CRDTConflictResolver {
     }
 
     // Special case: Allow merging for certain fields with business logic
-    return _canMergeConflictingFields(events.first.tableName, conflictingFields);
+    return _canMergeConflictingFields(
+        events.first.tableName, conflictingFields);
   }
 
   /// Check if conflicting fields can be merged using business logic
-  bool _canMergeConflictingFields(String tableName, Set<String> conflictingFields) {
+  bool _canMergeConflictingFields(
+      String tableName, Set<String> conflictingFields) {
     switch (tableName) {
       case 'transactions':
         // Allow merging if only the note field conflicts (we can concatenate notes)
-        return conflictingFields.length == 1 && conflictingFields.contains('note');
+        return conflictingFields.length == 1 &&
+            conflictingFields.contains('note');
       case 'budgets':
         // Allow merging if only the spent field conflicts (we use latest)
-        return conflictingFields.length == 1 && conflictingFields.contains('spent');
+        return conflictingFields.length == 1 &&
+            conflictingFields.contains('spent');
       case 'accounts':
         // Allow merging if only the balance field conflicts (we use latest)
-        return conflictingFields.length == 1 && conflictingFields.contains('balance');
+        return conflictingFields.length == 1 &&
+            conflictingFields.contains('balance');
       default:
         return false;
     }
@@ -124,7 +130,8 @@ class CRDTConflictResolver {
     }
 
     // Apply table-specific merging rules
-    return await _applyTableSpecificMerging(events.first.tableName, events, merged);
+    return await _applyTableSpecificMerging(
+        events.first.tableName, events, merged);
   }
 
   /// Apply business logic specific merging for different table types
@@ -222,7 +229,7 @@ class CRDTConflictResolver {
 
     // Attachments are mostly immutable, use latest for metadata updates
     final latestEvent = events.last;
-    
+
     // Take latest upload status and drive IDs
     if (latestEvent.data.containsKey('isUploaded')) {
       merged['isUploaded'] = latestEvent.data['isUploaded'];
@@ -240,14 +247,14 @@ class CRDTConflictResolver {
   /// Calculate content hash for conflict detection
   String calculateContentHash(Map<String, dynamic> data) {
     final contentData = Map<String, dynamic>.from(data);
-    
+
     // ✅ PHASE 4.4: Remove legacy sync fields that were in the old sync infrastructure
     // but keep the current event sourcing infrastructure fields
     contentData.remove('deviceId');
     contentData.remove('isSynced');
     contentData.remove('version');
     contentData.remove('lastSyncAt');
-    
+
     // Also remove current sync infrastructure fields that shouldn't affect content
     contentData.remove('syncId');
     contentData.remove('createdAt');
@@ -297,4 +304,4 @@ class CRDTConflictResolver {
 
     return false;
   }
-} 
+}

@@ -6,37 +6,37 @@ import '../sync_state_manager.dart';
 abstract class SyncService {
   /// Stream of sync events for real-time updates (Team B consumes this)
   Stream<SyncEvent> get eventStream;
-  
+
   /// Stream of sync progress updates (Team B displays this)
   Stream<SyncProgress> get progressStream;
-  
+
   /// Stream of sync state changes (Team B monitors this)
   Stream<SyncState> get stateStream;
-  
+
   /// Sync local changes to cloud (Team A implements)
   Future<SyncResult> syncToCloud();
-  
+
   /// Download and apply changes from cloud (Team A implements)
   Future<SyncResult> syncFromCloud();
-  
+
   /// Full bidirectional sync operation (Team A implements)
   Future<SyncResult> performFullSync();
-  
+
   /// Initialize sync service (Team A implements)
   Future<bool> initialize();
-  
+
   /// Check if user is authenticated (Team A implements)
   Future<bool> isSignedIn();
-  
+
   /// Sign in to cloud service (Team A implements)
   Future<bool> signIn();
-  
+
   /// Sign out from cloud service (Team A implements)
   Future<void> signOut();
-  
+
   /// Check if sync is currently in progress
   bool get isSyncing;
-  
+
   /// Get last successful sync timestamp
   Future<DateTime?> getLastSyncTime();
 }
@@ -45,19 +45,19 @@ abstract class SyncService {
 abstract class RealtimeCapable {
   /// Broadcast an event to other devices (Team B implements)
   Future<void> broadcastEvent(SyncEvent event);
-  
+
   /// Handle incoming real-time event (Team B implements)
   Future<void> handleIncomingEvent(SyncEvent event);
-  
+
   /// Subscribe to real-time updates (Team B implements)
   Future<void> subscribeToRealTimeUpdates();
-  
+
   /// Unsubscribe from real-time updates (Team B implements)
   Future<void> unsubscribeFromRealTimeUpdates();
-  
+
   /// Stream of incoming real-time events
   Stream<SyncEvent> get incomingEventStream;
-  
+
   /// Connection status for real-time sync
   Stream<ConnectionStatus> get connectionStatusStream;
 }
@@ -66,10 +66,10 @@ abstract class RealtimeCapable {
 abstract class ConflictResolver {
   /// Automatically resolve conflicts using CRDT logic (Team A implements)
   Future<ConflictResolution> resolveAutomatically(List<SyncEvent> conflicts);
-  
+
   /// Request user decision for manual conflict resolution (Team B implements)
   Future<UserDecision> requestUserDecision(ConflictScenario scenario);
-  
+
   /// Stream of conflicts that need user attention
   Stream<ConflictScenario> get conflictStream;
 }
@@ -78,16 +78,16 @@ abstract class ConflictResolver {
 abstract class SyncStateProvider {
   /// Stream of sync progress updates (Team A provides)
   Stream<SyncProgress> get progressStream;
-  
+
   /// Stream of sync state changes (Team A provides)
   Stream<SyncState> get stateStream;
-  
+
   /// Stream of sync metrics (Team A provides)
   Stream<SyncMetrics> get metricsStream;
-  
+
   /// Get current sync metrics
   Future<SyncMetrics> getCurrentMetrics();
-  
+
   /// Get list of active devices
   Future<List<DeviceInfo>> getActiveDevices();
 }
@@ -96,13 +96,13 @@ abstract class SyncStateProvider {
 abstract class UserNotificationProvider {
   /// Stream of user notifications (Team B displays)
   Stream<UserNotification> get notificationStream;
-  
+
   /// Show sync completion notification
   Future<void> showSyncCompletedNotification(SyncResult result);
-  
+
   /// Show conflict resolution notification
   Future<void> showConflictNotification(ConflictScenario conflict);
-  
+
   /// Show sync error notification
   Future<void> showSyncErrorNotification(String error);
 }
@@ -182,13 +182,7 @@ class UserDecision {
 }
 
 /// Actions user can take for conflict resolution
-enum ConflictResolutionAction {
-  useLocal,
-  useRemote,
-  merge,
-  skip,
-  custom
-}
+enum ConflictResolutionAction { useLocal, useRemote, merge, skip, custom }
 
 /// Conflict scenario for user resolution
 class ConflictScenario {
@@ -213,11 +207,11 @@ class ConflictScenario {
 
 /// Types of conflicts that can occur
 enum ConflictType {
-  updateUpdate,    // Two updates to same record
-  updateDelete,    // Update vs delete
-  deleteDelete,    // Multiple deletes
-  createCreate,    // Duplicate creates
-  complexMerge     // Complex multi-field conflicts
+  updateUpdate, // Two updates to same record
+  updateDelete, // Update vs delete
+  deleteDelete, // Multiple deletes
+  createCreate, // Duplicate creates
+  complexMerge // Complex multi-field conflicts
 }
 
 /// User notification for sync events
@@ -245,7 +239,8 @@ class UserNotification {
       id: 'sync_completed_${DateTime.now().millisecondsSinceEpoch}',
       type: NotificationType.syncCompleted,
       title: 'Sync Completed',
-      message: 'Synced ${result.uploadedCount} uploads, ${result.downloadedCount} downloads',
+      message:
+          'Synced ${result.uploadedCount} uploads, ${result.downloadedCount} downloads',
       timestamp: DateTime.now(),
       data: {
         'uploadedCount': result.uploadedCount,
@@ -296,9 +291,4 @@ enum NotificationType {
 }
 
 /// Priority levels for notifications
-enum NotificationPriority {
-  low,
-  normal,
-  high,
-  critical
-} 
+enum NotificationPriority { low, normal, high, critical }

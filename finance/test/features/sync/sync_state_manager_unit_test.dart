@@ -34,14 +34,15 @@ void main() {
       // Verify the data was stored
       final query = database.select(database.syncStateTable)
         ..where((tbl) => tbl.deviceId.equals(deviceId));
-      
+
       final result = await query.getSingleOrNull();
       expect(result, isNotNull);
       expect(result!.deviceId, equals(deviceId));
       expect(result.lastSequenceNumber, equals(sequenceNumber));
     });
 
-    test('getActiveDevices - should return devices synced within 30 days', () async {
+    test('getActiveDevices - should return devices synced within 30 days',
+        () async {
       // Add a device synced recently
       final recentDevice = 'recent-device';
       await syncStateManager.updateSyncProgress(recentDevice, 1);
@@ -49,16 +50,16 @@ void main() {
       // Add a device synced long ago (simulate by direct database insert)
       final oldTimestamp = DateTime.now().subtract(Duration(days: 35));
       await database.into(database.syncStateTable).insert(
-        SyncStateTableCompanion.insert(
-          deviceId: 'old-device',
-          lastSyncTime: oldTimestamp,
-          lastSequenceNumber: Value(1),
-          status: Value('idle'),
-        ),
-      );
+            SyncStateTableCompanion.insert(
+              deviceId: 'old-device',
+              lastSyncTime: oldTimestamp,
+              lastSequenceNumber: Value(1),
+              status: Value('idle'),
+            ),
+          );
 
       final activeDevices = await syncStateManager.getActiveDevices();
-      
+
       expect(activeDevices.contains(recentDevice), isTrue);
       expect(activeDevices.contains('old-device'), isFalse);
     });
@@ -70,13 +71,13 @@ void main() {
       await syncStateManager.updateSyncProgress(deviceId, sequenceNumber);
 
       final deviceInfoList = await syncStateManager.getDeviceInfoList();
-      
+
       expect(deviceInfoList.isNotEmpty, isTrue);
       final deviceInfo = deviceInfoList.firstWhere(
         (info) => info.deviceId == deviceId,
         orElse: () => throw StateError('Device not found'),
       );
-      
+
       expect(deviceInfo.deviceId, equals(deviceId));
       expect(deviceInfo.lastSequenceNumber, equals(sequenceNumber));
     });
@@ -133,7 +134,8 @@ void main() {
       expect(updatedProgress.processedEvents, equals(75)); // Updated
       expect(updatedProgress.conflictCount, equals(2)); // Unchanged
       expect(updatedProgress.progressPercentage, equals(75.0)); // Updated
-      expect(updatedProgress.statusMessage, equals('Processing...')); // Unchanged
+      expect(
+          updatedProgress.statusMessage, equals('Processing...')); // Unchanged
     });
 
     test('SyncState enum - should have all required states', () {
@@ -191,4 +193,4 @@ void main() {
       expect(metrics.syncEfficiency, equals(95.5));
     });
   });
-} 
+}

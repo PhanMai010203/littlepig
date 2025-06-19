@@ -6,9 +6,10 @@ import 'package:finance/core/di/injection.dart';
 void main() {
   setUpAll(() {
     TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Mock SharedPreferences for testing environment
-    const MethodChannel channel = MethodChannel('plugins.flutter.io/shared_preferences');
+    const MethodChannel channel =
+        MethodChannel('plugins.flutter.io/shared_preferences');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       if (methodCall.method == 'getAll') {
@@ -16,11 +17,13 @@ void main() {
       }
       return null;
     });
-    
+
     // Mock path_provider for testing environment
-    const MethodChannel pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const MethodChannel pathProviderChannel =
+        MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(pathProviderChannel, (MethodCall methodCall) async {
+        .setMockMethodCallHandler(pathProviderChannel,
+            (MethodCall methodCall) async {
       if (methodCall.method == 'getApplicationDocumentsDirectory') {
         return '/tmp/test_documents';
       }

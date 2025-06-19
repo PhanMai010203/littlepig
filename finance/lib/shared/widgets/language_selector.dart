@@ -9,7 +9,7 @@ class LanguageSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentLocale = context.locale;
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Column(
@@ -26,7 +26,8 @@ class LanguageSelector extends StatelessWidget {
               border: Border.all(color: getColor(context, 'outline')),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Column(              children: [
+            child: Column(
+              children: [
                 _buildLanguageOption(
                   context,
                   const Locale('en'),
@@ -61,10 +62,10 @@ class LanguageSelector extends StatelessWidget {
     Locale currentLocale,
   ) {
     final isSelected = locale == currentLocale;
-    
+
     return ListTile(
       leading: CircleAvatar(
-        backgroundColor: isSelected 
+        backgroundColor: isSelected
             ? getColor(context, 'primary')
             : getColor(context, 'surfaceContainer'),
         child: Text(

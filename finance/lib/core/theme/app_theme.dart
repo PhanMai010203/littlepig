@@ -10,7 +10,7 @@ class AppTheme {
   /// Create light theme
   static ThemeData light({Color? accentColor}) {
     final accent = accentColor ?? MaterialYouManager.getAccentColor();
-    
+
     final colorScheme = MaterialYouManager.createColorScheme(
       brightness: Brightness.light,
       fallbackSeedColor: accent,
@@ -22,15 +22,16 @@ class AppTheme {
       useMaterial3: true,
       textTheme: AppTextTheme.textTheme,
       fontFamily: 'Inter',
-      
+
       // App bar theme
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
-        centerTitle: true,        systemOverlayStyle: SystemUiOverlayStyle.dark,
+        centerTitle: true,
+        systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
-      
+
       // Card theme
       cardTheme: const CardThemeData(
         elevation: 2,
@@ -38,7 +39,7 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
-      
+
       // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
@@ -47,7 +48,7 @@ class AppTheme {
         filled: true,
         fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       ),
-      
+
       // Elevated button theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -57,7 +58,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Outlined button theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -67,7 +68,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Text button theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -77,7 +78,7 @@ class AppTheme {
           ),
         ),
       ),
-        // Bottom navigation bar theme
+      // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
         backgroundColor: colorScheme.surface,
@@ -102,7 +103,7 @@ class AppTheme {
   /// Create dark theme
   static ThemeData dark({Color? accentColor}) {
     final accent = accentColor ?? MaterialYouManager.getAccentColor();
-    
+
     final colorScheme = MaterialYouManager.createColorScheme(
       brightness: Brightness.dark,
       fallbackSeedColor: accent,
@@ -114,15 +115,16 @@ class AppTheme {
       useMaterial3: true,
       textTheme: AppTextTheme.textTheme,
       fontFamily: 'Inter',
-      
+
       // App bar theme
       appBarTheme: AppBarTheme(
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         elevation: 0,
-        centerTitle: true,        systemOverlayStyle: SystemUiOverlayStyle.light,
+        centerTitle: true,
+        systemOverlayStyle: SystemUiOverlayStyle.light,
       ),
-      
+
       // Card theme
       cardTheme: const CardThemeData(
         elevation: 2,
@@ -130,7 +132,7 @@ class AppTheme {
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
       ),
-      
+
       // Input decoration theme
       inputDecorationTheme: InputDecorationTheme(
         border: OutlineInputBorder(
@@ -139,7 +141,7 @@ class AppTheme {
         filled: true,
         fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
       ),
-      
+
       // Elevated button theme
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -149,7 +151,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Outlined button theme
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
@@ -159,7 +161,7 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Text button theme
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
@@ -169,10 +171,11 @@ class AppTheme {
           ),
         ),
       ),
-      
+
       // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
-        type: BottomNavigationBarType.fixed,        backgroundColor: colorScheme.surface,
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: colorScheme.surface,
         selectedItemColor: accent,
         unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         elevation: 8,

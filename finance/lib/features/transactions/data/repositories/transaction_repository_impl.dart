@@ -75,7 +75,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       categoryId: transaction.categoryId,
       accountId: transaction.accountId,
       date: transaction.date,
-      
+
       // Advanced fields
       transactionType: Value(transaction.transactionType.name),
       specialType: Value(transaction.specialType?.name),
@@ -86,24 +86,24 @@ class TransactionRepositoryImpl implements TransactionRepository {
       transactionState: Value(transaction.transactionState.name),
       paid: Value(transaction.paid),
       skipPaid: Value(transaction.skipPaid),
-      createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+      createdAnotherFutureTransaction:
+          Value(transaction.createdAnotherFutureTransaction),
       objectiveLoanFk: Value(transaction.objectiveLoanFk),
-      
+
       // ✅ PHASE 4: Only essential sync field
       syncId: const Uuid().v4(),
     );
-    
-    final id = await _database.into(_database.transactionsTable).insert(companion);
+
+    final id =
+        await _database.into(_database.transactionsTable).insert(companion);
     final createdTransaction = transaction.copyWith(id: id);
-    
+
     // Trigger budget updates if service is available
     if (_budgetUpdateService != null) {
       await _budgetUpdateService!.updateBudgetOnTransactionChange(
-        createdTransaction, 
-        TransactionChangeType.created
-      );
+          createdTransaction, TransactionChangeType.created);
     }
-    
+
     return createdTransaction;
   }
 
@@ -117,7 +117,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       categoryId: Value(transaction.categoryId),
       accountId: Value(transaction.accountId),
       date: Value(transaction.date),
-      
+
       // Advanced fields
       transactionType: Value(transaction.transactionType.name),
       specialType: Value(transaction.specialType?.name),
@@ -128,24 +128,23 @@ class TransactionRepositoryImpl implements TransactionRepository {
       transactionState: Value(transaction.transactionState.name),
       paid: Value(transaction.paid),
       skipPaid: Value(transaction.skipPaid),
-      createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+      createdAnotherFutureTransaction:
+          Value(transaction.createdAnotherFutureTransaction),
       objectiveLoanFk: Value(transaction.objectiveLoanFk),
-      
+
       updatedAt: Value(DateTime.now()),
       // ✅ PHASE 4: No more redundant sync fields - event sourcing handles sync state
     );
-    
+
     await _database.update(_database.transactionsTable).replace(companion);
     final updatedTransaction = transaction.copyWith(updatedAt: DateTime.now());
-    
+
     // Trigger budget updates if service is available
     if (_budgetUpdateService != null) {
       await _budgetUpdateService!.updateBudgetOnTransactionChange(
-        updatedTransaction, 
-        TransactionChangeType.updated
-      );
+          updatedTransaction, TransactionChangeType.updated);
     }
-    
+
     return updatedTransaction;
   }
 
@@ -153,17 +152,15 @@ class TransactionRepositoryImpl implements TransactionRepository {
   Future<void> deleteTransaction(int id) async {
     // Get transaction before deletion for budget update
     final transaction = await getTransactionById(id);
-    
+
     await (_database.delete(_database.transactionsTable)
           ..where((t) => t.id.equals(id)))
         .go();
-    
+
     // Trigger budget updates if service is available and transaction existed
     if (_budgetUpdateService != null && transaction != null) {
       await _budgetUpdateService!.updateBudgetOnTransactionChange(
-        transaction, 
-        TransactionChangeType.deleted
-      );
+          transaction, TransactionChangeType.deleted);
     }
   }
 
@@ -175,11 +172,12 @@ class TransactionRepositoryImpl implements TransactionRepository {
       FROM sync_event_log 
       WHERE table_name_field = 'transactions' AND is_synced = false
     ''').get();
-    
-    final unsyncedSyncIds = unsyncedEvents.map((row) => row.data['sync_id'] as String).toList();
-    
+
+    final unsyncedSyncIds =
+        unsyncedEvents.map((row) => row.data['sync_id'] as String).toList();
+
     if (unsyncedSyncIds.isEmpty) return [];
-    
+
     final query = _database.select(_database.transactionsTable)
       ..where((t) => t.syncId.isIn(unsyncedSyncIds));
     final results = await query.get();
@@ -199,7 +197,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<void> insertOrUpdateFromSync(Transaction transaction) async {
     final existing = await getTransactionBySyncId(transaction.syncId);
-    
+
     if (existing == null) {
       // Insert new transaction from sync
       final companion = TransactionsTableCompanion.insert(
@@ -209,7 +207,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         categoryId: transaction.categoryId,
         accountId: transaction.accountId,
         date: transaction.date,
-        
+
         // Advanced fields
         transactionType: Value(transaction.transactionType.name),
         specialType: Value(transaction.specialType?.name),
@@ -220,22 +218,21 @@ class TransactionRepositoryImpl implements TransactionRepository {
         transactionState: Value(transaction.transactionState.name),
         paid: Value(transaction.paid),
         skipPaid: Value(transaction.skipPaid),
-        createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+        createdAnotherFutureTransaction:
+            Value(transaction.createdAnotherFutureTransaction),
         objectiveLoanFk: Value(transaction.objectiveLoanFk),
-        
+
         createdAt: Value(transaction.createdAt),
         updatedAt: Value(transaction.updatedAt),
         // ✅ PHASE 4: Only sync_id field for sync operations
         syncId: transaction.syncId,
       );
       await _database.into(_database.transactionsTable).insert(companion);
-      
+
       // Trigger budget updates for new sync transaction
       if (_budgetUpdateService != null) {
         await _budgetUpdateService!.updateBudgetOnTransactionChange(
-          transaction, 
-          TransactionChangeType.created
-        );
+            transaction, TransactionChangeType.created);
       }
     } else {
       // ✅ PHASE 4: Always update with newer data from sync (no version comparison needed)
@@ -247,7 +244,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
         categoryId: Value(transaction.categoryId),
         accountId: Value(transaction.accountId),
         date: Value(transaction.date),
-        
+
         // Advanced fields
         transactionType: Value(transaction.transactionType.name),
         specialType: Value(transaction.specialType?.name),
@@ -258,80 +255,88 @@ class TransactionRepositoryImpl implements TransactionRepository {
         transactionState: Value(transaction.transactionState.name),
         paid: Value(transaction.paid),
         skipPaid: Value(transaction.skipPaid),
-        createdAnotherFutureTransaction: Value(transaction.createdAnotherFutureTransaction),
+        createdAnotherFutureTransaction:
+            Value(transaction.createdAnotherFutureTransaction),
         objectiveLoanFk: Value(transaction.objectiveLoanFk),
-        
+
         updatedAt: Value(transaction.updatedAt),
         // ✅ PHASE 4: No redundant sync fields to update
       );
       await _database.update(_database.transactionsTable).replace(companion);
-      
+
       // Trigger budget updates for updated sync transaction
       if (_budgetUpdateService != null) {
         await _budgetUpdateService!.updateBudgetOnTransactionChange(
-          transaction, 
-          TransactionChangeType.updated
-        );
+            transaction, TransactionChangeType.updated);
       }
     }
   }
 
   @override
-  Future<double> getTotalByCategory(int categoryId, DateTime? from, DateTime? to) async {
+  Future<double> getTotalByCategory(
+      int categoryId, DateTime? from, DateTime? to) async {
     var query = _database.selectOnly(_database.transactionsTable)
       ..addColumns([_database.transactionsTable.amount.sum()])
       ..where(_database.transactionsTable.categoryId.equals(categoryId));
-    
+
     if (from != null) {
-      query = query..where(_database.transactionsTable.date.isBiggerOrEqualValue(from));
+      query = query
+        ..where(_database.transactionsTable.date.isBiggerOrEqualValue(from));
     }
     if (to != null) {
-      query = query..where(_database.transactionsTable.date.isSmallerOrEqualValue(to));
+      query = query
+        ..where(_database.transactionsTable.date.isSmallerOrEqualValue(to));
     }
-    
+
     final result = await query.getSingle();
     return result.read(_database.transactionsTable.amount.sum()) ?? 0.0;
   }
 
   @override
-  Future<double> getTotalByAccount(int accountId, DateTime? from, DateTime? to) async {
+  Future<double> getTotalByAccount(
+      int accountId, DateTime? from, DateTime? to) async {
     var query = _database.selectOnly(_database.transactionsTable)
       ..addColumns([_database.transactionsTable.amount.sum()])
       ..where(_database.transactionsTable.accountId.equals(accountId));
-    
+
     if (from != null) {
-      query = query..where(_database.transactionsTable.date.isBiggerOrEqualValue(from));
+      query = query
+        ..where(_database.transactionsTable.date.isBiggerOrEqualValue(from));
     }
     if (to != null) {
-      query = query..where(_database.transactionsTable.date.isSmallerOrEqualValue(to));
+      query = query
+        ..where(_database.transactionsTable.date.isSmallerOrEqualValue(to));
     }
-    
+
     final result = await query.getSingle();
     return result.read(_database.transactionsTable.amount.sum()) ?? 0.0;
   }
 
   @override
-  Future<Map<int, double>> getSpendingByCategory(DateTime? from, DateTime? to) async {
+  Future<Map<int, double>> getSpendingByCategory(
+      DateTime? from, DateTime? to) async {
     var query = _database.selectOnly(_database.transactionsTable)
       ..addColumns([
         _database.transactionsTable.categoryId,
         _database.transactionsTable.amount.sum()
       ])
       ..groupBy([_database.transactionsTable.categoryId]);
-    
+
     if (from != null) {
-      query = query..where(_database.transactionsTable.date.isBiggerOrEqualValue(from));
+      query = query
+        ..where(_database.transactionsTable.date.isBiggerOrEqualValue(from));
     }
     if (to != null) {
-      query = query..where(_database.transactionsTable.date.isSmallerOrEqualValue(to));
+      query = query
+        ..where(_database.transactionsTable.date.isSmallerOrEqualValue(to));
     }
-    
+
     final results = await query.get();
     return Map.fromEntries(
       results.map((row) => MapEntry(
-        row.read(_database.transactionsTable.categoryId)!,
-        row.read(_database.transactionsTable.amount.sum()) ?? 0.0,
-      )),
+            row.read(_database.transactionsTable.categoryId)!,
+            row.read(_database.transactionsTable.amount.sum()) ?? 0.0,
+          )),
     );
   }
 
@@ -352,7 +357,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       date: data.date,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
-      
+
       // Advanced fields
       transactionType: TransactionType.values.firstWhere(
         (e) => e.name == data.transactionType,
@@ -379,7 +384,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       skipPaid: data.skipPaid,
       createdAnotherFutureTransaction: data.createdAnotherFutureTransaction,
       objectiveLoanFk: data.objectiveLoanFk,
-      
+
       // ✅ PHASE 4: Only essential sync field
       syncId: data.syncId,
     );

@@ -14,9 +14,10 @@ void main() {
   setUpAll(() {
     // Initialize Flutter binding for tests
     TestWidgetsFlutterBinding.ensureInitialized();
-    
+
     // Mock SharedPreferences for testing environment
-    const MethodChannel channel = MethodChannel('plugins.flutter.io/shared_preferences');
+    const MethodChannel channel =
+        MethodChannel('plugins.flutter.io/shared_preferences');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
         .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       if (methodCall.method == 'getAll') {
@@ -24,11 +25,13 @@ void main() {
       }
       return null;
     });
-    
+
     // Mock path_provider for testing environment
-    const MethodChannel pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
+    const MethodChannel pathProviderChannel =
+        MethodChannel('plugins.flutter.io/path_provider');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(pathProviderChannel, (MethodCall methodCall) async {
+        .setMockMethodCallHandler(pathProviderChannel,
+            (MethodCall methodCall) async {
       if (methodCall.method == 'getApplicationDocumentsDirectory') {
         return '/tmp/test_documents';
       }
@@ -40,11 +43,13 @@ void main() {
       }
       return null;
     });
-    
-    // Mock device_info_plus for testing environment  
-    const MethodChannel deviceInfoChannel = MethodChannel('dev.fluttercommunity.plus/device_info');
+
+    // Mock device_info_plus for testing environment
+    const MethodChannel deviceInfoChannel =
+        MethodChannel('dev.fluttercommunity.plus/device_info');
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(deviceInfoChannel, (MethodCall methodCall) async {
+        .setMockMethodCallHandler(deviceInfoChannel,
+            (MethodCall methodCall) async {
       if (methodCall.method == 'getAndroidDeviceInfo') {
         return <String, dynamic>{
           'id': 'test-device-id',
@@ -84,19 +89,22 @@ void main() {
 
   tearDownAll(() async {
     // Clear method channel handlers
-    const MethodChannel('plugins.flutter.io/shared_preferences').setMockMethodCallHandler(null);
-    const MethodChannel('plugins.flutter.io/path_provider').setMockMethodCallHandler(null);
-    const MethodChannel('dev.fluttercommunity.plus/device_info').setMockMethodCallHandler(null);
+    const MethodChannel('plugins.flutter.io/shared_preferences')
+        .setMockMethodCallHandler(null);
+    const MethodChannel('plugins.flutter.io/path_provider')
+        .setMockMethodCallHandler(null);
+    const MethodChannel('dev.fluttercommunity.plus/device_info')
+        .setMockMethodCallHandler(null);
   });
 
   group('Dependency Injection Tests', () {
     test('should configure dependencies without errors', () async {
       // Arrange - ensure clean state
       await resetDependencies();
-      
+
       // Act
       await configureTestDependencies();
-      
+
       // Assert - no exceptions should be thrown
       expect(getIt.isRegistered<DatabaseService>(), isTrue);
       expect(getIt.isRegistered<TransactionRepository>(), isTrue);
@@ -109,12 +117,12 @@ void main() {
     test('should handle multiple configuration calls gracefully', () async {
       // Arrange - ensure clean state
       await resetDependencies();
-      
+
       // Act - call configure multiple times
       await configureTestDependencies();
       await configureTestDependencies(); // This should not throw
       await configureTestDependencies(); // This should not throw either
-      
+
       // Assert - services should still be registered
       expect(getIt.isRegistered<DatabaseService>(), isTrue);
       expect(getIt.isRegistered<TransactionRepository>(), isTrue);
@@ -125,10 +133,10 @@ void main() {
       await resetDependencies();
       await configureTestDependencies();
       expect(getIt.isRegistered<DatabaseService>(), isTrue);
-      
+
       // Act
       await configureTestDependencies();
-      
+
       // Assert
       expect(getIt.isRegistered<DatabaseService>(), isTrue);
       expect(getIt.isRegistered<TransactionRepository>(), isTrue);

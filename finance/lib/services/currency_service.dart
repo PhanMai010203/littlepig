@@ -35,7 +35,7 @@ class CurrencyService {
   Future<List<Currency>> getAccountCurrencies() async {
     final accounts = await _accountRepository.getAllAccounts();
     final currencyCodes = accounts.map((a) => a.currency).toSet();
-    
+
     final List<Currency> currencies = [];
     for (final code in currencyCodes) {
       final currency = await getCurrency(code);
@@ -43,7 +43,7 @@ class CurrencyService {
         currencies.add(currency);
       }
     }
-    
+
     return currencies;
   }
 
@@ -70,7 +70,7 @@ class CurrencyService {
     bool forceSign = false,
   }) async {
     final currency = await getCurrency(currencyCode);
-    
+
     if (currency == null) {
       // Fallback formatting
       String formatted = amount.toStringAsFixed(2);
@@ -94,12 +94,13 @@ class CurrencyService {
   }) async {
     final accounts = await _accountRepository.getAllAccounts();
     final currencyCodes = accounts.map((a) => a.currency).toSet();
-    
+
     final Map<String, ExchangeRate?> rates = {};
     for (final code in currencyCodes) {
-      rates[code] = await _currencyRepository.getExchangeRate(code, baseCurrency);
+      rates[code] =
+          await _currencyRepository.getExchangeRate(code, baseCurrency);
     }
-    
+
     return rates;
   }
 
@@ -107,7 +108,7 @@ class CurrencyService {
   Future<double> getTotalBalanceInCurrency(String targetCurrency) async {
     final accounts = await _accountRepository.getAllAccounts();
     double total = 0.0;
-    
+
     for (final account in accounts) {
       final convertedBalance = await convertAmount(
         amount: account.balance,
@@ -116,7 +117,7 @@ class CurrencyService {
       );
       total += convertedBalance;
     }
-    
+
     return total;
   }
 
@@ -143,7 +144,8 @@ class CurrencyService {
     required String toCurrency,
     required double rate,
   }) async {
-    await _currencyRepository.setCustomExchangeRate(fromCurrency, toCurrency, rate);
+    await _currencyRepository.setCustomExchangeRate(
+        fromCurrency, toCurrency, rate);
   }
 
   /// Gets custom exchange rates
@@ -156,7 +158,8 @@ class CurrencyService {
     required String fromCurrency,
     required String toCurrency,
   }) async {
-    await _currencyRepository.removeCustomExchangeRate(fromCurrency, toCurrency);
+    await _currencyRepository.removeCustomExchangeRate(
+        fromCurrency, toCurrency);
   }
 
   /// Refreshes exchange rates from remote source
@@ -192,7 +195,7 @@ class CurrencyService {
   Future<double?> parseAmount(String text, String currencyCode) async {
     final currency = await getCurrency(currencyCode);
     if (currency == null) return null;
-    
+
     return CurrencyFormatter.parseAmount(text, currency);
   }
 
@@ -204,7 +207,7 @@ class CurrencyService {
   }) async {
     final currency = await getCurrency(currencyCode);
     if (currency == null) return currencyCode;
-    
+
     return CurrencyFormatter.formatCurrencyDisplay(
       currency: currency,
       showCode: showCode,

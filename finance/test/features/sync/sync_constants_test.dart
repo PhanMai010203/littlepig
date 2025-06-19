@@ -12,23 +12,28 @@ void main() {
     group('Phase 4: Namespace Separation', () {
       test('should define correct folder constants', () {
         expect(GoogleDriveSyncService.APP_ROOT, equals('FinanceApp'));
-        expect(GoogleDriveSyncService.SYNC_FOLDER, equals('FinanceApp/database_sync'));
-        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER, equals('FinanceApp/user_attachments'));
+        expect(GoogleDriveSyncService.SYNC_FOLDER,
+            equals('FinanceApp/database_sync'));
+        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER,
+            equals('FinanceApp/user_attachments'));
       });
 
       test('should separate sync and attachment file namespaces', () {
         // Verify that sync and attachment folders are different
-        expect(GoogleDriveSyncService.SYNC_FOLDER, isNot(equals(GoogleDriveSyncService.ATTACHMENTS_FOLDER)));
-        
+        expect(GoogleDriveSyncService.SYNC_FOLDER,
+            isNot(equals(GoogleDriveSyncService.ATTACHMENTS_FOLDER)));
+
         // Verify hierarchical structure
-        expect(GoogleDriveSyncService.SYNC_FOLDER, startsWith(GoogleDriveSyncService.APP_ROOT));
-        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER, startsWith(GoogleDriveSyncService.APP_ROOT));
+        expect(GoogleDriveSyncService.SYNC_FOLDER,
+            startsWith(GoogleDriveSyncService.APP_ROOT));
+        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER,
+            startsWith(GoogleDriveSyncService.APP_ROOT));
       });
 
       test('should provide proper folder hierarchy for attachments', () {
         final syncFolder = GoogleDriveSyncService.SYNC_FOLDER;
         final attachmentsFolder = GoogleDriveSyncService.ATTACHMENTS_FOLDER;
-        
+
         // Ensure they share the same root but are different branches
         expect(syncFolder, startsWith('FinanceApp/'));
         expect(attachmentsFolder, startsWith('FinanceApp/'));
@@ -49,7 +54,8 @@ void main() {
         final hash2 = _calculateRecordHash(data);
 
         expect(hash1, equals(hash2));
-        expect(hash1.length, equals(64)); // SHA-256 produces 64-character hex string
+        expect(hash1.length,
+            equals(64)); // SHA-256 produces 64-character hex string
       });
 
       test('should generate different hashes for different data', () {
@@ -98,7 +104,7 @@ void main() {
 
         // Run multiple times to ensure deterministic behavior
         final hashes = List.generate(5, (_) => _calculateRecordHash(data));
-        
+
         // All hashes should be identical
         for (int i = 1; i < hashes.length; i++) {
           expect(hashes[i], equals(hashes[0]));
@@ -116,18 +122,31 @@ void main() {
       test('should validate event sourcing table structure requirements', () {
         // Key requirements for event sourcing tables
         final eventLogFields = [
-          'id', 'eventId', 'deviceId', 'tableNameField', 'recordId',
-          'operation', 'data', 'timestamp', 'sequenceNumber', 'hash', 'isSynced'
+          'id',
+          'eventId',
+          'deviceId',
+          'tableNameField',
+          'recordId',
+          'operation',
+          'data',
+          'timestamp',
+          'sequenceNumber',
+          'hash',
+          'isSynced'
         ];
-        
+
         final syncStateFields = [
-          'id', 'deviceId', 'lastSyncTime', 'lastSequenceNumber', 'status'
+          'id',
+          'deviceId',
+          'lastSyncTime',
+          'lastSequenceNumber',
+          'status'
         ];
 
         // Verify we have all required fields defined
         expect(eventLogFields.length, equals(11));
         expect(syncStateFields.length, equals(5));
-        
+
         // Verify core operations are defined
         final validOperations = ['create', 'update', 'delete'];
         expect(validOperations, contains('create'));
@@ -145,9 +164,10 @@ void main() {
         // Verify we have both income and expense categories
         expect(incomeCategories.isNotEmpty, isTrue);
         expect(expenseCategories.isNotEmpty, isTrue);
-        
+
         // Verify total count matches
-        expect(allCategories.length, equals(incomeCategories.length + expenseCategories.length));
+        expect(allCategories.length,
+            equals(incomeCategories.length + expenseCategories.length));
 
         // Verify all categories have required fields
         for (final category in allCategories) {
@@ -164,7 +184,7 @@ void main() {
         for (final category in allCategories) {
           // Verify sync ID format
           expect(category.syncId, matches(r'^(income|expense)-.+'));
-          
+
           // Verify consistency between isExpense flag and sync ID prefix
           if (category.isExpense) {
             expect(category.syncId, startsWith('expense-'));
@@ -187,14 +207,14 @@ void main() {
       test('should handle empty data gracefully', () {
         final emptyData = <String, dynamic>{};
         final hash = _calculateRecordHash(emptyData);
-        
+
         expect(hash, isNotEmpty);
         expect(hash.length, equals(64));
       });
 
       test('should handle large data sets efficiently', () {
         final largeData = <String, dynamic>{};
-        
+
         // Generate a large data set
         for (int i = 0; i < 1000; i++) {
           largeData['field_$i'] = 'value_$i';
@@ -214,7 +234,7 @@ void main() {
     group('Phase 4.4: Content Hashing Cleanup', () {
       test('should calculate content hash without legacy sync fields', () {
         final resolver = CRDTConflictResolver();
-        
+
         final dataWithLegacyFields = {
           'title': 'Test Transaction',
           'amount': 100.0,
@@ -237,12 +257,14 @@ void main() {
 
         // Content hash should be same because sync metadata is ignored
         expect(hash1, equals(hash2));
-        expect(hash1.length, equals(64)); // SHA-256 produces 64-character hex string
+        expect(hash1.length,
+            equals(64)); // SHA-256 produces 64-character hex string
       });
 
-      test('should generate different hashes for different business content', () {
+      test('should generate different hashes for different business content',
+          () {
         final resolver = CRDTConflictResolver();
-        
+
         final data1 = {
           'title': 'Transaction 1',
           'amount': 100.0,
@@ -265,7 +287,7 @@ void main() {
 
       test('should be deterministic across multiple runs', () {
         final resolver = CRDTConflictResolver();
-        
+
         final data = {
           'title': 'Deterministic Test',
           'amount': 123.45,
@@ -276,8 +298,9 @@ void main() {
         };
 
         // Run multiple times to ensure deterministic behavior
-        final hashes = List.generate(5, (_) => resolver.calculateContentHash(data));
-        
+        final hashes =
+            List.generate(5, (_) => resolver.calculateContentHash(data));
+
         // All hashes should be identical
         for (int i = 1; i < hashes.length; i++) {
           expect(hashes[i], equals(hashes[0]));
@@ -313,7 +336,7 @@ void main() {
       test('should include syncId in CSV export headers', () async {
         // Since we can't directly test file content without actual file operations,
         // we test the logic by simulating what the CSV would contain
-        
+
         final expectedHeaders = [
           'Budget Name',
           'Amount',
@@ -328,7 +351,7 @@ void main() {
           'Is Income Budget',
           'Sync ID', // ✅ PHASE 4.4: syncId should be included
         ];
-        
+
         // Verify that our expected structure is what we want
         expect(expectedHeaders.contains('Sync ID'), isTrue);
         expect(expectedHeaders.length, equals(12));
@@ -338,7 +361,7 @@ void main() {
         // Test that budgets have proper syncId format
         expect(testBudget.syncId, isNotEmpty);
         expect(testBudget.syncId, equals('test-budget-sync-id'));
-        
+
         // Verify business fields are preserved
         expect(testBudget.name, equals('Test Budget'));
         expect(testBudget.amount, equals(1000.0));
@@ -358,18 +381,31 @@ void main() {
       test('should validate event sourcing table structure requirements', () {
         // Key requirements for event sourcing tables
         final eventLogFields = [
-          'id', 'eventId', 'deviceId', 'tableNameField', 'recordId',
-          'operation', 'data', 'timestamp', 'sequenceNumber', 'hash', 'isSynced'
+          'id',
+          'eventId',
+          'deviceId',
+          'tableNameField',
+          'recordId',
+          'operation',
+          'data',
+          'timestamp',
+          'sequenceNumber',
+          'hash',
+          'isSynced'
         ];
-        
+
         final syncStateFields = [
-          'id', 'deviceId', 'lastSyncTime', 'lastSequenceNumber', 'status'
+          'id',
+          'deviceId',
+          'lastSyncTime',
+          'lastSequenceNumber',
+          'status'
         ];
 
         // Verify we have all required fields defined
         expect(eventLogFields.length, equals(11));
         expect(syncStateFields.length, equals(5));
-        
+
         // Verify core operations are defined
         final validOperations = ['create', 'update', 'delete'];
         expect(validOperations, contains('create'));
@@ -379,17 +415,22 @@ void main() {
 
       test('should verify folder constants for namespace separation', () {
         expect(GoogleDriveSyncService.APP_ROOT, equals('FinanceApp'));
-        expect(GoogleDriveSyncService.SYNC_FOLDER, equals('FinanceApp/database_sync'));
-        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER, equals('FinanceApp/user_attachments'));
+        expect(GoogleDriveSyncService.SYNC_FOLDER,
+            equals('FinanceApp/database_sync'));
+        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER,
+            equals('FinanceApp/user_attachments'));
       });
 
       test('should separate sync and attachment file namespaces', () {
         // Verify that sync and attachment folders are different
-        expect(GoogleDriveSyncService.SYNC_FOLDER, isNot(equals(GoogleDriveSyncService.ATTACHMENTS_FOLDER)));
-        
+        expect(GoogleDriveSyncService.SYNC_FOLDER,
+            isNot(equals(GoogleDriveSyncService.ATTACHMENTS_FOLDER)));
+
         // Verify hierarchical structure
-        expect(GoogleDriveSyncService.SYNC_FOLDER, startsWith(GoogleDriveSyncService.APP_ROOT));
-        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER, startsWith(GoogleDriveSyncService.APP_ROOT));
+        expect(GoogleDriveSyncService.SYNC_FOLDER,
+            startsWith(GoogleDriveSyncService.APP_ROOT));
+        expect(GoogleDriveSyncService.ATTACHMENTS_FOLDER,
+            startsWith(GoogleDriveSyncService.APP_ROOT));
       });
     });
 
@@ -398,7 +439,7 @@ void main() {
         final resolver = CRDTConflictResolver();
         final emptyData = <String, dynamic>{};
         final hash = resolver.calculateContentHash(emptyData);
-        
+
         expect(hash, isNotEmpty);
         expect(hash.length, equals(64));
       });
@@ -406,7 +447,7 @@ void main() {
       test('should handle large data sets efficiently', () {
         final resolver = CRDTConflictResolver();
         final largeData = <String, dynamic>{};
-        
+
         // Generate a large data set
         for (int i = 0; i < 1000; i++) {
           largeData['field_$i'] = 'value_$i';
@@ -430,9 +471,10 @@ void main() {
         // Verify we have both income and expense categories
         expect(incomeCategories.isNotEmpty, isTrue);
         expect(expenseCategories.isNotEmpty, isTrue);
-        
+
         // Verify total count matches
-        expect(allCategories.length, equals(incomeCategories.length + expenseCategories.length));
+        expect(allCategories.length,
+            equals(incomeCategories.length + expenseCategories.length));
 
         // Verify all categories have required fields
         for (final category in allCategories) {
@@ -449,7 +491,7 @@ void main() {
         for (final category in allCategories) {
           // Verify sync ID format
           expect(category.syncId, matches(r'^(income|expense)-.+'));
-          
+
           // Verify consistency between isExpense flag and sync ID prefix
           if (category.isExpense) {
             expect(category.syncId, startsWith('expense-'));
@@ -477,7 +519,7 @@ String _calculateRecordHash(Map<String, dynamic> data) {
   contentData.remove('syncId');
   contentData.remove('createdAt');
   contentData.remove('updatedAt');
-  
+
   final content = jsonEncode(contentData);
   return sha256.convert(content.codeUnits).toString();
-} 
+}

@@ -27,15 +27,14 @@ class ScaleIn extends StatefulWidget {
   State<ScaleIn> createState() => _ScaleInState();
 }
 
-class _ScaleInState extends State<ScaleIn>
-    with SingleTickerProviderStateMixin {
+class _ScaleInState extends State<ScaleIn> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
-    
+
     _controller = AnimationUtils.createController(
       vsync: this,
       duration: widget.duration,
@@ -63,12 +62,12 @@ class _ScaleInState extends State<ScaleIn>
       }
       return;
     }
-    
+
     // Respect delay only if animations are enabled
     if (AnimationUtils.shouldAnimate() && widget.delay > Duration.zero) {
       await Future.delayed(widget.delay);
     }
-    
+
     if (mounted && AnimationUtils.canStartAnimation()) {
       _controller.forward();
     } else if (mounted) {
@@ -102,4 +101,4 @@ class _ScaleInState extends State<ScaleIn>
       child: widget.child,
     );
   }
-} 
+}

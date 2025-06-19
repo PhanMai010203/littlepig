@@ -24,7 +24,7 @@ void main() {
       await AppSettings.set('batterySaver', false);
       await AppSettings.set('animationLevel', 'normal');
       await AppSettings.set('reduceAnimations', false);
-      
+
       // Reset performance tracking
       AnimationPerformanceService.resetPerformanceMetrics();
       AnimationUtils.resetPerformanceMetrics();
@@ -48,12 +48,13 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Animation should be created and tracked
         final metrics = AnimationUtils.getPerformanceMetrics();
         final animationMetricsRaw = metrics['animationMetrics'];
-        final animationMetrics = Map<String, dynamic>.from(animationMetricsRaw as Map);
-        
+        final animationMetrics =
+            Map<String, dynamic>.from(animationMetricsRaw as Map);
+
         // Should track FadeIn animations
         expect(animationMetrics.containsKey('FadeIn'), isTrue);
         expect(metrics['activeAnimations'], greaterThan(0));
@@ -61,7 +62,7 @@ void main() {
 
       testWidgets('ScaleIn respects performance settings', (tester) async {
         await AppSettings.set('animationLevel', 'reduced');
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -75,9 +76,10 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Should use optimized duration for reduced level
-        final optimizedDuration = AnimationPerformanceService.getOptimizedDuration(
+        final optimizedDuration =
+            AnimationPerformanceService.getOptimizedDuration(
           Duration(milliseconds: 500),
         );
         expect(optimizedDuration.inMilliseconds, equals(250)); // 50% of 500ms
@@ -85,7 +87,7 @@ void main() {
 
       testWidgets('SlideIn handles animation level changes', (tester) async {
         await AppSettings.set('animationLevel', 'enhanced');
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -99,17 +101,18 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Enhanced level should allow complex animations
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isTrue);
-        expect(AnimationPerformanceService.maxSimultaneousAnimations, equals(8));
+        expect(
+            AnimationPerformanceService.maxSimultaneousAnimations, equals(8));
       });
     });
 
     group('Interactive Animation Widgets Performance Integration', () {
       testWidgets('TappableWidget performance optimization', (tester) async {
         await AppSettings.set('animationLevel', 'enhanced');
-        
+
         bool tapped = false;
         await tester.pumpWidget(
           MaterialApp(
@@ -134,14 +137,14 @@ void main() {
         await tester.pump();
 
         expect(tapped, isTrue);
-        
+
         // Should use haptic feedback in enhanced mode
         expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
       });
 
       testWidgets('TappableWidget respects battery saver mode', (tester) async {
         await AppSettings.set('batterySaver', true);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -156,10 +159,11 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Battery saver should disable haptic feedback
         expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
-        expect(AnimationPerformanceService.maxSimultaneousAnimations, equals(1));
+        expect(
+            AnimationPerformanceService.maxSimultaneousAnimations, equals(1));
       });
     });
 
@@ -179,16 +183,17 @@ void main() {
 
         await tester.pump();
         await tester.pump(Duration(milliseconds: 100));
-        
+
         // Should track bouncing animation
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['activeAnimations'], greaterThan(0));
         expect(metrics['animationMetrics'], isA<Map>());
       });
 
-      testWidgets('BreathingWidget respects performance limits', (tester) async {
+      testWidgets('BreathingWidget respects performance limits',
+          (tester) async {
         await AppSettings.set('animationLevel', 'reduced');
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -202,13 +207,15 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Reduced level should still allow complex animations if performance is good
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isTrue);
-        expect(AnimationPerformanceService.maxSimultaneousAnimations, equals(2));
+        expect(
+            AnimationPerformanceService.maxSimultaneousAnimations, equals(2));
       });
 
-      testWidgets('ShakeAnimation integrates with performance monitoring', (tester) async {
+      testWidgets('ShakeAnimation integrates with performance monitoring',
+          (tester) async {
         final controller = AnimationController(
           duration: Duration(milliseconds: 300),
           vsync: tester,
@@ -226,23 +233,24 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Start shake animation
         controller.forward();
         await tester.pump(Duration(milliseconds: 50));
-        
+
         // Should track shake animation
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['performanceProfile'], isA<Map<String, dynamic>>());
-        
+
         controller.dispose();
       });
     });
 
     group('Transition Widgets Performance Integration', () {
-      testWidgets('AnimatedScaleOpacity performance optimization', (tester) async {
+      testWidgets('AnimatedScaleOpacity performance optimization',
+          (tester) async {
         bool visible = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -272,16 +280,18 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Toggle visibility
         await tester.tap(find.text('Toggle'));
         await tester.pump();
-        
+
         // Should respect animation settings
-        final optimizedDuration = AnimationPerformanceService.getOptimizedDuration(
+        final optimizedDuration =
+            AnimationPerformanceService.getOptimizedDuration(
           Duration(milliseconds: 250),
         );
-        expect(optimizedDuration.inMilliseconds, equals(250)); // Normal level = 100%
+        expect(optimizedDuration.inMilliseconds,
+            equals(250)); // Normal level = 100%
       });
 
       testWidgets('SlideFadeTransition performance tracking', (tester) async {
@@ -304,23 +314,24 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Start transition
         controller.forward();
         await tester.pump(Duration(milliseconds: 100));
-        
+
         // Should track animation
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['activeAnimations'], greaterThanOrEqualTo(0));
-        
+
         controller.dispose();
       });
     });
 
     group('Switcher Widgets Performance Integration', () {
-      testWidgets('ScaledAnimatedSwitcher performance optimization', (tester) async {
+      testWidgets('ScaledAnimatedSwitcher performance optimization',
+          (tester) async {
         int counter = 0;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -347,20 +358,22 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Switch content
         await tester.tap(find.text('Switch'));
         await tester.pump();
         await tester.pump(Duration(milliseconds: 50));
-        
+
         // Should use optimized duration
-        final optimizedDuration = AnimationUtils.getDuration(Duration(milliseconds: 300));
+        final optimizedDuration =
+            AnimationUtils.getDuration(Duration(milliseconds: 300));
         expect(optimizedDuration.inMilliseconds, equals(300)); // Normal level
       });
 
-      testWidgets('AnimatedSizeSwitcher respects performance settings', (tester) async {
+      testWidgets('AnimatedSizeSwitcher respects performance settings',
+          (tester) async {
         bool expanded = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -390,11 +403,11 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Toggle size
         await tester.tap(find.text('Toggle Size'));
         await tester.pump();
-        
+
         // Should track size change animation
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['performanceProfile'], isA<Map<String, dynamic>>());
@@ -404,7 +417,7 @@ void main() {
     group('Layout Animation Widgets Performance Integration', () {
       testWidgets('AnimatedExpanded performance tracking', (tester) async {
         bool expanded = false;
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -434,21 +447,22 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Trigger expansion
         await tester.tap(find.text('Expand'));
         await tester.pump();
         await tester.pump(Duration(milliseconds: 100));
-        
+
         // Should respect performance settings for complex animations
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isTrue);
       });
     });
 
     group('Performance Limits and Concurrent Animation Management', () {
-      testWidgets('concurrent animation limiting across widget types', (tester) async {
+      testWidgets('concurrent animation limiting across widget types',
+          (tester) async {
         await AppSettings.set('animationLevel', 'reduced'); // Max 2 concurrent
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -467,25 +481,26 @@ void main() {
 
         await tester.pump();
         await tester.pump(Duration(milliseconds: 50));
-        
+
         // Should respect concurrent animation limits
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['maxSimultaneousAnimations'], equals(2));
-        
+
         // Active animations should not exceed the limit
         expect(metrics['activeAnimations'], lessThanOrEqualTo(2));
       });
 
-      testWidgets('animation widgets respect canStartAnimation', (tester) async {
+      testWidgets('animation widgets respect canStartAnimation',
+          (tester) async {
         await AppSettings.set('animationLevel', 'reduced'); // Max 2 concurrent
-        
+
         // Fill animation capacity
         AnimationUtils.registerAnimationStart('Test1');
         AnimationUtils.registerAnimationStart('Test2');
-        
+
         // Should not be able to start more animations
         expect(AnimationUtils.canStartAnimation(), isFalse);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -497,10 +512,10 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Animation should still be created but respect limits
         expect(find.text('Should be limited'), findsOneWidget);
-        
+
         // Clean up
         AnimationUtils.registerAnimationEnd('Test1');
         AnimationUtils.registerAnimationEnd('Test2');
@@ -508,9 +523,10 @@ void main() {
     });
 
     group('Settings Changes During Animation', () {
-      testWidgets('animation level change during active animations', (tester) async {
+      testWidgets('animation level change during active animations',
+          (tester) async {
         await AppSettings.set('animationLevel', 'normal');
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -532,14 +548,14 @@ void main() {
 
         await tester.pump();
         await tester.pump(Duration(milliseconds: 100));
-        
+
         // Verify animations are running
         final initialMetrics = AnimationUtils.getPerformanceMetrics();
         expect(initialMetrics['activeAnimations'], greaterThan(0));
-        
+
         // Change animation level during animations
         await AppSettings.set('animationLevel', 'enhanced');
-        
+
         // New performance profile should reflect the change
         final newProfile = AnimationPerformanceService.getPerformanceProfile();
         expect(newProfile['animationLevel'], equals('enhanced'));
@@ -548,7 +564,7 @@ void main() {
 
       testWidgets('battery saver activation during animations', (tester) async {
         await AppSettings.set('batterySaver', false);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -562,15 +578,17 @@ void main() {
 
         await tester.pump();
         await tester.pump(Duration(milliseconds: 100));
-        
+
         // Enable battery saver during animation
         await AppSettings.set('batterySaver', true);
-        
+
         // Should immediately affect performance settings
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
-        expect(AnimationPerformanceService.maxSimultaneousAnimations, equals(1));
-        
-        final optimizedDuration = AnimationPerformanceService.getOptimizedDuration(
+        expect(
+            AnimationPerformanceService.maxSimultaneousAnimations, equals(1));
+
+        final optimizedDuration =
+            AnimationPerformanceService.getOptimizedDuration(
           Duration(milliseconds: 300),
         );
         expect(optimizedDuration, equals(Duration.zero));
@@ -578,12 +596,14 @@ void main() {
     });
 
     group('Performance Degradation Simulation', () {
-      testWidgets('poor performance affects animation behavior', (tester) async {
+      testWidgets('poor performance affects animation behavior',
+          (tester) async {
         // Simulate poor frame times
         for (int i = 0; i < 20; i++) {
-          AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 35)); // Poor performance
+          AnimationPerformanceService.recordFrameTime(
+              Duration(milliseconds: 35)); // Poor performance
         }
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -598,21 +618,23 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Poor performance should trigger optimization
         final metrics = AnimationPerformanceService.performanceMetrics;
         expect(metrics['isPerformanceGood'], isFalse);
         expect(metrics['performanceScale'], equals(0.8));
-        
+
         // Duration optimization should apply 80% scaling
         const testDuration = Duration(milliseconds: 300);
-        final optimizedDuration = AnimationPerformanceService.getOptimizedDuration(testDuration);
+        final optimizedDuration =
+            AnimationPerformanceService.getOptimizedDuration(testDuration);
         expect(optimizedDuration.inMilliseconds, equals(240)); // 80% of 300ms
       });
     });
 
     group('Widget-specific Performance Features', () {
-      testWidgets('TappableWidget bounce animation performance', (tester) async {
+      testWidgets('TappableWidget bounce animation performance',
+          (tester) async {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -631,22 +653,23 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // Should check if it can start animation before bouncing
         expect(AnimationUtils.canStartAnimation(), isTrue);
-        
+
         // Tap to trigger bounce
         await tester.tap(find.byType(TappableWidget));
         await tester.pump(Duration(milliseconds: 50));
-        
+
         // Should track bounce animation
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['activeAnimations'], greaterThanOrEqualTo(0));
       });
 
-      testWidgets('animation widgets handle disabled animations gracefully', (tester) async {
+      testWidgets('animation widgets handle disabled animations gracefully',
+          (tester) async {
         await AppSettings.set('appAnimations', false);
-        
+
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
@@ -666,13 +689,13 @@ void main() {
         );
 
         await tester.pump();
-        
+
         // All content should be visible immediately
         expect(find.text('No Fade'), findsOneWidget);
         expect(find.text('No Scale'), findsOneWidget);
         expect(find.text('No Slide'), findsOneWidget);
         expect(find.text('No Tap Animation'), findsOneWidget);
-        
+
         // No animations should be tracked
         final metrics = AnimationUtils.getPerformanceMetrics();
         expect(metrics['activeAnimations'], equals(0));
@@ -684,16 +707,16 @@ void main() {
         // This test ensures no memory leaks from animation controllers
         // We can't directly test memory in unit tests, but we can verify
         // that the performance tracking doesn't accumulate indefinitely
-        
+
         AnimationPerformanceService.resetPerformanceMetrics();
-        
+
         // Simulate many animation lifecycles
         for (int i = 0; i < 100; i++) {
           AnimationPerformanceService.registerAnimationCreated();
           AnimationPerformanceService.registerAnimationStart();
           AnimationPerformanceService.registerAnimationEnd();
         }
-        
+
         final metrics = AnimationPerformanceService.performanceMetrics;
         expect(metrics['totalAnimationsCreated'], equals(100));
         expect(metrics['currentActiveAnimations'], equals(0)); // All ended
@@ -702,15 +725,16 @@ void main() {
       test('performance monitoring data cleanup', () {
         // Fill frame time history to capacity
         for (int i = 0; i < 100; i++) {
-          AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 16));
+          AnimationPerformanceService.recordFrameTime(
+              Duration(milliseconds: 16));
         }
-        
+
         final metrics = AnimationPerformanceService.performanceMetrics;
         final frameHistory = metrics['frameTimeHistory'] as List;
-        
+
         // Should limit history size to prevent memory growth
         expect(frameHistory.length, lessThanOrEqualTo(60)); // Max history size
       });
     });
   });
-} 
+}
