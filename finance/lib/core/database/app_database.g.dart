@@ -1098,6 +1098,21 @@ class $TransactionsTableTable extends TransactionsTable
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _remainingAmountMeta =
+      const VerificationMeta('remainingAmount');
+  @override
+  late final GeneratedColumn<double> remainingAmount = GeneratedColumn<double>(
+      'remaining_amount', aliasedName, true,
+      type: DriftSqlType.double, requiredDuringInsert: false);
+  static const VerificationMeta _parentTransactionIdMeta =
+      const VerificationMeta('parentTransactionId');
+  @override
+  late final GeneratedColumn<int> parentTransactionId = GeneratedColumn<int>(
+      'parent_transaction_id', aliasedName, true,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultConstraints:
+          GeneratedColumn.constraintIsAlways('REFERENCES transactions (id)'));
   @override
   List<GeneratedColumn> get $columns => [
         id,
@@ -1120,7 +1135,9 @@ class $TransactionsTableTable extends TransactionsTable
         skipPaid,
         createdAnotherFutureTransaction,
         objectiveLoanFk,
-        syncId
+        syncId,
+        remainingAmount,
+        parentTransactionId
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1247,6 +1264,18 @@ class $TransactionsTableTable extends TransactionsTable
     } else if (isInserting) {
       context.missing(_syncIdMeta);
     }
+    if (data.containsKey('remaining_amount')) {
+      context.handle(
+          _remainingAmountMeta,
+          remainingAmount.isAcceptableOrUnknown(
+              data['remaining_amount']!, _remainingAmountMeta));
+    }
+    if (data.containsKey('parent_transaction_id')) {
+      context.handle(
+          _parentTransactionIdMeta,
+          parentTransactionId.isAcceptableOrUnknown(
+              data['parent_transaction_id']!, _parentTransactionIdMeta));
+    }
     return context;
   }
 
@@ -1299,6 +1328,10 @@ class $TransactionsTableTable extends TransactionsTable
           DriftSqlType.string, data['${effectivePrefix}objective_loan_fk']),
       syncId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
+      remainingAmount: attachedDatabase.typeMapping.read(
+          DriftSqlType.double, data['${effectivePrefix}remaining_amount']),
+      parentTransactionId: attachedDatabase.typeMapping.read(
+          DriftSqlType.int, data['${effectivePrefix}parent_transaction_id']),
     );
   }
 
@@ -1331,6 +1364,8 @@ class TransactionsTableData extends DataClass
   final bool? createdAnotherFutureTransaction;
   final String? objectiveLoanFk;
   final String syncId;
+  final double? remainingAmount;
+  final int? parentTransactionId;
   const TransactionsTableData(
       {required this.id,
       required this.title,
@@ -1352,7 +1387,9 @@ class TransactionsTableData extends DataClass
       required this.skipPaid,
       this.createdAnotherFutureTransaction,
       this.objectiveLoanFk,
-      required this.syncId});
+      required this.syncId,
+      this.remainingAmount,
+      this.parentTransactionId});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -1392,6 +1429,12 @@ class TransactionsTableData extends DataClass
       map['objective_loan_fk'] = Variable<String>(objectiveLoanFk);
     }
     map['sync_id'] = Variable<String>(syncId);
+    if (!nullToAbsent || remainingAmount != null) {
+      map['remaining_amount'] = Variable<double>(remainingAmount);
+    }
+    if (!nullToAbsent || parentTransactionId != null) {
+      map['parent_transaction_id'] = Variable<int>(parentTransactionId);
+    }
     return map;
   }
 
@@ -1431,6 +1474,12 @@ class TransactionsTableData extends DataClass
           ? const Value.absent()
           : Value(objectiveLoanFk),
       syncId: Value(syncId),
+      remainingAmount: remainingAmount == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remainingAmount),
+      parentTransactionId: parentTransactionId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(parentTransactionId),
     );
   }
 
@@ -1460,6 +1509,9 @@ class TransactionsTableData extends DataClass
           serializer.fromJson<bool?>(json['createdAnotherFutureTransaction']),
       objectiveLoanFk: serializer.fromJson<String?>(json['objectiveLoanFk']),
       syncId: serializer.fromJson<String>(json['syncId']),
+      remainingAmount: serializer.fromJson<double?>(json['remainingAmount']),
+      parentTransactionId:
+          serializer.fromJson<int?>(json['parentTransactionId']),
     );
   }
   @override
@@ -1488,6 +1540,8 @@ class TransactionsTableData extends DataClass
           serializer.toJson<bool?>(createdAnotherFutureTransaction),
       'objectiveLoanFk': serializer.toJson<String?>(objectiveLoanFk),
       'syncId': serializer.toJson<String>(syncId),
+      'remainingAmount': serializer.toJson<double?>(remainingAmount),
+      'parentTransactionId': serializer.toJson<int?>(parentTransactionId),
     };
   }
 
@@ -1512,7 +1566,9 @@ class TransactionsTableData extends DataClass
           bool? skipPaid,
           Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
           Value<String?> objectiveLoanFk = const Value.absent(),
-          String? syncId}) =>
+          String? syncId,
+          Value<double?> remainingAmount = const Value.absent(),
+          Value<int?> parentTransactionId = const Value.absent()}) =>
       TransactionsTableData(
         id: id ?? this.id,
         title: title ?? this.title,
@@ -1542,6 +1598,12 @@ class TransactionsTableData extends DataClass
             ? objectiveLoanFk.value
             : this.objectiveLoanFk,
         syncId: syncId ?? this.syncId,
+        remainingAmount: remainingAmount.present
+            ? remainingAmount.value
+            : this.remainingAmount,
+        parentTransactionId: parentTransactionId.present
+            ? parentTransactionId.value
+            : this.parentTransactionId,
       );
   TransactionsTableData copyWithCompanion(TransactionsTableCompanion data) {
     return TransactionsTableData(
@@ -1582,6 +1644,12 @@ class TransactionsTableData extends DataClass
           ? data.objectiveLoanFk.value
           : this.objectiveLoanFk,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
+      remainingAmount: data.remainingAmount.present
+          ? data.remainingAmount.value
+          : this.remainingAmount,
+      parentTransactionId: data.parentTransactionId.present
+          ? data.parentTransactionId.value
+          : this.parentTransactionId,
     );
   }
 
@@ -1609,7 +1677,9 @@ class TransactionsTableData extends DataClass
           ..write(
               'createdAnotherFutureTransaction: $createdAnotherFutureTransaction, ')
           ..write('objectiveLoanFk: $objectiveLoanFk, ')
-          ..write('syncId: $syncId')
+          ..write('syncId: $syncId, ')
+          ..write('remainingAmount: $remainingAmount, ')
+          ..write('parentTransactionId: $parentTransactionId')
           ..write(')'))
         .toString();
   }
@@ -1636,7 +1706,9 @@ class TransactionsTableData extends DataClass
         skipPaid,
         createdAnotherFutureTransaction,
         objectiveLoanFk,
-        syncId
+        syncId,
+        remainingAmount,
+        parentTransactionId
       ]);
   @override
   bool operator ==(Object other) =>
@@ -1663,7 +1735,9 @@ class TransactionsTableData extends DataClass
           other.createdAnotherFutureTransaction ==
               this.createdAnotherFutureTransaction &&
           other.objectiveLoanFk == this.objectiveLoanFk &&
-          other.syncId == this.syncId);
+          other.syncId == this.syncId &&
+          other.remainingAmount == this.remainingAmount &&
+          other.parentTransactionId == this.parentTransactionId);
 }
 
 class TransactionsTableCompanion
@@ -1689,6 +1763,8 @@ class TransactionsTableCompanion
   final Value<bool?> createdAnotherFutureTransaction;
   final Value<String?> objectiveLoanFk;
   final Value<String> syncId;
+  final Value<double?> remainingAmount;
+  final Value<int?> parentTransactionId;
   const TransactionsTableCompanion({
     this.id = const Value.absent(),
     this.title = const Value.absent(),
@@ -1711,6 +1787,8 @@ class TransactionsTableCompanion
     this.createdAnotherFutureTransaction = const Value.absent(),
     this.objectiveLoanFk = const Value.absent(),
     this.syncId = const Value.absent(),
+    this.remainingAmount = const Value.absent(),
+    this.parentTransactionId = const Value.absent(),
   });
   TransactionsTableCompanion.insert({
     this.id = const Value.absent(),
@@ -1734,6 +1812,8 @@ class TransactionsTableCompanion
     this.createdAnotherFutureTransaction = const Value.absent(),
     this.objectiveLoanFk = const Value.absent(),
     required String syncId,
+    this.remainingAmount = const Value.absent(),
+    this.parentTransactionId = const Value.absent(),
   })  : title = Value(title),
         amount = Value(amount),
         categoryId = Value(categoryId),
@@ -1762,6 +1842,8 @@ class TransactionsTableCompanion
     Expression<bool>? createdAnotherFutureTransaction,
     Expression<String>? objectiveLoanFk,
     Expression<String>? syncId,
+    Expression<double>? remainingAmount,
+    Expression<int>? parentTransactionId,
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
@@ -1786,6 +1868,9 @@ class TransactionsTableCompanion
         'created_another_future_transaction': createdAnotherFutureTransaction,
       if (objectiveLoanFk != null) 'objective_loan_fk': objectiveLoanFk,
       if (syncId != null) 'sync_id': syncId,
+      if (remainingAmount != null) 'remaining_amount': remainingAmount,
+      if (parentTransactionId != null)
+        'parent_transaction_id': parentTransactionId,
     });
   }
 
@@ -1810,7 +1895,9 @@ class TransactionsTableCompanion
       Value<bool>? skipPaid,
       Value<bool?>? createdAnotherFutureTransaction,
       Value<String?>? objectiveLoanFk,
-      Value<String>? syncId}) {
+      Value<String>? syncId,
+      Value<double?>? remainingAmount,
+      Value<int?>? parentTransactionId}) {
     return TransactionsTableCompanion(
       id: id ?? this.id,
       title: title ?? this.title,
@@ -1834,6 +1921,8 @@ class TransactionsTableCompanion
           this.createdAnotherFutureTransaction,
       objectiveLoanFk: objectiveLoanFk ?? this.objectiveLoanFk,
       syncId: syncId ?? this.syncId,
+      remainingAmount: remainingAmount ?? this.remainingAmount,
+      parentTransactionId: parentTransactionId ?? this.parentTransactionId,
     );
   }
 
@@ -1904,6 +1993,12 @@ class TransactionsTableCompanion
     if (syncId.present) {
       map['sync_id'] = Variable<String>(syncId.value);
     }
+    if (remainingAmount.present) {
+      map['remaining_amount'] = Variable<double>(remainingAmount.value);
+    }
+    if (parentTransactionId.present) {
+      map['parent_transaction_id'] = Variable<int>(parentTransactionId.value);
+    }
     return map;
   }
 
@@ -1931,7 +2026,9 @@ class TransactionsTableCompanion
           ..write(
               'createdAnotherFutureTransaction: $createdAnotherFutureTransaction, ')
           ..write('objectiveLoanFk: $objectiveLoanFk, ')
-          ..write('syncId: $syncId')
+          ..write('syncId: $syncId, ')
+          ..write('remainingAmount: $remainingAmount, ')
+          ..write('parentTransactionId: $parentTransactionId')
           ..write(')'))
         .toString();
   }
@@ -6240,6 +6337,8 @@ typedef $$TransactionsTableTableCreateCompanionBuilder
   Value<bool?> createdAnotherFutureTransaction,
   Value<String?> objectiveLoanFk,
   required String syncId,
+  Value<double?> remainingAmount,
+  Value<int?> parentTransactionId,
 });
 typedef $$TransactionsTableTableUpdateCompanionBuilder
     = TransactionsTableCompanion Function({
@@ -6264,6 +6363,8 @@ typedef $$TransactionsTableTableUpdateCompanionBuilder
   Value<bool?> createdAnotherFutureTransaction,
   Value<String?> objectiveLoanFk,
   Value<String> syncId,
+  Value<double?> remainingAmount,
+  Value<int?> parentTransactionId,
 });
 
 final class $$TransactionsTableTableReferences extends BaseReferences<
@@ -6297,6 +6398,22 @@ final class $$TransactionsTableTableReferences extends BaseReferences<
     final manager = $$AccountsTableTableTableManager($_db, $_db.accountsTable)
         .filter((f) => f.id.sqlEquals($_column));
     final item = $_typedResult.readTableOrNull(_accountIdTable($_db));
+    if (item == null) return manager;
+    return ProcessedTableManager(
+        manager.$state.copyWith(prefetchedData: [item]));
+  }
+
+  static $TransactionsTableTable _parentTransactionIdTable(_$AppDatabase db) =>
+      db.transactionsTable.createAlias($_aliasNameGenerator(
+          db.transactionsTable.parentTransactionId, db.transactionsTable.id));
+
+  $$TransactionsTableTableProcessedTableManager? get parentTransactionId {
+    final $_column = $_itemColumn<int>('parent_transaction_id');
+    if ($_column == null) return null;
+    final manager =
+        $$TransactionsTableTableTableManager($_db, $_db.transactionsTable)
+            .filter((f) => f.id.sqlEquals($_column));
+    final item = $_typedResult.readTableOrNull(_parentTransactionIdTable($_db));
     if (item == null) return manager;
     return ProcessedTableManager(
         manager.$state.copyWith(prefetchedData: [item]));
@@ -6410,6 +6527,10 @@ class $$TransactionsTableTableFilterComposer
   ColumnFilters<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<double> get remainingAmount => $composableBuilder(
+      column: $table.remainingAmount,
+      builder: (column) => ColumnFilters(column));
+
   $$CategoriesTableTableFilterComposer get categoryId {
     final $$CategoriesTableTableFilterComposer composer = $composerBuilder(
         composer: this,
@@ -6442,6 +6563,26 @@ class $$TransactionsTableTableFilterComposer
             $$AccountsTableTableFilterComposer(
               $db: $db,
               $table: $db.accountsTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$TransactionsTableTableFilterComposer get parentTransactionId {
+    final $$TransactionsTableTableFilterComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.parentTransactionId,
+        referencedTable: $db.transactionsTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableTableFilterComposer(
+              $db: $db,
+              $table: $db.transactionsTable,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -6568,6 +6709,10 @@ class $$TransactionsTableTableOrderingComposer
   ColumnOrderings<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<double> get remainingAmount => $composableBuilder(
+      column: $table.remainingAmount,
+      builder: (column) => ColumnOrderings(column));
+
   $$CategoriesTableTableOrderingComposer get categoryId {
     final $$CategoriesTableTableOrderingComposer composer = $composerBuilder(
         composer: this,
@@ -6600,6 +6745,26 @@ class $$TransactionsTableTableOrderingComposer
             $$AccountsTableTableOrderingComposer(
               $db: $db,
               $table: $db.accountsTable,
+              $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+              joinBuilder: joinBuilder,
+              $removeJoinBuilderFromRootComposer:
+                  $removeJoinBuilderFromRootComposer,
+            ));
+    return composer;
+  }
+
+  $$TransactionsTableTableOrderingComposer get parentTransactionId {
+    final $$TransactionsTableTableOrderingComposer composer = $composerBuilder(
+        composer: this,
+        getCurrentColumn: (t) => t.parentTransactionId,
+        referencedTable: $db.transactionsTable,
+        getReferencedColumn: (t) => t.id,
+        builder: (joinBuilder,
+                {$addJoinBuilderToRootComposer,
+                $removeJoinBuilderFromRootComposer}) =>
+            $$TransactionsTableTableOrderingComposer(
+              $db: $db,
+              $table: $db.transactionsTable,
               $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
               joinBuilder: joinBuilder,
               $removeJoinBuilderFromRootComposer:
@@ -6677,6 +6842,9 @@ class $$TransactionsTableTableAnnotationComposer
   GeneratedColumn<String> get syncId =>
       $composableBuilder(column: $table.syncId, builder: (column) => column);
 
+  GeneratedColumn<double> get remainingAmount => $composableBuilder(
+      column: $table.remainingAmount, builder: (column) => column);
+
   $$CategoriesTableTableAnnotationComposer get categoryId {
     final $$CategoriesTableTableAnnotationComposer composer = $composerBuilder(
         composer: this,
@@ -6714,6 +6882,27 @@ class $$TransactionsTableTableAnnotationComposer
               $removeJoinBuilderFromRootComposer:
                   $removeJoinBuilderFromRootComposer,
             ));
+    return composer;
+  }
+
+  $$TransactionsTableTableAnnotationComposer get parentTransactionId {
+    final $$TransactionsTableTableAnnotationComposer composer =
+        $composerBuilder(
+            composer: this,
+            getCurrentColumn: (t) => t.parentTransactionId,
+            referencedTable: $db.transactionsTable,
+            getReferencedColumn: (t) => t.id,
+            builder: (joinBuilder,
+                    {$addJoinBuilderToRootComposer,
+                    $removeJoinBuilderFromRootComposer}) =>
+                $$TransactionsTableTableAnnotationComposer(
+                  $db: $db,
+                  $table: $db.transactionsTable,
+                  $addJoinBuilderToRootComposer: $addJoinBuilderToRootComposer,
+                  joinBuilder: joinBuilder,
+                  $removeJoinBuilderFromRootComposer:
+                      $removeJoinBuilderFromRootComposer,
+                ));
     return composer;
   }
 
@@ -6776,6 +6965,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
     PrefetchHooks Function(
         {bool categoryId,
         bool accountId,
+        bool parentTransactionId,
         bool attachmentsTableRefs,
         bool transactionBudgetsTableRefs})> {
   $$TransactionsTableTableTableManager(
@@ -6812,6 +7002,8 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
             Value<String?> objectiveLoanFk = const Value.absent(),
             Value<String> syncId = const Value.absent(),
+            Value<double?> remainingAmount = const Value.absent(),
+            Value<int?> parentTransactionId = const Value.absent(),
           }) =>
               TransactionsTableCompanion(
             id: id,
@@ -6835,6 +7027,8 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             createdAnotherFutureTransaction: createdAnotherFutureTransaction,
             objectiveLoanFk: objectiveLoanFk,
             syncId: syncId,
+            remainingAmount: remainingAmount,
+            parentTransactionId: parentTransactionId,
           ),
           createCompanionCallback: ({
             Value<int> id = const Value.absent(),
@@ -6858,6 +7052,8 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             Value<bool?> createdAnotherFutureTransaction = const Value.absent(),
             Value<String?> objectiveLoanFk = const Value.absent(),
             required String syncId,
+            Value<double?> remainingAmount = const Value.absent(),
+            Value<int?> parentTransactionId = const Value.absent(),
           }) =>
               TransactionsTableCompanion.insert(
             id: id,
@@ -6881,6 +7077,8 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
             createdAnotherFutureTransaction: createdAnotherFutureTransaction,
             objectiveLoanFk: objectiveLoanFk,
             syncId: syncId,
+            remainingAmount: remainingAmount,
+            parentTransactionId: parentTransactionId,
           ),
           withReferenceMapper: (p0) => p0
               .map((e) => (
@@ -6891,6 +7089,7 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
           prefetchHooksCallback: (
               {categoryId = false,
               accountId = false,
+              parentTransactionId = false,
               attachmentsTableRefs = false,
               transactionBudgetsTableRefs = false}) {
             return PrefetchHooks(
@@ -6931,6 +7130,17 @@ class $$TransactionsTableTableTableManager extends RootTableManager<
                         $$TransactionsTableTableReferences._accountIdTable(db),
                     referencedColumn: $$TransactionsTableTableReferences
                         ._accountIdTable(db)
+                        .id,
+                  ) as T;
+                }
+                if (parentTransactionId) {
+                  state = state.withJoin(
+                    currentTable: table,
+                    currentColumn: table.parentTransactionId,
+                    referencedTable: $$TransactionsTableTableReferences
+                        ._parentTransactionIdTable(db),
+                    referencedColumn: $$TransactionsTableTableReferences
+                        ._parentTransactionIdTable(db)
                         .id,
                   ) as T;
                 }
@@ -6988,6 +7198,7 @@ typedef $$TransactionsTableTableProcessedTableManager = ProcessedTableManager<
     PrefetchHooks Function(
         {bool categoryId,
         bool accountId,
+        bool parentTransactionId,
         bool attachmentsTableRefs,
         bool transactionBudgetsTableRefs})>;
 typedef $$BudgetsTableTableCreateCompanionBuilder = BudgetsTableCompanion

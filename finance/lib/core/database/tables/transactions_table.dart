@@ -57,6 +57,6 @@ class TransactionsTable extends Table {
   TextColumn get syncId => text().unique()(); // UUID for global uniqueness
 
   // Phase 3 – Partial loan payments
-  // RealColumn get remainingAmount => real().nullable()();
-  // IntColumn get parentTransactionId => integer().nullable().references(TransactionsTable, #id)();
+  RealColumn get remainingAmount => real().nullable()();
+  IntColumn get parentTransactionId => integer().nullable().references(TransactionsTable, #id)();
 }

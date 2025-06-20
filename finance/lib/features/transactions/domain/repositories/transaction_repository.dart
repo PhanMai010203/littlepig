@@ -29,4 +29,5 @@ abstract class TransactionRepository {
   Future<void> collectPartialCredit({required Transaction credit, required double amount});
   Future<void> settlePartialDebt({required Transaction debt, required double amount});
   Future<List<Transaction>> getLoanPayments(int parentTransactionId);
+  double getRemainingAmount(Transaction loan);
 }

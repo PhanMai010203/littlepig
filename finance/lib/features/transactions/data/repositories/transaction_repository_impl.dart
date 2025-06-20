@@ -118,6 +118,10 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
           Value(transaction.createdAnotherFutureTransaction),
       objectiveLoanFk: Value(transaction.objectiveLoanFk),
 
+      // Phase 3: Partial loan fields
+      remainingAmount: Value(transaction.remainingAmount),
+      parentTransactionId: Value(transaction.parentTransactionId),
+
       // ✅ PHASE 4: Only essential sync field
       syncId: const Uuid().v4(),
     );
@@ -164,6 +168,14 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
       objectiveLoanFk: Value(transaction.objectiveLoanFk),
 
       updatedAt: Value(DateTime.now()),
+      
+      // Phase 3: Partial loan fields
+      remainingAmount: Value(transaction.remainingAmount),
+      parentTransactionId: Value(transaction.parentTransactionId),
+      
+      // Keep syncId for updates
+      syncId: Value(transaction.syncId),
+      
       // ✅ PHASE 4: No more redundant sync fields - event sourcing handles sync state
     );
 
@@ -261,6 +273,11 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
 
         createdAt: Value(transaction.createdAt),
         updatedAt: Value(transaction.updatedAt),
+        
+        // Phase 3: Partial loan fields
+        remainingAmount: Value(transaction.remainingAmount),
+        parentTransactionId: Value(transaction.parentTransactionId),
+        
         // ✅ PHASE 4: Only sync_id field for sync operations
         syncId: transaction.syncId,
       );
@@ -297,6 +314,11 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
         objectiveLoanFk: Value(transaction.objectiveLoanFk),
 
         updatedAt: Value(transaction.updatedAt),
+        
+        // Phase 3: Partial loan fields
+        remainingAmount: Value(transaction.remainingAmount),
+        parentTransactionId: Value(transaction.parentTransactionId),
+        
         // ✅ PHASE 4: No redundant sync fields to update
       );
       await _database.update(_database.transactionsTable).replace(companion);
@@ -422,6 +444,10 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
       createdAnotherFutureTransaction: data.createdAnotherFutureTransaction,
       objectiveLoanFk: data.objectiveLoanFk,
 
+      // Phase 3: Partial loan fields
+      remainingAmount: data.remainingAmount,
+      parentTransactionId: data.parentTransactionId,
+
       // ✅ PHASE 4: Only essential sync field
       syncId: data.syncId,
     );
@@ -531,11 +557,20 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
 
   @override
   Future<List<Transaction>> getLoanPayments(int parentTransactionId) async {
-    // Simple in-memory filter until database schema updated.
-    final all = await getAllTransactions();
-    return all
-        .where((t) => t.parentTransactionId == parentTransactionId)
-        .toList();
+    final query = _database.select(_database.transactionsTable)
+      ..where((t) => t.parentTransactionId.equals(parentTransactionId));
+    final results = await query.get();
+    return results.map(_mapTransactionData).toList();
+  }
+
+  /// Helper method to get remaining amount for a loan transaction
+  /// Returns the remaining amount to be collected/settled, or 0 if fully completed
+  double getRemainingAmount(Transaction loan) {
+    if (!loan.isLoan) {
+      return 0.0; // Not a loan transaction
+    }
+    
+    return loan.remainingAmount ?? loan.amount.abs();
   }
 }
 

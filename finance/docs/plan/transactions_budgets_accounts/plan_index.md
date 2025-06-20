@@ -8,16 +8,16 @@ Tick each box once the item is complete **and** its automated tests pass.
 
 - [x] _Phase 1 – Account Colour Customisation_  ([spec](phase_1_account_color.md))
 - [x] _Phase 2 – Manual-Add Budgets (Tx ↔ Budget link)_  ([spec](phase_2_manual_budget_link.md))
-- [ ] _Phase 3 – Partial Loan Collection / Settlement_  ([spec](phase_3_partial_loan_payments.md))
+- [x] _Phase 3 – Partial Loan Collection / Settlement_  ([spec](phase_3_partial_loan_payments.md))
 - [ ] _Phase 4 – Documentation Consolidation_  ([spec](phase_4_docs_cleanup.md))
 
-### ✅ Acceptance Criteria (all phases)
+### ✅ Acceptance Criteria (Phases 1–3)
 
-- [ ] Database migration runs cleanly on existing data
-- [ ] Unit + integration tests updated/added and **green** (`flutter test`)
-- [ ] Linter (`dart analyze`) shows **0 errors**
-- [ ] GitHub CI pipeline passes
-- [ ] Public documentation updated (`docs2/`)
+- [x] Database migration runs cleanly on existing data
+- [x] Unit + integration tests updated/added and **green** (`flutter test`)
+- [x] Linter (`dart analyze`) shows **0 errors**
+- [x] GitHub CI pipeline passes
+- [x] Public documentation updated (`docs2/`)
 
 ---
 

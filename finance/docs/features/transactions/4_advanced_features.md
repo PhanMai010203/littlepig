@@ -397,4 +397,49 @@ for (final credit in smallCredits) {
   );
   await transactionRepository.updateTransaction(collected);
 }
-``` 
+```
+
+## Partial Loan Collection & Settlement (Phase 3)
+
+Phase 3 adds granular workflows to collect or settle **partial amounts** on outstanding loans while preserving a complete audit trail. Each parent *loan* transaction now exposes a `remainingAmount` field and supports an unlimited number of **child payment transactions** linked via `parentTransactionId`.
+
+### Key Concepts
+
+• **Parent Loan Transaction** – original credit (money lent) or debt (money borrowed). Immutable `amount`; mutable `remainingAmount` decreases as payments occur. Automatically marked `completed` when `remainingAmount == 0`.<br/>
+• **Child Payment Transaction** – auto-generated record representing each collection/settlement. Sign-correct (`+` for credits, `–` for debts), always `completed`, inherits `categoryId`, `accountId`, and `specialType` from the parent.
+
+### Repository API
+
+```dart
+// Collect $300 from a $1 000 credit
+await transactionRepository.collectPartialCredit(
+  credit: creditTransaction, // parent Transaction with specialType.credit
+  amount: 300.0,
+);
+
+// Settle $500 of a $2 000 debt
+await transactionRepository.settlePartialDebt(
+  debt: debtTransaction, // parent Transaction with specialType.debt
+  amount: 500.0,
+);
+```
+
+Both methods will:
+1. Validate that `amount ≤ remainingAmount` — otherwise throws `OverCollectionException`.
+2. Create the *child* payment transaction with the correct sign.
+3. Update `remainingAmount` on the parent and adjust `transactionState` when fully paid.
+
+### Query Helpers
+
+```dart
+// Outstanding balance left on a loan
+final remaining = await transactionRepository.getRemainingAmount(parentLoanId);
+
+// All payments made towards a loan
+final payments = await transactionRepository.getLoanPayments(parentLoanId);
+```
+
+### Budget Interaction
+Payment transactions flow through normal budget calculations — no special handling required. This maintains real-time accuracy while keeping business rules isolated in the repository layer.
+
+> ℹ️ Full implementation details live in `lib/core/database/migrations/phase3_partial_loans_migration.dart`, `transactions_table.dart`, and the accompanying test suites (`test/features/transactions/phase3_partial_loans_test.dart`, `test/integration/phase3_partial_loans_integration_test.dart`). 

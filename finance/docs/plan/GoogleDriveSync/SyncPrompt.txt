@@ -1,8 +1,0 @@
-My Finance project has the following structure in @FILE_STRUCTURE.md .
-I want you to start doing the phase 4 mentioned in @3_FURTHER_OPTIMIZATION.md . For context, the whole summary of the plan is in @COMPLETE_SYNC_UPGRADE_GUIDE.md .I want:
-
-1. Implement this improvement, phase 4 only
-2. Write test and run until they all pass
-3. If needed, update FILE_STRUCTURE.md, and docs/features/SYNC_HOW_TO_USE.md
-
-Begin by searching the codebase to understand what has been implemented. Then read through the provided plan, and plan your approach to this phase, and start coding. Stick to the plan you make, and remember to revise your plan regularly, and state where you are in your plan, in case you drift off tracks!

@@ -42,4 +42,5 @@ This file tracks the Library IDs that have been searched for and found in Contex
 - Need to use existing codebase patterns for Drift ORM table creation, foreign keys, and migration patterns
 - Current codebase uses Drift ORM with table definitions, foreign key references, and migration strategies
 
-/simolus3/drift - Drift (typesafe persistence library for Dart & Flutter)
+## Drift ORM (Dart/Flutter)
+- ID: /simolus3/drift – Reactive, typesafe persistence library used for the SQLite layer
