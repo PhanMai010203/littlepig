@@ -33,6 +33,10 @@ class Transaction extends Equatable {
   // Loan/Objective linking (for complex loans)
   final String? objectiveLoanFk; // Links to objectives table (future use)
 
+  // Phase 3 – Partial loan payments support
+  final double? remainingAmount; // null for regular transactions
+  final int? parentTransactionId; // null when this is the parent loan itself
+
   // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   final String syncId;
 
@@ -59,6 +63,10 @@ class Transaction extends Equatable {
     this.skipPaid = false,
     this.createdAnotherFutureTransaction,
     this.objectiveLoanFk,
+
+    // Phase 3
+    this.remainingAmount,
+    this.parentTransactionId,
     required this.syncId,
   });
   Transaction copyWith({
@@ -82,6 +90,8 @@ class Transaction extends Equatable {
     bool? skipPaid,
     bool? createdAnotherFutureTransaction,
     String? objectiveLoanFk,
+    double? remainingAmount,
+    int? parentTransactionId,
     String? syncId,
   }) {
     return Transaction(
@@ -106,12 +116,17 @@ class Transaction extends Equatable {
       createdAnotherFutureTransaction: createdAnotherFutureTransaction ??
           this.createdAnotherFutureTransaction,
       objectiveLoanFk: objectiveLoanFk ?? this.objectiveLoanFk,
+      remainingAmount: remainingAmount ?? this.remainingAmount,
+      parentTransactionId: parentTransactionId ?? this.parentTransactionId,
       syncId: syncId ?? this.syncId,
     );
   }
 
   bool get isIncome => amount > 0;
   bool get isExpense => amount < 0;
+
+  // Phase 3 helper
+  bool get isLoanPayment => parentTransactionId != null;
 
   // Advanced transaction type helpers
   bool get isRecurring => recurrence != TransactionRecurrence.none;
@@ -182,6 +197,8 @@ class Transaction extends Equatable {
         skipPaid,
         createdAnotherFutureTransaction,
         objectiveLoanFk,
+        remainingAmount,
+        parentTransactionId,
         syncId,
       ];
 }

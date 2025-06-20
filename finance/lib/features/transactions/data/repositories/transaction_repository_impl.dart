@@ -426,4 +426,124 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
       syncId: data.syncId,
     );
   }
+
+  // ---------------- Phase 3: Partial Loan Handling ----------------
+
+  @override
+  Future<void> collectPartialCredit({
+    required Transaction credit,
+    required double amount,
+  }) async {
+    assert(credit.isCredit, 'Transaction must be a credit (money lent)');
+    if (amount <= 0) {
+      throw ArgumentError.value(amount, 'amount', 'Must be > 0');
+    }
+
+    final remaining = credit.remainingAmount ?? credit.amount.abs();
+    if (amount > remaining) {
+      throw OverCollectionException(
+          'Collect amount ($amount) exceeds remaining amount ($remaining)');
+    }
+
+    await _database.transaction(() async {
+      // 1. Insert child payment transaction (positive amount)
+      final childTxn = Transaction(
+        title: 'Loan collection',
+        note: 'Partial collection',
+        amount: amount, // positive (money received)
+        categoryId: credit.categoryId,
+        accountId: credit.accountId,
+        date: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        transactionType: TransactionType.income,
+        specialType: credit.specialType,
+        transactionState: TransactionState.completed,
+        parentTransactionId: credit.id,
+        remainingAmount: null,
+        syncId: const Uuid().v4(),
+      );
+
+      await createTransaction(childTxn);
+
+      // 2. Update parent remainingAmount and state
+      final newRemaining = remaining - amount;
+      final updatedParent = credit.copyWith(
+        remainingAmount: newRemaining,
+        transactionState: newRemaining == 0
+            ? TransactionState.completed
+            : TransactionState.actionRequired,
+      );
+
+      await updateTransaction(updatedParent);
+    });
+  }
+
+  @override
+  Future<void> settlePartialDebt({
+    required Transaction debt,
+    required double amount,
+  }) async {
+    assert(debt.isDebt, 'Transaction must be a debt (money borrowed)');
+    if (amount <= 0) {
+      throw ArgumentError.value(amount, 'amount', 'Must be > 0');
+    }
+
+    final remaining = debt.remainingAmount ?? debt.amount.abs();
+    if (amount > remaining) {
+      throw OverCollectionException(
+          'Settle amount ($amount) exceeds remaining amount ($remaining)');
+    }
+
+    await _database.transaction(() async {
+      // 1. Insert child settlement transaction (negative amount)
+      final childTxn = Transaction(
+        title: 'Loan settlement',
+        note: 'Partial settlement',
+        amount: -amount, // negative (money paid)
+        categoryId: debt.categoryId,
+        accountId: debt.accountId,
+        date: DateTime.now(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+        transactionType: TransactionType.expense,
+        specialType: debt.specialType,
+        transactionState: TransactionState.completed,
+        parentTransactionId: debt.id,
+        remainingAmount: null,
+        syncId: const Uuid().v4(),
+      );
+
+      await createTransaction(childTxn);
+
+      // 2. Update parent remainingAmount and state
+      final newRemaining = remaining - amount;
+      final updatedParent = debt.copyWith(
+        remainingAmount: newRemaining,
+        transactionState: newRemaining == 0
+            ? TransactionState.completed
+            : TransactionState.actionRequired,
+      );
+
+      await updateTransaction(updatedParent);
+    });
+  }
+
+  @override
+  Future<List<Transaction>> getLoanPayments(int parentTransactionId) async {
+    // Simple in-memory filter until database schema updated.
+    final all = await getAllTransactions();
+    return all
+        .where((t) => t.parentTransactionId == parentTransactionId)
+        .toList();
+  }
+}
+
+// Phase 3 – Custom exception for over collection/settlement
+class OverCollectionException implements Exception {
+  final String message;
+  OverCollectionException(this.message);
+
+  @override
+  String toString() => 'OverCollectionException: $message';
 }

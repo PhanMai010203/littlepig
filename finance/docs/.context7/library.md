@@ -41,3 +41,5 @@ This file tracks the Library IDs that have been searched for and found in Contex
 - Searched: /drift-labs/driftpy - This was for Drift trading protocol (Python SDK), not the Dart/Flutter ORM
 - Need to use existing codebase patterns for Drift ORM table creation, foreign keys, and migration patterns
 - Current codebase uses Drift ORM with table definitions, foreign key references, and migration strategies
+
+/simolus3/drift - Drift (typesafe persistence library for Dart & Flutter)
