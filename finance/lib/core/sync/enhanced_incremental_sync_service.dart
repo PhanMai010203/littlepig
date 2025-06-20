@@ -34,7 +34,6 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
 
   String? _deviceId;
   bool _isSyncing = false;
-  Timer? _periodicSyncTimer; // Legacy timer - will be migrated
 
   EnhancedIncrementalSyncService(this._database)
       : _eventProcessor = EventProcessor(_database),
@@ -517,19 +516,6 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     );
     
     TimerManagementService.instance.registerTask(syncTask);
-    
-    // Keep legacy timer as fallback (will be removed after verification)
-    _periodicSyncTimer = Timer.periodic(const Duration(minutes: 15), (timer) async {
-      // This legacy timer will be removed after Phase 1 verification
-      // For now, it's disabled to prevent double execution
-      // if (!_isSyncing && await isSignedIn()) {
-      //   try {
-      //     await performFullSync();
-      //   } catch (e) {
-      //     print('Periodic sync failed: $e');
-      //   }
-      // }
-    });
   }
   
   /// Periodic sync task for TimerManagementService
@@ -577,7 +563,6 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     // Unregister from TimerManagementService
     TimerManagementService.instance.unregisterTask('enhanced_incremental_sync');
     
-    _periodicSyncTimer?.cancel();
     _eventStreamController.close();
     _eventProcessor.dispose();
     _stateManager.dispose();

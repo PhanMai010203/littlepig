@@ -11,7 +11,6 @@ import 'timer_management_service.dart';
 /// - Background cache maintenance
 class CacheManagementService {
   final AttachmentRepository _attachmentRepository;
-  Timer? _cleanupTimer;
 
   CacheManagementService(this._attachmentRepository);
 
@@ -29,13 +28,6 @@ class CacheManagementService {
     );
     
     TimerManagementService.instance.registerTask(cleanupTask);
-    
-    // Keep legacy timer as fallback (will be removed after verification)
-    _cleanupTimer = Timer.periodic(const Duration(hours: 24), (_) async {
-      // This legacy timer will be removed after Phase 1 verification
-      // For now, it's disabled to prevent double execution
-      // await cleanExpiredCache();
-    });
   }
   
   /// Cache cleanup task for TimerManagementService
@@ -53,9 +45,6 @@ class CacheManagementService {
   void stopPeriodicCleanup() {
     // Unregister from TimerManagementService
     TimerManagementService.instance.unregisterTask('cache_cleanup');
-    
-    _cleanupTimer?.cancel();
-    _cleanupTimer = null;
   }
 
   /// Clean expired cache files

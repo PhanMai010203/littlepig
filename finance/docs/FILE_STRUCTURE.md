@@ -254,6 +254,13 @@ lib/shared/
 
 ---
 
+### 🧪 Performance & Benchmark Tests
+```
+test/performance/
+  └── phase_2_performance_test.dart   # Database cache performance benchmarks (Phase 2)
+```
+**Summary**: Contains automated Stopwatch-based benchmarks to verify Phase 2 database optimization impact – ensuring cache retrieval is at least 2× faster than uncached database-like operations.
+
 ## 🎨 Key Architecture Patterns
 
 ### 🏛️ Clean Architecture Implementation

@@ -130,6 +130,16 @@ class TimerManagementService with WidgetsBindingObserver {
   
   /// Register a periodic task
   void registerTask(TimerTask task) {
+    // Auto-initialize the service on first task registration to ensure
+    // timers start even when clients forget to call initialize() – this
+    // is especially helpful in unit tests where initialization may be
+    // omitted.
+    if (!_isInitialized) {
+      // We deliberately ignore the returned future – initialization is
+      // idempotent and will complete in the background.
+      initialize();
+    }
+
     _tasks[task.id] = task;
     debugPrint('Registered task: ${task.id} (${task.interval.inMinutes}min interval, priority: ${task.priority})');
   }

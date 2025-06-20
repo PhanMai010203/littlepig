@@ -28,7 +28,7 @@ class AnimationPerformanceMonitor extends StatefulWidget {
     this.borderRadius = 8.0,
     this.padding = const EdgeInsets.all(8.0),
     this.textStyle,
-    this.useTimerManagement = true, // Phase 1: Enable centralized timer management
+    this.useTimerManagement = true, // Phase 1: Enable centralized timer management (Phase 1 Complete - now default)
     super.key,
   });
 
