@@ -6,12 +6,15 @@ import 'package:finance/features/transactions/domain/entities/transaction.dart';
 import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
 import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:finance/features/accounts/domain/repositories/account_repository.dart';
+import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:finance/services/currency_service.dart';
 import 'package:finance/features/budgets/data/services/budget_csv_service.dart';
 
 class MockTransactionRepository extends Mock implements TransactionRepository {}
 
 class MockAccountRepository extends Mock implements AccountRepository {}
+
+class MockBudgetRepository extends Mock implements BudgetRepository {}
 
 class MockCurrencyService extends Mock implements CurrencyService {}
 
@@ -22,18 +25,21 @@ void main() {
     late BudgetFilterServiceImpl service;
     late MockTransactionRepository mockTransactionRepository;
     late MockAccountRepository mockAccountRepository;
+    late MockBudgetRepository mockBudgetRepository;
     late MockCurrencyService mockCurrencyService;
     late MockBudgetCsvService mockBudgetCsvService;
 
     setUp(() {
       mockTransactionRepository = MockTransactionRepository();
       mockAccountRepository = MockAccountRepository();
+      mockBudgetRepository = MockBudgetRepository();
       mockCurrencyService = MockCurrencyService();
       mockBudgetCsvService = MockBudgetCsvService();
 
       service = BudgetFilterServiceImpl(
         mockTransactionRepository,
         mockAccountRepository,
+        mockBudgetRepository,
         mockCurrencyService,
         mockBudgetCsvService,
       );

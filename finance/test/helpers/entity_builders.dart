@@ -77,6 +77,7 @@ class TestEntityBuilders {
     double balance = 1000.0,
     String currency = 'USD',
     bool isDefault = false,
+    Color color = const Color(0xFF9E9E9E),
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -87,6 +88,7 @@ class TestEntityBuilders {
       balance: balance,
       currency: currency,
       isDefault: isDefault,
+      color: color,
       createdAt: createdAt ?? now,
       updatedAt: updatedAt ?? now,
     );

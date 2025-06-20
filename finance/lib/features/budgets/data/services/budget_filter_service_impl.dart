@@ -1,5 +1,6 @@
 import '../../domain/services/budget_filter_service.dart';
 import '../../domain/entities/budget.dart';
+import '../../domain/repositories/budget_repository.dart';
 import '../../../transactions/domain/entities/transaction.dart';
 import '../../../transactions/domain/repositories/transaction_repository.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
@@ -9,12 +10,14 @@ import 'budget_csv_service.dart';
 class BudgetFilterServiceImpl implements BudgetFilterService {
   final TransactionRepository _transactionRepository;
   final AccountRepository _accountRepository;
+  final BudgetRepository _budgetRepository;
   final CurrencyService _currencyService;
   final BudgetCsvService _csvService;
 
   BudgetFilterServiceImpl(
     this._transactionRepository,
     this._accountRepository,
+    this._budgetRepository,
     this._currencyService,
     this._csvService,
   );
@@ -22,6 +25,13 @@ class BudgetFilterServiceImpl implements BudgetFilterService {
   @override
   Future<List<Transaction>> getFilteredTransactionsForBudget(
       Budget budget, DateTime startDate, DateTime endDate) async {
+    
+    // ✅ PHASE 2: Handle manual-add budgets differently
+    if (budget.manualAddMode) {
+      return await _getManualBudgetTransactions(budget, startDate, endDate);
+    }
+
+    // Existing automatic budget logic
     // Step 1: Get base transactions by date range and category
     List<Transaction> transactions =
         await _getBaseTransactions(budget, startDate, endDate);
@@ -190,6 +200,31 @@ class BudgetFilterServiceImpl implements BudgetFilterService {
   }
 
   // Private helper methods
+  
+  /// ✅ PHASE 2: Get transactions for manual-add budgets using join table
+  Future<List<Transaction>> _getManualBudgetTransactions(
+      Budget budget, DateTime startDate, DateTime endDate) async {
+    if (budget.id == null) return [];
+    
+    // Get transaction links for this budget
+    final links = await _budgetRepository.getTransactionLinksForBudget(budget.id!);
+    
+    // Get the actual transactions
+    final transactions = <Transaction>[];
+    for (final link in links) {
+      final transaction = await _transactionRepository.getTransactionById(link.transactionId);
+      if (transaction != null) {
+        // Filter by date range
+        if (transaction.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+            transaction.date.isBefore(endDate.add(const Duration(days: 1)))) {
+          transactions.add(transaction);
+        }
+      }
+    }
+    
+    return transactions;
+  }
+
   Future<List<Transaction>> _getBaseTransactions(
       Budget budget, DateTime startDate, DateTime endDate) async {
     if (budget.categoryId != null) {

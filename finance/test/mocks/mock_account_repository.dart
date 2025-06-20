@@ -1,5 +1,6 @@
 import 'package:finance/features/accounts/domain/entities/account.dart';
 import 'package:finance/features/accounts/domain/repositories/account_repository.dart';
+import 'package:flutter/material.dart';
 
 class MockAccountRepository implements AccountRepository {
   @override
@@ -11,6 +12,7 @@ class MockAccountRepository implements AccountRepository {
         balance: 1000.0,
         currency: 'USD',
         isDefault: true,
+        color: const Color(0xFF9E9E9E),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         syncId: 'test-sync-id',
@@ -27,6 +29,7 @@ class MockAccountRepository implements AccountRepository {
         balance: 1000.0,
         currency: 'USD',
         isDefault: true,
+        color: const Color(0xFF9E9E9E),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
         syncId: 'test-sync-id',

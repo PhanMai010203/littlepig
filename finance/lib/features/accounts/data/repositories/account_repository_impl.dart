@@ -3,6 +3,7 @@ import '../../domain/repositories/account_repository.dart';
 import '../../../../core/database/app_database.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/material.dart';
 
 class AccountRepositoryImpl implements AccountRepository {
   final AppDatabase _database;
@@ -49,6 +50,7 @@ class AccountRepositoryImpl implements AccountRepository {
       balance: Value(account.balance),
       currency: Value(account.currency),
       isDefault: Value(account.isDefault),
+      color: Value(account.color.value),
       syncId: syncId,
       createdAt: Value(account.createdAt),
       updatedAt: Value(now),
@@ -72,6 +74,7 @@ class AccountRepositoryImpl implements AccountRepository {
       balance: Value(account.balance),
       currency: Value(account.currency),
       isDefault: Value(account.isDefault),
+      color: Value(account.color.value),
       updatedAt: Value(now),
     );
 
@@ -123,6 +126,7 @@ class AccountRepositoryImpl implements AccountRepository {
         balance: Value(account.balance),
         currency: Value(account.currency),
         isDefault: Value(account.isDefault),
+        color: Value(account.color.value),
         createdAt: Value(account.createdAt),
         updatedAt: Value(account.updatedAt),
         syncId: account.syncId,
@@ -136,6 +140,7 @@ class AccountRepositoryImpl implements AccountRepository {
         balance: Value(account.balance),
         currency: Value(account.currency),
         isDefault: Value(account.isDefault),
+        color: Value(account.color.value),
         updatedAt: Value(account.updatedAt),
       );
 
@@ -155,6 +160,7 @@ class AccountRepositoryImpl implements AccountRepository {
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
       syncId: data.syncId,
+      color: Color(data.color),
     );
   }
 }

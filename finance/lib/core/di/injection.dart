@@ -167,6 +167,7 @@ Future<void> configureDependencies() async {
     BudgetFilterServiceImpl(
       getIt<TransactionRepository>(),
       getIt<AccountRepository>(),
+      getIt<BudgetRepository>(),
       getIt<CurrencyService>(),
       getIt<BudgetCsvService>(),
     ),
@@ -345,6 +346,7 @@ Future<void> configureTestDependencies() async {
     BudgetFilterServiceImpl(
       getIt<TransactionRepository>(),
       getIt<AccountRepository>(),
+      getIt<BudgetRepository>(),
       getIt<CurrencyService>(),
       getIt<BudgetCsvService>(),
     ),

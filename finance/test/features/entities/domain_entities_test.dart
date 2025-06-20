@@ -92,6 +92,7 @@ void main() {
           balance: 1000.0,
           currency: 'USD',
           isDefault: false,
+          color: const Color(0xFF9E9E9E),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           syncId: 'account-sync-id',
@@ -102,6 +103,7 @@ void main() {
         expect(account.balance, equals(1000.0));
         expect(account.currency, equals('USD'));
         expect(account.isDefault, isFalse);
+        expect(account.color, equals(const Color(0xFF9E9E9E)));
       });
 
       test('should create valid copyWith', () {
@@ -110,6 +112,7 @@ void main() {
           balance: 500.0,
           currency: 'EUR',
           isDefault: false,
+          color: const Color(0xFF9E9E9E),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           syncId: 'original-account-sync-id',
@@ -118,14 +121,46 @@ void main() {
         final updated = original.copyWith(
           name: 'Updated Account',
           balance: 750.0,
+          color: const Color(0xFF2196F3),
           syncId: 'updated-account-sync-id',
         );
 
         expect(updated.name, equals('Updated Account'));
         expect(updated.balance, equals(750.0));
+        expect(updated.color, equals(const Color(0xFF2196F3)));
         expect(updated.syncId, equals('updated-account-sync-id'));
         expect(updated.currency, equals(original.currency));
         expect(updated.isDefault, equals(original.isDefault));
+      });
+
+      test('should handle color field correctly', () {
+        // Test default grey color
+        final defaultAccount = Account(
+          name: 'Default Color Account',
+          balance: 500.0,
+          currency: 'USD',
+          isDefault: false,
+          color: const Color(0xFF9E9E9E),
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncId: 'default-color-account',
+        );
+
+        expect(defaultAccount.color, equals(const Color(0xFF9E9E9E)));
+        expect(defaultAccount.color.value, equals(0xFF9E9E9E));
+
+        // Test custom color
+        final blueAccount = defaultAccount.copyWith(
+          color: const Color(0xFF2196F3),
+        );
+
+        expect(blueAccount.color, equals(const Color(0xFF2196F3)));
+        expect(blueAccount.color.value, equals(0xFF2196F3));
+
+        // Test that other fields remain unchanged
+        expect(blueAccount.name, equals(defaultAccount.name));
+        expect(blueAccount.balance, equals(defaultAccount.balance));
+        expect(blueAccount.currency, equals(defaultAccount.currency));
       });
     });
 
@@ -222,6 +257,7 @@ void main() {
           balance: 1000.0,
           currency: 'USD',
           isDefault: false,
+          color: const Color(0xFF9E9E9E),
           createdAt: DateTime.now(),
           updatedAt: DateTime.now(),
           syncId: 'validation-account-sync-id',

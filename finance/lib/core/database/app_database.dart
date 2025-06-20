@@ -14,6 +14,7 @@ import 'tables/sync_metadata_table.dart';
 import 'tables/attachments_table.dart';
 import 'tables/sync_event_log_table.dart';
 import 'tables/sync_state_table.dart';
+import 'tables/transaction_budgets_table.dart';
 import '../constants/default_categories.dart';
 import 'migrations/schema_cleanup_migration.dart';
 
@@ -28,6 +29,7 @@ part 'app_database.g.dart';
   AttachmentsTable,
   SyncEventLogTable,
   SyncStateTable,
+  TransactionBudgetsTable,
 ])
 class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
@@ -39,7 +41,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 10;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -62,6 +64,20 @@ class AppDatabase extends _$AppDatabase {
             await migration.executeCleanup();
             print('✅ Phase 4 migration completed successfully!');
           }
+
+          // ✅ PHASE 1: Account Color Customization (v8 → v9)
+          if (from < 9) {
+            print('🎨 Starting Phase 1: Account Color Migration (v8 → v9)...');
+            await m.addColumn(accountsTable, accountsTable.color as GeneratedColumn);
+            print('✅ Phase 1 migration completed successfully!');
+          }
+
+          // ✅ PHASE 2: Manual Budget Links (v9 → v10)
+          if (from < 10) {
+            print('🔗 Starting Phase 2: Manual Budget Links Migration (v9 → v10)...');
+            await m.createTable(transactionBudgetsTable);
+            print('✅ Phase 2 migration completed successfully!');
+          }
         },
       );
 
@@ -73,7 +89,8 @@ class AppDatabase extends _$AppDatabase {
       'categories',
       'accounts',
       'budgets',
-      'attachments'
+      'attachments',
+      'transaction_budgets'
     ]) {
       await customStatement('''
         CREATE TRIGGER IF NOT EXISTS ${tableName}_sync_insert
@@ -234,6 +251,16 @@ class AppDatabase extends _$AppDatabase {
           'is_deleted', NEW.is_deleted,
           'is_captured_from_camera', NEW.is_captured_from_camera,
           'local_cache_expiry', NEW.local_cache_expiry,
+          'sync_id', NEW.sync_id
+        ''';
+      case 'transaction_budgets':
+        return '''
+          'id', NEW.id,
+          'transaction_id', NEW.transaction_id,
+          'budget_id', NEW.budget_id,
+          'amount', NEW.amount,
+          'created_at', NEW.created_at,
+          'updated_at', NEW.updated_at,
           'sync_id', NEW.sync_id
         ''';
       default:

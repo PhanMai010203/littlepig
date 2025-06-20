@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 
 class Account extends Equatable {
   final int? id;
@@ -9,6 +10,7 @@ class Account extends Equatable {
   final DateTime createdAt;
   final DateTime updatedAt;
   final String syncId;
+  final Color color;
 
   const Account({
     this.id,
@@ -19,6 +21,7 @@ class Account extends Equatable {
     required this.createdAt,
     required this.updatedAt,
     required this.syncId,
+    required this.color,
   });
 
   Account copyWith({
@@ -30,6 +33,7 @@ class Account extends Equatable {
     DateTime? createdAt,
     DateTime? updatedAt,
     String? syncId,
+    Color? color,
   }) {
     return Account(
       id: id ?? this.id,
@@ -40,6 +44,7 @@ class Account extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncId: syncId ?? this.syncId,
+      color: color ?? this.color,
     );
   }
 
@@ -53,5 +58,6 @@ class Account extends Equatable {
         createdAt,
         updatedAt,
         syncId,
+        color,
       ];
 }

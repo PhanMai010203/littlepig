@@ -15,6 +15,9 @@ class AccountsTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().withDefault(currentDateAndTime)();
 
+  // ✅ PHASE 1: Account color customization
+  IntColumn get color => integer().withDefault(const Constant(0xFF9E9E9E))();
+
   // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   TextColumn get syncId => text().unique()();
 }

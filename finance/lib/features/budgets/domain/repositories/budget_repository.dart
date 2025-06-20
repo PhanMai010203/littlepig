@@ -1,4 +1,5 @@
 import '../entities/budget.dart';
+import '../entities/transaction_budget_link.dart';
 
 abstract class BudgetRepository {
   Future<List<Budget>> getAllBudgets();
@@ -12,6 +13,13 @@ abstract class BudgetRepository {
   Future<void> deleteBudget(int id);
 
   Future<void> updateSpentAmount(int budgetId, double spentAmount);
+
+  // Manual budget linking methods (Phase 2)
+  Future<void> addTransactionToBudget(int transactionId, int budgetId, {double? amount});
+  Future<void> removeTransactionFromBudget(int transactionId, int budgetId);
+  Future<List<Budget>> getBudgetsForTransaction(int transactionId);
+  Future<List<TransactionBudgetLink>> getTransactionLinksForBudget(int budgetId);
+  Future<List<TransactionBudgetLink>> getAllTransactionBudgetLinks();
 
   // Sync related
   Future<List<Budget>> getUnsyncedBudgets();

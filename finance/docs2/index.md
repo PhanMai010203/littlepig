@@ -106,7 +106,20 @@ Essential reading for any feature that performs frequent database reads.
 
 ---
 
-## 8. How to Extend the Documentation
+## 8. Account Management System
+
+| 🔗 Link | Description |
+|---------|-------------|
+| [Account Usage Guide](features/ACCOUNTS_HOW_TO_USE.md) | A guide to managing financial accounts, including creating accounts with different currencies and setting a starting balance. |
+
+**Key Points**
+- Accounts are the source of funds for transactions (e.g., bank accounts, cash).
+- Each account has a name, balance, and currency.
+- Every transaction is linked to an account to track its impact.
+
+---
+
+## 9. How to Extend the Documentation
 
 Have you added a significant feature?  Follow these steps:
 1. Write or update a detailed spec under `docs/features/` or another appropriate folder.
@@ -117,7 +130,7 @@ Have you added a significant feature?  Follow these steps:
 
 ---
 
-## 9. Getting Help & Contributing
+## 10. Getting Help & Contributing
 
 - **Discussion**: Use project issues/PRs for questions.
 - **Style**: Prefer concise Markdown, tables, and bullet lists.

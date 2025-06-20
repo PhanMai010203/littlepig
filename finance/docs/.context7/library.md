@@ -26,3 +26,18 @@ This file tracks the Library IDs that have been searched for and found in Contex
 - User preference: Sequential thinking for analysis and responses
 - Need to search for Flutter-specific timer optimization patterns if needed
 - Context7 Flutter Timer documentation retrieved and available for timer consolidation implementation
+
+## Flutter Framework
+- Searched: /flutter/website - Flutter documentation web site
+- Retrieved documentation includes Material Design Color classes, ColorScheme usage, and theming
+- Contains comprehensive Material 3 color system documentation including Color constructors, color spaces, and theme migration guides
+- Coverage: Color classes, Material Design color roles, ColorScheme patterns, theme customization
+
+## Flutter Material Design
+- Searched: /material-foundation/flutter-packages - Collection of useful Material Design packages
+- Contains Material Design color system documentation and widget theming patterns
+
+## Drift Flutter Database ORM
+- Searched: /drift-labs/driftpy - This was for Drift trading protocol (Python SDK), not the Dart/Flutter ORM
+- Need to use existing codebase patterns for Drift ORM table creation, foreign keys, and migration patterns
+- Current codebase uses Drift ORM with table definitions, foreign key references, and migration strategies

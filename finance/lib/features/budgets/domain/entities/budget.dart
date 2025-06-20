@@ -136,6 +136,9 @@ class Budget extends Equatable {
   double get remaining => amount - spent;
   double get percentageSpent => spent / amount;
   bool get isOverBudget => spent > amount;
+  
+  /// Returns true if this is a manual-add budget (no wallet filters, requires explicit transaction links)
+  bool get manualAddMode => walletFks == null;
 
   @override
   List<Object?> get props => [
