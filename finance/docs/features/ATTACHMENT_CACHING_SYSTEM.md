@@ -110,12 +110,12 @@ if (filePath != null) {
 #### Cache Management
 ```dart
 // Manual cache cleanup
-await filePickerService.cleanupExpiredCache();
+await filePickerService.cleanExpiredCache();
 
 // Using CacheManagementService
-final cacheService = CacheManagementService();
-await cacheService.performCleanup();
-final stats = await cacheService.getCacheStatistics();
+final cacheService = getIt<CacheManagementService>();
+await cacheService.cleanExpiredCache();
+final stats = await cacheService.getCacheStats();
 ```
 
 ### For Users
@@ -226,10 +226,10 @@ The system automatically migrates existing attachments:
    - Add cache management UI in settings
    - Show cache statistics to users
 
-2. **Background Services**
-   - Implement periodic cache cleanup scheduler
-   - Add cache cleanup to app initialization
-   - Monitor cache size and performance
+2. **Background Services** *(Completed in v2.1)*
+   - Periodic cache cleanup scheduler implemented via `CacheManagementService.startPeriodicCleanup()` (internally registered with `TimerManagementService`)
+   - Cache cleanup now registered during app initialization
+   - `CacheStats` monitoring available through `cacheService.getCacheStats()`
 
 3. **Advanced Features**
    - Configurable cache duration (currently fixed at 30 days)
@@ -263,7 +263,7 @@ Currently the system has these configurable aspects:
    - Check file permissions
 
 2. **Cache not cleaning up**
-   - Manually call `cleanupExpiredCache()`
+   - Manually call `cleanExpiredCache()`
    - Check available storage space
    - Verify cache expiry dates
 

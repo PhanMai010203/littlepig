@@ -93,10 +93,10 @@ final amount = await currencyService.parseAmount('$1,234.56', 'USD');
 // Get currency symbol and code for display
 final display = await currencyService.getCurrencyDisplay(
   currencyCode: 'EUR',
-  showSymbol: true,
+  useNativeSymbol: true,
   showCode: true,
 );
-// Returns: "€ EUR"
+// Returns: "€ (EUR)"
 ```
 
 ## Exchange Rates and Conversion
@@ -255,10 +255,10 @@ final currencyItems = popularCurrencies.map((currency) =>
 ### Amount Input with Formatting
 ```dart
 // Format user input as they type
-String formatAmountInput(String input, String currencyCode) {
+Future<String> formatAmountInput(String input, String currencyCode) async {
   final amount = double.tryParse(input.replaceAll(',', ''));
   if (amount != null) {
-    return currencyService.formatAmount(
+    return await currencyService.formatAmount(
       amount: amount,
       currencyCode: currencyCode,
     );

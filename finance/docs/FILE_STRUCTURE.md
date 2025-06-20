@@ -58,6 +58,8 @@ lib/core/
 ├── database/                          # Database layer (Drift/SQLite)
 │   ├── app_database.dart             # Main database class with table definitions and migrations
 │   ├── app_database.g.dart           # Generated Drift database code
+│   ├── migrations/                  # Database schema migrations
+│   │   └── schema_cleanup_migration.dart # Phase 4 schema cleanup
 │   └── tables/                       # Database table definitions
 │       ├── financial_tables.dart     # Combined financial table definitions
 │       ├── transactions_table.dart   # Transaction table schema
@@ -71,6 +73,7 @@ lib/core/
 │   ├── file_picker_service.dart      # File selection and attachment processing service
 │   ├── cache_management_service.dart # Local file cache management service
 │   ├── database_cache_service.dart # Phase 2: In-memory cache for database queries
+│   ├── database_connection_optimizer.dart # SQLite performance and WAL optimizations
 │   ├── timer_management_service.dart # Phase 1: Centralized timer management with battery-aware scheduling
 │   ├── platform_service.dart        # Platform detection, device capabilities, and high refresh rate management service
 │   ├── dialog_service.dart          # Dialog and popup service (Phase 3)
@@ -82,12 +85,10 @@ lib/core/
 │   ├── event_processor.dart         # Phase 5A event processing engine
 │   ├── sync_state_manager.dart      # Phase 5A sync state and progress tracking
 │   ├── crdt_conflict_resolver.dart  # CRDT-based conflict resolution
-│   ├── sync_event.dart             # Event sourcing data structures
 │   ├── google_drive_sync_service.dart # Google Drive sync implementation
 │   ├── interfaces/                  # Team A/B interface contracts
 │   │   └── sync_interfaces.dart    # Shared sync service interfaces
-│   └── migrations/                  # Database schema migrations
-│       └── schema_cleanup_migration.dart # Phase 4 schema cleanup
+│   └── (migrations moved to core/database/migrations — see below)
 ├── utils/                            # Core utilities
 │   └── bloc_observer.dart           # BLoC observer for debugging and logging
 ├── theme/                            # App theming system
@@ -215,7 +216,8 @@ lib/features/
 ### 🔧 Services Layer (Business Services)
 ```
 lib/services/
-└── finance_service.dart              # Example service demonstrating repository usage
+├── finance_service.dart              # Example service demonstrating repository usage
+└── currency_service.dart             # Business logic service for currency utilities and conversions
 ```
 **Summary**: High-level business services that orchestrate multiple repositories and demonstrate usage patterns for the finance app's core functionality.
 
@@ -249,7 +251,10 @@ lib/shared/
 │   ├── app_text.dart                # Custom text widgets with theming
 │   ├── page_template.dart           # Common page layout template (Enhanced in Phase 5 with FadeIn and AnimatedSwitcher)
 │   └── language_selector.dart       # Language selection widget
-└── utils/                           # Shared utilities (currently empty)
+├── extensions/                      # Reusable extension methods
+│   └── account_currency_extension.dart # Account to currency helpers and formatters
+└── utils/                           # Shared utilities
+    └── currency_formatter.dart       # Currency formatting with locale support
 ```
 **Summary**: Shared components and utilities that can be used across multiple features, including a comprehensive animation and dialog framework, reusable widgets, and common utilities.
 

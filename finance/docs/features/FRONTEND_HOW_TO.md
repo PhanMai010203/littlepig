@@ -301,6 +301,13 @@ All animations respect the user's animation settings (e.g., reduced motion).
 import 'package:finance/shared/widgets/animations/fade_in.dart';
 import 'package:finance/shared/widgets/animations/scale_in.dart';
 import 'package:finance/shared/widgets/animations/slide_in.dart';
+import 'package:finance/shared/widgets/animations/bouncing_widget.dart';
+import 'package:finance/shared/widgets/animations/breathing_widget.dart';
+import 'package:finance/shared/widgets/animations/animated_expanded.dart';
+import 'package:finance/shared/widgets/animations/animated_size_switcher.dart';
+import 'package:finance/shared/widgets/animations/scaled_animated_switcher.dart';
+import 'package:finance/shared/widgets/animations/slide_fade_transition.dart';
+import 'package:finance/shared/widgets/animations/shake_animation.dart';
 import 'package:finance/shared/widgets/animations/tappable_widget.dart';
 
 // Fade in animation
@@ -485,6 +492,103 @@ Widget _buildLoadingCard() {
 }
 ```
 
+### Adaptive Bottom Navigation (Phase 5)
+
+The app provides a highly customizable bottom navigation bar with built-in animations and accessibility support.
+
+-   **Widget Location**: `lib/features/navigation/presentation/widgets/adaptive_bottom_navigation.dart`
+-   **Domain Entity**: `lib/features/navigation/domain/entities/navigation_item.dart`
+
+**Basic Usage:**
+
+```dart
+import 'package:finance/features/navigation/presentation/widgets/adaptive_bottom_navigation.dart';
+import 'package:finance/features/navigation/domain/entities/navigation_item.dart';
+
+final _items = [
+  NavigationItem(label: 'home', iconPath: 'assets/icons/icon_home.svg', route: AppRoutes.home),
+  NavigationItem(label: 'transactions', iconPath: 'assets/icons/icon_transactions.svg', route: AppRoutes.transactions),
+  NavigationItem(label: 'settings', iconPath: 'assets/icons/icon_settings.svg', route: AppRoutes.settings),
+];
+
+Scaffold(
+  body: _pages[_currentIndex],
+  bottomNavigationBar: AdaptiveBottomNavigation(
+    currentIndex: _currentIndex,
+    items: _items,
+    onTap: (index) => setState(() => _currentIndex = index),
+    onLongPress: (index) {
+      // Optional: open the customization dialog on long-press
+    },
+  ),
+);
+```
+
+### Navigation Customization Dialog
+
+Long-pressing a navigation item opens a dialog that lets the user replace it with another available item.
+
+-   **Dialog Content Widget**: `lib/features/navigation/presentation/widgets/navigation_customization_content.dart`
+-   **Recommended Invocation** (via `DialogService`):
+
+```dart
+import 'package:finance/core/services/dialog_service.dart';
+import 'package:finance/features/navigation/presentation/widgets/navigation_customization_content.dart';
+
+void _showNavigationCustomization(BuildContext context, int index) {
+  DialogService.showPopup(
+    context,
+    NavigationCustomizationContent(
+      currentIndex: index,
+      currentItem: _items[index],
+      availableItems: _allItems.where((e) => !_items.contains(e)).toList(),
+      onItemSelected: (newItem) {
+        setState(() => _items[index] = newItem);
+        Navigator.pop(context);
+      },
+    ),
+    title: 'Customize Navigation',
+  );
+}
+```
+
+### App Lifecycle Manager
+
+Wrap the root `MaterialApp` (or the outermost `Scaffold`) with `AppLifecycleManager` to automatically coordinate high refresh-rate displays and centralized timers.
+
+-   **Widget Location**: `lib/shared/widgets/app_lifecycle_manager.dart`
+
+```dart
+import 'package:finance/shared/widgets/app_lifecycle_manager.dart';
+
+AppLifecycleManager(
+  child: MaterialApp.router(
+    routerConfig: appRouter,
+    // …other params
+  ),
+);
+```
+
+### Animation Performance Monitor
+
+Use the in-app FPS and jank monitor while building complex widgets or animations.
+
+-   **Widget Location**: `lib/shared/widgets/animations/animation_performance_monitor.dart`
+
+```dart
+import 'package:finance/shared/widgets/animations/animation_performance_monitor.dart';
+
+class DebugOverlay extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const AnimationPerformanceMonitor(
+      showLabel: true, // Displays current FPS
+      child: SizedBox.shrink(),
+    );
+  }
+}
+```
+
 ---
 
 ## 🔧 Troubleshooting
@@ -570,6 +674,14 @@ import 'package:finance/shared/widgets/dialogs/bottom_sheet_service.dart';
 import 'package:finance/shared/widgets/animations/fade_in.dart';
 import 'package:finance/shared/widgets/animations/scale_in.dart';
 import 'package:finance/shared/widgets/animations/slide_in.dart';
+import 'package:finance/shared/widgets/animations/bouncing_widget.dart';
+import 'package:finance/shared/widgets/animations/breathing_widget.dart';
+import 'package:finance/shared/widgets/animations/animated_expanded.dart';
+import 'package:finance/shared/widgets/animations/animated_size_switcher.dart';
+import 'package:finance/shared/widgets/animations/scaled_animated_switcher.dart';
+import 'package:finance/shared/widgets/animations/slide_fade_transition.dart';
+import 'package:finance/shared/widgets/animations/shake_animation.dart';
+import 'package:finance/shared/widgets/animations/tappable_widget.dart';
 
 // Navigation
 import 'package:go_router/go_router.dart';
@@ -577,6 +689,16 @@ import 'package:finance/app/router/app_routes.dart';
 
 // State management
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+// Added navigation widgets
+import 'package:finance/features/navigation/presentation/widgets/adaptive_bottom_navigation.dart';
+import 'package:finance/features/navigation/presentation/widgets/navigation_customization_content.dart';
+
+// Core theming (continued)
+import 'package:finance/shared/widgets/app_lifecycle_manager.dart';
+
+// Animations (continued)
+import 'package:finance/shared/widgets/animations/animation_performance_monitor.dart';
 ```
 
 ### Color Quick Reference
@@ -596,6 +718,8 @@ getColor(context, "textLight")   // Secondary text
 // Surface colors
 getColor(context, "background")  // Main background
 getColor(context, "surface")     // Card background
+getColor(context, "surfaceContainer")      // Elevated surface
+getColor(context, "surfaceContainerHigh")  // High-level container
 ```
 
 This ensures that UI transitions are consistent across the application. 
