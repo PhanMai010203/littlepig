@@ -62,7 +62,7 @@ void main() {
             );
 
         // Allow triggers to fire
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 100));
 
         // Check if events are being created via triggers
         final events = await database.select(database.syncEventLogTable).get();
@@ -119,7 +119,7 @@ void main() {
             );
 
         // Allow triggers to fire
-        await Future.delayed(Duration(milliseconds: 100));
+        await Future.delayed(const Duration(milliseconds: 100));
 
         // Check that events are being created
         final events = await database.select(database.syncEventLogTable).get();
@@ -220,7 +220,7 @@ void main() {
 
         // Check if event was created
         await Future.delayed(
-            Duration(milliseconds: 100)); // Allow trigger to fire
+            const Duration(milliseconds: 100)); // Allow trigger to fire
 
         final events = await database.select(database.syncEventLogTable).get();
 
@@ -262,7 +262,7 @@ void main() {
         await database.delete(database.categoriesTable).go();
 
         // Insert default categories (this would happen during migration)
-        final deviceId = 'test-device-123';
+        const deviceId = 'test-device-123';
 
         // Insert or ignore device ID
         await database.customStatement('''

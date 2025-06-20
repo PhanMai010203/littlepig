@@ -48,11 +48,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ConstrainedBox(
-              constraints: BoxConstraints(minHeight: 200),
+              constraints: const BoxConstraints(minHeight: 200),
               child: Container(
                 alignment: AlignmentDirectional.bottomStart,
                 padding:
-                    EdgeInsetsDirectional.only(start: 9, bottom: 17, end: 9),
+                    const EdgeInsetsDirectional.only(start: 9, bottom: 17, end: 9),
                 child: HomePageUsername(
                   animationController: _animationController,
                 ),
@@ -220,18 +220,18 @@ class _OverviewCards extends StatelessWidget {
               ),
         ),
         const SizedBox(height: 16),
-        Row(
+        const Row(
           children: [
             Expanded(
-              child: const _OverviewCard(
+              child: _OverviewCard(
                 title: 'Total Balance',
                 value: '\$12,345.67',
                 color: Colors.green,
               ),
             ),
-            const SizedBox(width: 12),
+            SizedBox(width: 12),
             Expanded(
-              child: const _OverviewCard(
+              child: _OverviewCard(
                 title: 'Monthly Spending',
                 value: '\$2,543.21',
                 color: Colors.orange,
@@ -321,7 +321,7 @@ class _RecentActivity extends StatelessWidget {
                     'Category • ${DateTime.now().day}/${DateTime.now().month}'),
                 trailing: Text(
                   '-\$${(index + 1) * 25}.00',
-                  style: TextStyle(
+                  style: const TextStyle(
                     color: Colors.red,
                     fontWeight: FontWeight.w600,
                   ),

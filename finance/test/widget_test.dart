@@ -106,8 +106,8 @@ void main() {
 
     // Build a simplified version of our app for testing
     await tester.pumpWidget(
-      MaterialApp(
-        home: const Scaffold(
+      const MaterialApp(
+        home: Scaffold(
           body: Center(
             child: Text('Test App'),
           ),

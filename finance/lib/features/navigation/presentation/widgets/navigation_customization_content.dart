@@ -190,7 +190,7 @@ class NavigationCustomizationContent extends StatelessWidget {
               ),
             ),
           );
-        }).toList(),
+        }),
 
         const SizedBox(height: 8),
 

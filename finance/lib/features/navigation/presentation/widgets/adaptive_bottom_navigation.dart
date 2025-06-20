@@ -154,7 +154,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
                           constraints.maxWidth / widget.items.length;
                       final indicatorWidth =
                           itemWidth * 0.7; // 70% of item width
-                      final indicatorHeight = 40.0;
+                      const indicatorHeight = 40.0;
                       final leftPosition =
                           (_indicatorAnimation.value * itemWidth) +
                               (itemWidth - indicatorWidth) / 2;

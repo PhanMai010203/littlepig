@@ -1,12 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 
-import '../../../lib/features/transactions/domain/entities/transaction.dart';
-import '../../../lib/features/transactions/domain/entities/transaction_enums.dart';
-import '../../../lib/features/accounts/domain/entities/account.dart';
-import '../../../lib/features/budgets/domain/entities/budget.dart';
-import '../../../lib/features/categories/domain/entities/category.dart';
-import '../../../lib/features/transactions/domain/entities/attachment.dart';
+import 'package:finance/features/transactions/domain/entities/transaction.dart';
+import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
+import 'package:finance/features/accounts/domain/entities/account.dart';
+import 'package:finance/features/budgets/domain/entities/budget.dart';
+import 'package:finance/features/categories/domain/entities/category.dart';
+import 'package:finance/features/transactions/domain/entities/attachment.dart';
 
 void main() {
   group('Phase 4.2: Domain Entity Verification', () {

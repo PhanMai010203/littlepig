@@ -51,7 +51,7 @@ void main() {
       // Register a test task
       final testTask = TimerTask(
         id: 'test_task_1',
-        interval: Duration(minutes: 5),
+        interval: const Duration(minutes: 5),
         task: () async {},
       );
       
@@ -65,7 +65,7 @@ void main() {
       bool taskExecuted = false;
       final testTask = TimerTask(
         id: 'execution_test',
-        interval: Duration(milliseconds: 100),
+        interval: const Duration(milliseconds: 100),
         task: () async { 
           taskExecuted = true;
         },
@@ -82,7 +82,7 @@ void main() {
       // Arrange
       final testTask = TimerTask(
         id: 'state_test',
-        interval: Duration(seconds: 1),
+        interval: const Duration(seconds: 1),
         task: () async {},
       );
       
@@ -127,9 +127,9 @@ void main() {
     testWidgets('AnimationPerformanceMonitor builds correctly', (WidgetTester tester) async {
       // Act
       await tester.pumpWidget(
-        Directionality(
+        const Directionality(
           textDirection: TextDirection.ltr,
-          child: const AnimationPerformanceMonitor(
+          child: AnimationPerformanceMonitor(
             refreshInterval: Duration(seconds: 1),
           ),
         ),

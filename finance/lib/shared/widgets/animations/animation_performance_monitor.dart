@@ -84,7 +84,7 @@ class _AnimationPerformanceMonitorState
   }
   
   void _setupTimerManagement() {
-    _timerTaskId = 'animation_performance_monitor_${hashCode}';
+    _timerTaskId = 'animation_performance_monitor_$hashCode';
     
     final performanceTask = TimerTask(
       id: _timerTaskId!,

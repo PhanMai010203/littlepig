@@ -8,7 +8,6 @@ import 'package:finance/features/budgets/data/services/budget_auth_service.dart'
 import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:finance/features/budgets/domain/entities/budget.dart';
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
-import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
 
 class MockBudgetRepository extends Mock implements BudgetRepository {}
 

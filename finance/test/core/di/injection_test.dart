@@ -7,8 +7,6 @@ import 'package:finance/features/accounts/domain/repositories/account_repository
 import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:finance/core/sync/sync_service.dart';
 import 'package:finance/core/services/database_service.dart';
-import 'package:drift/native.dart';
-import 'package:path/path.dart' as p;
 
 void main() {
   setUpAll(() {

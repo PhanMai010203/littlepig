@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 import 'package:drift/drift.dart' hide isNotNull;
-import '../../../lib/core/sync/sync_state_manager.dart';
-import '../../../lib/core/database/app_database.dart';
+import 'package:finance/core/sync/sync_state_manager.dart';
+import 'package:finance/core/database/app_database.dart';
 import '../../helpers/test_database_setup.dart';
 
 void main() {
@@ -44,17 +44,17 @@ void main() {
     test('getActiveDevices - should return devices synced within 30 days',
         () async {
       // Add a device synced recently
-      final recentDevice = 'recent-device';
+      const recentDevice = 'recent-device';
       await syncStateManager.updateSyncProgress(recentDevice, 1);
 
       // Add a device synced long ago (simulate by direct database insert)
-      final oldTimestamp = DateTime.now().subtract(Duration(days: 35));
+      final oldTimestamp = DateTime.now().subtract(const Duration(days: 35));
       await database.into(database.syncStateTable).insert(
             SyncStateTableCompanion.insert(
               deviceId: 'old-device',
               lastSyncTime: oldTimestamp,
-              lastSequenceNumber: Value(1),
-              status: Value('idle'),
+              lastSequenceNumber: const Value(1),
+              status: const Value('idle'),
             ),
           );
 
@@ -178,7 +178,7 @@ void main() {
       final metrics = SyncMetrics(
         totalEventsSynced: 1000,
         conflictsResolved: 5,
-        averageSyncTime: Duration(seconds: 30),
+        averageSyncTime: const Duration(seconds: 30),
         lastSuccessfulSync: DateTime.now(),
         deviceCount: 3,
         eventsByTable: {'transactions': 500, 'budgets': 300, 'categories': 200},
@@ -187,7 +187,7 @@ void main() {
 
       expect(metrics.totalEventsSynced, equals(1000));
       expect(metrics.conflictsResolved, equals(5));
-      expect(metrics.averageSyncTime, equals(Duration(seconds: 30)));
+      expect(metrics.averageSyncTime, equals(const Duration(seconds: 30)));
       expect(metrics.deviceCount, equals(3));
       expect(metrics.eventsByTable['transactions'], equals(500));
       expect(metrics.syncEfficiency, equals(95.5));

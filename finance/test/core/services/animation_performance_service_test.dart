@@ -68,7 +68,7 @@ void main() {
         await AppSettings.set('animationLevel', 'reduced');
         final result =
             AnimationPerformanceService.getOptimizedDuration(baseDuration);
-        expect(result, equals(Duration(milliseconds: 150))); // 50% of 300ms
+        expect(result, equals(const Duration(milliseconds: 150))); // 50% of 300ms
       });
 
       test('returns base duration when animationLevel is normal', () async {
@@ -83,7 +83,7 @@ void main() {
         await AppSettings.set('animationLevel', 'enhanced');
         final result =
             AnimationPerformanceService.getOptimizedDuration(baseDuration);
-        expect(result, equals(Duration(milliseconds: 360))); // 120% of 300ms
+        expect(result, equals(const Duration(milliseconds: 360))); // 120% of 300ms
       });
     });
 
@@ -246,7 +246,7 @@ void main() {
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
         expect(
             AnimationPerformanceService.getOptimizedDuration(
-                Duration(milliseconds: 300)),
+                const Duration(milliseconds: 300)),
             equals(Duration.zero));
         expect(
             AnimationPerformanceService.maxSimultaneousAnimations, equals(1));
@@ -261,7 +261,7 @@ void main() {
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
         expect(
             AnimationPerformanceService.getOptimizedDuration(
-                Duration(milliseconds: 300)),
+                const Duration(milliseconds: 300)),
             equals(Duration.zero));
         expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
       });

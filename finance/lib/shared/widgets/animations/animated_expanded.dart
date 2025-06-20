@@ -64,7 +64,7 @@ class _AnimatedExpandedState extends State<AnimatedExpanded>
         reverseCurve: widget.reverseCurve,
       ));
     } else {
-      _fadeAnimation = AlwaysStoppedAnimation(1.0);
+      _fadeAnimation = const AlwaysStoppedAnimation(1.0);
     }
 
     // Set initial state

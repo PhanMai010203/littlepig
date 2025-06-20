@@ -112,8 +112,8 @@ void main() {
     group('✅ Default Categories Integration Validation', () {
       test('should have all required default categories', () {
         final allCategories = DefaultCategories.allCategories;
-        final incomeCategories = DefaultCategories.incomeCategories;
-        final expenseCategories = DefaultCategories.expenseCategories;
+        const incomeCategories = DefaultCategories.incomeCategories;
+        const expenseCategories = DefaultCategories.expenseCategories;
 
         // Verify we have both income and expense categories
         expect(incomeCategories.isNotEmpty, isTrue);

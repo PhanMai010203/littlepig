@@ -51,8 +51,9 @@ class FilePickerService {
           break;
       }
 
-      if (selectedFiles.isEmpty)
+      if (selectedFiles.isEmpty) {
         return []; // Process each file according to the flow
+      }
       final attachments = <Attachment>[];
       for (final file in selectedFiles) {
         // Determine if this is a camera-captured image

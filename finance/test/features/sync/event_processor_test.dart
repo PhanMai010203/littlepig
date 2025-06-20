@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../../lib/core/sync/event_processor.dart';
-import '../../../lib/core/sync/sync_event.dart';
-import '../../../lib/core/database/app_database.dart';
+import 'package:finance/core/sync/event_processor.dart';
+import 'package:finance/core/sync/sync_event.dart';
+import 'package:finance/core/database/app_database.dart';
 import 'package:drift/drift.dart';
 import '../../helpers/test_database_setup.dart';
 
@@ -94,7 +94,7 @@ void main() {
             'title': 'Test Transaction',
             'amount': 100.0,
           },
-          timestamp: DateTime.now().add(Duration(hours: 1)),
+          timestamp: DateTime.now().add(const Duration(hours: 1)),
           sequenceNumber: 1,
           hash: 'test-hash',
         );
@@ -234,7 +234,7 @@ void main() {
             recordId: 'txn-1',
             operation: 'update',
             data: {'amount': 200.0},
-            timestamp: baseTime.add(Duration(seconds: 1)),
+            timestamp: baseTime.add(const Duration(seconds: 1)),
             sequenceNumber: 2,
             hash: 'hash-2',
           ),
@@ -376,7 +376,7 @@ void main() {
         await eventProcessor.broadcastEvent(event);
 
         // Give stream time to process
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         expect(events.length, equals(1));
         expect(events.first.eventId, equals('test-event-1'));
@@ -386,10 +386,8 @@ void main() {
     group('Event Listeners', () {
       test('should trigger registered event listeners', () async {
         // Clean up any existing events first
-        await database.delete(database.syncEventLogTable).go();
-
-        var callbackCalled = false;
-        var receivedEvent;
+        await database.delete(database.syncEventLogTable).go();        var callbackCalled = false;
+        SyncEvent? receivedEvent;
 
         eventProcessor.registerEventListener('transactions:create',
             (SyncEvent event) {
@@ -414,10 +412,8 @@ void main() {
           hash: 'test-hash',
         );
 
-        await eventProcessor.processEvent(event);
-
-        expect(callbackCalled, isTrue);
-        expect(receivedEvent.eventId, equals('test-event-1'));
+        await eventProcessor.processEvent(event);        expect(callbackCalled, isTrue);
+        expect(receivedEvent?.eventId, equals('test-event-1'));
       });
 
       test('should trigger general listeners', () async {

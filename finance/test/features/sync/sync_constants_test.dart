@@ -31,8 +31,8 @@ void main() {
       });
 
       test('should provide proper folder hierarchy for attachments', () {
-        final syncFolder = GoogleDriveSyncService.SYNC_FOLDER;
-        final attachmentsFolder = GoogleDriveSyncService.ATTACHMENTS_FOLDER;
+        const syncFolder = GoogleDriveSyncService.SYNC_FOLDER;
+        const attachmentsFolder = GoogleDriveSyncService.ATTACHMENTS_FOLDER;
 
         // Ensure they share the same root but are different branches
         expect(syncFolder, startsWith('FinanceApp/'));
@@ -158,8 +158,8 @@ void main() {
     group('Default Categories Integration', () {
       test('should have all required default categories', () {
         final allCategories = DefaultCategories.allCategories;
-        final incomeCategories = DefaultCategories.incomeCategories;
-        final expenseCategories = DefaultCategories.expenseCategories;
+        const incomeCategories = DefaultCategories.incomeCategories;
+        const expenseCategories = DefaultCategories.expenseCategories;
 
         // Verify we have both income and expense categories
         expect(incomeCategories.isNotEmpty, isTrue);
@@ -465,8 +465,8 @@ void main() {
     group('Phase 4.4: Integration Validation', () {
       test('should have all required default categories', () {
         final allCategories = DefaultCategories.allCategories;
-        final incomeCategories = DefaultCategories.incomeCategories;
-        final expenseCategories = DefaultCategories.expenseCategories;
+        const incomeCategories = DefaultCategories.incomeCategories;
+        const expenseCategories = DefaultCategories.expenseCategories;
 
         // Verify we have both income and expense categories
         expect(incomeCategories.isNotEmpty, isTrue);

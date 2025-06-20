@@ -167,7 +167,7 @@ void main() {
             recordId: 'txn1',
             operation: 'update',
             data: {'amount': 200.0},
-            timestamp: DateTime.now().add(Duration(seconds: 1)),
+            timestamp: DateTime.now().add(const Duration(seconds: 1)),
             sequenceNumber: 2,
             hash: 'hash2',
           ),
@@ -204,7 +204,7 @@ void main() {
             recordId: 'txn1',
             operation: 'update',
             data: {'title': 'Updated Transaction 1'},
-            timestamp: DateTime.now().add(Duration(seconds: 1)),
+            timestamp: DateTime.now().add(const Duration(seconds: 1)),
             sequenceNumber: 2,
             hash: 'hash2',
           ),
@@ -215,7 +215,7 @@ void main() {
             recordId: 'txn2',
             operation: 'create',
             data: {'title': 'Transaction 2'},
-            timestamp: DateTime.now().add(Duration(seconds: 2)),
+            timestamp: DateTime.now().add(const Duration(seconds: 2)),
             sequenceNumber: 3,
             hash: 'hash3',
           ),
@@ -266,7 +266,7 @@ void main() {
 
       test('should handle transaction update operations', () async {
         // First create a transaction
-        final syncId = 'test-sync-id';
+        const syncId = 'test-sync-id';
         await database.into(database.transactionsTable).insert(
               TransactionsTableCompanion.insert(
                 title: 'Original Transaction',
@@ -325,7 +325,7 @@ void main() {
         await database.into(database.syncStateTable).insert(
               SyncStateTableCompanion.insert(
                 deviceId: 'test-device',
-                lastSyncTime: DateTime.now().subtract(Duration(hours: 1)),
+                lastSyncTime: DateTime.now().subtract(const Duration(hours: 1)),
                 lastSequenceNumber: const Value(0),
                 status: const Value('idle'),
               ),

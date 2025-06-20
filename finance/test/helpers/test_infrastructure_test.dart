@@ -5,7 +5,7 @@ import 'package:drift/drift.dart' hide isNotNull;
 import 'entity_builders.dart';
 import 'event_sourcing_helpers.dart';
 import 'test_database_setup.dart';
-import '../../lib/core/database/app_database.dart';
+import 'package:finance/core/database/app_database.dart';
 
 /// ✅ PHASE 4.3: Test Infrastructure Verification
 ///

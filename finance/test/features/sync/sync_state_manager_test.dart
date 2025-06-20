@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../../../lib/core/sync/sync_state_manager.dart';
-import '../../../lib/core/sync/sync_event.dart';
-import '../../../lib/core/database/app_database.dart';
+import 'package:finance/core/sync/sync_state_manager.dart';
+import 'package:finance/core/sync/sync_event.dart';
+import 'package:finance/core/database/app_database.dart';
 import 'package:drift/drift.dart';
 import '../../helpers/test_database_setup.dart';
 import '../../helpers/event_sourcing_helpers.dart';
@@ -50,7 +50,7 @@ void main() {
           statusMessage: 'Starting upload...',
         );
 
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         expect(states.isNotEmpty, isTrue);
         expect(states.last, equals(SyncState.uploading));
@@ -71,7 +71,7 @@ void main() {
           statusMessage: 'Half way done...',
         );
 
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         expect(progressUpdates.length, greaterThan(1));
         final lastProgress = progressUpdates.last;
@@ -94,7 +94,7 @@ void main() {
           message: 'Sync completed successfully',
         );
 
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         expect(states.contains(SyncState.completed), isTrue);
       });
@@ -113,7 +113,7 @@ void main() {
           message: 'Sync failed with error',
         );
 
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         final lastProgress = progressUpdates.last;
         expect(lastProgress.state, equals(SyncState.error));
@@ -123,8 +123,8 @@ void main() {
 
     group('Device Management', () {
       test('should track device sync progress', () async {
-        final deviceId = 'test-device-123';
-        final sequenceNumber = 42;
+        const deviceId = 'test-device-123';
+        const sequenceNumber = 42;
 
         await stateManager.updateSyncProgress(deviceId, sequenceNumber);
 
@@ -146,7 +146,7 @@ void main() {
         await database.into(database.syncStateTable).insert(
               SyncStateTableCompanion.insert(
                 deviceId: 'ios_device_2',
-                lastSyncTime: DateTime.now().subtract(Duration(hours: 1)),
+                lastSyncTime: DateTime.now().subtract(const Duration(hours: 1)),
                 lastSequenceNumber: const Value(5),
                 status: const Value('completed'),
               ),
@@ -169,7 +169,7 @@ void main() {
         await database.into(database.syncStateTable).insert(
               SyncStateTableCompanion.insert(
                 deviceId: 'old_device',
-                lastSyncTime: DateTime.now().subtract(Duration(days: 35)),
+                lastSyncTime: DateTime.now().subtract(const Duration(days: 35)),
                 lastSequenceNumber: const Value(1),
                 status: const Value('idle'),
               ),
@@ -271,7 +271,7 @@ void main() {
             tableName: 'transactions',
             recordId: 'txn-1',
             data: {'amount': 100.0},
-            timestamp: now.subtract(Duration(days: 1)),
+            timestamp: now.subtract(const Duration(days: 1)),
             isSynced: true,
           ),
           EventSourcingTestHelpers.createTestEvent(
@@ -279,7 +279,7 @@ void main() {
             tableName: 'budgets',
             recordId: 'budget-1',
             data: {'limit': 1000.0},
-            timestamp: now.subtract(Duration(days: 5)),
+            timestamp: now.subtract(const Duration(days: 5)),
             isSynced: true,
           ),
           EventSourcingTestHelpers.createTestEvent(
@@ -288,7 +288,7 @@ void main() {
             recordId: 'txn-2',
             data: {'amount': 200.0},
             timestamp:
-                now.subtract(Duration(days: 40)), // Outside 30-day window
+                now.subtract(const Duration(days: 40)), // Outside 30-day window
             isSynced: true,
           ),
         ];
@@ -348,7 +348,7 @@ void main() {
 
     group('Data Cleanup', () {
       test('should clean up old sync data', () async {
-        final oldDate = DateTime.now().subtract(Duration(days: 100));
+        final oldDate = DateTime.now().subtract(const Duration(days: 100));
 
         // Add old synced event
         await database.into(database.syncEventLogTable).insert(
@@ -409,7 +409,7 @@ void main() {
         await stateManager.updateProgress(processedEvents: 100);
         await stateManager.updateProgress(processedEvents: 200);
 
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         expect(progressUpdates.length, greaterThanOrEqualTo(4));
 
@@ -436,7 +436,7 @@ void main() {
           statusMessage: 'Resolving conflicts...',
         );
 
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         final lastProgress = progressUpdates.last;
         expect(lastProgress.conflictCount, equals(2));
@@ -451,23 +451,23 @@ void main() {
 
         // Upload phase
         await stateManager.startSync(state: SyncState.uploading);
-        await Future.delayed(Duration(milliseconds: 5));
+        await Future.delayed(const Duration(milliseconds: 5));
 
         // Download phase
         await stateManager.startSync(state: SyncState.downloading);
-        await Future.delayed(Duration(milliseconds: 5));
+        await Future.delayed(const Duration(milliseconds: 5));
 
         // Processing phase
         await stateManager.startSync(state: SyncState.processing);
-        await Future.delayed(Duration(milliseconds: 5));
+        await Future.delayed(const Duration(milliseconds: 5));
 
         // Conflict resolution
         await stateManager.startSync(state: SyncState.resolving_conflicts);
-        await Future.delayed(Duration(milliseconds: 5));
+        await Future.delayed(const Duration(milliseconds: 5));
 
         // Completion
         await stateManager.completeSync(success: true);
-        await Future.delayed(Duration(milliseconds: 5));
+        await Future.delayed(const Duration(milliseconds: 5));
 
         expect(states, contains(SyncState.uploading));
         expect(states, contains(SyncState.downloading));
@@ -484,7 +484,7 @@ void main() {
         await stateManager.completeSync(success: true);
 
         // Wait for auto-reset to idle
-        await Future.delayed(Duration(seconds: 4));
+        await Future.delayed(const Duration(seconds: 4));
 
         expect(states.last, equals(SyncState.idle));
       });
@@ -505,7 +505,7 @@ void main() {
           message: 'Network connection failed',
         );
 
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         final errorProgress = progressUpdates.last;
         expect(errorProgress.state, equals(SyncState.error));
@@ -535,7 +535,7 @@ void main() {
         testStateManager.dispose();
 
         // Give streams time to close
-        await Future.delayed(Duration(milliseconds: 10));
+        await Future.delayed(const Duration(milliseconds: 10));
 
         expect(progressStreamClosed, isTrue);
         expect(stateStreamClosed, isTrue);

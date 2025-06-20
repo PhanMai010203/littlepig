@@ -353,7 +353,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       http.Client(),
       AccessCredentials(
         AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
-            DateTime.now().add(Duration(hours: 1))),
+            DateTime.now().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
@@ -395,7 +395,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       http.Client(),
       AccessCredentials(
         AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
-            DateTime.now().add(Duration(hours: 1))),
+            DateTime.now().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
@@ -442,7 +442,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     }
 
     // Check for temporal conflicts (events around the same time)
-    final conflictWindow = Duration(minutes: 5);
+    const conflictWindow = Duration(minutes: 5);
     final conflicts = <SyncEvent>[];
 
     for (final localEvent in localEvents) {

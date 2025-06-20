@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import '../../lib/features/transactions/domain/entities/transaction.dart';
-import '../../lib/features/transactions/domain/entities/transaction_enums.dart';
-import '../../lib/features/accounts/domain/entities/account.dart';
-import '../../lib/features/budgets/domain/entities/budget.dart';
-import '../../lib/features/categories/domain/entities/category.dart';
-import '../../lib/features/transactions/domain/entities/attachment.dart';
+import 'package:finance/features/transactions/domain/entities/transaction.dart';
+import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
+import 'package:finance/features/accounts/domain/entities/account.dart';
+import 'package:finance/features/budgets/domain/entities/budget.dart';
+import 'package:finance/features/categories/domain/entities/category.dart';
+import 'package:finance/features/transactions/domain/entities/attachment.dart';
 
 /// ✅ PHASE 4.3: Test Entity Builders
 ///

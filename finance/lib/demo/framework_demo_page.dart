@@ -68,9 +68,9 @@ class _FrameworkDemoPageState extends State<FrameworkDemoPage> {
   }
 
   Widget _buildHeader() {
-    return FadeIn(
-      delay: const Duration(milliseconds: 100),
-      child: const Card(
+    return const FadeIn(
+      delay: Duration(milliseconds: 100),
+      child: Card(
         child: Padding(
           padding: EdgeInsets.all(20),
           child: Column(
@@ -600,13 +600,13 @@ class _FrameworkDemoPageState extends State<FrameworkDemoPage> {
   }
 
   Widget _buildPerformanceSection() {
-    return FadeIn(
-      delay: const Duration(milliseconds: 700),
+    return const FadeIn(
+      delay: Duration(milliseconds: 700),
       child: _DemoSection(
         title: 'Performance Features',
         subtitle: 'Framework performance and optimization',
         children: [
-          const Card(
+          Card(
             child: Padding(
               padding: EdgeInsets.all(16),
               child: Column(

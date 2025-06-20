@@ -478,7 +478,7 @@ class MigrationStats {
     buffer.writeln('📊 Migration Statistics:');
     buffer.writeln('  Total records migrated: $totalRecords');
     buffer.writeln(
-        '  Estimated space saved per record: ${spaceSavedBytes} bytes');
+        '  Estimated space saved per record: $spaceSavedBytes bytes');
     buffer.writeln(
         '  Total estimated space saved: ${totalRecords * spaceSavedBytes} bytes');
     buffer.writeln('  Record counts by table:');

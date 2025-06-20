@@ -40,7 +40,7 @@ class CurrencyDemo {
       }
 
       print('\n4. Currency formatting tests...');
-      final testAmount = 1234.56;
+      const testAmount = 1234.56;
 
       final usd = await currencyService.getCurrency('USD');
       if (usd != null) {
@@ -87,30 +87,30 @@ class CurrencyDemo {
   /// Widget that can be added to the app to run the demo
   static Widget buildDemoWidget() {
     return Scaffold(
-      appBar: AppBar(title: Text('Currency System Demo')),
+      appBar: AppBar(title: const Text('Currency System Demo')),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'Currency System Demo',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
                 await runDemo();
               },
-              child: Text('Run Currency Demo'),
+              child: const Text('Run Currency Demo'),
             ),
-            SizedBox(height: 20),
-            Text(
+            const SizedBox(height: 20),
+            const Text(
               'Check the console for demo output.',
               style: TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 20),
-            Expanded(
+            const SizedBox(height: 20),
+            const Expanded(
               child: SingleChildScrollView(
                 child: Text(
                   'This demo will:\n'

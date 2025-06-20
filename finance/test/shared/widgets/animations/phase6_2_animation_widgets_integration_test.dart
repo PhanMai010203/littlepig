@@ -36,7 +36,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: FadeIn(
-                duration: Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 300),
                 child: Container(
                   width: 100,
                   height: 100,
@@ -64,7 +64,7 @@ void main() {
         await AppSettings.set('animationLevel', 'reduced');
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: ScaleIn(
                 duration: Duration(milliseconds: 500),
@@ -80,7 +80,7 @@ void main() {
         // Should use optimized duration for reduced level
         final optimizedDuration =
             AnimationPerformanceService.getOptimizedDuration(
-          Duration(milliseconds: 500),
+          const Duration(milliseconds: 500),
         );
         expect(optimizedDuration.inMilliseconds, equals(250)); // 50% of 500ms
       });
@@ -89,7 +89,7 @@ void main() {
         await AppSettings.set('animationLevel', 'enhanced');
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: SlideIn(
                 duration: Duration(milliseconds: 400),
@@ -152,7 +152,7 @@ void main() {
                 onTap: () {},
                 hapticFeedback: true,
                 bounceOnTap: true,
-                child: Text('Battery Saver Test'),
+                child: const Text('Battery Saver Test'),
               ),
             ),
           ),
@@ -170,7 +170,7 @@ void main() {
     group('Effect Animation Widgets Performance Integration', () {
       testWidgets('BouncingWidget performance tracking', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: BouncingWidget(
                 duration: Duration(milliseconds: 800),
@@ -182,7 +182,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pump(Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
 
         // Should track bouncing animation
         final metrics = AnimationUtils.getPerformanceMetrics();
@@ -198,7 +198,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: BreathingWidget(
-                duration: Duration(milliseconds: 1000),
+                duration: const Duration(milliseconds: 1000),
                 breathingSpeed: 0.1,
                 child: Container(width: 80, height: 80, color: Colors.green),
               ),
@@ -217,12 +217,12 @@ void main() {
       testWidgets('ShakeAnimation integrates with performance monitoring',
           (tester) async {
         final controller = AnimationController(
-          duration: Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 300),
           vsync: tester,
         );
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: ShakeAnimation(
                 shakeOffset: 5.0,
@@ -236,7 +236,7 @@ void main() {
 
         // Start shake animation
         controller.forward();
-        await tester.pump(Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 50));
 
         // Should track shake animation
         final metrics = AnimationUtils.getPerformanceMetrics();
@@ -260,11 +260,11 @@ void main() {
                     children: [
                       ElevatedButton(
                         onPressed: () => setState(() => visible = !visible),
-                        child: Text('Toggle'),
+                        child: const Text('Toggle'),
                       ),
                       AnimatedScaleOpacity(
                         visible: visible,
-                        duration: Duration(milliseconds: 250),
+                        duration: const Duration(milliseconds: 250),
                         child: Container(
                           width: 100,
                           height: 100,
@@ -288,7 +288,7 @@ void main() {
         // Should respect animation settings
         final optimizedDuration =
             AnimationPerformanceService.getOptimizedDuration(
-          Duration(milliseconds: 250),
+          const Duration(milliseconds: 250),
         );
         expect(optimizedDuration.inMilliseconds,
             equals(250)); // Normal level = 100%
@@ -296,7 +296,7 @@ void main() {
 
       testWidgets('SlideFadeTransition performance tracking', (tester) async {
         final controller = AnimationController(
-          duration: Duration(milliseconds: 400),
+          duration: const Duration(milliseconds: 400),
           vsync: tester,
         );
 
@@ -307,7 +307,7 @@ void main() {
                 animation: controller,
                 direction: SlideFadeDirection.up,
                 slideDistance: 30.0,
-                child: Text('Slide Fade Test'),
+                child: const Text('Slide Fade Test'),
               ),
             ),
           ),
@@ -317,7 +317,7 @@ void main() {
 
         // Start transition
         controller.forward();
-        await tester.pump(Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
 
         // Should track animation
         final metrics = AnimationUtils.getPerformanceMetrics();
@@ -341,10 +341,10 @@ void main() {
                     children: [
                       ElevatedButton(
                         onPressed: () => setState(() => counter++),
-                        child: Text('Switch'),
+                        child: const Text('Switch'),
                       ),
                       ScaledAnimatedSwitcher(
-                        duration: Duration(milliseconds: 300),
+                        duration: const Duration(milliseconds: 300),
                         scaleIn: 0.8,
                         scaleOut: 1.2,
                         child: Text('Count: $counter', key: ValueKey(counter)),
@@ -362,11 +362,11 @@ void main() {
         // Switch content
         await tester.tap(find.text('Switch'));
         await tester.pump();
-        await tester.pump(Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 50));
 
         // Should use optimized duration
         final optimizedDuration =
-            AnimationUtils.getDuration(Duration(milliseconds: 300));
+            AnimationUtils.getDuration(const Duration(milliseconds: 300));
         expect(optimizedDuration.inMilliseconds, equals(300)); // Normal level
       });
 
@@ -383,10 +383,10 @@ void main() {
                     children: [
                       ElevatedButton(
                         onPressed: () => setState(() => expanded = !expanded),
-                        child: Text('Toggle Size'),
+                        child: const Text('Toggle Size'),
                       ),
                       AnimatedSizeSwitcher(
-                        duration: Duration(milliseconds: 400),
+                        duration: const Duration(milliseconds: 400),
                         child: Container(
                           width: expanded ? 200 : 100,
                           height: expanded ? 200 : 100,
@@ -427,15 +427,15 @@ void main() {
                     children: [
                       ElevatedButton(
                         onPressed: () => setState(() => expanded = !expanded),
-                        child: Text('Expand'),
+                        child: const Text('Expand'),
                       ),
                       AnimatedExpanded(
                         expand: expanded,
-                        duration: Duration(milliseconds: 500),
+                        duration: const Duration(milliseconds: 500),
                         child: Container(
                           height: 100,
                           color: Colors.cyan,
-                          child: Text('Expandable Content'),
+                          child: const Text('Expandable Content'),
                         ),
                       ),
                     ],
@@ -451,7 +451,7 @@ void main() {
         // Trigger expansion
         await tester.tap(find.text('Expand'));
         await tester.pump();
-        await tester.pump(Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
 
         // Should respect performance settings for complex animations
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isTrue);
@@ -464,7 +464,7 @@ void main() {
         await AppSettings.set('animationLevel', 'reduced'); // Max 2 concurrent
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
@@ -480,7 +480,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pump(Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 50));
 
         // Should respect concurrent animation limits
         final metrics = AnimationUtils.getPerformanceMetrics();
@@ -502,7 +502,7 @@ void main() {
         expect(AnimationUtils.canStartAnimation(), isFalse);
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: FadeIn(
                 child: Text('Should be limited'),
@@ -528,7 +528,7 @@ void main() {
         await AppSettings.set('animationLevel', 'normal');
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
@@ -547,7 +547,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pump(Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
 
         // Verify animations are running
         final initialMetrics = AnimationUtils.getPerformanceMetrics();
@@ -569,7 +569,7 @@ void main() {
           MaterialApp(
             home: Scaffold(
               body: BreathingWidget(
-                duration: Duration(milliseconds: 2000),
+                duration: const Duration(milliseconds: 2000),
                 child: Container(width: 50, height: 50, color: Colors.red),
               ),
             ),
@@ -577,7 +577,7 @@ void main() {
         );
 
         await tester.pump();
-        await tester.pump(Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
 
         // Enable battery saver during animation
         await AppSettings.set('batterySaver', true);
@@ -589,7 +589,7 @@ void main() {
 
         final optimizedDuration =
             AnimationPerformanceService.getOptimizedDuration(
-          Duration(milliseconds: 300),
+          const Duration(milliseconds: 300),
         );
         expect(optimizedDuration, equals(Duration.zero));
       });
@@ -601,11 +601,11 @@ void main() {
         // Simulate poor frame times
         for (int i = 0; i < 20; i++) {
           AnimationPerformanceService.recordFrameTime(
-              Duration(milliseconds: 35)); // Poor performance
+              const Duration(milliseconds: 35)); // Poor performance
         }
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
@@ -659,7 +659,7 @@ void main() {
 
         // Tap to trigger bounce
         await tester.tap(find.byType(TappableWidget));
-        await tester.pump(Duration(milliseconds: 50));
+        await tester.pump(const Duration(milliseconds: 50));
 
         // Should track bounce animation
         final metrics = AnimationUtils.getPerformanceMetrics();
@@ -675,12 +675,12 @@ void main() {
             home: Scaffold(
               body: Column(
                 children: [
-                  FadeIn(child: Text('No Fade')),
-                  ScaleIn(child: Text('No Scale')),
-                  SlideIn(child: Text('No Slide')),
+                  const FadeIn(child: Text('No Fade')),
+                  const ScaleIn(child: Text('No Scale')),
+                  const SlideIn(child: Text('No Slide')),
                   TappableWidget(
                     onTap: () {},
-                    child: Text('No Tap Animation'),
+                    child: const Text('No Tap Animation'),
                   ),
                 ],
               ),
@@ -726,7 +726,7 @@ void main() {
         // Fill frame time history to capacity
         for (int i = 0; i < 100; i++) {
           AnimationPerformanceService.recordFrameTime(
-              Duration(milliseconds: 16));
+              const Duration(milliseconds: 16));
         }
 
         final metrics = AnimationPerformanceService.performanceMetrics;

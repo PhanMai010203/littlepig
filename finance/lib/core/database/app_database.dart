@@ -36,7 +36,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.fromFile(File file) : super(NativeDatabase(file));
 
   // Constructor for testing with in-memory database
-  AppDatabase.forTesting(QueryExecutor executor) : super(executor);
+  AppDatabase.forTesting(super.executor);
 
   @override
   int get schemaVersion => 8;

@@ -158,7 +158,7 @@ class SyncStateManager {
 
   /// Get list of all active devices
   Future<List<String>> getActiveDevices() async {
-    final cutoffTime = DateTime.now().subtract(Duration(days: 30));
+    final cutoffTime = DateTime.now().subtract(const Duration(days: 30));
 
     final query = _database.select(_database.syncStateTable)
       ..where((tbl) => tbl.lastSyncTime.isBiggerThanValue(cutoffTime));
@@ -169,7 +169,7 @@ class SyncStateManager {
 
   /// Get detailed device information
   Future<List<DeviceInfo>> getDeviceInfoList() async {
-    final cutoffTime = DateTime.now().subtract(Duration(days: 30));
+    final cutoffTime = DateTime.now().subtract(const Duration(days: 30));
 
     final query = _database.select(_database.syncStateTable)
       ..where((tbl) => tbl.lastSyncTime.isBiggerThanValue(cutoffTime))
@@ -192,7 +192,7 @@ class SyncStateManager {
   /// Get comprehensive sync metrics
   Future<SyncMetrics> getSyncMetrics() async {
     final now = DateTime.now();
-    final last30Days = now.subtract(Duration(days: 30));
+    final last30Days = now.subtract(const Duration(days: 30));
 
     // Get total events synced in last 30 days
     final totalEventsQuery = _database.select(_database.syncEventLogTable)
@@ -213,7 +213,7 @@ class SyncStateManager {
         totalEvents.where((e) => e.data.contains('conflict_resolved')).length;
 
     // Calculate average sync time (mock for now)
-    final averageSyncTime = Duration(seconds: 5);
+    const averageSyncTime = Duration(seconds: 5);
 
     // Get last successful sync
     final lastSyncQuery = _database.select(_database.syncStateTable)
@@ -311,7 +311,7 @@ class SyncStateManager {
     await _updateDeviceState(finalState);
 
     // Reset to idle after a delay
-    Timer(Duration(seconds: 3), () async {
+    Timer(const Duration(seconds: 3), () async {
       if (!_stateController.isClosed) {
         _currentState = SyncState.idle;
         _stateController.add(_currentState);
@@ -349,7 +349,7 @@ class SyncStateManager {
       for (final eventId in eventIds) {
         batch.update(
           _database.syncEventLogTable,
-          SyncEventLogTableCompanion(isSynced: Value(true)),
+          const SyncEventLogTableCompanion(isSynced: Value(true)),
           where: (tbl) => tbl.eventId.equals(eventId),
         );
       }
@@ -365,7 +365,7 @@ class SyncStateManager {
 
   /// Clean up old sync data
   Future<void> cleanupOldSyncData() async {
-    final cutoffTime = DateTime.now().subtract(Duration(days: 90));
+    final cutoffTime = DateTime.now().subtract(const Duration(days: 90));
 
     // Delete old synced events
     await (_database.delete(_database.syncEventLogTable)
@@ -417,7 +417,7 @@ class SyncStateManager {
           SyncStateTableCompanion.insert(
             deviceId: _currentDeviceId!,
             lastSyncTime: DateTime.now(),
-            lastSequenceNumber: Value(0),
+            lastSequenceNumber: const Value(0),
             status: Value(SyncState.idle.name),
           ),
           mode: InsertMode.insertOrIgnore,

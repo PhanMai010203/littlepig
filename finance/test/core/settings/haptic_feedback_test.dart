@@ -1,8 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../lib/core/settings/app_settings.dart';
-import '../../../lib/core/services/animation_performance_service.dart';
+import 'package:finance/core/settings/app_settings.dart';
+import 'package:finance/core/services/animation_performance_service.dart';
 
 void main() {
   group('Haptic Feedback Settings Tests', () {

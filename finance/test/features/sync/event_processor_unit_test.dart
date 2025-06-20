@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:test/test.dart';
 import 'package:drift/drift.dart' hide isNotNull;
-import '../../../lib/core/sync/event_processor.dart';
-import '../../../lib/core/sync/sync_event.dart';
-import '../../../lib/core/database/app_database.dart';
+import 'package:finance/core/sync/event_processor.dart';
+import 'package:finance/core/sync/sync_event.dart';
+import 'package:finance/core/database/app_database.dart';
 import '../../helpers/test_database_setup.dart';
 
 void main() {
@@ -158,7 +158,7 @@ void main() {
         recordId: 'record-456',
         operation: 'update',
         data: {'amount': 100.0},
-        timestamp: DateTime.now().subtract(Duration(minutes: 10)),
+        timestamp: DateTime.now().subtract(const Duration(minutes: 10)),
         sequenceNumber: 1,
         hash: 'hash-1',
       );
@@ -233,7 +233,7 @@ void main() {
       await eventProcessor.broadcastEvent(event);
 
       // Give the stream time to process
-      await Future.delayed(Duration(milliseconds: 10));
+      await Future.delayed(const Duration(milliseconds: 10));
       expect(eventReceived, isTrue);
     });
 

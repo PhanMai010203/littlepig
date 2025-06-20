@@ -412,11 +412,11 @@ void main() {
     group('OpenContainerCard', () {
       testWidgets('renders card with content', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: OpenContainerCard(
-                openPage: const Scaffold(body: Text('Open Page')),
-                child: const Text('Card Content'),
+                openPage: Scaffold(body: Text('Open Page')),
+                child: Text('Card Content'),
               ),
             ),
           ),
@@ -431,11 +431,11 @@ void main() {
         await AppSettings.setAppAnimations(true);
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: OpenContainerCard(
-                openPage: const Scaffold(body: Text('Open Page')),
-                child: const Text('Card Content'),
+                openPage: Scaffold(body: Text('Open Page')),
+                child: Text('Card Content'),
               ),
             ),
           ),
@@ -451,14 +451,14 @@ void main() {
     group('OpenContainerListTile', () {
       testWidgets('renders list tile with content', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: OpenContainerListTile(
-                openPage: const Scaffold(body: Text('Open Page')),
-                leading: const Icon(Icons.star),
-                title: const Text('List Item'),
-                subtitle: const Text('Subtitle'),
-                trailing: const Icon(Icons.arrow_forward),
+                openPage: Scaffold(body: Text('Open Page')),
+                leading: Icon(Icons.star),
+                title: Text('List Item'),
+                subtitle: Text('Subtitle'),
+                trailing: Icon(Icons.arrow_forward),
               ),
             ),
           ),
@@ -475,11 +475,11 @@ void main() {
         await AppSettings.setAppAnimations(true);
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: OpenContainerListTile(
-                openPage: const Scaffold(body: Text('Open Page')),
-                title: const Text('List Item'),
+                openPage: Scaffold(body: Text('Open Page')),
+                title: Text('List Item'),
               ),
             ),
           ),

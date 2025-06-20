@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:math';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:battery_plus/battery_plus.dart';
 import '../settings/app_settings.dart';

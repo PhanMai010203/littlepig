@@ -180,7 +180,6 @@ class AnimationUtils {
   }) {
     return AnimatedContainer(
       key: key,
-      child: child,
       alignment: alignment,
       padding: padding,
       color: color,
@@ -196,6 +195,7 @@ class AnimationUtils {
       duration: getDuration(duration),
       curve: getCurve(curve),
       onEnd: onEnd,
+      child: child,
     );
   }
 
@@ -210,11 +210,11 @@ class AnimationUtils {
   }) {
     return AnimatedOpacity(
       key: key,
-      child: child,
       opacity: opacity,
       duration: getDuration(duration),
       curve: getCurve(curve),
       onEnd: onEnd,
+      child: child,
     );
   }
 
@@ -230,12 +230,12 @@ class AnimationUtils {
   }) {
     return AnimatedScale(
       key: key,
-      child: child,
       scale: scale,
       duration: getDuration(duration),
       curve: getCurve(curve),
       alignment: alignment,
       onEnd: onEnd,
+      child: child,
     );
   }
 
@@ -255,7 +255,6 @@ class AnimationUtils {
   }) {
     return AnimatedPositioned(
       key: key,
-      child: child,
       left: left,
       top: top,
       right: right,
@@ -265,6 +264,7 @@ class AnimationUtils {
       duration: getDuration(duration),
       curve: getCurve(curve),
       onEnd: onEnd,
+      child: child,
     );
   }
 

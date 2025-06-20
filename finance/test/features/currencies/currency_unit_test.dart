@@ -22,7 +22,7 @@ void main() {
     });
 
     test('CurrencyModel should work correctly', () {
-      final model = CurrencyModel(
+      const model = CurrencyModel(
         code: 'EUR',
         name: 'Euro',
         symbol: '€',

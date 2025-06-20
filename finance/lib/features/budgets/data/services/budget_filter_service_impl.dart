@@ -197,8 +197,8 @@ class BudgetFilterServiceImpl implements BudgetFilterService {
           .getTransactionsByCategory(budget.categoryId!);
       return allTransactions
           .where((t) =>
-              t.date.isAfter(startDate.subtract(Duration(days: 1))) &&
-              t.date.isBefore(endDate.add(Duration(days: 1))))
+              t.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+              t.date.isBefore(endDate.add(const Duration(days: 1))))
           .toList();
     }
     return await _transactionRepository.getTransactionsByDateRange(

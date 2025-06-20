@@ -76,9 +76,9 @@ class _SettingsPageState extends State<SettingsPage> {
               // Data & Privacy Section
               _buildSectionHeader('Data & Privacy'),
               SwitchListTile(
-                secondary: Icon(Icons.analytics),
-                title: Text('Analytics'),
-                subtitle: Text('Help improve the app with usage data'),
+                secondary: const Icon(Icons.analytics),
+                title: const Text('Analytics'),
+                subtitle: const Text('Help improve the app with usage data'),
                 value: state.analyticsEnabled,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
@@ -87,9 +87,9 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               SwitchListTile(
-                secondary: Icon(Icons.backup),
-                title: Text('Auto Backup'),
-                subtitle: Text('Automatically backup your data'),
+                secondary: const Icon(Icons.backup),
+                title: const Text('Auto Backup'),
+                subtitle: const Text('Automatically backup your data'),
                 value: state.autoBackupEnabled,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
@@ -102,9 +102,9 @@ class _SettingsPageState extends State<SettingsPage> {
               // Notifications Section
               _buildSectionHeader('Notifications'),
               SwitchListTile(
-                secondary: Icon(Icons.notifications),
-                title: Text('Push Notifications'),
-                subtitle: Text('Receive important updates'),
+                secondary: const Icon(Icons.notifications),
+                title: const Text('Push Notifications'),
+                subtitle: const Text('Receive important updates'),
                 value: state.notificationsEnabled,
                 onChanged: (value) {
                   context.read<SettingsBloc>().add(
@@ -123,12 +123,12 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // App Info Section
               _buildSectionHeader('App Info'),
-              ListTile(
+              const ListTile(
                 leading: Icon(Icons.info),
                 title: Text('App Version'),
                 subtitle: Text('1.0.0'),
               ),
-              ListTile(
+              const ListTile(
                 leading: Icon(Icons.code),
                 title: Text('Build Number'),
                 subtitle: Text('1'),
@@ -537,7 +537,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // Animation level selector
           if (appAnimations) ...[
             const SizedBox(height: 12),
-            AppText(
+            const AppText(
               'Animation Level',
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -816,7 +816,7 @@ class _SettingsPageState extends State<SettingsPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Current Performance
-            AppText(
+            const AppText(
               'Current Performance:',
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -851,7 +851,7 @@ class _SettingsPageState extends State<SettingsPage> {
             const SizedBox(height: 16),
 
             // Settings Summary
-            AppText(
+            const AppText(
               'Animation Settings:',
               fontSize: 14,
               fontWeight: FontWeight.w600,
@@ -888,7 +888,7 @@ class _SettingsPageState extends State<SettingsPage> {
               alignment: Alignment.centerRight,
               child: FilledButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: AppText(
+                child: const AppText(
                   'Close',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -938,7 +938,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: AppText(
+        content: const AppText(
           'Performance metrics have been reset',
           fontSize: 14,
           textColor: Colors.white,
@@ -958,7 +958,7 @@ class _SettingsPageState extends State<SettingsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // App description
-          AppText(
+          const AppText(
             'Built with Flutter and featuring advanced theming capabilities including Material You support, comprehensive animation framework, custom fonts, and accessibility features.',
             fontSize: 14,
             colorName: 'text',
@@ -966,7 +966,7 @@ class _SettingsPageState extends State<SettingsPage> {
           const SizedBox(height: 16),
 
           // Features list
-          AppText(
+          const AppText(
             'Key Features:',
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -1002,7 +1002,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       ],
                     ),
                   ))
-              .toList(),
+              ,
 
           const SizedBox(height: 16),
 
@@ -1013,7 +1013,7 @@ class _SettingsPageState extends State<SettingsPage> {
               color: getColor(context, 'surfaceContainer'),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
@@ -1032,7 +1032,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -1049,7 +1049,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     ),
                   ],
                 ),
-                const Divider(height: 16),
+                Divider(height: 16),
                 AppText(
                   '© 2025 Finance App Team',
                   fontSize: 11,
@@ -1066,7 +1066,7 @@ class _SettingsPageState extends State<SettingsPage> {
             alignment: Alignment.centerRight,
             child: FilledButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: AppText(
+              child: const AppText(
                 'Close',
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -1122,7 +1122,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: AppText(
+                    child: const AppText(
                       'Cancel',
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
@@ -1135,7 +1135,7 @@ class _SettingsPageState extends State<SettingsPage> {
                       this.setState(() {}); // Update parent widget
                       Navigator.of(context).pop();
                     },
-                    child: AppText(
+                    child: const AppText(
                       'Select',
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

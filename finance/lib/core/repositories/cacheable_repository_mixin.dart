@@ -80,7 +80,7 @@ mixin CacheableRepositoryMixin {
     if (id != null) {
       // Invalidate specific entity cache entries
       final patterns = [
-        '${entityType}_getById_${id}',
+        '${entityType}_getById_$id',
         '${entityType}_getBySyncId_',
       ];
       

@@ -183,19 +183,17 @@ void main() {
           MaterialApp(
             home: Column(
               children: [
-                FadeIn(child: Container(width: 50, height: 50)),
-                ScaleIn(child: Container(width: 50, height: 50)),
+                FadeIn(child: SizedBox(width: 50, height: 50)),
+                ScaleIn(child: SizedBox(width: 50, height: 50)),
                 TappableWidget(
                   onTap: () {},
-                  child: Container(width: 50, height: 50),
+                  child: SizedBox(width: 50, height: 50),
                 ),
               ],
             ),
           ),
-        );
-
-        await tester.pump();
-        expect(find.byType(Container), findsNWidgets(3));
+        );        await tester.pump();
+        expect(find.byType(SizedBox), findsNWidgets(3));
       });
 
       testWidgets('widgets respect battery saver setting', (tester) async {
@@ -206,11 +204,11 @@ void main() {
             home: Column(
               children: [
                 FadeIn(
-                    child: Container(
+                    child: SizedBox(
                         key: const ValueKey('fade'), width: 50, height: 50)),
                 BouncingWidget(
                   autoStart: false,
-                  child: Container(
+                  child: SizedBox(
                       key: const ValueKey('bounce'), width: 50, height: 50),
                 ),
               ],
@@ -232,11 +230,11 @@ void main() {
             home: Column(
               children: [
                 SlideIn(
-                    child: Container(
+                    child: SizedBox(
                         key: const ValueKey('slide'), width: 50, height: 50)),
                 BreathingWidget(
                   autoStart: false,
-                  child: Container(
+                  child: SizedBox(
                       key: const ValueKey('breathing'), width: 50, height: 50),
                 ),
               ],

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import '../../../core/services/platform_service.dart';
 import '../animations/slide_in.dart';
 import '../animations/fade_in.dart';
 import '../animations/animation_utils.dart';

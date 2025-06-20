@@ -26,7 +26,7 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
         final results = await query.get();
         return results.map(_mapTransactionData).toList();
       },
-      ttl: Duration(minutes: 5), // Cache for 5 minutes
+      ttl: const Duration(minutes: 5), // Cache for 5 minutes
     );
   }
 
@@ -41,7 +41,7 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
         return results.map(_mapTransactionData).toList();
       },
       params: {'accountId': accountId},
-      ttl: Duration(minutes: 3), // Cache for 3 minutes
+      ttl: const Duration(minutes: 3), // Cache for 3 minutes
     );
   }
 
@@ -56,7 +56,7 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
         return results.map(_mapTransactionData).toList();
       },
       params: {'categoryId': categoryId},
-      ttl: Duration(minutes: 3), // Cache for 3 minutes
+      ttl: const Duration(minutes: 3), // Cache for 3 minutes
     );
   }
 
@@ -82,7 +82,7 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
         return result != null ? _mapTransactionData(result) : null;
       },
       params: {'id': id},
-      ttl: Duration(minutes: 10), // Cache for 10 minutes
+      ttl: const Duration(minutes: 10), // Cache for 10 minutes
     );
   }
 

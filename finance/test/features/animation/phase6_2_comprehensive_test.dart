@@ -28,7 +28,7 @@ void main() {
     group('AnimationPerformanceMonitor Widget Tests', () {
       testWidgets('basic monitor displays correctly', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: AnimationPerformanceMonitor(
                 showFullDetails: false,
@@ -47,7 +47,7 @@ void main() {
       testWidgets('detailed monitor shows comprehensive information',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: AnimationPerformanceMonitor(
                 showFullDetails: true,
@@ -72,7 +72,7 @@ void main() {
               body: Stack(
                 children: [
                   Container(color: Colors.blue),
-                  FloatingPerformanceMonitor(
+                  const FloatingPerformanceMonitor(
                     position: FloatingMonitorPosition.topRight,
                     showFullDetails: false,
                   ),
@@ -92,7 +92,7 @@ void main() {
       testWidgets('monitor updates performance data in real-time',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: AnimationPerformanceMonitor(
                 refreshInterval: Duration(milliseconds: 100),
@@ -159,7 +159,7 @@ void main() {
             home: Scaffold(
               body: Container(
                 color: Colors.green,
-                child: Text('Test Content'),
+                child: const Text('Test Content'),
               ).withPerformanceMonitor(
                 position: FloatingMonitorPosition.bottomLeft,
                 showFullDetails: true,
@@ -188,7 +188,7 @@ void main() {
             home: Scaffold(
               body: Container(
                 color: Colors.green,
-                child: Text('Test Content'),
+                child: const Text('Test Content'),
               ).withPerformanceMonitor(
                 enabled: false,
               ),
@@ -230,7 +230,7 @@ void main() {
 
         // Allow animations to start
         await tester.pump();
-        await tester.pump(Duration(milliseconds: 100));
+        await tester.pump(const Duration(milliseconds: 100));
 
         final metrics = AnimationUtils.getPerformanceMetrics();
 
@@ -251,9 +251,9 @@ void main() {
 
       testWidgets('performance service tracks frame times', (tester) async {
         // Simulate frame time recording
-        AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 16));
-        AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 18));
-        AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 15));
+        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 16));
+        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 18));
+        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 15));
 
         final metrics = AnimationPerformanceService.performanceMetrics;
 
@@ -320,7 +320,7 @@ void main() {
         await AppSettings.set('animationLevel', 'none');
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: Column(
                 children: [
@@ -360,13 +360,13 @@ void main() {
         expect(AnimationPerformanceService.shouldUseComplexAnimations, isFalse);
         expect(
             AnimationPerformanceService.getOptimizedDuration(
-                Duration(milliseconds: 100)),
+                const Duration(milliseconds: 100)),
             Duration.zero);
         expect(AnimationPerformanceService.maxSimultaneousAnimations, 1);
 
         // Check monitor UI
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: AnimationPerformanceMonitor(showFullDetails: true),
             ),
@@ -380,7 +380,7 @@ void main() {
     group('Settings Integration and Real-time Updates', () {
       testWidgets('monitor updates when settings change', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: AnimationPerformanceMonitor(
                 showFullDetails: true,
@@ -436,7 +436,7 @@ void main() {
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 10; i++) {
           AnimationPerformanceService.recordFrameTime(
-              Duration(milliseconds: 16));
+              const Duration(milliseconds: 16));
         }
 
         final goodProfile = AnimationPerformanceService.getPerformanceProfile();
@@ -448,7 +448,7 @@ void main() {
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 10; i++) {
           AnimationPerformanceService.recordFrameTime(
-              Duration(milliseconds: 30));
+              const Duration(milliseconds: 30));
         }
 
         final poorProfile = AnimationPerformanceService.getPerformanceProfile();
@@ -464,7 +464,7 @@ void main() {
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 5; i++) {
           AnimationPerformanceService.recordFrameTime(
-              Duration(milliseconds: 16));
+              const Duration(milliseconds: 16));
         }
 
         final goodDuration =
@@ -475,7 +475,7 @@ void main() {
         AnimationPerformanceService.resetPerformanceMetrics();
         for (int i = 0; i < 5; i++) {
           AnimationPerformanceService.recordFrameTime(
-              Duration(milliseconds: 30));
+              const Duration(milliseconds: 30));
         }
 
         final poorDuration =
@@ -509,7 +509,7 @@ void main() {
       testWidgets('monitor handles null performance data gracefully',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: AnimationPerformanceMonitor(),
             ),
@@ -526,7 +526,7 @@ void main() {
         // Test with very high frame times
         AnimationPerformanceService.resetPerformanceMetrics();
         AnimationPerformanceService.recordFrameTime(
-            Duration(milliseconds: 1000));
+            const Duration(milliseconds: 1000));
 
         final metrics = AnimationPerformanceService.performanceMetrics;
         expect(metrics['isPerformanceGood'], isFalse);
@@ -561,7 +561,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Column(
+              body: const Column(
                 children: [
                   FadeIn(child: Text('1')),
                   ScaleIn(child: Text('2')),
@@ -599,7 +599,7 @@ void main() {
       test('performance data is consistent across calls', () {
         // Set up consistent state
         AnimationPerformanceService.resetPerformanceMetrics();
-        AnimationPerformanceService.recordFrameTime(Duration(milliseconds: 16));
+        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 16));
 
         // Get multiple snapshots
         final profile1 = AnimationPerformanceService.getPerformanceProfile();

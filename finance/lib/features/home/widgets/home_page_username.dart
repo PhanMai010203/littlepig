@@ -5,9 +5,9 @@ class HomePageUsername extends StatelessWidget {
   final AnimationController animationController;
 
   const HomePageUsername({
-    Key? key,
+    super.key,
     required this.animationController,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +25,7 @@ class HomePageUsername extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(horizontal: 9),
         child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
           child: Text(
             "navigation.home".tr(),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(

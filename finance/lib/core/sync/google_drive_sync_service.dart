@@ -124,7 +124,7 @@ class GoogleDriveSyncService implements SyncService {
           AccessToken(
               'Bearer',
               authHeaders['Authorization']?.split(' ')[1] ?? '',
-              DateTime.now().add(Duration(hours: 1))),
+              DateTime.now().add(const Duration(hours: 1))),
           null,
           _scopes,
         ),
@@ -222,7 +222,7 @@ class GoogleDriveSyncService implements SyncService {
           AccessToken(
               'Bearer',
               authHeaders['Authorization']?.split(' ')[1] ?? '',
-              DateTime.now().add(Duration(hours: 1))),
+              DateTime.now().add(const Duration(hours: 1))),
           null,
           _scopes,
         ),

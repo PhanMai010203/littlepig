@@ -3,14 +3,14 @@ import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
-import '../../lib/core/database/app_database.dart';
-import '../../lib/core/services/database_cache_service.dart';
-import '../../lib/core/services/database_connection_optimizer.dart';
-import '../../lib/features/transactions/data/repositories/transaction_repository_impl.dart';
-import '../../lib/features/budgets/data/repositories/budget_repository_impl.dart';
-import '../../lib/features/transactions/domain/entities/transaction.dart';
-import '../../lib/features/budgets/domain/entities/budget.dart';
-import '../../lib/features/transactions/domain/entities/transaction_enums.dart';
+import 'package:finance/core/database/app_database.dart';
+import 'package:finance/core/services/database_cache_service.dart';
+import 'package:finance/core/services/database_connection_optimizer.dart';
+import 'package:finance/features/transactions/data/repositories/transaction_repository_impl.dart';
+import 'package:finance/features/budgets/data/repositories/budget_repository_impl.dart';
+import 'package:finance/features/transactions/domain/entities/transaction.dart';
+import 'package:finance/features/budgets/domain/entities/budget.dart';
+import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
 
 void main() {
   group('Database Cache Performance Tests', () {
@@ -239,8 +239,8 @@ Future<void> _seedTestData(AppDatabase database) async {
         name: 'Test Budget $i',
         amount: i * 100.0,
         period: BudgetPeriod.monthly.name,
-        startDate: DateTime.now().subtract(Duration(days: 30)),
-        endDate: DateTime.now().add(Duration(days: 30)),
+        startDate: DateTime.now().subtract(const Duration(days: 30)),
+        endDate: DateTime.now().add(const Duration(days: 30)),
         syncId: 'budget-sync-$i',
       ),
     );

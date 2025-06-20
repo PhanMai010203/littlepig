@@ -183,8 +183,9 @@ class AnimationPerformanceService {
 
   /// Get average frame time for performance assessment
   static Duration get averageFrameTime {
-    if (_recentFrameTimes.isEmpty)
+    if (_recentFrameTimes.isEmpty) {
       return const Duration(milliseconds: 16); // 60fps
+    }
 
     final totalMs = _recentFrameTimes.fold<int>(
         0, (sum, time) => sum + time.inMicroseconds);

@@ -13,7 +13,7 @@ class MorePage extends StatelessWidget {
       ),
       body: ListView(
         children: [
-          _SectionHeader(title: 'Account'),
+          const _SectionHeader(title: 'Account'),
           _MenuItem(
             icon: Icons.person,
             title: 'Profile',
@@ -42,7 +42,7 @@ class MorePage extends StatelessWidget {
               );
             },
           ),
-          _SectionHeader(title: 'Analytics'),
+          const _SectionHeader(title: 'Analytics'),
           _MenuItem(
             icon: Icons.analytics,
             title: 'Reports',
@@ -63,7 +63,7 @@ class MorePage extends StatelessWidget {
               );
             },
           ),
-          _SectionHeader(title: 'Developer'),
+          const _SectionHeader(title: 'Developer'),
           _MenuItem(
             icon: Icons.developer_mode,
             title: 'Framework Demo',
@@ -72,7 +72,7 @@ class MorePage extends StatelessWidget {
               context.push('/demo');
             },
           ),
-          _SectionHeader(title: 'Support'),
+          const _SectionHeader(title: 'Support'),
           _MenuItem(
             icon: Icons.help,
             title: 'Help & Support',

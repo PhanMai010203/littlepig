@@ -131,7 +131,7 @@ class BudgetCsvService {
       spent: double.tryParse(row[2].toString()) ?? 0.0,
       startDate: DateTime.tryParse(row[4].toString()) ?? DateTime.now(),
       endDate: DateTime.tryParse(row[5].toString()) ??
-          DateTime.now().add(Duration(days: 30)),
+          DateTime.now().add(const Duration(days: 30)),
       categoryId: int.tryParse(row[6].toString()),
       excludeDebtCreditInstallments: row[7].toString().toLowerCase() == 'true',
       excludeObjectiveInstallments: row[8].toString().toLowerCase() == 'true',

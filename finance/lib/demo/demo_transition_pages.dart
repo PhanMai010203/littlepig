@@ -406,7 +406,7 @@ class _CombinedAnimationDemoState extends State<_CombinedAnimationDemo> {
                         color: Theme.of(context).colorScheme.primary,
                       ),
                       title: Text('Combined Animation ${index + 1}'),
-                      subtitle: Text('Slides from left + fades in'),
+                      subtitle: const Text('Slides from left + fades in'),
                       trailing: const Icon(Icons.animation),
                     ),
                   ),

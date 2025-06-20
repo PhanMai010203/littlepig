@@ -165,7 +165,7 @@ class ConflictResolution {
   }
 
   factory ConflictResolution.useLocal() {
-    return ConflictResolution(
+    return const ConflictResolution(
       type: ConflictResolutionType.useLocal,
       reason: 'Local version was more recent',
     );

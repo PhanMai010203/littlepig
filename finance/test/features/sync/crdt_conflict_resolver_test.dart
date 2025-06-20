@@ -64,7 +64,7 @@ void main() {
           recordId: 'txn1',
           operation: 'update',
           data: {'amount': 200},
-          timestamp: baseTime.add(Duration(seconds: 1)),
+          timestamp: baseTime.add(const Duration(seconds: 1)),
           sequenceNumber: 1,
           hash: 'hash2',
         );
@@ -132,7 +132,7 @@ void main() {
           recordId: 'txn1',
           operation: 'update',
           data: {'note': 'Updated Note'},
-          timestamp: DateTime.now().add(Duration(seconds: 1)),
+          timestamp: DateTime.now().add(const Duration(seconds: 1)),
           sequenceNumber: 2,
           hash: 'hash2',
         );
@@ -164,7 +164,7 @@ void main() {
           recordId: 'txn1',
           operation: 'update',
           data: {'amount': 200},
-          timestamp: DateTime.now().add(Duration(seconds: 1)),
+          timestamp: DateTime.now().add(const Duration(seconds: 1)),
           sequenceNumber: 2,
           hash: 'hash2',
         );
@@ -197,7 +197,7 @@ void main() {
           recordId: 'txn1',
           operation: 'update',
           data: {'note': 'Additional note'},
-          timestamp: DateTime.now().add(Duration(seconds: 1)),
+          timestamp: DateTime.now().add(const Duration(seconds: 1)),
           sequenceNumber: 2,
           hash: 'hash2',
         );
@@ -232,7 +232,7 @@ void main() {
           recordId: 'budget1',
           operation: 'update',
           data: {'spent': 200.0},
-          timestamp: DateTime.now().add(Duration(seconds: 1)),
+          timestamp: DateTime.now().add(const Duration(seconds: 1)),
           sequenceNumber: 2,
           hash: 'hash2',
         );
@@ -265,7 +265,7 @@ void main() {
           recordId: 'acc1',
           operation: 'update',
           data: {'balance': 1200.0},
-          timestamp: DateTime.now().add(Duration(seconds: 1)),
+          timestamp: DateTime.now().add(const Duration(seconds: 1)),
           sequenceNumber: 2,
           hash: 'hash2',
         );
@@ -331,7 +331,7 @@ void main() {
             recordId: 'txn1',
             operation: 'update',
             data: {'amount': 200},
-            timestamp: DateTime.now().add(Duration(seconds: 1)),
+            timestamp: DateTime.now().add(const Duration(seconds: 1)),
             sequenceNumber: 2,
             hash: 'hash2',
           ),
@@ -382,7 +382,7 @@ void main() {
             recordId: 'txn1',
             operation: 'update',
             data: {'amount': 200},
-            timestamp: DateTime.now().add(Duration(seconds: 1)),
+            timestamp: DateTime.now().add(const Duration(seconds: 1)),
             sequenceNumber: 2,
             hash: 'hash2',
           ),

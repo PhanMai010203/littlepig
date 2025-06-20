@@ -335,7 +335,6 @@ extension OpenContainerExtension on Widget {
     Color? backgroundColor,
   }) {
     return OpenContainerCard(
-      child: this,
       openPage: openPage,
       onTap: onTap,
       padding: padding,
@@ -343,6 +342,7 @@ extension OpenContainerExtension on Widget {
       elevation: elevation,
       shape: shape,
       backgroundColor: backgroundColor,
+      child: this,
     );
   }
 }

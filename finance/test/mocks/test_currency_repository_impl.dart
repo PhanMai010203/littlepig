@@ -15,11 +15,10 @@ class TestCurrencyRepositoryImpl extends CurrencyRepositoryImpl {
   };
 
   TestCurrencyRepositoryImpl(
-    CurrencyLocalDataSource currencyLocalDataSource,
-    ExchangeRateRemoteDataSource exchangeRateRemoteDataSource,
-    ExchangeRateLocalDataSource exchangeRateLocalDataSource,
-  ) : super(currencyLocalDataSource, exchangeRateRemoteDataSource,
-            exchangeRateLocalDataSource);
+    super.currencyLocalDataSource,
+    super.exchangeRateRemoteDataSource,
+    super.exchangeRateLocalDataSource,
+  );
   @override
   Future<Map<String, ExchangeRate>> getExchangeRates() async {
     // First try to get cached rates

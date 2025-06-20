@@ -50,14 +50,14 @@ void main() {
         await AppSettings.set('animationLevel', 'reduced');
         expect(
           AnimationPerformanceService.getOptimizedDuration(baseDuration),
-          equals(Duration(milliseconds: 150)),
+          equals(const Duration(milliseconds: 150)),
         );
 
         // Test enhanced level
         await AppSettings.set('animationLevel', 'enhanced');
         expect(
           AnimationPerformanceService.getOptimizedDuration(baseDuration),
-          equals(Duration(milliseconds: 360)),
+          equals(const Duration(milliseconds: 360)),
         );
       });
 
@@ -160,7 +160,7 @@ void main() {
         await AppSettings.set('appAnimations', true);
         await AppSettings.set('batterySaver', false);
 
-        final testDuration = Duration(milliseconds: 400);
+        const testDuration = Duration(milliseconds: 400);
 
         // None: Should disable animations
         await AppSettings.set('animationLevel', 'none');
@@ -175,7 +175,7 @@ void main() {
         await AppSettings.set('animationLevel', 'reduced');
         expect(
           AnimationPerformanceService.getOptimizedDuration(testDuration),
-          equals(Duration(milliseconds: 200)), // 50% of 400ms
+          equals(const Duration(milliseconds: 200)), // 50% of 400ms
         );
         expect(
             AnimationPerformanceService.maxSimultaneousAnimations, equals(2));
@@ -193,7 +193,7 @@ void main() {
         await AppSettings.set('animationLevel', 'enhanced');
         expect(
           AnimationPerformanceService.getOptimizedDuration(testDuration),
-          equals(Duration(milliseconds: 480)), // 120% of 400ms
+          equals(const Duration(milliseconds: 480)), // 120% of 400ms
         );
         expect(
             AnimationPerformanceService.maxSimultaneousAnimations, equals(8));

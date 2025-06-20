@@ -117,7 +117,7 @@ class BudgetUpdateServiceImpl implements BudgetUpdateService {
 
   @override
   Future<void> recalculateAllBudgetSpentAmounts() async {
-    final operationId = 'recalculate_all';
+    const operationId = 'recalculate_all';
     _startPerformanceTracking(operationId);
 
     try {

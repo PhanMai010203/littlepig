@@ -20,7 +20,7 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
         final budgets = await _database.select(_database.budgetsTable).get();
         return budgets.map<Budget>(_mapToEntity).toList();
       },
-      ttl: Duration(minutes: 5), // Cache for 5 minutes
+      ttl: const Duration(minutes: 5), // Cache for 5 minutes
     );
   }
 
@@ -34,7 +34,7 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
             .get();
         return budgets.map<Budget>(_mapToEntity).toList();
       },
-      ttl: Duration(minutes: 3), // Cache for 3 minutes
+      ttl: const Duration(minutes: 3), // Cache for 3 minutes
     );
   }
 
@@ -49,7 +49,7 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
         return budget != null ? _mapToEntity(budget) : null;
       },
       params: {'id': id},
-      ttl: Duration(minutes: 10), // Cache for 10 minutes
+      ttl: const Duration(minutes: 10), // Cache for 10 minutes
     );
   }
 

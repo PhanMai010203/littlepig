@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:drift/drift.dart';
-import '../../lib/core/database/app_database.dart';
-import '../../lib/core/sync/sync_event.dart';
+import 'package:finance/core/database/app_database.dart';
+import 'package:finance/core/sync/sync_event.dart';
 
 /// ✅ PHASE 4.3: Event Sourcing Test Helpers
 ///
@@ -23,7 +23,7 @@ class EventSourcingTestHelpers {
     final now = timestamp ?? DateTime.now();
 
     return SyncEventLogTableCompanion.insert(
-      eventId: 'event-${now.millisecondsSinceEpoch}-${recordId}',
+      eventId: 'event-${now.millisecondsSinceEpoch}-$recordId',
       deviceId: deviceId ?? 'test-device',
       tableNameField: tableName,
       recordId: recordId,
@@ -50,7 +50,7 @@ class EventSourcingTestHelpers {
     final now = timestamp ?? DateTime.now();
 
     return SyncEvent(
-      eventId: 'event-${now.millisecondsSinceEpoch}-${recordId}',
+      eventId: 'event-${now.millisecondsSinceEpoch}-$recordId',
       deviceId: deviceId ?? 'test-device',
       tableName: tableName,
       recordId: recordId,

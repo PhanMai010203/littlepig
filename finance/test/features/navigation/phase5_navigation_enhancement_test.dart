@@ -142,10 +142,10 @@ void main() {
     group('Enhanced PageTemplate', () {
       testWidgets('PageTemplate with FadeIn animation works', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: PageTemplate(
               title: 'Test Page',
-              body: const Text('Test Body'),
+              body: Text('Test Body'),
             ),
           ),
         );
@@ -238,10 +238,10 @@ void main() {
         await AppSettings.set('appAnimations', false);
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: PageTemplate(
               title: 'Test Page',
-              body: const Text('Test Body'),
+              body: Text('Test Body'),
             ),
           ),
         );
@@ -359,10 +359,10 @@ void main() {
         await AppSettings.set('batterySaver', true);
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: PageTemplate(
               title: 'Test Page',
-              body: const Text('Test Body'),
+              body: Text('Test Body'),
             ),
           ),
         );
@@ -403,10 +403,10 @@ void main() {
 
       testWidgets('PageTemplate handles null title gracefully', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: PageTemplate(
               title: null,
-              body: const Text('Test Body'),
+              body: Text('Test Body'),
             ),
           ),
         );

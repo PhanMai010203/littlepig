@@ -7,7 +7,7 @@ void main() {
       // TODO: Add widget tests for currency-related UI components
       // such as currency selectors, formatters, converters
       await tester.pumpWidget(
-        MaterialApp(
+        const MaterialApp(
           home: Scaffold(
             body: Text('Currency Widget Test Placeholder'),
           ),

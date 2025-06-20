@@ -18,7 +18,7 @@ void main() {
     group('PopupFramework Widget', () {
       testWidgets('PopupFramework creates basic popup', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: PopupFramework(
                 title: 'Test Title',
@@ -35,7 +35,7 @@ void main() {
 
       testWidgets('PopupFramework with all components', (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: PopupFramework(
                 title: 'Test Title',
@@ -60,7 +60,7 @@ void main() {
         await AppSettings.set('appAnimations', false);
 
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: PopupFramework(
                 title: 'Test Title',
@@ -103,7 +103,7 @@ void main() {
         await tester.pumpWidget(
           MaterialApp(
             home: Scaffold(
-              body: Text('Test Content').asPopup(
+              body: const Text('Test Content').asPopup(
                 title: 'Test Title',
                 subtitle: 'Test Subtitle',
                 icon: Icons.info,
@@ -126,10 +126,10 @@ void main() {
               body: PopupFramework(
                 title: 'Test Title',
                 customSubtitleWidget: Container(
-                  padding: EdgeInsets.all(8.0),
-                  child: Text('Custom Subtitle'),
+                  padding: const EdgeInsets.all(8.0),
+                  child: const Text('Custom Subtitle'),
                 ),
-                child: Text('Test Content'),
+                child: const Text('Test Content'),
               ),
             ),
           ),
@@ -153,7 +153,7 @@ void main() {
                 title: 'Test Title',
                 showCloseButton: true,
                 onClosePressed: onClosePressedCallback,
-                child: Text('Test Content'),
+                child: const Text('Test Content'),
               ),
             ),
           ),
@@ -183,11 +183,11 @@ void main() {
                   onPressed: () {
                     DialogService.showPopup(
                       context,
-                      Text('Dialog Content'),
+                      const Text('Dialog Content'),
                       title: 'Dialog Title',
                     );
                   },
-                  child: Text('Show Dialog'),
+                  child: const Text('Show Dialog'),
                 );
               },
             ),
@@ -218,7 +218,7 @@ void main() {
                       message: 'Are you sure?',
                     );
                   },
-                  child: Text('Show Confirmation'),
+                  child: const Text('Show Confirmation'),
                 );
               },
             ),
@@ -257,7 +257,7 @@ void main() {
                       message: 'This is important info.',
                     );
                   },
-                  child: Text('Show Info'),
+                  child: const Text('Show Info'),
                 );
               },
             ),
@@ -296,7 +296,7 @@ void main() {
                       details: 'Stack trace details here',
                     );
                   },
-                  child: Text('Show Error'),
+                  child: const Text('Show Error'),
                 );
               },
             ),
@@ -343,7 +343,7 @@ void main() {
                       message: 'Please wait...',
                     );
                   },
-                  child: Text('Show Loading'),
+                  child: const Text('Show Loading'),
                 );
               },
             ),
@@ -379,7 +379,7 @@ void main() {
                   onPressed: () async {
                     result = await DialogService.showCustomDialog<String>(
                       context,
-                      content: Text('Custom content'),
+                      content: const Text('Custom content'),
                       title: 'Custom Dialog',
                       actions: [
                         DialogAction(
@@ -394,7 +394,7 @@ void main() {
                       ],
                     );
                   },
-                  child: Text('Show Custom'),
+                  child: const Text('Show Custom'),
                 );
               },
             ),
@@ -449,7 +449,7 @@ void main() {
                       message: 'Are you sure?',
                     );
                   },
-                  child: Text('Show Confirmation'),
+                  child: const Text('Show Confirmation'),
                 );
               },
             ),
@@ -480,11 +480,11 @@ void main() {
                   onPressed: () {
                     BottomSheetService.showSimpleBottomSheet(
                       context,
-                      Text('Bottom Sheet Content'),
+                      const Text('Bottom Sheet Content'),
                       title: 'Bottom Sheet Title',
                     );
                   },
-                  child: Text('Show Bottom Sheet'),
+                  child: const Text('Show Bottom Sheet'),
                 );
               },
             ),
@@ -515,18 +515,18 @@ void main() {
                       context,
                       title: 'Select Option',
                       options: [
-                        BottomSheetOption(
+                        const BottomSheetOption(
                           title: 'Option 1',
                           value: 'option1',
                           icon: Icons.star,
                         ),
-                        BottomSheetOption(
+                        const BottomSheetOption(
                           title: 'Option 2',
                           value: 'option2',
                           subtitle: 'With subtitle',
                           icon: Icons.favorite,
                         ),
-                        BottomSheetOption(
+                        const BottomSheetOption(
                           title: 'Disabled Option',
                           value: 'disabled',
                           enabled: false,
@@ -534,7 +534,7 @@ void main() {
                       ],
                     );
                   },
-                  child: Text('Show Options'),
+                  child: const Text('Show Options'),
                 );
               },
             ),
@@ -579,7 +579,7 @@ void main() {
                       isDangerous: true,
                     );
                   },
-                  child: Text('Show Confirmation'),
+                  child: const Text('Show Confirmation'),
                 );
               },
             ),
@@ -634,23 +634,23 @@ void main() {
                     ElevatedButton(
                       onPressed: () async {
                         final result = await context.showBottomSheet<String>(
-                          Text('Simple Sheet'),
+                          const Text('Simple Sheet'),
                           title: 'Simple',
                         );
                       },
-                      child: Text('Show Simple Sheet'),
+                      child: const Text('Show Simple Sheet'),
                     ),
                     ElevatedButton(
                       onPressed: () async {
                         final result = await context.showOptions<String>(
                           title: 'Options',
                           options: [
-                            BottomSheetOption(title: 'Option A', value: 'a'),
-                            BottomSheetOption(title: 'Option B', value: 'b'),
+                            const BottomSheetOption(title: 'Option A', value: 'a'),
+                            const BottomSheetOption(title: 'Option B', value: 'b'),
                           ],
                         );
                       },
-                      child: Text('Show Options'),
+                      child: const Text('Show Options'),
                     ),
                     ElevatedButton(
                       onPressed: () async {
@@ -660,7 +660,7 @@ void main() {
                           message: 'Are you sure?',
                         );
                       },
-                      child: Text('Show Confirmation'),
+                      child: const Text('Show Confirmation'),
                     ),
                   ],
                 );
@@ -674,7 +674,7 @@ void main() {
         await tester.pumpAndSettle();
         expect(find.text('Simple'), findsOneWidget);
         // Dismiss by tapping outside
-        await tester.tapAt(Offset(50, 50));
+        await tester.tapAt(const Offset(50, 50));
         await tester.pumpAndSettle();
 
         // Test options sheet
@@ -742,15 +742,15 @@ void main() {
                           // Show bottom sheet from dialog
                           BottomSheetService.showSimpleBottomSheet(
                             context,
-                            Text('Bottom Sheet from Dialog'),
+                            const Text('Bottom Sheet from Dialog'),
                           );
                         },
-                        child: Text('Show Bottom Sheet'),
+                        child: const Text('Show Bottom Sheet'),
                       ),
                       title: 'Dialog with Bottom Sheet',
                     );
                   },
-                  child: Text('Show Dialog'),
+                  child: const Text('Show Dialog'),
                 );
               },
             ),
@@ -814,7 +814,7 @@ void main() {
       testWidgets('PopupFramework handles null values gracefully',
           (tester) async {
         await tester.pumpWidget(
-          MaterialApp(
+          const MaterialApp(
             home: Scaffold(
               body: PopupFramework(
                 title: null,
@@ -872,7 +872,7 @@ void main() {
                       options: [],
                     );
                   },
-                  child: Text('Show Empty Options'),
+                  child: const Text('Show Empty Options'),
                 );
               },
             ),

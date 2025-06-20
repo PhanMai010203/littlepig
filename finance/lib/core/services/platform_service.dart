@@ -17,7 +17,7 @@ enum PlatformOS {
 
 /// Platform service for centralized platform detection and capabilities
 class PlatformService {
-  static PlatformOS _cachedPlatform = _detectPlatform();
+  static final PlatformOS _cachedPlatform = _detectPlatform();
 
   /// Get the current platform
   static PlatformOS getPlatform() {

@@ -3,7 +3,7 @@ import 'package:finance/features/currencies/data/models/currency_model.dart';
 
 class MockCurrencyLocalDataSource implements CurrencyLocalDataSource {
   static final Map<String, CurrencyModel> _mockCurrencies = {
-    'USD': CurrencyModel(
+    'USD': const CurrencyModel(
       code: 'USD',
       name: 'US Dollar',
       symbol: '\$',
@@ -12,7 +12,7 @@ class MockCurrencyLocalDataSource implements CurrencyLocalDataSource {
       countryName: 'United States',
       countryCode: 'US',
     ),
-    'EUR': CurrencyModel(
+    'EUR': const CurrencyModel(
       code: 'EUR',
       name: 'Euro',
       symbol: '€',
@@ -21,7 +21,7 @@ class MockCurrencyLocalDataSource implements CurrencyLocalDataSource {
       countryName: 'European Union',
       countryCode: 'EU',
     ),
-    'GBP': CurrencyModel(
+    'GBP': const CurrencyModel(
       code: 'GBP',
       name: 'British Pound',
       symbol: '£',
@@ -30,7 +30,7 @@ class MockCurrencyLocalDataSource implements CurrencyLocalDataSource {
       countryName: 'United Kingdom',
       countryCode: 'GB',
     ),
-    'VND': CurrencyModel(
+    'VND': const CurrencyModel(
       code: 'VND',
       name: 'Vietnamese Dong',
       symbol: '₫',

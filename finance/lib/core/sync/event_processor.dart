@@ -90,7 +90,7 @@ class EventProcessor {
     }
 
     // Validate timestamp is not in future
-    if (event.timestamp.isAfter(DateTime.now().add(Duration(minutes: 5)))) {
+    if (event.timestamp.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
       return false;
     }
 
