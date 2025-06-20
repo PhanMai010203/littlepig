@@ -66,6 +66,7 @@ dependencies:
   # Platform Integration
   device_info_plus: ^9.1.0
   package_info_plus: ^4.2.0
+  battery_plus: ^6.0.2
   
   # Advanced Theming
   dynamic_color: ^1.7.0

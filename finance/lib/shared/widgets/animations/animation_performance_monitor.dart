@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/services/animation_performance_service.dart';
+import '../../../core/services/timer_management_service.dart';
 import 'animation_utils.dart';
 import 'dart:async';
 
@@ -19,7 +20,7 @@ enum FloatingMonitorPosition {
 /// Displays current animation state, frame rates, and optimization info
 class AnimationPerformanceMonitor extends StatefulWidget {
   const AnimationPerformanceMonitor({
-    this.refreshInterval = const Duration(milliseconds: 250),
+    this.refreshInterval = const Duration(milliseconds: 1000), // Phase 1: Optimized from 250ms to 1000ms
     this.showFullDetails = false,
     this.backgroundColor,
     this.textColor,
@@ -27,10 +28,11 @@ class AnimationPerformanceMonitor extends StatefulWidget {
     this.borderRadius = 8.0,
     this.padding = const EdgeInsets.all(8.0),
     this.textStyle,
+    this.useTimerManagement = true, // Phase 1: Enable centralized timer management
     super.key,
   });
 
-  /// How often to refresh the performance data
+  /// How often to refresh the performance data (Phase 1: Optimized from 250ms to 1000ms)
   final Duration refreshInterval;
 
   /// Whether to show detailed metrics or just summary
@@ -54,6 +56,9 @@ class AnimationPerformanceMonitor extends StatefulWidget {
   /// Text style for the monitor
   final TextStyle? textStyle;
 
+  /// Whether to use centralized timer management (Phase 1 optimization)
+  final bool useTimerManagement;
+
   @override
   State<AnimationPerformanceMonitor> createState() =>
       _AnimationPerformanceMonitorState();
@@ -63,18 +68,52 @@ class _AnimationPerformanceMonitorState
     extends State<AnimationPerformanceMonitor> {
   late Timer _timer;
   Map<String, dynamic> _currentMetrics = {};
+  String? _timerTaskId;
 
   @override
   void initState() {
     super.initState();
     _updateMetrics();
-    _timer = Timer.periodic(widget.refreshInterval, (_) => _updateMetrics());
+    
+    if (widget.useTimerManagement) {
+      // Use centralized timer management (Phase 1 optimization)
+      _setupTimerManagement();
+    } else {
+      // Use legacy timer
+      _timer = Timer.periodic(widget.refreshInterval, (_) => _updateMetrics());
+    }
   }
 
   @override
   void dispose() {
-    _timer.cancel();
+    if (widget.useTimerManagement && _timerTaskId != null) {
+      TimerManagementService.instance.unregisterTask(_timerTaskId!);
+    } else {
+      _timer.cancel();
+    }
     super.dispose();
+  }
+  
+  void _setupTimerManagement() {
+    _timerTaskId = 'animation_performance_monitor_${hashCode}';
+    
+    final performanceTask = TimerTask(
+      id: _timerTaskId!,
+      interval: widget.refreshInterval,
+      task: _updateMetricsAsync,
+      isEssential: false, // Performance monitoring is not essential
+      priority: 2, // Very low priority
+      pauseOnBackground: true, // Pause when backgrounded
+      pauseOnLowBattery: true, // Pause when battery is low
+    );
+    
+    TimerManagementService.instance.registerTask(performanceTask);
+  }
+  
+  Future<void> _updateMetricsAsync() async {
+    if (mounted) {
+      _updateMetrics();
+    }
   }
 
   void _updateMetrics() {

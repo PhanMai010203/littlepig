@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import '../../features/transactions/domain/repositories/attachment_repository.dart';
+import 'timer_management_service.dart';
 
 /// Service responsible for managing local file cache
 ///
@@ -14,16 +15,45 @@ class CacheManagementService {
 
   CacheManagementService(this._attachmentRepository);
 
-  /// Start periodic cache cleanup (runs every 24 hours)
+  /// Start periodic cache cleanup using TimerManagementService
   void startPeriodicCleanup() {
-    // Run cleanup every 24 hours
+    // Register cache cleanup task with TimerManagementService
+    final cleanupTask = TimerTask(
+      id: 'cache_cleanup',
+      interval: const Duration(hours: 24),
+      task: _performCacheCleanup,
+      isEssential: false, // Cache cleanup is not essential
+      priority: 3, // Low priority maintenance task
+      pauseOnBackground: true, // Can be paused when backgrounded
+      pauseOnLowBattery: true, // Pause when battery is low
+    );
+    
+    TimerManagementService.instance.registerTask(cleanupTask);
+    
+    // Keep legacy timer as fallback (will be removed after verification)
     _cleanupTimer = Timer.periodic(const Duration(hours: 24), (_) async {
-      await cleanExpiredCache();
+      // This legacy timer will be removed after Phase 1 verification
+      // For now, it's disabled to prevent double execution
+      // await cleanExpiredCache();
     });
+  }
+  
+  /// Cache cleanup task for TimerManagementService
+  Future<void> _performCacheCleanup() async {
+    try {
+      await cleanExpiredCache();
+    } catch (e) {
+      // Log error and rethrow for TimerManagementService to handle
+      print('Cache cleanup task failed: $e');
+      rethrow;
+    }
   }
 
   /// Stop periodic cache cleanup
   void stopPeriodicCleanup() {
+    // Unregister from TimerManagementService
+    TimerManagementService.instance.unregisterTask('cache_cleanup');
+    
     _cleanupTimer?.cancel();
     _cleanupTimer = null;
   }

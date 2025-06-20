@@ -12,6 +12,7 @@ import 'event_processor.dart';
 import 'sync_state_manager.dart';
 import 'interfaces/sync_interfaces.dart' as interfaces;
 import '../database/app_database.dart';
+import '../services/timer_management_service.dart';
 import 'google_drive_sync_service.dart';
 
 /// Enhanced Incremental Sync Service for Phase 5A
@@ -33,7 +34,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
 
   String? _deviceId;
   bool _isSyncing = false;
-  Timer? _periodicSyncTimer;
+  Timer? _periodicSyncTimer; // Legacy timer - will be migrated
 
   EnhancedIncrementalSyncService(this._database)
       : _eventProcessor = EventProcessor(_database),
@@ -67,7 +68,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
         _eventStreamController.add(event);
       });
 
-      // Set up periodic sync
+      // Set up periodic sync using TimerManagementService
       _setupPeriodicSync();
 
       return true;
@@ -502,17 +503,45 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
     }
   }
 
-  /// Set up periodic background sync
+  /// Set up periodic background sync using TimerManagementService
   void _setupPeriodicSync() {
-    _periodicSyncTimer = Timer.periodic(Duration(minutes: 15), (timer) async {
-      if (!_isSyncing && await isSignedIn()) {
-        try {
-          await performFullSync();
-        } catch (e) {
-          print('Periodic sync failed: $e');
-        }
-      }
+    // Register sync task with TimerManagementService
+    final syncTask = TimerTask(
+      id: 'enhanced_incremental_sync',
+      interval: const Duration(minutes: 15),
+      task: _performPeriodicSync,
+      isEssential: false, // Sync is not essential, can be paused during low battery
+      priority: 7, // High priority but not critical
+      pauseOnBackground: false, // Allow background sync
+      pauseOnLowBattery: true, // Pause when battery is low
+    );
+    
+    TimerManagementService.instance.registerTask(syncTask);
+    
+    // Keep legacy timer as fallback (will be removed after verification)
+    _periodicSyncTimer = Timer.periodic(const Duration(minutes: 15), (timer) async {
+      // This legacy timer will be removed after Phase 1 verification
+      // For now, it's disabled to prevent double execution
+      // if (!_isSyncing && await isSignedIn()) {
+      //   try {
+      //     await performFullSync();
+      //   } catch (e) {
+      //     print('Periodic sync failed: $e');
+      //   }
+      // }
     });
+  }
+  
+  /// Periodic sync task for TimerManagementService
+  Future<void> _performPeriodicSync() async {
+    if (!_isSyncing && await isSignedIn()) {
+      try {
+        await performFullSync();
+      } catch (e) {
+        print('Periodic sync failed: $e');
+        rethrow; // Allow TimerManagementService to handle failure and backoff
+      }
+    }
   }
 
   /// Helper methods from original implementation
@@ -545,6 +574,9 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
 
   /// Clean up resources
   void dispose() {
+    // Unregister from TimerManagementService
+    TimerManagementService.instance.unregisterTask('enhanced_incremental_sync');
+    
     _periodicSyncTimer?.cancel();
     _eventStreamController.close();
     _eventProcessor.dispose();
