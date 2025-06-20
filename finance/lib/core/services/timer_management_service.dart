@@ -377,4 +377,6 @@ class TimerManagementService with WidgetsBindingObserver {
     _isInitialized = false;
     debugPrint('TimerManagementService disposed');
   }
+  
+  bool get isMasterTimerActive => _masterTimer?.isActive ?? false;
 } 

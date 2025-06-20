@@ -28,7 +28,6 @@ class AnimationPerformanceMonitor extends StatefulWidget {
     this.borderRadius = 8.0,
     this.padding = const EdgeInsets.all(8.0),
     this.textStyle,
-    this.useTimerManagement = true, // Phase 1: Enable centralized timer management (Phase 1 Complete - now default)
     super.key,
   });
 
@@ -56,9 +55,6 @@ class AnimationPerformanceMonitor extends StatefulWidget {
   /// Text style for the monitor
   final TextStyle? textStyle;
 
-  /// Whether to use centralized timer management (Phase 1 optimization)
-  final bool useTimerManagement;
-
   @override
   State<AnimationPerformanceMonitor> createState() =>
       _AnimationPerformanceMonitorState();
@@ -66,31 +62,24 @@ class AnimationPerformanceMonitor extends StatefulWidget {
 
 class _AnimationPerformanceMonitorState
     extends State<AnimationPerformanceMonitor> {
-  late Timer _timer;
   Map<String, dynamic> _currentMetrics = {};
   String? _timerTaskId;
 
   @override
   void initState() {
     super.initState();
+    // Listen to performance service updates for real-time UI refresh
+    AnimationPerformanceService.addListener(_updateMetrics);
     _updateMetrics();
-    
-    if (widget.useTimerManagement) {
-      // Use centralized timer management (Phase 1 optimization)
-      _setupTimerManagement();
-    } else {
-      // Use legacy timer
-      _timer = Timer.periodic(widget.refreshInterval, (_) => _updateMetrics());
-    }
+    _setupTimerManagement();
   }
 
   @override
   void dispose() {
-    if (widget.useTimerManagement && _timerTaskId != null) {
+    if (_timerTaskId != null) {
       TimerManagementService.instance.unregisterTask(_timerTaskId!);
-    } else {
-      _timer.cancel();
     }
+    AnimationPerformanceService.removeListener(_updateMetrics);
     super.dispose();
   }
   

@@ -4,8 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:battery_plus/battery_plus.dart';
 
-import '../../../lib/core/services/timer_management_service.dart';
-import '../../../lib/core/settings/app_settings.dart';
+import 'package:finance/core/services/timer_management_service.dart';
+import 'package:finance/core/settings/app_settings.dart';
 
 void main() {
   group('TimerManagementService', () {

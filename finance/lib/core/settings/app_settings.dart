@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../services/animation_performance_service.dart';
 
 /// Global app settings manager based on the budget app's system
 class AppSettings {
@@ -149,6 +150,8 @@ class AppSettings {
   /// Notify app of state changes
   static void _notifyAppStateChange() {
     _onAppStateChanged?.call();
+    // Notify performance service to update listeners for immediate UI refresh
+    AnimationPerformanceService.notifyListeners();
   }
 
   /// Convenience methods for common settings

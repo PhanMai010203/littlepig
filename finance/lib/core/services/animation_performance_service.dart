@@ -16,6 +16,7 @@ class AnimationPerformanceService {
   static int _currentActiveAnimations = 0;
   static final List<Duration> _recentFrameTimes = [];
   static const int _maxFrameTimeHistory = 60; // Keep last 60 frame times
+  static final List<VoidCallback> _listeners = [];
 
   /// Check if complex animations should be used
   ///
@@ -160,12 +161,14 @@ class AnimationPerformanceService {
   /// Register animation start for tracking
   static void registerAnimationStart() {
     _currentActiveAnimations++;
+    _notifyListeners();
   }
 
   /// Register animation end for tracking
   static void registerAnimationEnd() {
     if (_currentActiveAnimations > 0) {
       _currentActiveAnimations--;
+      _notifyListeners();
     }
   }
 
@@ -175,6 +178,7 @@ class AnimationPerformanceService {
     if (_recentFrameTimes.length > _maxFrameTimeHistory) {
       _recentFrameTimes.removeAt(0);
     }
+    _notifyListeners();
   }
 
   /// Get average frame time for performance assessment
@@ -238,5 +242,31 @@ class AnimationPerformanceService {
     _totalAnimationsCreated = 0;
     _currentActiveAnimations = 0;
     _recentFrameTimes.clear();
+    _notifyListeners();
+  }
+
+  /// Add listener to performance updates
+  static void addListener(VoidCallback listener) {
+    if (!_listeners.contains(listener)) {
+      _listeners.add(listener);
+    }
+  }
+
+  /// Remove listener
+  static void removeListener(VoidCallback listener) {
+    _listeners.remove(listener);
+  }
+
+  static void _notifyListeners() {
+    for (final listener in List<VoidCallback>.from(_listeners)) {
+      try {
+        listener();
+      } catch (_) {}
+    }
+  }
+
+  /// Public method to manually notify listeners (e.g., when settings change)
+  static void notifyListeners() {
+    _notifyListeners();
   }
 }
