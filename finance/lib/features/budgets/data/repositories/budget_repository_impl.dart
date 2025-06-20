@@ -1,11 +1,12 @@
 import '../../domain/entities/budget.dart';
 import '../../domain/repositories/budget_repository.dart';
 import '../../../../core/database/app_database.dart';
+import '../../../../core/repositories/cacheable_repository_mixin.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:convert';
 
-class BudgetRepositoryImpl implements BudgetRepository {
+class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetRepository {
   final AppDatabase _database;
   final _uuid = const Uuid();
 
@@ -13,24 +14,43 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
   @override
   Future<List<Budget>> getAllBudgets() async {
-    final budgets = await _database.select(_database.budgetsTable).get();
-    return budgets.map<Budget>(_mapToEntity).toList();
+    return cacheRead(
+      'getAllBudgets',
+      () async {
+        final budgets = await _database.select(_database.budgetsTable).get();
+        return budgets.map<Budget>(_mapToEntity).toList();
+      },
+      ttl: Duration(minutes: 5), // Cache for 5 minutes
+    );
   }
 
   @override
   Future<List<Budget>> getActiveBudgets() async {
-    final budgets = await (_database.select(_database.budgetsTable)
-          ..where((tbl) => tbl.isActive.equals(true)))
-        .get();
-    return budgets.map<Budget>(_mapToEntity).toList();
+    return cacheRead(
+      'getActiveBudgets',
+      () async {
+        final budgets = await (_database.select(_database.budgetsTable)
+              ..where((tbl) => tbl.isActive.equals(true)))
+            .get();
+        return budgets.map<Budget>(_mapToEntity).toList();
+      },
+      ttl: Duration(minutes: 3), // Cache for 3 minutes
+    );
   }
 
   @override
   Future<Budget?> getBudgetById(int id) async {
-    final budget = await (_database.select(_database.budgetsTable)
-          ..where((tbl) => tbl.id.equals(id)))
-        .getSingleOrNull();
-    return budget != null ? _mapToEntity(budget) : null;
+    return cacheReadSingle(
+      'getBudgetById',
+      () async {
+        final budget = await (_database.select(_database.budgetsTable)
+              ..where((tbl) => tbl.id.equals(id)))
+            .getSingleOrNull();
+        return budget != null ? _mapToEntity(budget) : null;
+      },
+      params: {'id': id},
+      ttl: Duration(minutes: 10), // Cache for 10 minutes
+    );
   }
 
   @override
@@ -93,6 +113,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
     final id = await _database.into(_database.budgetsTable).insert(companion);
 
+    // Invalidate cache after creating budget
+    await invalidateEntityCache('budget');
+
     return budget.copyWith(
       id: id,
       syncId: syncId,
@@ -142,6 +165,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
     await (_database.update(_database.budgetsTable)
           ..where((tbl) => tbl.id.equals(budget.id!)))
         .write(companion);
+
+    // Invalidate cache after updating budget
+    await invalidateCache('budget', id: budget.id);
 
     return budget.copyWith(updatedAt: now);
   }

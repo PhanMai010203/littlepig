@@ -2,12 +2,13 @@ import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/repositories/cacheable_repository_mixin.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_enums.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../../budgets/domain/services/budget_update_service.dart';
 
-class TransactionRepositoryImpl implements TransactionRepository {
+class TransactionRepositoryImpl with CacheableRepositoryMixin implements TransactionRepository {
   final AppDatabase _database;
   BudgetUpdateService? _budgetUpdateService;
 
@@ -18,25 +19,45 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   @override
   Future<List<Transaction>> getAllTransactions() async {
-    final query = _database.select(_database.transactionsTable);
-    final results = await query.get();
-    return results.map(_mapTransactionData).toList();
+    return cacheRead(
+      'getAllTransactions',
+      () async {
+        final query = _database.select(_database.transactionsTable);
+        final results = await query.get();
+        return results.map(_mapTransactionData).toList();
+      },
+      ttl: Duration(minutes: 5), // Cache for 5 minutes
+    );
   }
 
   @override
   Future<List<Transaction>> getTransactionsByAccount(int accountId) async {
-    final query = _database.select(_database.transactionsTable)
-      ..where((t) => t.accountId.equals(accountId));
-    final results = await query.get();
-    return results.map(_mapTransactionData).toList();
+    return cacheRead(
+      'getTransactionsByAccount',
+      () async {
+        final query = _database.select(_database.transactionsTable)
+          ..where((t) => t.accountId.equals(accountId));
+        final results = await query.get();
+        return results.map(_mapTransactionData).toList();
+      },
+      params: {'accountId': accountId},
+      ttl: Duration(minutes: 3), // Cache for 3 minutes
+    );
   }
 
   @override
   Future<List<Transaction>> getTransactionsByCategory(int categoryId) async {
-    final query = _database.select(_database.transactionsTable)
-      ..where((t) => t.categoryId.equals(categoryId));
-    final results = await query.get();
-    return results.map(_mapTransactionData).toList();
+    return cacheRead(
+      'getTransactionsByCategory',
+      () async {
+        final query = _database.select(_database.transactionsTable)
+          ..where((t) => t.categoryId.equals(categoryId));
+        final results = await query.get();
+        return results.map(_mapTransactionData).toList();
+      },
+      params: {'categoryId': categoryId},
+      ttl: Duration(minutes: 3), // Cache for 3 minutes
+    );
   }
 
   @override
@@ -52,10 +73,17 @@ class TransactionRepositoryImpl implements TransactionRepository {
 
   @override
   Future<Transaction?> getTransactionById(int id) async {
-    final query = _database.select(_database.transactionsTable)
-      ..where((t) => t.id.equals(id));
-    final result = await query.getSingleOrNull();
-    return result != null ? _mapTransactionData(result) : null;
+    return cacheReadSingle(
+      'getTransactionById',
+      () async {
+        final query = _database.select(_database.transactionsTable)
+          ..where((t) => t.id.equals(id));
+        final result = await query.getSingleOrNull();
+        return result != null ? _mapTransactionData(result) : null;
+      },
+      params: {'id': id},
+      ttl: Duration(minutes: 10), // Cache for 10 minutes
+    );
   }
 
   @override
@@ -98,6 +126,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
         await _database.into(_database.transactionsTable).insert(companion);
     final createdTransaction = transaction.copyWith(id: id);
 
+    // Invalidate cache after creating transaction
+    await invalidateEntityCache('transaction');
+
     // Trigger budget updates if service is available
     if (_budgetUpdateService != null) {
       await _budgetUpdateService!.updateBudgetOnTransactionChange(
@@ -139,6 +170,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     await _database.update(_database.transactionsTable).replace(companion);
     final updatedTransaction = transaction.copyWith(updatedAt: DateTime.now());
 
+    // Invalidate cache after updating transaction
+    await invalidateCache('transaction', id: transaction.id);
+
     // Trigger budget updates if service is available
     if (_budgetUpdateService != null) {
       await _budgetUpdateService!.updateBudgetOnTransactionChange(
@@ -156,6 +190,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
     await (_database.delete(_database.transactionsTable)
           ..where((t) => t.id.equals(id)))
         .go();
+
+    // Invalidate cache after deleting transaction
+    await invalidateCache('transaction', id: id);
 
     // Trigger budget updates if service is available and transaction existed
     if (_budgetUpdateService != null && transaction != null) {
