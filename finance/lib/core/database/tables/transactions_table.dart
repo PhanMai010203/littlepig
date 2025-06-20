@@ -53,6 +53,6 @@ class TransactionsTable extends Table {
   TextColumn get objectiveLoanFk =>
       text().nullable()(); // Links to objectives table (future use)
 
-  // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
+  // sync field (event sourcing handles the rest)
   TextColumn get syncId => text().unique()(); // UUID for global uniqueness
 }
