@@ -45,6 +45,32 @@ class EventProcessor {
     await _triggerEventListeners(compressedEvent);
   }
 
+  /// Process a batch of sync events with full validation and optimization
+  Future<void> processEvents(List<SyncEvent> events) async {
+    final List<SyncEvent> processedEvents = [];
+    for (final event in events) {
+      if (!await validateEvent(event)) {
+        print('Event validation failed for ${event.eventId}, skipping.');
+        continue;
+      }
+      if (await _isDuplicateEvent(event)) {
+        print('Skipping duplicate event: ${event.eventId}');
+        continue;
+      }
+      final compressedEvent = await compressEvent(event);
+      processedEvents.add(compressedEvent);
+    }
+
+    if (processedEvents.isNotEmpty) {
+      await _storeProcessedEvents(processedEvents);
+
+      for (final event in processedEvents) {
+        await broadcastEvent(event);
+        await _triggerEventListeners(event);
+      }
+    }
+  }
+
   /// Validate event data integrity and business rules
   Future<bool> validateEvent(SyncEvent event) async {
     // Basic validation
@@ -186,6 +212,26 @@ class EventProcessor {
         );
   }
 
+  /// Store a batch of processed events in the database
+  Future<void> _storeProcessedEvents(List<SyncEvent> events) async {
+    final companions = events.map((event) => SyncEventLogTableCompanion.insert(
+          eventId: event.eventId,
+          deviceId: event.deviceId,
+          tableNameField: event.tableName,
+          recordId: event.recordId,
+          operation: event.operation,
+          data: jsonEncode(event.data),
+          timestamp: event.timestamp,
+          sequenceNumber: event.sequenceNumber,
+          hash: event.hash,
+          isSynced: const Value(false),
+        )).toList();
+    
+    await _database.batch((batch) {
+      batch.insertAll(_database.syncEventLogTable, companions, mode: InsertMode.insertOrReplace);
+    });
+  }
+
   /// Trigger registered event listeners
   Future<void> _triggerEventListeners(SyncEvent event) async {
     final eventType = '${event.tableName}:${event.operation}';
@@ -246,6 +292,7 @@ class EventProcessor {
 
   /// Validate budget event business rules
   bool _validateBudgetEvent(SyncEvent event) {
+    print('>>> Validating budget event data: ${event.data}');
     if (event.operation == 'create' || event.operation == 'update') {
       // Required fields for budgets
       if (!event.data.containsKey('name') || !event.data.containsKey('limit')) {

@@ -70,6 +70,7 @@ lib/core/
 │   ├── database_service.dart         # Database service abstraction
 │   ├── file_picker_service.dart      # File selection and attachment processing service
 │   ├── cache_management_service.dart # Local file cache management service
+│   ├── database_cache_service.dart # Phase 2: In-memory cache for database queries
 │   ├── platform_service.dart        # Platform detection, device capabilities, and high refresh rate management service
 │   ├── dialog_service.dart          # Dialog and popup service (Phase 3)
 │   └── animation_performance_service.dart # Phase 6: Advanced animation performance optimization and monitoring service

@@ -236,5 +236,57 @@ void main() {
       await Future.delayed(Duration(milliseconds: 10));
       expect(eventReceived, isTrue);
     });
+
+    test('processEvents - should process a batch of events and store them', () async {
+      final events = [
+        SyncEvent(
+          eventId: 'batch-event-1',
+          deviceId: 'device-123',
+          tableName: 'transactions',
+          recordId: 'record-1',
+          operation: 'create',
+          data: {'amount': 100.0, 'title': 'Test Batch Transaction'},
+          timestamp: DateTime.now(),
+          sequenceNumber: 1,
+          hash: 'batch-hash-1',
+        ),
+        SyncEvent(
+          eventId: 'batch-event-2',
+          deviceId: 'device-123',
+          tableName: 'budgets',
+          recordId: 'record-2',
+          operation: 'update',
+          data: {'limit': 500.0, 'name': 'Test Batch Budget'},
+          timestamp: DateTime.now(),
+          sequenceNumber: 2,
+          hash: 'batch-hash-2',
+        ),
+        // Invalid event
+        SyncEvent(
+          eventId: 'batch-event-3',
+          deviceId: 'device-123',
+          tableName: 'invalid_table',
+          recordId: 'record-3',
+          operation: 'create',
+          data: {'value': 1},
+          timestamp: DateTime.now(),
+          sequenceNumber: 3,
+          hash: 'batch-hash-3',
+        ),
+      ];
+
+      final initialCount = (await database.select(database.syncEventLogTable).get()).length;
+
+      await eventProcessor.processEvents(events);
+
+      final finalCount = (await database.select(database.syncEventLogTable).get()).length;
+      
+      expect(finalCount, equals(initialCount + 2));
+
+      final storedEvents = await database.select(database.syncEventLogTable).get();
+      expect(storedEvents.any((e) => e.eventId == 'batch-event-1'), isTrue);
+      expect(storedEvents.any((e) => e.eventId == 'batch-event-2'), isTrue);
+      expect(storedEvents.any((e) => e.eventId == 'batch-event-3'), isFalse);
+    });
   });
 }
