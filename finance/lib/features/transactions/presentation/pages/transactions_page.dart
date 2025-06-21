@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
-import 'package:intl/intl.dart';
 
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/app_text.dart';
-import '../../../../shared/widgets/animations/tappable_widget.dart';
+import '../widgets/month_selector.dart';
+import '../../domain/repositories/transaction_repository.dart';
+import '../../domain/entities/transaction.dart';
+import '../../../../core/di/injection.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -14,124 +16,76 @@ class TransactionsPage extends StatefulWidget {
 }
 
 class _TransactionsPageState extends State<TransactionsPage> {
-  late final DateTime _firstMonth;
-  late final DateTime _lastMonth;
+  late final TransactionRepository _transactionRepository;
   late DateTime _selectedMonth;
-  final ScrollController _scrollController = ScrollController();
-
-  final List<Map<String, dynamic>> _transactions = [
-    // 2025 Data (current year for example)
-    {
-      'title': 'Groceries',
-      'amount': -700.00,
-      'date': DateTime.now().subtract(const Duration(days: 0)),
-      'category_icon': Icons.shopping_cart
-    },
-    {
-      'title': 'Movie streaming service',
-      'amount': -15.00,
-      'date': DateTime.now().subtract(const Duration(days: 2)),
-      'category_icon': Icons.movie
-    },
-    {
-      'title': 'Salary',
-      'amount': 3500.00,
-      'date': DateTime.now().subtract(const Duration(days: 10)),
-      'category_icon': Icons.work
-    },
-    // 2024 Data
-    {
-      'title': 'Rent for Dec 2024',
-      'amount': -1250.00,
-      'date': DateTime(2024, 12, 5),
-      'category_icon': Icons.home
-    },
-    {
-      'title': 'Freelance Project (Dec 2024)',
-      'amount': 800.00,
-      'date': DateTime(2024, 12, 20),
-      'category_icon': Icons.code
-    },
-    {
-      'title': 'Christmas Gifts',
-      'amount': -250.50,
-      'date': DateTime(2024, 12, 22),
-      'category_icon': Icons.card_giftcard
-    },
-    {
-      'title': 'Utilities (Nov 2024)',
-      'amount': -85.00,
-      'date': DateTime(2024, 11, 15),
-      'category_icon': Icons.receipt
-    },
-    {
-      'title': 'Car Maintenance',
-      'amount': -320.00,
-      'date': DateTime(2024, 8, 18),
-      'category_icon': Icons.car_repair
-    },
-  ];
+  final ScrollController _monthScrollController = ScrollController();
+  
+  List<Transaction> _allTransactions = [];
+  DateTime? _firstMonth;
+  DateTime? _lastMonth;
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _transactions.sort(
-        (a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
-
-    _firstMonth = _transactions.isNotEmpty
-        ? DateTime(
-            _transactions.last['date'].year, _transactions.last['date'].month)
-        : DateTime.now();
-
-    _lastMonth = DateTime(DateTime.now().year, DateTime.now().month + 12);
+    _transactionRepository = getIt<TransactionRepository>();
     _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToSelectedMonth(animate: false);
-    });
+    _loadTransactions();
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _monthScrollController.dispose();
     super.dispose();
   }
 
-  void _scrollToSelectedMonth({bool animate = true}) {
-    if (!_scrollController.hasClients) {
-      return;
-    }
-    final months = <DateTime>[];
-    DateTime tempMonth = _firstMonth;
-    while (tempMonth.isBefore(_lastMonth) ||
-        tempMonth.isAtSameMomentAs(_lastMonth)) {
-      months.add(tempMonth);
-      tempMonth = DateTime(tempMonth.year, tempMonth.month + 1);
-    }
+  Future<void> _loadTransactions() async {
+    setState(() {
+      _isLoading = true;
+    });
 
-    final selectedIndex = months.indexWhere((month) =>
-        month.year == _selectedMonth.year &&
-        month.month == _selectedMonth.month);
-    if (selectedIndex == -1) return;
+    try {
+      final transactions = await _transactionRepository.getAllTransactions();
+      
+      // Sort transactions by date (newest first)
+      transactions.sort((a, b) => b.date.compareTo(a.date));
 
-    final screenWidth = MediaQuery.of(context).size.width;
-    final itemWidth = 80.0;
-    final targetOffset =
-        (selectedIndex * itemWidth) - (screenWidth / 2) + (itemWidth / 2);
+      // Calculate first and last month from actual transaction data
+      DateTime? firstMonth;
+      DateTime? lastMonth;
+      
+      if (transactions.isNotEmpty) {
+        final sortedByDate = [...transactions]..sort((a, b) => a.date.compareTo(b.date));
+        firstMonth = DateTime(sortedByDate.first.date.year, sortedByDate.first.date.month);
+        lastMonth = DateTime(sortedByDate.last.date.year, sortedByDate.last.date.month);
+      }
 
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final clampedOffset = targetOffset.clamp(0.0, maxScroll);
-
-    if (animate) {
-      _scrollController.animateTo(
-        clampedOffset,
-        duration: const Duration(milliseconds: 400),
-        curve: Curves.easeInOut,
-      );
-    } else {
-      _scrollController.jumpTo(clampedOffset);
+      setState(() {
+        _allTransactions = transactions;
+        _firstMonth = firstMonth;
+        _lastMonth = lastMonth;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading transactions: $e')),
+        );
+      }
     }
   }
+
+  void _onMonthSelected(DateTime month) {
+    setState(() {
+      _selectedMonth = month;
+    });
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -164,26 +118,36 @@ class _TransactionsPageState extends State<TransactionsPage> {
         child: const Icon(Icons.add),
       ),
       slivers: [
-        SliverToBoxAdapter(child: _buildMonthSelector()),
-        SliverToBoxAdapter(child: _buildSummary()),
-        _buildTransactionList(),
+        if (_isLoading)
+          const SliverToBoxAdapter(
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32.0),
+                child: CircularProgressIndicator(),
+              ),
+            ),
+          )
+        else ...[
+          SliverToBoxAdapter(child: _buildMonthSelector()),
+          SliverToBoxAdapter(child: _buildSummary()),
+          _buildTransactionList(),
+        ],
       ],
     );
   }
 
   Widget _buildSummary() {
-    final selectedMonthTransactions = _transactions.where((t) {
-      final date = t['date'] as DateTime;
-      return date.year == _selectedMonth.year &&
-          date.month == _selectedMonth.month;
+    final selectedMonthTransactions = _allTransactions.where((t) {
+      return t.date.year == _selectedMonth.year &&
+          t.date.month == _selectedMonth.month;
     }).toList();
 
     final income = selectedMonthTransactions
-        .where((t) => t['amount'] > 0)
-        .fold<double>(0, (sum, t) => sum + t['amount']);
+        .where((t) => t.amount > 0)
+        .fold<double>(0, (sum, t) => sum + t.amount);
     final expenses = selectedMonthTransactions
-        .where((t) => t['amount'] < 0)
-        .fold<double>(0, (sum, t) => sum + t['amount']);
+        .where((t) => t.amount < 0)
+        .fold<double>(0, (sum, t) => sum + t.amount);
     final net = income + expenses;
 
     return Padding(
@@ -232,10 +196,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   Widget _buildTransactionList() {
-    final selectedMonthTransactions = _transactions.where((t) {
-      final date = t['date'] as DateTime;
-      return date.year == _selectedMonth.year &&
-          date.month == _selectedMonth.month;
+    final selectedMonthTransactions = _allTransactions.where((t) {
+      return t.date.year == _selectedMonth.year &&
+          t.date.month == _selectedMonth.month;
     }).toList();
 
     if (selectedMonthTransactions.isEmpty) {
@@ -247,10 +210,9 @@ class _TransactionsPageState extends State<TransactionsPage> {
     }
 
     // Group transactions by date
-    final groupedTransactions = <DateTime, List<Map<String, dynamic>>>{};
+    final groupedTransactions = <DateTime, List<Transaction>>{};
     for (final transaction in selectedMonthTransactions) {
-      final date = transaction['date'] as DateTime;
-      final day = DateTime(date.year, date.month, date.day);
+      final day = DateTime(transaction.date.year, transaction.date.month, transaction.date.day);
       if (groupedTransactions[day] == null) {
         groupedTransactions[day] = [];
       }
@@ -286,8 +248,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
-  Widget _buildTransactionTile(Map<String, dynamic> transaction) {
-    final double amount = transaction['amount'];
+  Widget _buildTransactionTile(Transaction transaction) {
+    final double amount = transaction.amount;
     final bool isIncome = amount > 0;
 
     return Card(
@@ -295,91 +257,43 @@ class _TransactionsPageState extends State<TransactionsPage> {
       child: ListTile(
         leading: CircleAvatar(
           backgroundColor: isIncome
-              ? Colors.green.withOpacity(0.1)
-              : Colors.red.withOpacity(0.1),
+              ? Colors.green.withValues(alpha: 0.1)
+              : Colors.red.withValues(alpha: 0.1),
           child: Icon(
-            transaction['category_icon'] as IconData? ??
-                (isIncome ? Icons.arrow_upward : Icons.arrow_downward),
+            isIncome ? Icons.arrow_upward : Icons.arrow_downward,
             color: isIncome ? Colors.green : Colors.red,
           ),
         ),
-        title: AppText(transaction['title']),
+        title: AppText(transaction.title),
+        subtitle: transaction.note != null && transaction.note!.isNotEmpty
+            ? AppText(
+                transaction.note!,
+                fontSize: 12,
+                colorName: "textLight",
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : null,
         trailing: AppText(
           '${isIncome ? '+' : ''}${NumberFormat.currency(symbol: '\$').format(amount)}',
           fontWeight: FontWeight.bold,
           colorName: isIncome ? 'success' : 'error',
         ),
-        onTap: () {},
+        onTap: () {
+          // TODO: Navigate to transaction details
+        },
       ),
     );
   }
 
   Widget _buildMonthSelector() {
-    final months = <DateTime>[];
-    DateTime tempMonth = _firstMonth;
-    while (tempMonth.isBefore(_lastMonth) ||
-        tempMonth.isAtSameMomentAs(_lastMonth)) {
-      months.add(tempMonth);
-      tempMonth = DateTime(tempMonth.year, tempMonth.month + 1);
-    }
-
-    return Container(
-      height: 60,
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      child: ListView.builder(
-        controller: _scrollController,
-        scrollDirection: Axis.horizontal,
-        itemCount: months.length,
-        itemBuilder: (context, index) {
-          final month = months[index];
-          final isSelected = month.year == _selectedMonth.year &&
-              month.month == _selectedMonth.month;
-          final bool showYear = month.year != DateTime.now().year;
-
-          return SizedBox(
-            width: 80,
-            child: TappableWidget(
-              onTap: () {
-                setState(() {
-                  _selectedMonth = month;
-                });
-                _scrollToSelectedMonth();
-              },
-              child: Container(
-                color: Colors.transparent,
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AppText(
-                      DateFormat.MMM().format(month),
-                      fontWeight:
-                          isSelected ? FontWeight.bold : FontWeight.normal,
-                    ),
-                    if (showYear)
-                      AppText(
-                        DateFormat.y().format(month),
-                        fontSize: 12,
-                        colorName: "textLight",
-                      ),
-                    if (isSelected)
-                      Container(
-                        margin: const EdgeInsets.only(top: 4),
-                        height: 2,
-                        width: 20,
-                        color: Theme.of(context).primaryColor,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        },
-      ),
+    return MonthSelector(
+      selectedMonth: _selectedMonth,
+      onMonthSelected: _onMonthSelected,
+      firstMonth: _firstMonth,
+      lastMonth: _lastMonth,
+      scrollController: _monthScrollController,
+      showScrollButtons: true,
     );
   }
 }

@@ -10,7 +10,7 @@ Welcome to the **Finance App** code-base! This single page is your master entry-
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [Architecture Guide](architecture/index.md) | Clean-Architecture overview of the `lib/` source tree, core/feature/shared layers, and supporting tooling.  Start here to locate any Dart file or feature module. |
+| [Architecture Guide](architecture/FILE_STRUCTURE.md) | Clean-Architecture overview of the `lib/` source tree, core/feature/shared layers, and supporting tooling.  Start here to locate any Dart file or feature module. |
 
 **Highlights**
 - Root entry (`main.dart`), routing, theming, and DI setup.

@@ -32,6 +32,7 @@ This file tracks the Library IDs that have been searched for and found in Contex
 - Retrieved documentation includes Material Design Color classes, ColorScheme usage, and theming
 - Contains comprehensive Material 3 color system documentation including Color constructors, color spaces, and theme migration guides
 - Coverage: Color classes, Material Design color roles, ColorScheme patterns, theme customization
+- Also includes horizontal ListView patterns, ScrollController usage, and animation documentation for month selector components
 
 ## Flutter Material Design
 - Searched: /material-foundation/flutter-packages - Collection of useful Material Design packages

@@ -32,7 +32,7 @@ class AnimatedScaleOpacity extends StatefulWidget {
   final double scaleEnd;
   final double opacityBegin;
   final double opacityEnd;
-  final Alignment alignment;
+  final AlignmentGeometry alignment;
   final bool maintainState;
   final bool maintainAnimation;
   final bool maintainSize;
@@ -184,7 +184,7 @@ extension AnimatedScaleOpacityExtension on Widget {
     double scaleEnd = 1.0,
     double opacityBegin = 0.0,
     double opacityEnd = 1.0,
-    Alignment alignment = Alignment.center,
+    AlignmentGeometry alignment = Alignment.center,
     bool maintainState = false,
     bool maintainAnimation = false,
     bool maintainSize = false,
