@@ -81,43 +81,44 @@ class _PageTemplateState extends State<PageTemplate> {
         child: CustomScrollView(
           controller: _scrollController,
           slivers: [
-            SliverAppBar(
-              pinned: true,
-              expandedHeight: _kExpandedHeight,
-              toolbarHeight: _kToolbarHeight,
-              actions: widget.actions,
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              scrolledUnderElevation: _appBarOpacity > 0.95 ? 1 : 0,
-              leading: widget.showBackButton && Navigator.canPop(context)
-                  ? IconButton(
-                      icon: const Icon(Icons.arrow_back),
-                      onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
-                    )
-                  : null,
-              flexibleSpace: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Background that fades in/out with scroll
-                  Container(color: primaryColor.withValues(alpha: _appBarOpacity)),
-                  // Title & collapse handling
-                  FlexibleSpaceBar(
-                    titlePadding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 8.0,
-                    ),
-                    centerTitle: false,
-                    title: Text(
-                      widget.title ?? '',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: onSurfaceColor,
+            if (widget.title != null)
+              SliverAppBar(
+                pinned: true,
+                expandedHeight: _kExpandedHeight,
+                toolbarHeight: _kToolbarHeight,
+                actions: widget.actions,
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                scrolledUnderElevation: _appBarOpacity > 0.95 ? 1 : 0,
+                leading: widget.showBackButton && Navigator.canPop(context)
+                    ? IconButton(
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
+                      )
+                    : null,
+                flexibleSpace: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    // Background that fades in/out with scroll
+                    Container(color: primaryColor.withValues(alpha: _appBarOpacity)),
+                    // Title & collapse handling
+                    FlexibleSpaceBar(
+                      titlePadding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      centerTitle: false,
+                      title: Text(
+                        widget.title!, // safe to use ! because of the check
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: onSurfaceColor,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
             ...widget.slivers,
           ],
         ),

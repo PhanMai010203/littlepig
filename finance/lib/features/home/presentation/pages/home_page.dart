@@ -41,7 +41,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return PageTemplate(
-      title: 'Home',
       slivers: [
         SliverPadding(
           padding: const EdgeInsets.all(16),
