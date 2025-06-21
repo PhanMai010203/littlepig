@@ -41,6 +41,7 @@ FadeIn(child: MyWidget())
 2. **Wrap expensive widgets** in `RepaintBoundary`
 3. **Use `ListView.builder`** for long lists
 4. **Avoid rebuilding entire widget trees** - use `BlocBuilder` with specific state slices
+5. **Avoid `setState` in scroll listeners.** Calling `setState` from a `ScrollController` listener will rebuild the entire widget on every scroll tick, causing severe performance issues. Instead, use an `AnimatedBuilder` to listen to the `ScrollController` and rebuild only the necessary parts of the widget tree.
 
 ---
 

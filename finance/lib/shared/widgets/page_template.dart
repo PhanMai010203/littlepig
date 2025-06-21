@@ -42,26 +42,9 @@ class PageTemplate extends StatefulWidget {
 
 class _PageTemplateState extends State<PageTemplate> {
   final ScrollController _scrollController = ScrollController();
-  double _appBarOpacity = 0.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_updateAppBarOpacity);
-  }
-
-  void _updateAppBarOpacity() {
-    if (!mounted) return;
-    final offset = _scrollController.offset;
-    final expandRatio = (offset / (_kExpandedHeight - _kToolbarHeight)).clamp(0.0, 1.0);
-    setState(() {
-      _appBarOpacity = expandRatio;
-    });
-  }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_updateAppBarOpacity);
     _scrollController.dispose();
     super.dispose();
   }
@@ -82,42 +65,52 @@ class _PageTemplateState extends State<PageTemplate> {
           controller: _scrollController,
           slivers: [
             if (widget.title != null)
-              SliverAppBar(
-                pinned: true,
-                expandedHeight: _kExpandedHeight,
-                toolbarHeight: _kToolbarHeight,
-                actions: widget.actions,
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-                scrolledUnderElevation: _appBarOpacity > 0.95 ? 1 : 0,
-                leading: widget.showBackButton && Navigator.canPop(context)
-                    ? IconButton(
-                        icon: const Icon(Icons.arrow_back),
-                        onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
-                      )
-                    : null,
-                flexibleSpace: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Background that fades in/out with scroll
-                    Container(color: primaryColor.withValues(alpha: _appBarOpacity)),
-                    // Title & collapse handling
-                    FlexibleSpaceBar(
-                      titlePadding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      centerTitle: false,
-                      title: Text(
-                        widget.title!, // safe to use ! because of the check
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: onSurfaceColor,
+              AnimatedBuilder(
+                animation: _scrollController,
+                builder: (context, child) {
+                  final appBarOpacity = _scrollController.hasClients
+                      ? (_scrollController.offset / (_kExpandedHeight - _kToolbarHeight))
+                          .clamp(0.0, 1.0)
+                      : 0.0;
+
+                  return SliverAppBar(
+                    pinned: true,
+                    expandedHeight: _kExpandedHeight,
+                    toolbarHeight: _kToolbarHeight,
+                    actions: widget.actions,
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    scrolledUnderElevation: appBarOpacity > 0.95 ? 1 : 0,
+                    leading: widget.showBackButton && Navigator.canPop(context)
+                        ? IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
+                          )
+                        : null,
+                    flexibleSpace: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        // Background that fades in/out with scroll
+                        Container(color: primaryColor.withAlpha((255 * appBarOpacity).toInt())),
+                        // Title & collapse handling
+                        FlexibleSpaceBar(
+                          titlePadding: const EdgeInsets.symmetric(
+                            horizontal: 16.0,
+                            vertical: 8.0,
+                          ),
+                          centerTitle: false,
+                          title: Text(
+                            widget.title!, // safe to use ! because of the check
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              color: onSurfaceColor,
+                            ),
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               ),
             ...widget.slivers,
           ],
