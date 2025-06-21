@@ -111,4 +111,48 @@ void _showNavigationCustomization(BuildContext context, int index) {
     title: 'Customize Navigation',
   );
 }
+```
+
+### Container Transitions (`OpenContainer`)
+
+For seamless transitions between a list item (or card) and a new page, the app uses the `OpenContainer` pattern. This is ideal for "master-detail" views.
+
+-   **Wrapper Widget**: `lib/shared/widgets/transitions/open_container_navigation.dart`
+
+This file provides several helpful abstractions over Flutter's `animations` package `OpenContainer` widget.
+
+**Example 1: Basic `.openContainerNavigation()` extension**
+
+Wrap any widget to make it tap to a new page with a container transform.
+
+```dart
+MyWidget(
+  // ...
+).openContainerNavigation(
+  openPage: const MyDetailPage(),
+  onOpen: () => print('Transition started!'),
+);
+```
+
+**Example 2: `OpenContainerCard`**
+
+A pre-styled card that acts as an `OpenContainer`.
+
+```dart
+OpenContainerCard(
+  openPage: const MyDetailPage(),
+  child: const Text('Tap me to see details'),
+);
+```
+
+**Example 3: `OpenContainerListTile`**
+
+A `ListTile` that acts as an `OpenContainer`.
+
+```dart
+OpenContainerListTile(
+  openPage: const MyDetailPage(),
+  title: const Text('My Item'),
+  leading: const Icon(Icons.info),
+);
 ``` 

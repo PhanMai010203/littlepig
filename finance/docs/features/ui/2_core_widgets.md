@@ -114,4 +114,73 @@ PageTemplate(
   },
   body: _buildSettingsContent(),
 )
+```
+
+---
+
+### `LanguageSelector`
+
+This widget provides a standardized UI for selecting the application's language. It displays a list of available languages with their native and English names, and shows the current selection.
+
+-   **Widget Location**: `lib/shared/widgets/language_selector.dart`
+
+**Example Usage:**
+
+```dart
+import 'package:finance/shared/widgets/language_selector.dart';
+
+class SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return PageTemplate(
+      title: 'Settings',
+      body: Column(
+        children: [
+          // Other settings...
+          LanguageSelector(),
+          // Other settings...
+        ],
+      ),
+    );
+  }
+}
+```
+
+---
+
+### `TappableWidget`
+
+This is a foundational wrapper widget that provides customizable tap feedback, including animations (scale, opacity) and haptic feedback. It is highly recommended for providing consistent user interaction feedback.
+
+-   **Widget Location**: `lib/shared/widgets/animations/tappable_widget.dart`
+
+**Example 1: Using the `TappableWidget` wrapper**
+
+```dart
+TappableWidget(
+  onTap: () => print('Card tapped!'),
+  borderRadius: BorderRadius.circular(12),
+  child: MyCard(
+    // ...
+  ),
+);
+```
+
+**Example 2: Using the `.tappable()` extension (Recommended)**
+
+The `.tappable()` extension is the most convenient way to add feedback to any widget.
+
+```dart
+MyWidget(
+  // ...
+).tappable(
+  onTap: () => print('Widget tapped!'),
+  animationType: TapAnimationType.scale,
+  scaleFactor: 0.9,
+);
+
+Icon(Icons.add).tappable(
+  onTap: _increment,
+  hapticFeedback: false,
+);
 ``` 

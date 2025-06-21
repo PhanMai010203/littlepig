@@ -1,6 +1,10 @@
 # Transactions: Advanced Features
 
-This guide covers advanced transaction functionalities, including subscriptions, loans, and different transaction states.
+This guide covers the advanced transaction types supported by the Finance App, including subscriptions, recurring payments, and the credit/debt loan system.
+
+> **Note:** For a more detailed look at the lifecycle of these transactions, including their states (`pending`, `scheduled`) and available actions (`pay`, `skip`), please see the [**Advanced Guide: Transaction States & Actions**](4a_advanced_states_and_actions.md).
+
+---
 
 ## Advanced Transaction Features (Phase 1)
 
