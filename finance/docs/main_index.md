@@ -10,7 +10,7 @@ Welcome to the **Finance App** code-base! This single page is your master entry-
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [File Structure](FILE_STRUCTURE.md) | Clean-Architecture overview of the `lib/` source tree, core/feature/shared layers, and supporting tooling.  Start here to locate any Dart file or feature module. |
+| [Architecture Guide](architecture/index.md) | Clean-Architecture overview of the `lib/` source tree, core/feature/shared layers, and supporting tooling.  Start here to locate any Dart file or feature module. |
 
 **Highlights**
 - Root entry (`main.dart`), routing, theming, and DI setup.
@@ -25,7 +25,7 @@ When you are unsure *where* something lives, consult this map first.
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [Attachment Caching System](features/ATTACHMENT_CACHING_SYSTEM.md) | Design & implementation details for intelligent 30-day local caching of camera images with Google Drive cloud storage. |
+| [Attachment Caching Guide](features/attachments/index.md) | Design & implementation details for intelligent 30-day local caching of camera images with Google Drive cloud storage. |
 
 **Key Points**
 - Schema changes (`isCapturedFromCamera`, `localCacheExpiry`).
@@ -40,7 +40,7 @@ Refer here before working on attachments, storage, or cache eviction logic.
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [Database Cache Usage Guide](features/DATABASE_CACHE_USAGE_GUIDE.md) | Phase 2 in-process cache for Drift/SQLite reads, offering 3-10× faster query responses with TTL-based invalidation. |
+| [Database Caching Guide](features/caching/index.md) | Phase 2 in-process cache for Drift/SQLite reads, offering 3-10× faster query responses with TTL-based invalidation. |
 
 **Key Points**
 - `DatabaseCacheService` + `CachedResult<T>` data model.
@@ -55,7 +55,7 @@ Essential reading for any feature that performs frequent database reads.
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [Currency Usage Guide](features/CURRENCY_HOW_TO_USE.md) | Details the currency management system, including currency information, formatting, exchange rate conversion, and offline support. |
+| [Currency Guide](features/currency/index.md) | Details the currency management system, including currency information, formatting, exchange rate conversion, and offline support. |
 
 **Key Points**
 - `CurrencyService` as the main entry point for all currency operations.
@@ -69,7 +69,7 @@ Essential reading for any feature that performs frequent database reads.
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [Budget Usage Guide](features/BUDGET_HOW_TO_USE.md) | A guide to the budget module, covering creation, real-time updates, advanced filtering, and spending calculations. |
+| [Budget Guide](features/budgets/index.md) | A guide to the budget module, covering creation, real-time updates, advanced filtering, and spending calculations. |
 
 **Key Points**
 - `BudgetRepository` for CRUD, `BudgetFilterService` for calculations, `BudgetUpdateService` for real-time updates.
@@ -83,7 +83,7 @@ Essential reading for any feature that performs frequent database reads.
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [Transaction System Hub](features/transactions/index.md) | A comprehensive guide to the transaction system, broken down into basics, attachments, analytics, and advanced features. |
+| [Transaction Guide](features/transactions/index.md) | A comprehensive guide to the transaction system, broken down into basics, attachments, analytics, and advanced features. |
 
 **Key Points**
 - Manages transactions with detailed notes for context.
@@ -110,7 +110,7 @@ Essential reading for any feature that performs frequent database reads.
 
 | 🔗 Link | Description |
 |---------|-------------|
-| [Account Usage Guide](features/ACCOUNTS_HOW_TO_USE.md) | A guide to managing financial accounts, including creating accounts with different currencies and setting a starting balance. |
+| [Account Guide](features/accounts/index.md) | A guide to managing financial accounts, including creating accounts with different currencies and setting a starting balance. |
 
 **Key Points**
 - Accounts are the source of funds for transactions (e.g., bank accounts, cash).
@@ -119,7 +119,20 @@ Essential reading for any feature that performs frequent database reads.
 
 ---
 
-## 9. How to Extend the Documentation
+## 9. Data Sync System
+
+| 🔗 Link | Description |
+|---------|-------------|
+| [Sync Guide](features/sync/index.md) | A comprehensive guide to the event-sourcing based sync system that keeps data consistent across multiple devices. |
+
+**Key Points**
+- Uses a CRDT-inspired event sourcing model.
+- Supports offline-first operation with automatic conflict resolution.
+- Integrates with Google Drive for cloud backups.
+
+---
+
+## 10. How to Extend the Documentation
 
 Have you added a significant feature?  Follow these steps:
 1. Write or update a detailed spec under `docs/features/` or another appropriate folder.
@@ -130,7 +143,7 @@ Have you added a significant feature?  Follow these steps:
 
 ---
 
-## 10. Getting Help & Contributing
+## 11. Getting Help & Contributing
 
 - **Discussion**: Use project issues/PRs for questions.
 - **Style**: Prefer concise Markdown, tables, and bullet lists.
