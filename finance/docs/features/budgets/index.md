@@ -22,18 +22,34 @@ final budgetUpdateService   = getIt<BudgetUpdateService>();
 
 ---
 
-## 2.  Reading Budgets
-### 2.1 Get All Budgets
+## 2. Budget Types & Modes
+
+Before creating a budget, it's important to understand the two main types and two primary modes of operation.
+
+### 2.1 Budget Types: Expense vs. Income
+
+-   **Expense Budget (Default):** This is the standard budget type for tracking spending. Set `isIncomeBudget: false`.
+-   **Income Budget:** This type allows you to track income against a target. For example, you can create a budget to monitor if you've reached a monthly freelance income goal. Set `isIncomeBudget: true`.
+
+### 2.2 Budget Modes: Automatic vs. Manual
+
+-   **Automatic Mode (Wallet-Based):** This is the standard mode where the budget automatically tracks all transactions from specific wallets (`walletFks`). This is the most common use case.
+-   **Manual Mode (No Wallets):** By **not** providing any `walletFks`, the budget enters "Manual Mode". In this mode, no transactions are tracked automatically. You must manually link individual transactions to the budget. This is useful for event-specific budgets (e.g., a "Vacation" budget) where you want to hand-pick expenses from multiple wallets.
+
+---
+
+## 3.  Reading Budgets
+### 3.1 Get All Budgets
 ```dart
 final budgets = await budgetRepository.getAllBudgets();
 ```
 
-### 2.2 Get Single Budget
+### 3.2 Get Single Budget
 ```dart
 final budget = await budgetRepository.getBudgetById(budgetId);
 ```
 
-### 2.3 Watch Real-Time Updates
+### 3.3 Watch Real-Time Updates
 ```dart
 final sub = budgetUpdateService.watchAllBudgetUpdates().listen((budgets) {
   // rebuild UI
@@ -44,8 +60,8 @@ final sub = budgetUpdateService.watchAllBudgetUpdates().listen((budgets) {
 
 ---
 
-## 3.  Creating Budgets
-### 3.1 Minimal Budget
+## 4.  Creating Budgets
+### 4.1 Minimal Budget
 ```dart
 final newBudget = Budget(
   name:        'Groceries – May',
@@ -62,7 +78,7 @@ final newBudget = Budget(
 await budgetRepository.createBudget(newBudget);
 ```
 
-### 3.2 Budget With Advanced Filters
+### 4.2 Budget With Advanced Filters
 ```dart
 final vacationBudget = Budget(
   name:  'Vacation in Japan',
@@ -86,15 +102,15 @@ await budgetRepository.createBudget(vacationBudget);
 
 ---
 
-## 4.  Calculations & Filtering
-### 4.1 Calculate Spent & Remaining
+## 5.  Calculations & Filtering
+### 5.1 Calculate Spent & Remaining
 ```dart
 final spent      = await budgetFilterService.calculateBudgetSpent(vacationBudget);
 final remaining  = await budgetFilterService.calculateBudgetRemaining(vacationBudget);
 print('Spent: $spent  Remaining: $remaining');
 ```
 
-### 4.2 Get Filtered Transactions
+### 5.2 Get Filtered Transactions
 ```dart
 final txns = await budgetFilterService.getFilteredTransactionsForBudget(
   vacationBudget,
@@ -105,7 +121,18 @@ final txns = await budgetFilterService.getFilteredTransactionsForBudget(
 
 ---
 
-## 5.  Real-Time Streams
+## 6. Shared Budgets
+
+The app supports a "Shared Budget" feature, where a primary budget can be linked to other budgets. This is useful for creating a master budget (e.g., "Total Household Expenses") that aggregates spending from several smaller, more specific budgets (e.g., "Groceries," "Utilities").
+
+-   `sharedReferenceBudgetPk`: The `syncId` of the master budget you want to link to.
+-   `budgetFksExclude`: A list of budget `syncId`s to explicitly exclude from the shared calculation, preventing double-counting.
+
+This feature is powerful but requires careful management of the relationships between budgets in your UI.
+
+---
+
+## 7. Real-Time Streams
 After you inject `BudgetUpdateService`, every time a transaction is **created / updated / deleted** the service recomputes affected budgets and emits updated values.
 ```dart
 // Listen to spent-amount deltas only
@@ -121,7 +148,7 @@ await budgetUpdateService.recalculateBudgetSpentAmount(budgetId);
 
 ---
 
-## 6.  CSV Import / Export
+## 8. CSV Import / Export
 The helper `BudgetCsvService` wraps the `csv` and `share_plus` packages.
 ```dart
 import 'package:finance/features/budgets/data/services/budget_csv_service.dart';
@@ -144,7 +171,7 @@ for (final b in imported) {
 
 ---
 
-## 7.  Biometric Protection (Optional)
+## 9. Biometric Protection (Optional)
 Enable biometric authentication before showing sensitive budget details:
 ```dart
 final authOK = await budgetUpdateService.authenticateForBudgetAccess();
@@ -155,15 +182,16 @@ if (!authOK) {
 
 ---
 
-## 8.  Common Gotchas
-1. **Currency Normalisation** applies *after* filtering; make sure exchange-rate cache is fresh.  
-2. **Transfer Transactions** with same-currency are excluded by default until you set `includeTransferInOutWithSameCurrency = true`.  
-3. **Spent Field** inside `Budget` is **read-only** – update it via `BudgetUpdateService` or let the system handle it.  
-4. **Objective Installments** are excluded only when you set `excludeObjectiveInstallments = true`.
+## 10. Common Gotchas
+1.  **Currency Normalisation** applies *after* filtering; make sure exchange-rate cache is fresh.
+2.  **Transfer Transactions** with same-currency are excluded by default until you set `includeTransferInOutWithSameCurrency = true`.
+3.  **Upcoming Transactions** are only included in calculations if you set `includeUpcomingTransactionFromBudget = true`.
+4.  **Spent Field** inside `Budget` is **read-only** – update it via `BudgetUpdateService` or let the system handle it.
+5.  **Objective Installments** are excluded only when you set `excludeObjectiveInstallments = true`.
 
 ---
 
-## 9.  Quick BLoC Example
+## 11. Quick BLoC Example
 ```dart
 class BudgetOverviewBloc extends Bloc<BudgetsEvent, BudgetsState> {
   BudgetOverviewBloc() : super(BudgetsInitial()) {
@@ -177,7 +205,7 @@ class BudgetOverviewBloc extends Bloc<BudgetsEvent, BudgetsState> {
 
 ---
 
-## 10.  Further Reading
+## 12. Further Reading
 • `lib/features/budgets/data/services/budget_filter_service_impl.dart` – full filtering logic.  
 • `docs/plan/TransactionsBudget/PHASE_2_IMPLEMENTATION_GUIDE.md` – detailed design doc.  
 • `test/features/budgets/budget_filter_service_test.dart` – sample unit tests.
