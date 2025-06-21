@@ -55,11 +55,19 @@ AppTextStyles.caption("A small note at the bottom."),
 
 ### `PageTemplate`
 
-This widget provides a standard layout for pages with an `AppBar`, `body`, and optional `FloatingActionButton`. It also handles page entrance animations.
+This widget provides a standard page layout with a modern, collapsible `SliverAppBar` that dynamically responds to scrolling. It's the standard wrapper for all pages in the app.
 
 -   **Widget Location**: `lib/shared/widgets/page_template.dart`
 
+**Key Features:**
+
+-   **Collapsible App Bar:** The header starts large and shrinks into a standard `AppBar` as the user scrolls.
+-   **Theme-Aware:** The app bar's background opacity and color are tied to the current theme and scroll position.
+-   **Sliver-Based:** It uses a `CustomScrollView` under the hood, requiring its content to be provided as a list of sliver widgets.
+
 **Example Usage:**
+
+To use `PageTemplate`, you must provide a `List<Widget>` to the `slivers` property. Non-sliver widgets must be wrapped in a `SliverToBoxAdapter` or `SliverPadding`.
 
 ```dart
 import 'package:finance/shared/widgets/page_template.dart';
@@ -70,18 +78,28 @@ class MyFeaturePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageTemplate(
       title: 'My Feature',
-      showBackButton: true,
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppText("Content goes here!"),
-            const SizedBox(height: 16),
-            // Your content widgets
-          ],
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16.0),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText("Content goes here!"),
+                const SizedBox(height: 16),
+                // Your other content widgets
+              ],
+            ),
+          ),
         ),
-      ),
+        // If you have a list, use SliverList
+        SliverList.builder(
+          itemCount: 20,
+          itemBuilder: (context, index) => ListTile(
+            title: AppText('Item ${index + 1}'),
+          ),
+        )
+      ],
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
         child: Icon(Icons.add),
@@ -89,31 +107,6 @@ class MyFeaturePage extends StatelessWidget {
     );
   }
 }
-```
-
-### Advanced PageTemplate Usage
-
-```dart
-PageTemplate(
-  title: 'Settings',
-  showBackButton: true,
-  backgroundColor: getColor(context, "surface"),
-  actions: [
-    IconButton(
-      icon: Icon(Icons.save),
-      onPressed: () => _saveSettings(),
-    ),
-  ],
-  onBackPressed: () {
-    // Custom back logic
-    if (_hasUnsavedChanges) {
-      _showSaveDialog();
-    } else {
-      Navigator.pop(context);
-    }
-  },
-  body: _buildSettingsContent(),
-)
 ```
 
 ---

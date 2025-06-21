@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'animations/fade_in.dart';
 import 'animations/animation_utils.dart';
 
+const double _kExpandedHeight = 120.0;
+const double _kToolbarHeight = 60.0;
+
 /// Enhanced PageTemplate for Phase 5
 ///
 /// Now includes:
@@ -11,10 +14,10 @@ import 'animations/animation_utils.dart';
 /// - Enhanced customization options
 /// - Back button with animation support
 /// - Integration with the animation framework
-class PageTemplate extends StatelessWidget {
+class PageTemplate extends StatefulWidget {
   const PageTemplate({
     this.title,
-    required this.body,
+    required this.slivers,
     this.actions,
     this.floatingActionButton,
     this.backgroundColor,
@@ -25,7 +28,7 @@ class PageTemplate extends StatelessWidget {
   });
 
   final String? title;
-  final Widget body;
+  final List<Widget> slivers;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final Color? backgroundColor;
@@ -34,40 +37,80 @@ class PageTemplate extends StatelessWidget {
   final PreferredSizeWidget? customAppBar;
 
   @override
+  State<PageTemplate> createState() => _PageTemplateState();
+}
+
+class _PageTemplateState extends State<PageTemplate> {
+  final ScrollController _scrollController = ScrollController();
+  double _appBarOpacity = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_updateAppBarOpacity);
+  }
+
+  void _updateAppBarOpacity() {
+    if (!mounted) return;
+    final offset = _scrollController.offset;
+    final expandRatio = (offset / (_kExpandedHeight - _kToolbarHeight)).clamp(0.0, 1.0);
+    setState(() {
+      _appBarOpacity = expandRatio;
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_updateAppBarOpacity);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return FadeIn(
-      child: Scaffold(
-        backgroundColor:
-            backgroundColor ?? Theme.of(context).colorScheme.surface,
-        appBar: customAppBar ??
-            (title != null
-                ? AppBar(
-                    title: AnimatedSwitcher(
-                      duration: AnimationUtils.getDuration(
-                        const Duration(milliseconds: 200),
-                      ),
-                      child: Text(
-                        title!,
-                        key: ValueKey(title),
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                    ),
-                    actions: actions,
-                    elevation: 0,
-                    scrolledUnderElevation: 1,
-                    leading: showBackButton && Navigator.canPop(context)
-                        ? IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed:
-                                onBackPressed ?? () => Navigator.pop(context),
-                          )
-                        : null,
-                  )
-                : null),
-        body: body,
-        floatingActionButton: floatingActionButton,
+    final theme = Theme.of(context);
+    final surfaceColor = theme.colorScheme.surface;
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
+    return Scaffold(
+      backgroundColor: widget.backgroundColor ?? surfaceColor,
+      floatingActionButton: widget.floatingActionButton,
+      body: FadeIn(
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverAppBar(
+              pinned: true,
+              expandedHeight: _kExpandedHeight,
+              toolbarHeight: _kToolbarHeight,
+              actions: widget.actions,
+              backgroundColor: surfaceColor.withOpacity(_appBarOpacity),
+              elevation: 0,
+              scrolledUnderElevation: _appBarOpacity > 0.95 ? 1 : 0,
+              leading: widget.showBackButton && Navigator.canPop(context)
+                  ? IconButton(
+                      icon: const Icon(Icons.arrow_back),
+                      onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
+                    )
+                  : null,
+              flexibleSpace: FlexibleSpaceBar(
+                titlePadding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 8.0,
+                ),
+                centerTitle: false,
+                title: Text(
+                  widget.title ?? '',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: onSurfaceColor,
+                  ),
+                ),
+              ),
+            ),
+            ...widget.slivers,
+          ],
+        ),
       ),
     );
   }

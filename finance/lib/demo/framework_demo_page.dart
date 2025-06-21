@@ -46,24 +46,30 @@ class _FrameworkDemoPageState extends State<FrameworkDemoPage> {
           onPressed: () => _showInfoDialog(context),
         ),
       ],
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          _buildHeader(),
-          const SizedBox(height: 24),
-          _buildAnimationSection(),
-          const SizedBox(height: 24),
-          _buildInteractiveSection(),
-          const SizedBox(height: 24),
-          _buildDialogSection(),
-          const SizedBox(height: 24),
-          _buildNavigationSection(),
-          const SizedBox(height: 24),
-          _buildTextSection(),
-          const SizedBox(height: 24),
-          _buildPerformanceSection(),
-        ],
-      ),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                _buildHeader(),
+                const SizedBox(height: 24),
+                _buildAnimationSection(),
+                const SizedBox(height: 24),
+                _buildInteractiveSection(),
+                const SizedBox(height: 24),
+                _buildDialogSection(),
+                const SizedBox(height: 24),
+                _buildNavigationSection(),
+                const SizedBox(height: 24),
+                _buildTextSection(),
+                const SizedBox(height: 24),
+                _buildPerformanceSection(),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

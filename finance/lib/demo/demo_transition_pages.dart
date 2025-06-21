@@ -14,67 +14,71 @@ class SlideTransitionDemoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageTemplate(
       title: 'Slide Transition Demo',
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SlideIn(
-              direction: SlideDirection.left,
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppTextStyles.heading(
-                        'Slide Transition',
-                        fontSize: 20,
-                        colorName: 'primary',
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SlideIn(
+                  direction: SlideDirection.left,
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppTextStyles.heading(
+                            'Slide Transition',
+                            fontSize: 20,
+                            colorName: 'primary',
+                          ),
+                          const SizedBox(height: 12),
+                          AppTextStyles.body(
+                            'This page demonstrates the slide transition effect. '
+                            'Content slides in smoothly from the specified direction.',
+                            colorName: 'textLight',
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 12),
-                      AppTextStyles.body(
-                        'This page demonstrates the slide transition effect. '
-                        'Content slides in smoothly from the specified direction.',
-                        colorName: 'textLight',
-                      ),
-                    ],
+                    ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                AppTextStyles.subheading(
+                  'Slide Directions:',
+                  fontSize: 18,
+                ),
+                const SizedBox(height: 16),
+                SlideIn(
+                  direction: SlideDirection.up,
+                  delay: const Duration(milliseconds: 200),
+                  child: _DirectionCard('From Top', Icons.arrow_downward),
+                ),
+                const SizedBox(height: 12),
+                SlideIn(
+                  direction: SlideDirection.down,
+                  delay: const Duration(milliseconds: 400),
+                  child: _DirectionCard('From Bottom', Icons.arrow_upward),
+                ),
+                const SizedBox(height: 12),
+                SlideIn(
+                  direction: SlideDirection.left,
+                  delay: const Duration(milliseconds: 600),
+                  child: _DirectionCard('From Left', Icons.arrow_forward),
+                ),
+                const SizedBox(height: 12),
+                SlideIn(
+                  direction: SlideDirection.right,
+                  delay: const Duration(milliseconds: 800),
+                  child: _DirectionCard('From Right', Icons.arrow_back),
+                ),
+              ],
             ),
-            const SizedBox(height: 24),
-            AppTextStyles.subheading(
-              'Slide Directions:',
-              fontSize: 18,
-            ),
-            const SizedBox(height: 16),
-            SlideIn(
-              direction: SlideDirection.up,
-              delay: const Duration(milliseconds: 200),
-              child: _DirectionCard('From Top', Icons.arrow_downward),
-            ),
-            const SizedBox(height: 12),
-            SlideIn(
-              direction: SlideDirection.down,
-              delay: const Duration(milliseconds: 400),
-              child: _DirectionCard('From Bottom', Icons.arrow_upward),
-            ),
-            const SizedBox(height: 12),
-            SlideIn(
-              direction: SlideDirection.left,
-              delay: const Duration(milliseconds: 600),
-              child: _DirectionCard('From Left', Icons.arrow_forward),
-            ),
-            const SizedBox(height: 12),
-            SlideIn(
-              direction: SlideDirection.right,
-              delay: const Duration(milliseconds: 800),
-              child: _DirectionCard('From Right', Icons.arrow_back),
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -97,62 +101,66 @@ class FadeTransitionDemoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageTemplate(
       title: 'Fade Transition Demo',
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FadeIn(
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppTextStyles.heading(
-                        'Fade Transition',
-                        fontSize: 20,
-                        colorName: 'primary',
-                      ),
-                      const SizedBox(height: 12),
-                      AppTextStyles.body(
-                        'This page demonstrates the fade transition effect. '
-                        'Content gracefully fades in with customizable delays.',
-                        colorName: 'textLight',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            AppTextStyles.subheading(
-              'Staggered Fade Examples:',
-              fontSize: 18,
-            ),
-            const SizedBox(height: 16),
-            ...List.generate(
-              5,
-              (index) => FadeIn(
-                delay: Duration(milliseconds: 200 + (index * 150)),
-                child: Container(
-                  margin: const EdgeInsets.only(bottom: 12),
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                FadeIn(
                   child: Card(
-                    color: Theme.of(context).colorScheme.primaryContainer,
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        child: Text('${index + 1}'),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppTextStyles.heading(
+                            'Fade Transition',
+                            fontSize: 20,
+                            colorName: 'primary',
+                          ),
+                          const SizedBox(height: 12),
+                          AppTextStyles.body(
+                            'This page demonstrates the fade transition effect. '
+                            'Content gracefully fades in with customizable delays.',
+                            colorName: 'textLight',
+                          ),
+                        ],
                       ),
-                      title: Text('Fade Item ${index + 1}'),
-                      subtitle: Text('Delay: ${200 + (index * 150)}ms'),
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                AppTextStyles.subheading(
+                  'Staggered Fade Examples:',
+                  fontSize: 18,
+                ),
+                const SizedBox(height: 16),
+                ...List.generate(
+                  5,
+                  (index) => FadeIn(
+                    delay: Duration(milliseconds: 200 + (index * 150)),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: Card(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            child: Text('${index + 1}'),
+                          ),
+                          title: Text('Fade Item ${index + 1}'),
+                          subtitle: Text('Delay: ${200 + (index * 150)}ms'),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
@@ -165,98 +173,102 @@ class ScaleTransitionDemoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageTemplate(
       title: 'Scale Transition Demo',
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ScaleIn(
-              child: Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppTextStyles.heading(
-                        'Scale Transition',
-                        fontSize: 20,
-                        colorName: 'primary',
-                      ),
-                      const SizedBox(height: 12),
-                      AppTextStyles.body(
-                        'This page demonstrates the scale transition effect. '
-                        'Content scales up smoothly with elastic curves.',
-                        colorName: 'textLight',
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            AppTextStyles.subheading(
-              'Scale Examples:',
-              fontSize: 18,
-            ),
-            const SizedBox(height: 16),
-            Row(
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: ScaleIn(
-                    delay: const Duration(milliseconds: 200),
-                    curve: Curves.elasticOut,
-                    child: _ScaleCard(
-                      'Elastic Out',
-                      Icons.scatter_plot,
-                      Colors.blue,
+                ScaleIn(
+                  child: Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          AppTextStyles.heading(
+                            'Scale Transition',
+                            fontSize: 20,
+                            colorName: 'primary',
+                          ),
+                          const SizedBox(height: 12),
+                          AppTextStyles.body(
+                            'This page demonstrates the scale transition effect. '
+                            'Content scales up smoothly with elastic curves.',
+                            colorName: 'textLight',
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ScaleIn(
-                    delay: const Duration(milliseconds: 400),
-                    curve: Curves.bounceOut,
-                    child: _ScaleCard(
-                      'Bounce Out',
-                      Icons.sports_basketball,
-                      Colors.orange,
+                const SizedBox(height: 24),
+                AppTextStyles.subheading(
+                  'Scale Examples:',
+                  fontSize: 18,
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ScaleIn(
+                        delay: const Duration(milliseconds: 200),
+                        curve: Curves.elasticOut,
+                        child: _ScaleCard(
+                          'Elastic Out',
+                          Icons.scatter_plot,
+                          Colors.blue,
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ScaleIn(
+                        delay: const Duration(milliseconds: 400),
+                        curve: Curves.bounceOut,
+                        child: _ScaleCard(
+                          'Bounce Out',
+                          Icons.sports_basketball,
+                          Colors.orange,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ScaleIn(
+                        delay: const Duration(milliseconds: 600),
+                        curve: Curves.easeOutBack,
+                        child: _ScaleCard(
+                          'Back Out',
+                          Icons.undo,
+                          Colors.green,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ScaleIn(
+                        delay: const Duration(milliseconds: 800),
+                        curve: Curves.easeOutCubic,
+                        child: _ScaleCard(
+                          'Ease Out Cubic',
+                          Icons.auto_graph,
+                          Colors.purple,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: ScaleIn(
-                    delay: const Duration(milliseconds: 600),
-                    curve: Curves.easeOutBack,
-                    child: _ScaleCard(
-                      'Back Out',
-                      Icons.undo,
-                      Colors.green,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ScaleIn(
-                    delay: const Duration(milliseconds: 800),
-                    curve: Curves.easeOutCubic,
-                    child: _ScaleCard(
-                      'Ease Out Cubic',
-                      Icons.auto_graph,
-                      Colors.purple,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -292,47 +304,51 @@ class SlideFadeTransitionDemoPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return PageTemplate(
       title: 'Slide-Fade Transition Demo',
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SlideIn(
-              direction: SlideDirection.down,
-              child: FadeIn(
-                child: Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppTextStyles.heading(
-                          'Slide-Fade Transition',
-                          fontSize: 20,
-                          colorName: 'primary',
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SlideIn(
+                  direction: SlideDirection.down,
+                  child: FadeIn(
+                    child: Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            AppTextStyles.heading(
+                              'Slide-Fade Transition',
+                              fontSize: 20,
+                              colorName: 'primary',
+                            ),
+                            const SizedBox(height: 12),
+                            AppTextStyles.body(
+                              'This page demonstrates combined slide and fade transitions. '
+                              'Perfect for modal presentations and drawer animations.',
+                              colorName: 'textLight',
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 12),
-                        AppTextStyles.body(
-                          'This page demonstrates combined slide and fade transitions. '
-                          'Perfect for modal presentations and drawer animations.',
-                          colorName: 'textLight',
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                AppTextStyles.subheading(
+                  'Combined Animation Examples:',
+                  fontSize: 18,
+                ),
+                const SizedBox(height: 16),
+                _CombinedAnimationDemo(),
+              ],
             ),
-            const SizedBox(height: 24),
-            AppTextStyles.subheading(
-              'Combined Animation Examples:',
-              fontSize: 18,
-            ),
-            const SizedBox(height: 16),
-            _CombinedAnimationDemo(),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

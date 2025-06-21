@@ -41,34 +41,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return PageTemplate(
-      // title: 'navigation.home'.tr(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ConstrainedBox(
-              constraints: const BoxConstraints(minHeight: 200),
-              child: Container(
-                alignment: AlignmentDirectional.bottomStart,
-                padding:
-                    const EdgeInsetsDirectional.only(start: 9, bottom: 17, end: 9),
-                child: HomePageUsername(
-                  animationController: _animationController,
+      title: 'Home',
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ConstrainedBox(
+                  constraints: const BoxConstraints(minHeight: 200),
+                  child: Container(
+                    alignment: AlignmentDirectional.bottomStart,
+                    padding:
+                        const EdgeInsetsDirectional.only(start: 9, bottom: 17, end: 9),
+                    child: HomePageUsername(
+                      animationController: _animationController,
+                    ),
+                  ),
                 ),
-              ),
+                const SizedBox(height: 24),
+                _WelcomeCard(),
+                const SizedBox(height: 24),
+                _QuickActions(),
+                const SizedBox(height: 24),
+                _OverviewCards(),
+                const SizedBox(height: 24),
+                _RecentActivity(),
+              ],
             ),
-            const SizedBox(height: 24),
-            _WelcomeCard(),
-            const SizedBox(height: 24),
-            _QuickActions(),
-            const SizedBox(height: 24),
-            _OverviewCards(),
-            const SizedBox(height: 24),
-            _RecentActivity(),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }
