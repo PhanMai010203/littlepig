@@ -17,6 +17,7 @@ import 'tables/sync_state_table.dart';
 import 'tables/transaction_budgets_table.dart';
 import '../constants/default_categories.dart';
 import 'migrations/schema_cleanup_migration.dart';
+import 'migrations/phase3_partial_loans_migration.dart';
 
 part 'app_database.g.dart';
 
@@ -41,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -77,6 +78,14 @@ class AppDatabase extends _$AppDatabase {
             print('🔗 Starting Phase 2: Manual Budget Links Migration (v9 → v10)...');
             await m.createTable(transactionBudgetsTable);
             print('✅ Phase 2 migration completed successfully!');
+          }
+
+          // ✅ PHASE 3: Partial Loan Payments Migration (v10 → v11)
+          if (from < 11) {
+            print('🏦 Starting Phase 3: Partial Loan Payments Migration (v10 → v11)...');
+            final migration = Phase3PartialLoansMigration(this);
+            await migration.executePhase3Migration();
+            print('✅ Phase 3 migration completed successfully!');
           }
         },
       );
@@ -182,7 +191,9 @@ class AppDatabase extends _$AppDatabase {
           'skip_paid', NEW.skip_paid,
           'created_another_future_transaction', NEW.created_another_future_transaction,
           'objective_loan_fk', NEW.objective_loan_fk,
-          'sync_id', NEW.sync_id
+          'sync_id', NEW.sync_id,
+          'remaining_amount', NEW.remaining_amount,
+          'parent_transaction_id', NEW.parent_transaction_id
         ''';
       case 'categories':
         return '''
