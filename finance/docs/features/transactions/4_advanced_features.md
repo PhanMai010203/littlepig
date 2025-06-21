@@ -447,3 +447,13 @@ final payments = await transactionRepository.getLoanPayments(parentLoanId);
 Payment transactions flow through normal budget calculations — no special handling required. This maintains real-time accuracy while keeping business rules isolated in the repository layer.
 
 > ℹ️ Full implementation details live in `lib/core/database/migrations/phase3_partial_loans_migration.dart`, `transactions_table.dart`, and the accompanying test suites (`test/features/transactions/phase3_partial_loans_test.dart`, `test/integration/phase3_partial_loans_integration_test.dart`). 
+
+## Linking Loans to Financial Objectives
+
+The `Transaction` model includes a field named `objectiveLoanFk`. This field is intended to link a loan directly to a long-term financial goal (or "Objective"), such as "Save for a car" or "Pay off student debt".
+
+While the full UI for managing objectives is planned for a future phase, the backend support is in place. When a loan is linked to an objective, it allows for more comprehensive tracking of progress toward that goal.
+
+---
+
+## 3. Handling Recurring Transactions

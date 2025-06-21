@@ -66,14 +66,15 @@ final sub = budgetUpdateService.watchAllBudgetUpdates().listen((budgets) {
 final newBudget = Budget(
   name:        'Groceries – May',
   amount:      500,
-  spent:       0,                // repository keeps this in sync
+  spent:       0,
   period:      BudgetPeriod.monthly,
+  categoryId:  15,
   startDate:   DateTime(2024, 5, 1),
   endDate:     DateTime(2024, 5, 31),
   isActive:    true,
   createdAt:   DateTime.now(),
   updatedAt:   DateTime.now(),
-  syncId:      '',               // leave blank – generated automatically
+  syncId:      '',
 );
 await budgetRepository.createBudget(newBudget);
 ```
@@ -84,14 +85,14 @@ final vacationBudget = Budget(
   name:  'Vacation in Japan',
   amount: 2000,
   spent:  0,
-  period: BudgetPeriod.custom,
+  period: BudgetPeriod.yearly,
   startDate: DateTime(2024, 10, 1),
   endDate:   DateTime(2024, 10, 20),
-  walletFks: ['2', '4'],                 // limit to debit-card + cash wallets
-  currencyFks: ['JPY'],                  // only JPY transactions
-  excludeDebtCreditInstallments: true,   // ignore credit-card repayments
-  excludeObjectiveInstallments: true,    // ignore objective/loan installments
-  normalizeToCurrency: 'USD',            // show totals in USD
+  walletFks: ['2', '4'],
+  currencyFks: ['JPY'],
+  excludeDebtCreditInstallments: true,
+  excludeObjectiveInstallments: true,
+  normalizeToCurrency: 'USD',
   isActive: true,
   createdAt: DateTime.now(),
   updatedAt: DateTime.now(),
@@ -121,9 +122,31 @@ final txns = await budgetFilterService.getFilteredTransactionsForBudget(
 
 ---
 
-## 6. Shared Budgets
+## 6. Advanced Transaction Filtering
 
-The app supports a "Shared Budget" feature, where a primary budget can be linked to other budgets. This is useful for creating a master budget (e.g., "Total Household Expenses") that aggregates spending from several smaller, more specific budgets (e.g., "Groceries," "Utilities").
+For highly specific scenarios, you can use the `budgetTransactionFilters` map to apply low-level filters. This gives you direct control over which transactions are included in the budget's calculation.
+
+-   **Enum Location**: `lib/features/budgets/domain/entities/budget_enums.dart`
+
+```dart
+import 'package:finance/features/budgets/domain/entities/budget_enums.dart';
+
+final filteredBudget = Budget(
+  // ... other properties
+  budgetTransactionFilters: {
+    'filterType': BudgetTransactionFilter.customFilter.index,
+    'includeTags': ['#business'],
+    'excludeTags': ['#personal-expense'],
+  }
+);
+```
+
+This feature is powerful but should be used with caution, as it can lead to complex and hard-to-debug budget behaviors.
+
+---
+
+## 7. Shared Budgets
+The app supports a "Shared Budget" feature, where a primary budget can be linked to other budgets. This is useful for creating a master budget (e.g., "Total Household Expenses") that aggregates spending from several smaller, more specific budgets (e.g., "Groceries," "Utilities"). This system uses the `BudgetShareType` and `MemberExclusionType` enums to manage permissions and visibility.
 
 -   `sharedReferenceBudgetPk`: The `syncId` of the master budget you want to link to.
 -   `budgetFksExclude`: A list of budget `syncId`s to explicitly exclude from the shared calculation, preventing double-counting.
@@ -132,7 +155,7 @@ This feature is powerful but requires careful management of the relationships be
 
 ---
 
-## 7. Real-Time Streams
+## 8. Real-Time Streams
 After you inject `BudgetUpdateService`, every time a transaction is **created / updated / deleted** the service recomputes affected budgets and emits updated values.
 ```dart
 // Listen to spent-amount deltas only
@@ -148,7 +171,7 @@ await budgetUpdateService.recalculateBudgetSpentAmount(budgetId);
 
 ---
 
-## 8. CSV Import / Export
+## 9. CSV Import / Export
 The helper `BudgetCsvService` wraps the `csv` and `share_plus` packages.
 ```dart
 import 'package:finance/features/budgets/data/services/budget_csv_service.dart';
@@ -171,7 +194,7 @@ for (final b in imported) {
 
 ---
 
-## 9. Biometric Protection (Optional)
+## 10. Biometric Protection (Optional)
 Enable biometric authentication before showing sensitive budget details:
 ```dart
 final authOK = await budgetUpdateService.authenticateForBudgetAccess();
@@ -182,7 +205,7 @@ if (!authOK) {
 
 ---
 
-## 10. Common Gotchas
+## 11. Common Gotchas
 1.  **Currency Normalisation** applies *after* filtering; make sure exchange-rate cache is fresh.
 2.  **Transfer Transactions** with same-currency are excluded by default until you set `includeTransferInOutWithSameCurrency = true`.
 3.  **Upcoming Transactions** are only included in calculations if you set `includeUpcomingTransactionFromBudget = true`.
@@ -191,7 +214,7 @@ if (!authOK) {
 
 ---
 
-## 11. Quick BLoC Example
+## 12. Quick BLoC Example
 ```dart
 class BudgetOverviewBloc extends Bloc<BudgetsEvent, BudgetsState> {
   BudgetOverviewBloc() : super(BudgetsInitial()) {
@@ -205,7 +228,7 @@ class BudgetOverviewBloc extends Bloc<BudgetsEvent, BudgetsState> {
 
 ---
 
-## 12. Further Reading
+## 13. Further Reading
 • `lib/features/budgets/data/services/budget_filter_service_impl.dart` – full filtering logic.  
 • `docs/plan/TransactionsBudget/PHASE_2_IMPLEMENTATION_GUIDE.md` – detailed design doc.  
 • `test/features/budgets/budget_filter_service_test.dart` – sample unit tests.
