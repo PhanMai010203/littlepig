@@ -7,9 +7,12 @@ import 'package:uuid/uuid.dart';
 import '../core/di/injection.dart';
 import '../features/accounts/domain/entities/account.dart';
 import '../features/accounts/domain/repositories/account_repository.dart';
+import '../features/budgets/domain/entities/budget.dart';
+import '../features/budgets/domain/repositories/budget_repository.dart';
 import '../features/categories/domain/entities/category.dart';
 import '../features/categories/domain/repositories/category_repository.dart';
 import '../features/transactions/domain/entities/transaction.dart';
+import '../features/transactions/domain/entities/transaction_enums.dart';
 import '../features/transactions/domain/repositories/transaction_repository.dart';
 
 /// A utility class to seed the database with mock data for development.
@@ -17,6 +20,7 @@ class DataSeeder {
   final _transactionRepository = getIt<TransactionRepository>();
   final _accountRepository = getIt<AccountRepository>();
   final _categoryRepository = getIt<CategoryRepository>();
+  final _budgetRepository = getIt<BudgetRepository>();
   final _uuid = Uuid();
 
   /// Clears existing data and seeds the database with a fresh set of mock data.
@@ -41,6 +45,11 @@ class DataSeeder {
     final categories = await _categoryRepository.getAllCategories();
     for (final category in categories) {
       await _categoryRepository.deleteCategory(category.id!);
+    }
+
+    final budgets = await _budgetRepository.getAllBudgets();
+    for (final budget in budgets) {
+      await _budgetRepository.deleteBudget(budget.id!);
     }
   }
 
@@ -82,6 +91,45 @@ class DataSeeder {
     ));
 
     // 2. Create Categories
+    // NOTE: Default categories are assumed to be created by a separate process.
+    // Here we add the 3 custom categories.
+
+    final customIncomeCategory =
+        await _categoryRepository.createCategory(Category(
+      name: 'Freelance Work',
+      icon: 'laptop_mac',
+      color: Color(0xFF1DE9B6), // Teal accent
+      isExpense: false,
+      isDefault: false,
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
+    final customExpenseCategory1 =
+        await _categoryRepository.createCategory(Category(
+      name: 'Vacation',
+      icon: 'flight_takeoff',
+      color: Color(0xFF7C4DFF), // Deep Purple accent
+      isExpense: true,
+      isDefault: false,
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
+    final customExpenseCategory2 =
+        await _categoryRepository.createCategory(Category(
+      name: 'Pet Supplies',
+      icon: 'pets',
+      color: Color(0xFFF57C00), // Orange
+      isExpense: true,
+      isDefault: false,
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
     final salaryCategory = await _categoryRepository.createCategory(Category(
       name: 'Salary',
       icon: 'work',
@@ -126,7 +174,42 @@ class DataSeeder {
       syncId: _uuid.v4(),
     ));
 
-    // 3. Create Transactions
+    // 3. Create Budgets
+
+    // Manual Add Budget for a vacation
+    final vacationBudget = await _budgetRepository.createBudget(Budget(
+      name: 'Japan Trip',
+      amount: 2500,
+      spent: 0,
+      period: BudgetPeriod.yearly, // One-off event
+      startDate: DateTime(now.year, 10, 1),
+      endDate: DateTime(now.year, 10, 20),
+      isActive: true,
+      isIncomeBudget: false,
+      // walletFks is null for Manual Add mode
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
+    // Automatic Add Budget for monthly food expenses
+    final monthlyFoodBudget = await _budgetRepository.createBudget(Budget(
+      name: 'Monthly Food Budget',
+      amount: 400,
+      spent: 0,
+      period: BudgetPeriod.monthly,
+      startDate: DateTime(now.year, now.month, 1),
+      endDate: DateTime(now.year, now.month, 1).add(Duration(days: 30)),
+      isActive: true,
+      isIncomeBudget: false,
+      walletFks: [mainAccount.syncId, creditCard.syncId], // Tracks two accounts
+      categoryId: foodCategory.id, // Tracks only food category
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
+    // 4. Create Transactions
     final random = Random();
 
     // Transactions for the current month
@@ -144,12 +227,99 @@ class DataSeeder {
       ));
     }
 
+    // Link one of the groceries to the manual vacation budget
+    // This would typically be done by the user in the UI.
+    // We simulate it here by creating a link record if the repositories allow.
+    // For now, we'll just add a specific transaction for the budget.
+    await _transactionRepository.createTransaction(Transaction(
+      title: 'Flights to Tokyo',
+      amount: -1200,
+      accountId: savingsAccount.id!,
+      categoryId: customExpenseCategory1.id!, // Vacation category
+      date: now.subtract(Duration(days: 60)),
+      note: 'Booked flights for the Japan trip.',
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+      // In a real app, logic would link this to `vacationBudget`
+    ));
+
+
     await _transactionRepository.createTransaction(Transaction(
       title: 'Monthly Salary',
       amount: 3500,
       accountId: mainAccount.id!,
       categoryId: salaryCategory.id!,
       date: DateTime(now.year, now.month, 1),
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
+    // Subscription Transaction (Advanced)
+    await _transactionRepository.createTransaction(Transaction(
+      title: 'Netflix Subscription',
+      amount: -15.99,
+      accountId: creditCard.id!,
+      categoryId: shoppingCategory.id!, // Assuming 'entertainment' is under shopping
+      date: now.subtract(Duration(days: 10)),
+      transactionType: TransactionType.subscription,
+      recurrence: TransactionRecurrence.monthly,
+      transactionState: TransactionState.scheduled,
+      note: 'Monthly streaming service, next payment due soon.',
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
+    // Loan Transaction - Lent Money (Advanced)
+    final lentTransaction = await _transactionRepository.createTransaction(Transaction(
+      title: 'Loan to Alex',
+      amount: -300,
+      accountId: mainAccount.id!,
+      categoryId: customExpenseCategory2.id!, // "Other" or a custom loan category
+      date: now.subtract(Duration(days: 45)),
+      transactionType: TransactionType.loan,
+      specialType: TransactionSpecialType.credit,
+      transactionState: TransactionState.actionRequired,
+      remainingAmount: 300.0, // Full amount is outstanding
+      note: 'Lent for emergency, to be paid back in installments.',
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+
+    // Partial Collection on the Loan
+    await _transactionRepository.createTransaction(Transaction(
+      title: 'Partial payback from Alex',
+      amount: 100, // Positive amount, coming into the account
+      accountId: mainAccount.id!,
+      categoryId: customIncomeCategory.id!,
+      date: now.subtract(Duration(days: 15)),
+      parentTransactionId: lentTransaction.id, // Linking to the original loan
+      note: 'First installment paid back.',
+      createdAt: now,
+      updatedAt: now,
+      syncId: _uuid.v4(),
+    ));
+    // In a real app, a service would update `lentTransaction.remainingAmount` to 200.
+    // For the seeder, we will just leave it as is, or manually update if repository allows.
+    // final updatedLent = lentTransaction.copyWith(remainingAmount: 200);
+    // await _transactionRepository.updateTransaction(updatedLent);
+
+
+    // Loan Transaction - Borrowed Money (Advanced)
+    await _transactionRepository.createTransaction(Transaction(
+      title: 'Borrowed from Savings',
+      amount: 500,
+      accountId: mainAccount.id!,
+      categoryId: customIncomeCategory.id!, // Or a custom 'internal transfer' category
+      date: now.subtract(Duration(days: 20)),
+      transactionType: TransactionType.loan,
+      specialType: TransactionSpecialType.debt,
+      transactionState: TransactionState.actionRequired,
+      remainingAmount: 500.0,
+      note: 'To cover some large expenses. Need to settle this debt.',
       createdAt: now,
       updatedAt: now,
       syncId: _uuid.v4(),
@@ -218,4 +388,4 @@ class DataSeeder {
       ));
     }
   }
-} 
+}
