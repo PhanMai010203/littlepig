@@ -21,8 +21,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
   final ScrollController _monthScrollController = ScrollController();
   
   List<Transaction> _allTransactions = [];
-  DateTime? _firstMonth;
-  DateTime? _lastMonth;
   bool _isLoading = true;
 
   @override
@@ -50,20 +48,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
       // Sort transactions by date (newest first)
       transactions.sort((a, b) => b.date.compareTo(a.date));
 
-      // Calculate first and last month from actual transaction data
-      DateTime? firstMonth;
-      DateTime? lastMonth;
-      
-      if (transactions.isNotEmpty) {
-        final sortedByDate = [...transactions]..sort((a, b) => a.date.compareTo(b.date));
-        firstMonth = DateTime(sortedByDate.first.date.year, sortedByDate.first.date.month);
-        lastMonth = DateTime(sortedByDate.last.date.year, sortedByDate.last.date.month);
-      }
-
       setState(() {
         _allTransactions = transactions;
-        _firstMonth = firstMonth;
-        _lastMonth = lastMonth;
         _isLoading = false;
       });
     } catch (e) {
@@ -290,10 +276,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
     return MonthSelector(
       selectedMonth: _selectedMonth,
       onMonthSelected: _onMonthSelected,
-      firstMonth: _firstMonth,
-      lastMonth: _lastMonth,
       scrollController: _monthScrollController,
-      showScrollButtons: true,
     );
   }
 }
