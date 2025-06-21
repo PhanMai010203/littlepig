@@ -73,9 +73,11 @@ Essential reading for any feature that performs frequent database reads.
 
 **Key Points**
 - `BudgetRepository` for CRUD, `BudgetFilterService` for calculations, `BudgetUpdateService` for real-time updates.
-- Advanced filters by wallets, categories, currencies, and exclusion of debt/credit transactions.
-- Real-time streams automatically update budgets when transactions change.
-- Includes helpers for CSV import/export and biometric protection.
+- Expense **and** Income budgets, with automatic (wallet-based) or manual (transaction-linked) modes.
+- Advanced filters by wallets, categories, currencies, custom tag filters, and exclusion rules.
+- Shared budgets allow aggregation of multiple child budgets with fine-grained member permissions.
+- Real-time streams automatically update budgets; supports upcoming-transaction forecasting.
+- Includes helpers for CSV import/export and optional biometric protection.
 
 ---
 
@@ -86,10 +88,10 @@ Essential reading for any feature that performs frequent database reads.
 | [Transaction Guide](features/transactions/index.md) | A comprehensive guide to the transaction system, broken down into basics, attachments, analytics, and advanced features. |
 
 **Key Points**
-- Manages transactions with detailed notes for context.
-- Fully integrated attachment system using Google Drive, with automatic image compression.
-- Supports advanced types: subscriptions, recurring payments, loans (credit/debt), and different transaction states.
-- Provides analytics methods for spending breakdowns by category or account.
+- Manages transactions with detailed notes and attachment support (Google Drive + compression).
+- Advanced types: subscriptions, recurring payments, loans (credit/debt) with partial-payment tracking.
+- Rich lifecycle with states (`pending`, `scheduled`, `actionRequired`, etc.) and context-aware actions (`pay`, `skip`, `settle`).
+- Built-in analytics for category/account breakdowns and powerful search APIs.
 
 ---
 
@@ -100,9 +102,11 @@ Essential reading for any feature that performs frequent database reads.
 | [UI Development Guide](features/ui/index.md) | A comprehensive guide to the UI framework, covering architecture, theming, reusable widgets, animations, navigation, and best practices. |
 
 **Key Points**
-- Detailed guides on core components like `PageTemplate` and `AppText`.
-- Instructions for using the animation framework and dialog services.
-- Best practices for state management, navigation, and testing.
+- Core widgets like `PageTemplate`, `AppText`, `LanguageSelector`, and `TappableWidget` for consistent UX.
+- Animation framework widgets (`SlideFadeTransition`, `BreathingWidget`, etc.) with performance controls.
+- Navigation tools including custom page transitions and `OpenContainer` transforms.
+- Centralized dialog/bottom-sheet services, plus testing and troubleshooting guidelines.
+- Best practices for state management, theming, and adaptive layout.
 
 ---
 
