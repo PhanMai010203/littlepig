@@ -71,6 +71,8 @@ class _PageTemplateState extends State<PageTemplate> {
     final theme = Theme.of(context);
     final surfaceColor = theme.colorScheme.surface;
     final onSurfaceColor = theme.colorScheme.onSurface;
+    // Workaround
+    final primaryColor = theme.colorScheme.primaryContainer;
 
     return Scaffold(
       backgroundColor: widget.backgroundColor ?? surfaceColor,
@@ -84,7 +86,7 @@ class _PageTemplateState extends State<PageTemplate> {
               expandedHeight: _kExpandedHeight,
               toolbarHeight: _kToolbarHeight,
               actions: widget.actions,
-              backgroundColor: surfaceColor.withOpacity(_appBarOpacity),
+              backgroundColor: Colors.transparent,
               elevation: 0,
               scrolledUnderElevation: _appBarOpacity > 0.95 ? 1 : 0,
               leading: widget.showBackButton && Navigator.canPop(context)
@@ -93,19 +95,27 @@ class _PageTemplateState extends State<PageTemplate> {
                       onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
                     )
                   : null,
-              flexibleSpace: FlexibleSpaceBar(
-                titlePadding: const EdgeInsets.symmetric(
-                  horizontal: 16.0,
-                  vertical: 8.0,
-                ),
-                centerTitle: false,
-                title: Text(
-                  widget.title ?? '',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: onSurfaceColor,
+              flexibleSpace: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Background that fades in/out with scroll
+                  Container(color: primaryColor.withValues(alpha: _appBarOpacity)),
+                  // Title & collapse handling
+                  FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
+                    centerTitle: false,
+                    title: Text(
+                      widget.title ?? '',
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: onSurfaceColor,
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
             ),
             ...widget.slivers,

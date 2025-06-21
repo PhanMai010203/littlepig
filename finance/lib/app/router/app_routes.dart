@@ -15,4 +15,5 @@ class AppRoutes {
   static const String notifications = '/notifications';
   static const String help = '/help';
   static const String about = '/about';
+  static const String demo = '/demo/framework_demo';
 } 
