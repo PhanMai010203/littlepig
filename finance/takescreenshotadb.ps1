@@ -1,10 +1,13 @@
-# Load the required .NET assemblies for image handling and clipboard access
+param (
+    [string]$name = ""
+)
+
+# Load required .NET assemblies for image handling and clipboard access
 Add-Type -AssemblyName System.Drawing
 Add-Type -AssemblyName System.Windows.Forms
 
-# Function to run adb and capture the binary screenshot output
+# Function to capture screenshot from Android device via ADB
 function Get-AdbScreenshot {
-    # Set up the process to run adb with redirected output
     $processInfo = New-Object System.Diagnostics.ProcessStartInfo
     $processInfo.FileName = "adb"
     $processInfo.Arguments = "exec-out screencap -p"
@@ -12,18 +15,15 @@ function Get-AdbScreenshot {
     $processInfo.UseShellExecute = $false
     $processInfo.CreateNoWindow = $true
 
-    # Start the process
     $process = New-Object System.Diagnostics.Process
     $process.StartInfo = $processInfo
     $process.Start() | Out-Null
 
-    # Read the binary output from adb
     $outputStream = $process.StandardOutput.BaseStream
     $memoryStream = New-Object System.IO.MemoryStream
     $outputStream.CopyTo($memoryStream)
     $process.WaitForExit()
 
-    # Return the byte array of the screenshot
     return $memoryStream.ToArray()
 }
 
@@ -33,11 +33,37 @@ $imageData = Get-AdbScreenshot
 # Create a memory stream from the byte array
 $stream = New-Object System.IO.MemoryStream (,$imageData)
 
-# Convert the stream to an image object
+# Load the image from the stream
 $image = [System.Drawing.Image]::FromStream($stream)
 
-# Copy the image to the Windows clipboard
+# If a name is provided, add it as a caption to the image
+if ($name -ne "") {
+    $graphics = [System.Drawing.Graphics]::FromImage($image)
+    $fontSize = [math]::Round($image.Height * 0.05)
+    $font = New-Object System.Drawing.Font("Arial", $fontSize)
+    $textBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
+    $bgBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(128, 0, 0, 0))  # Semi-transparent black
+
+    # Calculate text position and size
+    $textSize = $graphics.MeasureString($name, $font)
+    $x = ($image.Width - $textSize.Width) / 2
+    $y = $image.Height - $textSize.Height - 10
+    $rect = New-Object System.Drawing.Rectangle($x, $y, $textSize.Width, $textSize.Height)
+
+    # Draw background rectangle and text
+    $graphics.FillRectangle($bgBrush, $rect)
+    $graphics.DrawString($name, $font, $textBrush, $x, $y)
+
+    # Clean up graphics resources
+    $graphics.Dispose()
+    $font.Dispose()
+    $textBrush.Dispose()
+    $bgBrush.Dispose()
+}
+
+# Copy the image to the clipboard
 [System.Windows.Forms.Clipboard]::SetImage($image)
 
-# Close the stream to free up resources
+# Clean up resources
 $stream.Close()
+$image.Dispose()
