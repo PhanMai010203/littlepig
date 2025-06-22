@@ -12,6 +12,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late ScrollController _scrollController;
+  int _selectedAccountIndex = 0;
 
   @override
   void initState() {
@@ -43,30 +44,60 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return PageTemplate(
       slivers: [
         SliverPadding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 26),
           sliver: SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 200),
+                  constraints: const BoxConstraints(minHeight: 100),
                   child: Container(
                     alignment: AlignmentDirectional.bottomStart,
                     padding:
                         const EdgeInsetsDirectional.only(start: 9, bottom: 17, end: 9),
-                    child: HomePageUsername(
-                      animationController: _animationController,
-                    ),
                   ),
                 ),
                 const SizedBox(height: 24),
-                _WelcomeCard(),
-                const SizedBox(height: 24),
-                _QuickActions(),
-                const SizedBox(height: 24),
-                _OverviewCards(),
-                const SizedBox(height: 24),
-                _RecentActivity(),
+                SizedBox(
+                  height: 125,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    clipBehavior: Clip.none,
+                    child: Row(
+                      children: [
+                        _AccountCard(
+                          title: 'Ngân hàng',
+                          amount: 'đ530.000 VND',
+                          transactions: '260 transactions',
+                          color: const Color(0xFF439A97),
+                          isSelected: _selectedAccountIndex == 0,
+                          onTap: () {
+                            setState(() {
+                              _selectedAccountIndex = 0;
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 16),
+                        _AccountCard(
+                          title: 'Tín dụng',
+                          amount: 'đ530.000 VND',
+                          transactions: '260 transactions',
+                          color: const Color(0xFF90C88E),
+                          isSelected: _selectedAccountIndex == 1,
+                          onTap: () {
+                            setState(() {
+                              _selectedAccountIndex = 1;
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 16),
+                        _AddAccountCard(
+                          onTap: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -76,212 +107,86 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-class _WelcomeCard extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
-            colors: [
-              Theme.of(context).colorScheme.primary,
-              Theme.of(context).colorScheme.primary.withValues(alpha: 0.8),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Welcome back!',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Here\'s an overview of your financial status',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onPrimary
-                        .withValues(alpha: 0.9),
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+class _AccountCard extends StatelessWidget {
+  final String title;
+  final String amount;
+  final String transactions;
+  final Color color;
+  final bool isSelected;
+  final VoidCallback onTap;
 
-class _QuickActions extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Quick Actions',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          children: [
-            Expanded(
-              child: _ActionButton(
-                icon: Icons.add,
-                label: 'Add Transaction',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Add Transaction tapped')),
-                  );
-                },
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _ActionButton(
-                icon: Icons.trending_up,
-                label: 'View Analytics',
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('View Analytics tapped')),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  const _ActionButton({
-    required this.icon,
-    required this.label,
+  const _AccountCard({
+    required this.title,
+    required this.amount,
+    required this.transactions,
+    required this.color,
+    required this.isSelected,
     required this.onTap,
   });
 
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 170,
+        height: 120,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline,
+            color: isSelected ? color : Colors.transparent,
+            width: 2,
+            strokeAlign: BorderSide.strokeAlignInside,
           ),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Column(
-          children: [
-            Icon(
-              icon,
-              size: 32,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: Theme.of(context).textTheme.labelMedium,
-              textAlign: TextAlign.center,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              spreadRadius: 2,
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _OverviewCards extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Overview',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
-        const Row(
-          children: [
-            Expanded(
-              child: _OverviewCard(
-                title: 'Total Balance',
-                value: '\$12,345.67',
-                color: Colors.green,
-              ),
-            ),
-            SizedBox(width: 12),
-            Expanded(
-              child: _OverviewCard(
-                title: 'Monthly Spending',
-                value: '\$2,543.21',
-                color: Colors.orange,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _OverviewCard extends StatelessWidget {
-  const _OverviewCard({
-    required this.title,
-    required this.value,
-    required this.color,
-  });
-
-  final String title;
-  final String value;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.7),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                ),
+                Container(
+                  width: 18,
+                  height: 18,
+                  decoration: BoxDecoration(
                     color: color,
-                    fontWeight: FontWeight.bold,
+                    shape: BoxShape.circle,
                   ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            Text(
+              amount,
+              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              transactions,
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF6A6A6A),
+              ),
             ),
           ],
         ),
@@ -290,50 +195,53 @@ class _OverviewCard extends StatelessWidget {
   }
 }
 
-class _RecentActivity extends StatelessWidget {
+class _AddAccountCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _AddAccountCard({required this.onTap});
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Recent Activity',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-        ),
-        const SizedBox(height: 16),
-        Card(
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: 3,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primaryContainer,
-                  child: Icon(
-                    Icons.shopping_cart,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-                title: Text('Transaction ${index + 1}'),
-                subtitle: Text(
-                    'Category • ${DateTime.now().day}/${DateTime.now().month}'),
-                trailing: Text(
-                  '-\$${(index + 1) * 25}.00',
-                  style: const TextStyle(
-                    color: Colors.red,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              );
-            },
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 120,
+        height: 120,
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardColor,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF6A6A6A).withOpacity(0.7),
+            width: 2,
+            strokeAlign: BorderSide.strokeAlignInside,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              spreadRadius: 2,
+            )
+          ],
         ),
-      ],
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add,
+              size: 28,
+              color: Color(0xFF6A6A6A),
+            ),
+            SizedBox(height: 8),
+            Text(
+              'Account',
+              style: TextStyle(
+                fontSize: 14,
+                color: Color(0xFF6A6A6A),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
