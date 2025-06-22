@@ -31,6 +31,7 @@ void main() async {
   // Seed database in debug mode
   if (kDebugMode) {
     try {
+      await DataSeeder.clearAll();
       await DataSeeder.seedAll();
     } catch (e) {
       debugPrint('Failed to seed demo data: $e');
@@ -55,7 +56,8 @@ void main() async {
       options.tracesSampleRate = 1.0;
       options.profilesSampleRate = 1.0;
       options.reportPackages = true;
-      options.debug = kDebugMode; // Enable debug mode for Sentry in debug builds
+      options.debug =
+          kDebugMode; // Enable debug mode for Sentry in debug builds
     },
     appRunner: () => runApp(
       EasyLocalization(
