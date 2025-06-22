@@ -3,7 +3,9 @@ description:
 globs: 
 alwaysApply: true
 ---
-- When using context7, makae sure that you keep the range of output in the range 2k to 10k based on what you think is the best.
+- This project has a development guide in @README.md , which entails links to specific features when you need to; each features have their own index file. 
+MUST READ the guide, Respect the current file's structure, and development philosophy, when developing certain components, search for the equivalent guide in case you reinvent the wheel. When you are done with your task, determine whether documents should be updated, if it does need updates, update in the following steps: Update specific docs for each features (docs/features/<relevant feature>/<name>.md) -> Then update specific features' index (docs/features/<relevant feature>/index.md) -> Then update the master index (docs/README.md)
 
+- When using context7, makae sure that you keep the range of output in the range 2k to 10k based on what you think is the best.
 
 - Maintain a file named library.md (in docs/.context7/) to store the Library IDs that you search for and before searching make sure that you check the file and use the library ID already available. Otherwise, search for it.
