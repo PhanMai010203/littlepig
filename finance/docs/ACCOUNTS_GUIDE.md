@@ -43,7 +43,7 @@ Since every transaction is linked to an account via the `accountId`, you can eas
 
 ### Currency Symbol & Formatting
 
-The **Accounts** module does **not** store a currency symbol directly on the `Account` entity. Instead, it relies on the shared [Currency Management System](../currency/index.md) to resolve the appropriate symbol based on the 3-letter `currency` **code** saved on each account.
+The **Accounts** module does **not** store a currency symbol directly on the `Account` entity. Instead, it relies on the shared [Currency Management System](CURRENCY_MANAGEMENT_SYSTEM.md) to resolve the appropriate symbol based on the 3-letter `currency` **code** saved on each account.
 
 Key points:
 1. Use `AccountCurrencyExtension.formatBalance(...)` (see `lib/shared/extensions/account_currency_extension.dart`) to obtain a **fully-formatted** balance string that automatically:

@@ -127,6 +127,41 @@ class Attachment {
 }
 ```
 
+## Database Schema
+
+### AttachmentsTable (Version 2)
+The table was updated to support the caching logic.
+
+```dart
+class AttachmentsTable extends Table {
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get syncId => text()();
+  IntColumn get transactionId => integer().references(TransactionsTable, #id)();
+  
+  // File Info
+  TextColumn get fileName => text()();
+  TextColumn get filePath => text().nullable()();
+  IntColumn get type => integer()(); // Maps to AttachmentType enum
+  TextColumn get mimeType => text().nullable()();
+  IntColumn get fileSizeBytes => integer().nullable()();
+
+  // Google Drive Info
+  TextColumn get googleDriveFileId => text().nullable()();
+  TextColumn get googleDriveLink => text().nullable()();
+  BoolColumn get isUploaded => boolean().withDefault(const Constant(false))();
+
+  // State & Cache Management
+  BoolColumn get isDeleted => boolean().withDefault(const Constant(false))();
+  BoolColumn get isCapturedFromCamera => boolean().withDefault(const Constant(false))();
+  DateTimeColumn get localCacheExpiry => dateTime().nullable()();
+
+  // Timestamps
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+}
+```
+*A database migration from version 1 to 2 handles the addition of the `isCapturedFromCamera` and `localCacheExpiry` columns automatically.*
+
 ## Detailed Flow Diagram
 
 This diagram illustrates the complete lifecycle of an attachment, from creation to storage and retrieval.
@@ -184,3 +219,92 @@ flowchart TD
         HH --> II((Cache Cleaned))
     end
 ``` 
+
+## Development Notes
+
+### Dependencies
+The attachment system relies on the following key packages:
+- `drift`: Database ORM
+- `google_sign_in`: Google authentication
+- `googleapis`: Google Drive API
+- `path_provider`: File system access
+- `flutter_image_compress`: Image compression
+
+### Code Generation
+After making changes to the `AttachmentsTable` schema in `lib/core/database/tables/attachments.dart`, you must run the build runner to update the generated code:
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+## Next Steps
+
+### 🔄 Pending Tasks
+
+1. **UI Integration**
+   - Update attachment display widgets to use `getAttachmentViewPath`
+   - Add cache management UI in settings
+   - Show cache statistics to users
+
+2. **Background Services** *(Completed in v2.1)*
+   - Periodic cache cleanup scheduler implemented via `CacheManagementService.startPeriodicCleanup()` (internally registered with `TimerManagementService`)
+   - Cache cleanup now registered during app initialization
+   - `CacheStats` monitoring available through `cacheService.getCacheStats()`
+
+3. **Advanced Features**
+   - Configurable cache duration (currently fixed at 30 days)
+   - Cache size limits and LRU eviction
+   - Offline-first attachment access
+
+4. **Code Quality**
+   - Address remaining lint warnings (print statements, const constructors)
+   - Add more comprehensive error handling
+   - Implement proper logging framework
+
+5. **Testing**
+   - Add comprehensive integration tests
+   - Test cache behavior under various scenarios
+   - Performance testing with large attachment sets
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Attachments not displaying**
+   - Check if Google Drive sync is working
+   - Verify internet connection
+   - Check file permissions
+
+2. **Cache not cleaning up**
+   - Manually call `cleanExpiredCache()`
+   - Check available storage space
+   - Verify cache expiry dates
+
+3. **Sync conflicts**
+   - Google Drive sync merges metadata by `syncId`
+   - Local cache settings are preserved
+   - Re-sync usually resolves conflicts
+
+## Development Notes
+
+### Code Generation
+After database schema changes, run:
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### Static Analysis
+Current status: ✅ No critical errors
+- Only minor lint warnings remain (print statements, const constructors)
+- All core functionality is working
+
+### Dependencies
+- `drift`: Database ORM
+- `google_sign_in`: Google authentication
+- `googleapis`: Google Drive API
+- `path_provider`: File system access
+- `flutter_image_compress`: Image compression
+
+---
+
+*Last updated: January 2025*
+*Implementation status: ✅ Complete - Ready for UI integration and testing*
