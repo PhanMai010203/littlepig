@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:finance/shared/widgets/page_template.dart';
+import 'package:marquee/marquee.dart';
 import '../../widgets/home_page_username.dart';
 
 class HomePage extends StatefulWidget {
@@ -66,7 +67,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     child: Row(
                       children: [
                         _AccountCard(
-                          title: 'Ngân hàng',
+                          title: 'Ngân hàngggggggggggggg',
                           amount: 'đ530.000 VND',
                           transactions: '260 transactions',
                           color: const Color(0xFF439A97),
@@ -131,7 +132,7 @@ class _AccountCard extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: 170,
-        height: 120,
+        height: 110,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -157,14 +158,39 @@ class _AccountCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                  child: SizedBox(
+                    height: 20,
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        const style = const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        );
+                        final textPainter = TextPainter(
+                          text: TextSpan(text: title, style: style),
+                          maxLines: 1,
+                          textDirection: TextDirection.ltr,
+                        )..layout(maxWidth: constraints.maxWidth);
+
+                        if (textPainter.didExceedMaxLines) {
+                          return Marquee(
+                            text: title,
+                            style: style,
+                            scrollAxis: Axis.horizontal,
+                            blankSpace: 20.0,
+                            velocity: 30.0,
+                            pauseAfterRound: const Duration(seconds: 2),
+                            fadingEdgeEndFraction: 0.1,
+                            fadingEdgeStartFraction: 0.1,
+                          );
+                        } else {
+                          return Text(title, style: style);
+                        }
+                      },
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   width: 18,
                   height: 18,

@@ -29,6 +29,7 @@ dependencies:
   # UI & Icons
   flutter_svg: ^2.0.9
   cupertino_icons: ^1.0.2
+  marquee: ^2.3.0
     # Dependency Injection
   get_it: ^7.6.4
   injectable: ^2.3.2  # Storage & Database
