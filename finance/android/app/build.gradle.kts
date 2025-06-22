@@ -7,7 +7,6 @@ plugins {
 
 android {
     namespace = "com.sheep.finance"
-    testNameSpace = "com.sheep.finance.test"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = "27.0.12077973"
 
