@@ -9,6 +9,9 @@ import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
+// Add these imports for demo pages
+import '../../demo/framework_demo_page.dart';
+import '../../demo/demo_transition_pages.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -125,6 +128,53 @@ class AppRouter {
             direction: SlideDirection.fromBottom,
           );
         },
+      ),
+      // Demo framework main page
+      GoRoute(
+        path: '/demo',
+        name: 'framework_demo',
+        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+          child: const FrameworkDemoPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+      // Demo transition pages
+      GoRoute(
+        path: '/demo/slide-transition',
+        name: 'slide_transition_demo',
+        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+          child: const SlideTransitionDemoPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+      GoRoute(
+        path: '/demo/fade-transition',
+        name: 'fade_transition_demo',
+        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+          child: const FadeTransitionDemoPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+      GoRoute(
+        path: '/demo/scale-transition',
+        name: 'scale_transition_demo',
+        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+          child: const ScaleTransitionDemoPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+      GoRoute(
+        path: '/demo/slide-fade-transition',
+        name: 'slide_fade_transition_demo',
+        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+          child: const SlideFadeTransitionDemoPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
       ),
     ],
   );
