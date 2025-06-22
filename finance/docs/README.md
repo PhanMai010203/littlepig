@@ -1,163 +1,78 @@
-# 📖 Finance App – Developer & AI Reference Index
+# 📖 Finance App – Developer Reference Hub
 
-Welcome to the **Finance App** code-base! This single page is your master entry-point for understanding the project's structure, major subsystems, and where to dive deeper.  Each section below gives a concise overview and links to a dedicated, full-length document.
-
-> 📝 **Tip for AI tools** &rarr; Parse only this file for high-level context, then follow the links **on-demand** to fetch granular details.  This keeps token usage low while maintaining full knowledge coverage.
+Welcome to the **Finance App** documentation. This single page is your _one-stop jump-off point_: every other guide lives only one click away. Search with **Ctrl/Cmd-F** or scan the tables below.
 
 ---
 
-## 1. Architecture & File Layout
-
+## 01 · File & Project Structure 📂
 | 🔗 Link | Description |
-|---------|-------------|
-| [Architecture Guide](architecture/FILE_STRUCTURE.md) | Clean-Architecture overview of the `lib/` source tree, core/feature/shared layers, and supporting tooling.  Start here to locate any Dart file or feature module. |
-
-**Highlights**
-- Root entry (`main.dart`), routing, theming, and DI setup.
-- Layered breakdown (Presentation → Domain → Data).
-- Directory summaries for database, services, sync, animation framework, etc.
-
-When you are unsure *where* something lives, consult this map first.
+|---|---|
+| [File Structure Guide](architecture/FILE_STRUCTURE.md) | Clean-Architecture map of the `lib/` source tree, build tooling & generated code locations. |
 
 ---
 
-## 2. Attachment Caching System
-
+## 02 · Core Infrastructure 🔧
 | 🔗 Link | Description |
-|---------|-------------|
-| [Attachment Caching Guide](features/attachments/index.md) | Design & implementation details for intelligent 30-day local caching of camera images with Google Drive cloud storage. |
-
-**Key Points**
-- Schema changes (`isCapturedFromCamera`, `localCacheExpiry`).
-- `CacheManagementService` & timer-driven cleanup.
-- File access priority (Local → Drive → Error) and compression pipeline.
-
-Refer here before working on attachments, storage, or cache eviction logic.
+|---|---|
+| [Database Caching](DATABASE_CACHING_GUIDE.md) | High-speed in-memory cache layer for Drift/SQLite queries. |
+| [Data Sync Engine](DATA_SYNC_GUIDE.md) | CRDT-inspired event-sourcing engine for multi-device sync & conflict resolution. |
+| [Currency Management](CURRENCY_MANAGEMENT_SYSTEM.md) | Currency data, formatting, conversion APIs & offline support. |
 
 ---
 
-## 3. Database In-Memory Cache
-
+## 03 · Domain Features 💼
 | 🔗 Link | Description |
-|---------|-------------|
-| [Database Caching Guide](features/caching/index.md) | Phase 2 in-process cache for Drift/SQLite reads, offering 3-10× faster query responses with TTL-based invalidation. |
-
-**Key Points**
-- `DatabaseCacheService` + `CachedResult<T>` data model.
-- `CacheableRepositoryMixin` for effortless repository integration.
-- Invalidation helpers and performance benchmarks.
-
-Essential reading for any feature that performs frequent database reads.
+|---|---|
+| [Transactions – Basics](TRANSACTIONS_BASICS.md) | CRUD operations, models & core helpers. |
+| [Transactions – Attachments](ATTACHMENTS_SYSTEM.md) | Local-first files with compression & Google Drive backup. |
+| [Transactions – Analytics](TRANSACTIONS_ANALYTICS.md) | Analytics, search & filtering. |
+| [Transactions – Advanced](TRANSACTIONS_ADVANCED_FEATURES.md) | Subscriptions, recurring payments, loan tracking. |
+| [Transactions – States & Actions](TRANSACTIONS_STATES_AND_ACTIONS.md) | Lifecycle states (`pending`, `scheduled`, etc.) & context-aware actions. |
+| [Transactions – Integration](TRANSACTIONS_INTEGRATION.md) | Validation, error handling & best-practice integration. |
+| [Budget Tracking](BUDGET_TRACKING_SYSTEM.md) | Create, filter & monitor budgets with real-time streams. |
+| [Account Management](ACCOUNTS_GUIDE.md) | Create accounts, set balances & currency handling. |
 
 ---
 
-## 4. Currency Management System
-
+## 04 · UI & Navigation 🎨
 | 🔗 Link | Description |
-|---------|-------------|
-| [Currency Guide](features/currency/index.md) | Details the currency management system, including currency information, formatting, exchange rate conversion, and offline support. |
-
-**Key Points**
-- `CurrencyService` as the main entry point for all currency operations.
-- Supports over 180 currencies with robust formatting and parsing.
-- Real-time exchange rate conversion with support for custom rates.
-- Offline-first design using cached rates and static fallbacks.
-
----
-
-## 5. Budget Tracking System
-
-| 🔗 Link | Description |
-|---------|-------------|
-| [Budget Guide](features/budgets/index.md) | A guide to the budget module, covering creation, real-time updates, advanced filtering, and spending calculations. |
-
-**Key Points**
-- `BudgetRepository` for CRUD, `BudgetFilterService` for calculations, `BudgetUpdateService` for real-time updates.
-- Expense **and** Income budgets, with automatic (wallet-based) or manual (transaction-linked) modes.
-- Advanced filters by wallets, categories, currencies, custom tag filters, and exclusion rules.
-- Shared budgets allow aggregation of multiple child budgets with fine-grained member permissions.
-- Real-time streams automatically update budgets; supports upcoming-transaction forecasting.
-- Includes helpers for CSV import/export and optional biometric protection.
+|---|---|
+| [UI Architecture & Theming](UI_ARCHITECTURE_AND_THEMING.md) | Theme setup, adaptive layout & project-wide UI philosophy. |
+| [UI Core Widgets](UI_CORE_WIDGETS.md) | Reusable widgets for text, buttons, pages & lists. |
+| [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Rich animations with performance controls & examples. |
+| [UI Navigation](UI_NAVIGATION.md) | Page transitions, navigation helpers & deep-link hooks. |
+| [UI Dialogs & Pop-ups](UI_DIALOGS_AND_POPUPS.md) | Dialog, bottom-sheet & modal frameworks. |
+| [UI Patterns & Best Practices](UI_PATTERNS_AND_BEST_PRACTICES.md) | State-management, accessibility & responsive design tips. |
+| [UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md) | Widget tests, golden images & common issue fixes. |
+| [Navigation Overview](NAVIGATION_OVERVIEW.md) | Conceptual overview of navigation architecture. |
+| [Navigation Routing](NAVIGATION_ROUTING.md) | Route table, deep-link formats & guard patterns. |
 
 ---
 
-## 6. Transaction Management System
-
-| 🔗 Link | Description |
-|---------|-------------|
-| [Transaction Guide](features/transactions/index.md) | A comprehensive guide to the transaction system, broken down into basics, attachments, analytics, and advanced features. |
-
-**Key Points**
-- Manages transactions with detailed notes and attachment support (Google Drive + compression).
-- Advanced types: subscriptions, recurring payments, loans (credit/debt) with partial-payment tracking.
-- Rich lifecycle with states (`pending`, `scheduled`, `actionRequired`, etc.) and context-aware actions (`pay`, `skip`, `settle`).
-- Built-in analytics for category/account breakdowns and powerful search APIs.
-
----
-
-## 7. UI Development Guide
-
-| 🔗 Link | Description |
-|---------|-------------|
-| [UI Development Guide](features/ui/index.md) | A comprehensive guide to the UI framework, covering architecture, theming, reusable widgets, animations, navigation, and best practices. |
-
-**Key Points**
-- Core widgets like `PageTemplate`, `AppText`, `LanguageSelector`, and `TappableWidget` for consistent UX.
-- Animation framework widgets (`SlideFadeTransition`, `BreathingWidget`, etc.) with performance controls.
-- Navigation tools including custom page transitions and `OpenContainer` transforms.
-- Centralized dialog/bottom-sheet services, plus testing and troubleshooting guidelines.
-- Best practices for state management, theming, and adaptive layout.
+## 05 · When you need this … 💡
+Need to… | Look here 👉
+--- | ---
+Add Google-Drive attachments | ATTACHMENTS_SYSTEM.md
+Debug a cache miss | DATABASE_CACHING_GUIDE.md (Troubleshooting section)
+Resolve a sync conflict | DATA_SYNC_GUIDE.md (# Conflict Resolution)
+Format currency values | CURRENCY_MANAGEMENT_SYSTEM.md (# Formatting API)
+Watch live budget updates | BUDGET_TRACKING_SYSTEM.md (# Real-Time Streams)
+Create a deep-link route | NAVIGATION_ROUTING.md
+Implement a slide-fade animation | UI_ANIMATION_FRAMEWORK.md (Examples)
+Build a custom dialog | UI_DIALOGS_AND_POPUPS.md
+Listen to transaction state changes | TRANSACTIONS_STATES_AND_ACTIONS.md
+Schedule a recurring subscription | TRANSACTIONS_ADVANCED_FEATURES.md
+Locate any generated Drift code | architecture/FILE_STRUCTURE.md (Tables section)
+Run widget tests quickly | UI_TESTING_AND_TROUBLESHOOTING.md
 
 ---
 
-## 8. Account Management System
-
-| 🔗 Link | Description |
-|---------|-------------|
-| [Account Guide](features/accounts/index.md) | A guide to managing financial accounts, including creating accounts with different currencies and setting a starting balance. |
-
-**Key Points**
-- Accounts are the source of funds for transactions (e.g., bank accounts, cash).
-- Each account has a name, balance, and currency.
-- Balances can be formatted with locale-aware **currency symbols** via `AccountCurrencyExtension`.
-- Every transaction is linked to an account to track its impact.
+## 06 · Contributing & Style 🤝
+1. **Docs first** – update the relevant guide, then this README if a new link is needed.  Follow the order: leaf doc → README.
+2. **Lint** – run `dart format .` & `dart analyze` before every PR.
+3. **Branch naming** – `docs/<topic>` or `feature/<ticket>`.
+4. **PR description** – list affected guides & link checks.
 
 ---
 
-## 9. Data Sync System
-
-| 🔗 Link | Description |
-|---------|-------------|
-| [Sync Guide](features/sync/index.md) | A comprehensive guide to the event-sourcing based sync system that keeps data consistent across multiple devices. |
-
-**Key Points**
-- Uses a CRDT-inspired event sourcing model.
-- Supports offline-first operation with automatic conflict resolution.
-- Integrates with Google Drive for cloud backups.
-
----
-
-## 10. How to Extend the Documentation
-
-Have you added a significant feature?  Follow these steps:
-1. Write or update a detailed spec under `docs/features/` or another appropriate folder.
-2. Append a **one-sentence description** and link in a new section *here* (keep summaries < 4 lines).
-3. Open a pull request.
-
-> Consistent indexing keeps both humans and AI agents efficient 🚀
-
----
-
-## 11. Getting Help & Contributing
-
-- **Discussion**: Use project issues/PRs for questions.
-- **Style**: Prefer concise Markdown, tables, and bullet lists.
-- **AI Usage**: Large language models should ingest *only* this index initially.
-
----
-
-*Last updated: <!-- 2025 Jun 22nd -->*
-
--   [Transactions](./features/transactions/index.md)
--   [UI](./features/ui/index.md)
--   [Navigation](./features/navigation/index.md) 
+*Last updated: <!-- 2025-06-22 -->* 
