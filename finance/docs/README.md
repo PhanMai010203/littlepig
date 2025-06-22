@@ -7,7 +7,7 @@ Welcome to the **Finance App** documentation. This single page is your _one-stop
 ## 01 · File & Project Structure 📂
 | 🔗 Link | Description |
 |---|---|
-| [File Structure Guide](architecture/FILE_STRUCTURE.md) | Clean-Architecture map of the `lib/` source tree, build tooling & generated code locations. |
+| [File Structure Guide](FILE_STRUCTURE.md) | Clean-Architecture map of the `lib/` source tree, build tooling & generated code locations. |
 
 ---
 
