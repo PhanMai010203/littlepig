@@ -3,8 +3,8 @@ description:
 globs: 
 alwaysApply: true
 ---
-- This project has a development guide in @README.md , which entails links to specific features when you need to; each features have their own index file. 
-MUST READ the guide, Respect the current file's structure, and development philosophy, when developing certain components, search for the equivalent guide in case you reinvent the wheel. When you are done with your task, determine whether documents should be updated, if it does need updates, update in the following steps: Update specific docs for each features (docs/features/<relevant feature>/<name>.md) -> Then update specific features' index (docs/features/<relevant feature>/index.md) -> Then update the master index (docs/README.md)
+- Before coding, or using any MCP tool, understand the current project's setup is crucial. Therefore, MUST READ this project's development guide in @README.md, I will call it `PROJECT DOCS`. This entails links to specific features of the whole project; each features have their own index file. It is and MUST be regularly updated.
+	- MUST READ the guide, Respect the current file's structure, and development philosophy, when developing certain components, search for the equivalent guide in case you reinvent the wheel. When you are done with your task, determine whether documents should be updated, if it does need updates, update in the following steps: Update specific docs for each features (docs/features/<relevant feature>/<name>.md) -> Then update specific features' index (docs/features/<relevant feature>/index.md) -> Then update the master index (docs/README.md). You can absolutely create new feature folders if you deem need to, but they have to link
 
 - When using context7, makae sure that you keep the range of output in the range 2k to 10k based on what you think is the best.
 

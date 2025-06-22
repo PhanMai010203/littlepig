@@ -155,4 +155,8 @@ Have you added a significant feature?  Follow these steps:
 
 ---
 
-*Last updated: <!-- YYYY-MM-DD -->* 
+*Last updated: <!-- 2025 Jun 22nd -->*
+
+-   [Transactions](./features/transactions/index.md)
+-   [UI](./features/ui/index.md)
+-   [Navigation](./features/navigation/index.md) 
