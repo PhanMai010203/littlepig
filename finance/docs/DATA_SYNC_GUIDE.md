@@ -413,7 +413,7 @@ final database = getIt<AppDatabase>();                       // Database instanc
 ```xml
 <!-- android/app/src/main/res/values/strings.xml -->
 <resources>
-    <string name="default_web_client_id">44627385543-tvnhr82l9t4t55bmk6sfvju72ghvevqk.apps.googleusercontent.com</string>
+    <string name="default_web_client_id">YOUR_GOOGLE_CLIENT_ID</string>
 </resources>
 ```
 
