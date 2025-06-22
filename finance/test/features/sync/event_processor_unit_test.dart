@@ -237,7 +237,8 @@ void main() {
       expect(eventReceived, isTrue);
     });
 
-    test('processEvents - should process a batch of events and store them', () async {
+    test('processEvents - should process a batch of events and store them',
+        () async {
       final events = [
         SyncEvent(
           eventId: 'batch-event-1',
@@ -275,15 +276,18 @@ void main() {
         ),
       ];
 
-      final initialCount = (await database.select(database.syncEventLogTable).get()).length;
+      final initialCount =
+          (await database.select(database.syncEventLogTable).get()).length;
 
       await eventProcessor.processEvents(events);
 
-      final finalCount = (await database.select(database.syncEventLogTable).get()).length;
-      
+      final finalCount =
+          (await database.select(database.syncEventLogTable).get()).length;
+
       expect(finalCount, equals(initialCount + 2));
 
-      final storedEvents = await database.select(database.syncEventLogTable).get();
+      final storedEvents =
+          await database.select(database.syncEventLogTable).get();
       expect(storedEvents.any((e) => e.eventId == 'batch-event-1'), isTrue);
       expect(storedEvents.any((e) => e.eventId == 'batch-event-2'), isTrue);
       expect(storedEvents.any((e) => e.eventId == 'batch-event-3'), isFalse);

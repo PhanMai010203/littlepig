@@ -25,7 +25,6 @@ class BudgetFilterServiceImpl implements BudgetFilterService {
   @override
   Future<List<Transaction>> getFilteredTransactionsForBudget(
       Budget budget, DateTime startDate, DateTime endDate) async {
-    
     // ✅ PHASE 2: Handle manual-add budgets differently
     if (budget.manualAddMode) {
       return await _getManualBudgetTransactions(budget, startDate, endDate);
@@ -200,28 +199,31 @@ class BudgetFilterServiceImpl implements BudgetFilterService {
   }
 
   // Private helper methods
-  
+
   /// ✅ PHASE 2: Get transactions for manual-add budgets using join table
   Future<List<Transaction>> _getManualBudgetTransactions(
       Budget budget, DateTime startDate, DateTime endDate) async {
     if (budget.id == null) return [];
-    
+
     // Get transaction links for this budget
-    final links = await _budgetRepository.getTransactionLinksForBudget(budget.id!);
-    
+    final links =
+        await _budgetRepository.getTransactionLinksForBudget(budget.id!);
+
     // Get the actual transactions
     final transactions = <Transaction>[];
     for (final link in links) {
-      final transaction = await _transactionRepository.getTransactionById(link.transactionId);
+      final transaction =
+          await _transactionRepository.getTransactionById(link.transactionId);
       if (transaction != null) {
         // Filter by date range
-        if (transaction.date.isAfter(startDate.subtract(const Duration(days: 1))) &&
+        if (transaction.date
+                .isAfter(startDate.subtract(const Duration(days: 1))) &&
             transaction.date.isBefore(endDate.add(const Duration(days: 1)))) {
           transactions.add(transaction);
         }
       }
     }
-    
+
     return transactions;
   }
 

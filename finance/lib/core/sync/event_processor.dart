@@ -90,7 +90,8 @@ class EventProcessor {
     }
 
     // Validate timestamp is not in future
-    if (event.timestamp.isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
+    if (event.timestamp
+        .isAfter(DateTime.now().add(const Duration(minutes: 5)))) {
       return false;
     }
 
@@ -214,21 +215,24 @@ class EventProcessor {
 
   /// Store a batch of processed events in the database
   Future<void> _storeProcessedEvents(List<SyncEvent> events) async {
-    final companions = events.map((event) => SyncEventLogTableCompanion.insert(
-          eventId: event.eventId,
-          deviceId: event.deviceId,
-          tableNameField: event.tableName,
-          recordId: event.recordId,
-          operation: event.operation,
-          data: jsonEncode(event.data),
-          timestamp: event.timestamp,
-          sequenceNumber: event.sequenceNumber,
-          hash: event.hash,
-          isSynced: const Value(false),
-        )).toList();
-    
+    final companions = events
+        .map((event) => SyncEventLogTableCompanion.insert(
+              eventId: event.eventId,
+              deviceId: event.deviceId,
+              tableNameField: event.tableName,
+              recordId: event.recordId,
+              operation: event.operation,
+              data: jsonEncode(event.data),
+              timestamp: event.timestamp,
+              sequenceNumber: event.sequenceNumber,
+              hash: event.hash,
+              isSynced: const Value(false),
+            ))
+        .toList();
+
     await _database.batch((batch) {
-      batch.insertAll(_database.syncEventLogTable, companions, mode: InsertMode.insertOrReplace);
+      batch.insertAll(_database.syncEventLogTable, companions,
+          mode: InsertMode.insertOrReplace);
     });
   }
 

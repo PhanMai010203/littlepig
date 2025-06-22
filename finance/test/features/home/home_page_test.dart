@@ -4,9 +4,10 @@ import 'package:finance/features/home/widgets/account_card.dart';
 
 void main() {
   group('AccountCard', () {
-    testWidgets('should call onSelected with correct index when tapped', (WidgetTester tester) async {
+    testWidgets('should call onSelected with correct index when tapped',
+        (WidgetTester tester) async {
       int? selectedIndex;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -31,7 +32,8 @@ void main() {
       expect(selectedIndex, equals(2));
     });
 
-    testWidgets('should display selected state correctly', (WidgetTester tester) async {
+    testWidgets('should display selected state correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -51,13 +53,14 @@ void main() {
       // The selected account should have a visible border
       final container = find.byType(AnimatedContainer);
       expect(container, findsOneWidget);
-      
+
       final animatedContainer = tester.widget<AnimatedContainer>(container);
       final decoration = animatedContainer.decoration as BoxDecoration;
       expect(decoration.border?.top.color, equals(Colors.blue));
     });
 
-    testWidgets('should display account information correctly', (WidgetTester tester) async {
+    testWidgets('should display account information correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -79,7 +82,8 @@ void main() {
       expect(find.text('25 transactions'), findsOneWidget);
     });
 
-    testWidgets('should handle unselected state correctly', (WidgetTester tester) async {
+    testWidgets('should handle unselected state correctly',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -98,7 +102,7 @@ void main() {
 
       final container = find.byType(AnimatedContainer);
       expect(container, findsOneWidget);
-      
+
       final animatedContainer = tester.widget<AnimatedContainer>(container);
       final decoration = animatedContainer.decoration as BoxDecoration;
       expect(decoration.border?.top.color, equals(Colors.transparent));
@@ -108,7 +112,7 @@ void main() {
   group('AddAccountCard', () {
     testWidgets('should call onTap when tapped', (WidgetTester tester) async {
       bool wasTapped = false;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
@@ -142,4 +146,4 @@ void main() {
       expect(find.text('Account'), findsOneWidget);
     });
   });
-} 
+}

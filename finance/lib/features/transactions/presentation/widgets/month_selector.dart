@@ -5,7 +5,6 @@ import '../../../../shared/widgets/animations/animated_scale_opacity.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 
-
 class MonthSelector extends StatefulWidget {
   const MonthSelector({
     super.key,
@@ -155,8 +154,9 @@ class _MonthSelectorState extends State<MonthSelector> {
 
     final months = <DateTime>[];
     DateTime tempMonth = DateTime(firstMonth.year, firstMonth.month);
-    
-    while (tempMonth.isBefore(lastMonth) || tempMonth.isAtSameMomentAs(lastMonth)) {
+
+    while (tempMonth.isBefore(lastMonth) ||
+        tempMonth.isAtSameMomentAs(lastMonth)) {
       months.add(tempMonth);
       tempMonth = DateTime(tempMonth.year, tempMonth.month + 1);
     }
@@ -220,18 +220,18 @@ class _MonthSelectorState extends State<MonthSelector> {
                         // Month name
                         AppText(
                           DateFormat.MMM().format(month),
-                          fontWeight: isSelected 
-                              ? FontWeight.bold 
-                              : FontWeight.normal,
+                          fontWeight:
+                              isSelected ? FontWeight.bold : FontWeight.normal,
                           colorName: isSelected ? "text" : "textLight",
                         ),
-                        
+
                         // Year (if different from current year)
                         if (showYear)
                           AppText(
                             DateFormat.y().format(month),
                             fontSize: 12,
-                            colorName: isSelected ? "textSecondary" : "textLight",
+                            colorName:
+                                isSelected ? "textSecondary" : "textLight",
                           ),
 
                         // Current month indicator (small dot when not selected)
@@ -242,7 +242,10 @@ class _MonthSelectorState extends State<MonthSelector> {
                             height: 4,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Theme.of(context).colorScheme.secondary.withValues(alpha: 0.6),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .secondary
+                                  .withValues(alpha: 0.6),
                             ),
                           ),
 
@@ -334,4 +337,4 @@ class _MonthSelectorState extends State<MonthSelector> {
       ),
     );
   }
-} 
+}

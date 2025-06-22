@@ -509,15 +509,16 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       id: 'enhanced_incremental_sync',
       interval: const Duration(minutes: 15),
       task: _performPeriodicSync,
-      isEssential: false, // Sync is not essential, can be paused during low battery
+      isEssential:
+          false, // Sync is not essential, can be paused during low battery
       priority: 7, // High priority but not critical
       pauseOnBackground: false, // Allow background sync
       pauseOnLowBattery: true, // Pause when battery is low
     );
-    
+
     TimerManagementService.instance.registerTask(syncTask);
   }
-  
+
   /// Periodic sync task for TimerManagementService
   Future<void> _performPeriodicSync() async {
     if (!_isSyncing && await isSignedIn()) {
@@ -562,7 +563,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
   void dispose() {
     // Unregister from TimerManagementService
     TimerManagementService.instance.unregisterTask('enhanced_incremental_sync');
-    
+
     _eventStreamController.close();
     _eventProcessor.dispose();
     _stateManager.dispose();

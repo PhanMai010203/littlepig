@@ -126,7 +126,7 @@ class AppSettings {
       'batterySaver': false,
       'outlinedIcons': false,
       'appAnimations': true,
-      
+
       // Haptic feedback settings
       'hapticFeedback': true, // Independent haptic feedback control
 

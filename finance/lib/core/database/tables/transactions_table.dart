@@ -58,5 +58,6 @@ class TransactionsTable extends Table {
 
   // Phase 3 – Partial loan payments
   RealColumn get remainingAmount => real().nullable()();
-  IntColumn get parentTransactionId => integer().nullable().references(TransactionsTable, #id)();
+  IntColumn get parentTransactionId =>
+      integer().nullable().references(TransactionsTable, #id)();
 }

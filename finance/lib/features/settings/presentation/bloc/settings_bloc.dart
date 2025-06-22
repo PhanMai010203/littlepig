@@ -10,13 +10,14 @@ part 'settings_bloc.freezed.dart';
 
 @injectable
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
-  SettingsBloc() : super(const SettingsState(
-    themeMode: ThemeMode.system,
-    analyticsEnabled: true,
-    autoBackupEnabled: false,
-    notificationsEnabled: true,
-    hapticFeedbackEnabled: true,
-  )) {
+  SettingsBloc()
+      : super(const SettingsState(
+          themeMode: ThemeMode.system,
+          analyticsEnabled: true,
+          autoBackupEnabled: false,
+          notificationsEnabled: true,
+          hapticFeedbackEnabled: true,
+        )) {
     on<_LoadSettings>(_onLoadSettings);
     on<_ThemeModeChanged>(_onThemeModeChanged);
     on<_AnalyticsToggled>(_onAnalyticsToggled);
@@ -31,9 +32,12 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   ) {
     emit(SettingsState(
       themeMode: AppSettings.themeMode,
-      analyticsEnabled: AppSettings.getWithDefault<bool>('analyticsEnabled', true),
-      autoBackupEnabled: AppSettings.getWithDefault<bool>('autoBackupEnabled', false),
-      notificationsEnabled: AppSettings.getWithDefault<bool>('notificationsEnabled', true),
+      analyticsEnabled:
+          AppSettings.getWithDefault<bool>('analyticsEnabled', true),
+      autoBackupEnabled:
+          AppSettings.getWithDefault<bool>('autoBackupEnabled', false),
+      notificationsEnabled:
+          AppSettings.getWithDefault<bool>('notificationsEnabled', true),
       hapticFeedbackEnabled: AppSettings.hapticFeedback,
     ));
   }
@@ -77,4 +81,4 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     emit(state.copyWith(hapticFeedbackEnabled: event.enabled));
     AppSettings.setHapticFeedback(event.enabled);
   }
-} 
+}

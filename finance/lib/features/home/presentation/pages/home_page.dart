@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late ScrollController _scrollController;
   int _selectedAccountIndex = 0;
-  
+
   List<AccountTileData> _accountTiles = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -53,7 +53,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         _animationController.value = 1 - offset / 200;
       }
     });
-    
+
     _loadAccounts();
   }
 
@@ -73,29 +73,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       // 1. Retrieve all accounts
       final accounts = await accountRepository.getAllAccounts();
-      
+
       // 2. For each account, get transaction count and formatted balance
       final List<AccountTileData> tiles = [];
-      
+
       for (final account in accounts) {
         // Get transaction count for this account
-        final transactions = await transactionRepository.getTransactionsByAccount(account.id!);
+        final transactions =
+            await transactionRepository.getTransactionsByAccount(account.id!);
         final transactionCount = transactions.length;
-        
+
         // Format balance using AccountCurrencyExtension
         final formattedBalance = await account.formatBalance(
           currencyRepository,
           showSymbol: true,
           useCodeWithSymbol: true,
         );
-        
+
         tiles.add(AccountTileData(
           account: account,
           formattedBalance: formattedBalance,
           transactionCount: transactionCount,
         ));
       }
-      
+
       setState(() {
         _accountTiles = tiles;
         _isLoading = false;
@@ -106,7 +107,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         _isLoading = false;
         _errorMessage = 'Failed to load accounts: ${e.toString()}';
       });
-      
+
       // Show error feedback to user
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -140,8 +141,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   constraints: const BoxConstraints(minHeight: 100),
                   child: Container(
                     alignment: AlignmentDirectional.bottomStart,
-                    padding:
-                        const EdgeInsetsDirectional.only(start: 9, bottom: 17, end: 9),
+                    padding: const EdgeInsetsDirectional.only(
+                        start: 9, bottom: 17, end: 9),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -163,7 +164,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         child: CircularProgressIndicator(),
       );
     }
-    
+
     if (_errorMessage != null) {
       return Center(
         child: Column(
@@ -191,7 +192,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ),
       );
     }
-    
+
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       clipBehavior: Clip.none,
@@ -201,7 +202,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ..._accountTiles.asMap().entries.map((entry) {
             final index = entry.key;
             final tileData = entry.value;
-            
+
             return Padding(
               padding: const EdgeInsets.only(right: 16),
               child: AccountCard(

@@ -19,7 +19,7 @@ void main() {
 
     test('should be able to disable haptic feedback', () async {
       await AppSettings.setHapticFeedback(false);
-      
+
       expect(AppSettings.hapticFeedback, isFalse);
       expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
     });
@@ -27,7 +27,7 @@ void main() {
     test('should be able to enable haptic feedback', () async {
       await AppSettings.setHapticFeedback(false);
       await AppSettings.setHapticFeedback(true);
-      
+
       expect(AppSettings.hapticFeedback, isTrue);
       expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
     });
@@ -35,17 +35,19 @@ void main() {
     test('battery saver should override haptic feedback setting', () async {
       await AppSettings.setHapticFeedback(true);
       await AppSettings.setBatterySaver(true);
-      
+
       expect(AppSettings.hapticFeedback, isTrue); // Setting should remain true
-      expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse); // But service should return false
+      expect(AnimationPerformanceService.shouldUseHapticFeedback,
+          isFalse); // But service should return false
     });
 
-    test('haptic feedback should be independent of animation settings', () async {
+    test('haptic feedback should be independent of animation settings',
+        () async {
       // Set animations off but haptics on
       await AppSettings.setAppAnimations(false);
       await AppSettings.setHapticFeedback(true);
       await AppSettings.setBatterySaver(false);
-      
+
       expect(AppSettings.hapticFeedback, isTrue);
       expect(AppSettings.appAnimations, isFalse);
       expect(AnimationPerformanceService.shouldUseHapticFeedback, isTrue);
@@ -53,12 +55,12 @@ void main() {
 
     test('settings should persist across app restarts', () async {
       await AppSettings.setHapticFeedback(false);
-      
+
       // Simulate app restart by reinitializing
       await AppSettings.initialize();
-      
+
       expect(AppSettings.hapticFeedback, isFalse);
       expect(AnimationPerformanceService.shouldUseHapticFeedback, isFalse);
     });
   });
-} 
+}

@@ -2,7 +2,7 @@ import 'dart:async';
 import '../services/database_cache_service.dart';
 
 /// Mixin that provides caching functionality for repository read operations
-/// 
+///
 /// Usage:
 /// ```dart
 /// class MyRepositoryImpl with CacheableRepositoryMixin implements MyRepository {
@@ -20,7 +20,7 @@ mixin CacheableRepositoryMixin {
   final DatabaseCacheService _cache = DatabaseCacheService();
 
   /// Cache a read operation with automatic key generation
-  /// 
+  ///
   /// [method] - Method name for cache key generation
   /// [fetchOperation] - Function that performs the actual database read
   /// [params] - Optional parameters to include in cache key
@@ -32,19 +32,19 @@ mixin CacheableRepositoryMixin {
     Duration? ttl,
   }) async {
     final cacheKey = _generateCacheKey(method, params);
-    
+
     // Try to get from cache first
     final cached = await _cache.get<T>(cacheKey);
     if (cached != null) {
       return cached;
     }
-    
+
     // Cache miss - fetch from database
     final result = await fetchOperation();
-    
+
     // Cache the result
     await _cache.set(cacheKey, result, ttl: ttl);
-    
+
     return result;
   }
 
@@ -56,24 +56,24 @@ mixin CacheableRepositoryMixin {
     Duration? ttl,
   }) async {
     final cacheKey = _generateCacheKey(method, params);
-    
+
     // Try to get from cache first
     final cached = await _cache.get<T?>(cacheKey);
     if (cached != null) {
       return cached;
     }
-    
+
     // Cache miss - fetch from database
     final result = await fetchOperation();
-    
+
     // Cache the result (including null results to prevent repeated queries)
     await _cache.set(cacheKey, result, ttl: ttl);
-    
+
     return result;
   }
 
   /// Invalidate cache entries for a specific entity type
-  /// 
+  ///
   /// [entityType] - The entity type to invalidate (e.g., 'transaction', 'budget')
   /// [id] - Optional specific entity ID to invalidate
   Future<void> invalidateCache(String entityType, {int? id}) async {
@@ -83,7 +83,7 @@ mixin CacheableRepositoryMixin {
         '${entityType}_getById_$id',
         '${entityType}_getBySyncId_',
       ];
-      
+
       for (final pattern in patterns) {
         await _cache.invalidate(pattern);
       }
@@ -105,16 +105,14 @@ mixin CacheableRepositoryMixin {
     if (params == null || params.isEmpty) {
       return method;
     }
-    
+
     // Sort parameters for consistent cache keys
     final sortedParams = Map.fromEntries(
-      params.entries.toList()..sort((a, b) => a.key.compareTo(b.key))
-    );
-    
-    final paramString = sortedParams.entries
-        .map((e) => '${e.key}=${e.value}')
-        .join('&');
-    
+        params.entries.toList()..sort((a, b) => a.key.compareTo(b.key)));
+
+    final paramString =
+        sortedParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+
     return '${method}_$paramString';
   }
 
@@ -122,4 +120,4 @@ mixin CacheableRepositoryMixin {
   Future<void> cleanExpiredCache() async {
     _cache.cleanExpired();
   }
-} 
+}

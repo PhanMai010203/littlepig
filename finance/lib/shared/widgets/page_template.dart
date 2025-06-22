@@ -69,7 +69,8 @@ class _PageTemplateState extends State<PageTemplate> {
                 animation: _scrollController,
                 builder: (context, child) {
                   final appBarOpacity = _scrollController.hasClients
-                      ? (_scrollController.offset / (_kExpandedHeight - _kToolbarHeight))
+                      ? (_scrollController.offset /
+                              (_kExpandedHeight - _kToolbarHeight))
                           .clamp(0.0, 1.0)
                       : 0.0;
 
@@ -84,14 +85,17 @@ class _PageTemplateState extends State<PageTemplate> {
                     leading: widget.showBackButton && Navigator.canPop(context)
                         ? IconButton(
                             icon: const Icon(Icons.arrow_back),
-                            onPressed: widget.onBackPressed ?? () => Navigator.pop(context),
+                            onPressed: widget.onBackPressed ??
+                                () => Navigator.pop(context),
                           )
                         : null,
                     flexibleSpace: Stack(
                       fit: StackFit.expand,
                       children: [
                         // Background that fades in/out with scroll
-                        Container(color: primaryColor.withAlpha((255 * appBarOpacity).toInt())),
+                        Container(
+                            color: primaryColor
+                                .withAlpha((255 * appBarOpacity).toInt())),
                         // Title & collapse handling
                         FlexibleSpaceBar(
                           titlePadding: const EdgeInsets.symmetric(

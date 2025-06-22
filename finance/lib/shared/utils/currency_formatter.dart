@@ -36,8 +36,7 @@ class CurrencyFormatter {
 
     if (useCodeWithSymbol) {
       // Custom format: Symbol - Amount - Code
-      result =
-          '${currency.displaySymbol} $formattedNumber ${currency.code}';
+      result = '${currency.displaySymbol} $formattedNumber ${currency.code}';
     } else {
       if (showSymbol && currency.symbol.isNotEmpty) {
         // Determine symbol placement (typically before for most currencies)

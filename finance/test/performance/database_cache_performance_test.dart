@@ -30,7 +30,8 @@ void main() {
       TestWidgetsFlutterBinding.ensureInitialized();
 
       // Mock path_provider plugin for tests to avoid MissingPluginException
-      const MethodChannel pathChannel = MethodChannel('plugins.flutter.io/path_provider');
+      const MethodChannel pathChannel =
+          MethodChannel('plugins.flutter.io/path_provider');
       pathChannel.setMockMethodCallHandler((MethodCall methodCall) async {
         switch (methodCall.method) {
           case 'getApplicationDocumentsDirectory':
@@ -44,14 +45,14 @@ void main() {
 
       // Initialize database
       database = await DatabaseConnectionOptimizer.getOptimizedDatabase();
-      
+
       // Initialize cache service
       cacheService = DatabaseCacheService();
-      
+
       // Initialize repositories
       transactionRepo = TransactionRepositoryImpl(database);
       budgetRepo = BudgetRepositoryImpl(database);
-      
+
       // Seed test data
       await _seedTestData(database);
     });
@@ -64,34 +65,34 @@ void main() {
     test('Transaction Repository - Read Performance With Cache', () async {
       // Measure performance without cache (cold run)
       final stopwatchCold = Stopwatch()..start();
-      
+
       // First call - should miss cache and hit database
       await transactionRepo.getAllTransactions();
       await transactionRepo.getTransactionsByAccount(1);
       await transactionRepo.getTransactionsByCategory(1);
-      
+
       stopwatchCold.stop();
       final coldTime = stopwatchCold.elapsedMilliseconds;
-      
+
       // Measure performance with cache (warm run)
       final stopwatchWarm = Stopwatch()..start();
-      
+
       // Second call - should hit cache
       await transactionRepo.getAllTransactions();
       await transactionRepo.getTransactionsByAccount(1);
       await transactionRepo.getTransactionsByCategory(1);
-      
+
       stopwatchWarm.stop();
       final warmTime = stopwatchWarm.elapsedMilliseconds;
-      
+
       print('Transaction Repository Performance:');
       print('Cold run (database): ${coldTime}ms');
       print('Warm run (cache): ${warmTime}ms');
       print('Improvement: ${(coldTime / warmTime).toStringAsFixed(2)}x faster');
-      
+
       // Cache should be significantly faster
       expect(warmTime, lessThan(coldTime));
-      
+
       // Log cache statistics
       final cacheStats = await _getCacheStatistics();
       print('Cache statistics: $cacheStats');
@@ -100,31 +101,31 @@ void main() {
     test('Budget Repository - Read Performance With Cache', () async {
       // Measure performance without cache (cold run)
       final stopwatchCold = Stopwatch()..start();
-      
+
       // First call - should miss cache and hit database
       await budgetRepo.getAllBudgets();
       await budgetRepo.getActiveBudgets();
       await budgetRepo.getBudgetById(1);
-      
+
       stopwatchCold.stop();
       final coldTime = stopwatchCold.elapsedMilliseconds;
-      
+
       // Measure performance with cache (warm run)
       final stopwatchWarm = Stopwatch()..start();
-      
+
       // Second call - should hit cache
       await budgetRepo.getAllBudgets();
       await budgetRepo.getActiveBudgets();
       await budgetRepo.getBudgetById(1);
-      
+
       stopwatchWarm.stop();
       final warmTime = stopwatchWarm.elapsedMilliseconds;
-      
+
       print('Budget Repository Performance:');
       print('Cold run (database): ${coldTime}ms');
       print('Warm run (cache): ${warmTime}ms');
       print('Improvement: ${(coldTime / warmTime).toStringAsFixed(2)}x faster');
-      
+
       // Cache should be significantly faster
       expect(warmTime, lessThan(coldTime));
     });
@@ -133,40 +134,41 @@ void main() {
       // Fill cache with data
       await transactionRepo.getAllTransactions();
       await budgetRepo.getAllBudgets();
-      
+
       // Measure cache invalidation time
       final stopwatch = Stopwatch()..start();
-      
-             // Create new transaction (should invalidate cache)
-       final now = DateTime.now();
-       final newTransaction = Transaction(
-         title: 'Test Transaction',
-         amount: 100.0,
-         categoryId: 1,
-         accountId: 1,
-         date: now,
-         createdAt: now,
-         updatedAt: now,
-         transactionType: TransactionType.expense,
-         recurrence: TransactionRecurrence.none,
-         transactionState: TransactionState.completed,
-         syncId: 'test-sync-id',
-       );
-      
+
+      // Create new transaction (should invalidate cache)
+      final now = DateTime.now();
+      final newTransaction = Transaction(
+        title: 'Test Transaction',
+        amount: 100.0,
+        categoryId: 1,
+        accountId: 1,
+        date: now,
+        createdAt: now,
+        updatedAt: now,
+        transactionType: TransactionType.expense,
+        recurrence: TransactionRecurrence.none,
+        transactionState: TransactionState.completed,
+        syncId: 'test-sync-id',
+      );
+
       await transactionRepo.createTransaction(newTransaction);
-      
+
       stopwatch.stop();
       final invalidationTime = stopwatch.elapsedMilliseconds;
-      
+
       print('Cache invalidation time: ${invalidationTime}ms');
-      
+
       // Verify cache was invalidated by checking next read hits database
       final stopwatchAfterInvalidation = Stopwatch()..start();
       await transactionRepo.getAllTransactions();
       stopwatchAfterInvalidation.stop();
-      
-      print('Read after invalidation: ${stopwatchAfterInvalidation.elapsedMilliseconds}ms');
-      
+
+      print(
+          'Read after invalidation: ${stopwatchAfterInvalidation.elapsedMilliseconds}ms');
+
       // Should be reasonable performance
       expect(invalidationTime, lessThan(100)); // Under 100ms
     });
@@ -174,44 +176,48 @@ void main() {
     test('Memory Usage and Cache Size', () async {
       // Clear cache first
       await cacheService.clear();
-      
+
       // Fill cache with various data sizes
       await transactionRepo.getAllTransactions();
       await budgetRepo.getAllBudgets();
-      
+
       // Test with different parameter combinations
       for (int i = 1; i <= 5; i++) {
         await transactionRepo.getTransactionsByAccount(i);
         await transactionRepo.getTransactionsByCategory(i);
         await budgetRepo.getBudgetById(i);
       }
-      
+
       // Get cache statistics
       final cacheStats = await _getCacheStatistics();
       print('Cache memory usage test:');
       print('Total cached entries: ${cacheStats['total_entries']}');
       print('Memory footprint estimate: ${cacheStats['memory_estimate']}KB');
-      
+
       // Should have reasonable number of cached entries
       expect(cacheStats['total_entries'], greaterThan(5));
-      expect(cacheStats['total_entries'], lessThan(100)); // Reasonable upper bound
+      expect(
+          cacheStats['total_entries'], lessThan(100)); // Reasonable upper bound
     });
 
     test('Database Connection Optimization Verification', () async {
       // Get database performance metrics
-      final metrics = await DatabaseConnectionOptimizer.getPerformanceMetrics(database);
-      
+      final metrics =
+          await DatabaseConnectionOptimizer.getPerformanceMetrics(database);
+
       print('Database optimization metrics:');
       print('Journal mode: ${metrics['journal_mode']}');
       print('Cache size: ${metrics['cache_size']}');
       print('Synchronous: ${metrics['synchronous']}');
       print('Foreign keys: ${metrics['foreign_keys']}');
       print('Optimization applied: ${metrics['optimization_applied']}');
-      
+
       // Verify optimizations were applied
       expect(metrics['optimization_applied'], isTrue);
-      expect(metrics['journal_mode'], equals('wal')); // WAL mode should be enabled
-      expect(metrics['foreign_keys'], equals(1)); // Foreign keys should be enabled
+      expect(
+          metrics['journal_mode'], equals('wal')); // WAL mode should be enabled
+      expect(
+          metrics['foreign_keys'], equals(1)); // Foreign keys should be enabled
     });
   });
 }
@@ -221,41 +227,42 @@ Future<void> _seedTestData(AppDatabase database) async {
   // Create test transactions
   for (int i = 1; i <= 20; i++) {
     await database.into(database.transactionsTable).insert(
-      TransactionsTableCompanion.insert(
-        title: 'Test Transaction $i',
-        amount: i * 10.0,
-        categoryId: (i % 3) + 1,
-        accountId: (i % 2) + 1,
-        date: DateTime.now().subtract(Duration(days: i)),
-        syncId: 'test-sync-$i',
-      ),
-    );
+          TransactionsTableCompanion.insert(
+            title: 'Test Transaction $i',
+            amount: i * 10.0,
+            categoryId: (i % 3) + 1,
+            accountId: (i % 2) + 1,
+            date: DateTime.now().subtract(Duration(days: i)),
+            syncId: 'test-sync-$i',
+          ),
+        );
   }
-  
+
   // Create test budgets
   for (int i = 1; i <= 10; i++) {
     await database.into(database.budgetsTable).insert(
-      BudgetsTableCompanion.insert(
-        name: 'Test Budget $i',
-        amount: i * 100.0,
-        period: BudgetPeriod.monthly.name,
-        startDate: DateTime.now().subtract(const Duration(days: 30)),
-        endDate: DateTime.now().add(const Duration(days: 30)),
-        syncId: 'budget-sync-$i',
-      ),
-    );
+          BudgetsTableCompanion.insert(
+            name: 'Test Budget $i',
+            amount: i * 100.0,
+            period: BudgetPeriod.monthly.name,
+            startDate: DateTime.now().subtract(const Duration(days: 30)),
+            endDate: DateTime.now().add(const Duration(days: 30)),
+            syncId: 'budget-sync-$i',
+          ),
+        );
   }
 }
 
 /// Get cache statistics for performance analysis
 Future<Map<String, dynamic>> _getCacheStatistics() async {
   final cache = DatabaseCacheService();
-  
+
   // Simple cache statistics (can be enhanced based on DatabaseCacheService implementation)
   return {
-    'total_entries': 0, // This would need to be implemented in DatabaseCacheService
+    'total_entries':
+        0, // This would need to be implemented in DatabaseCacheService
     'memory_estimate': 0, // Estimate based on cached data
     'hit_rate': 0.0, // Cache hit rate
     'miss_rate': 0.0, // Cache miss rate
   };
-} 
+}

@@ -981,28 +981,26 @@ class _SettingsPageState extends State<SettingsPage> {
             'Advanced animations',
             'Material You theming',
             'Accessibility support'
-          ]
-              .map((feature) => Padding(
-                    padding: const EdgeInsets.only(bottom: 4),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.check_circle,
-                          size: 16,
-                          color: getColor(context, 'primary'),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: AppText(
-                            feature,
-                            fontSize: 13,
-                            colorName: 'text',
-                          ),
-                        ),
-                      ],
+          ].map((feature) => Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: getColor(context, 'primary'),
                     ),
-                  ))
-              ,
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: AppText(
+                        feature,
+                        fontSize: 13,
+                        colorName: 'text',
+                      ),
+                    ),
+                  ],
+                ),
+              )),
 
           const SizedBox(height: 16),
 

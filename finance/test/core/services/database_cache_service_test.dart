@@ -62,12 +62,13 @@ void main() {
       const expiredKey = 'expired_key';
 
       await cacheService.set(validKey, 'valid_data');
-      await cacheService.set(expiredKey, 'expired_data', ttl: const Duration(milliseconds: 10));
+      await cacheService.set(expiredKey, 'expired_data',
+          ttl: const Duration(milliseconds: 10));
 
       await Future.delayed(const Duration(milliseconds: 20));
-      
+
       cacheService.cleanExpired();
-      
+
       final validData = await cacheService.get(validKey);
       final expiredData = await cacheService.get(expiredKey);
 
@@ -75,4 +76,4 @@ void main() {
       expect(expiredData, isNull);
     });
   });
-} 
+}

@@ -10,6 +10,7 @@ abstract class CategoryRepository {
   Future<Category> createCategory(Category category);
   Future<Category> updateCategory(Category category);
   Future<void> deleteCategory(int id);
+  Future<void> deleteAllCategories();
 
   // Sync related
   Future<List<Category>> getUnsyncedCategories();

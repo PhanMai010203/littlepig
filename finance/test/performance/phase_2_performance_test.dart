@@ -31,7 +31,8 @@ void main() {
       cacheService.clear();
     });
 
-    test('cached retrieval is significantly faster than initial fetch', () async {
+    test('cached retrieval is significantly faster than initial fetch',
+        () async {
       // First call – should execute the expensive fetch
       final stopwatchFirst = Stopwatch()..start();
       await getDataWithCache('demo');

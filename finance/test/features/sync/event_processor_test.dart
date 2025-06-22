@@ -386,7 +386,8 @@ void main() {
     group('Event Listeners', () {
       test('should trigger registered event listeners', () async {
         // Clean up any existing events first
-        await database.delete(database.syncEventLogTable).go();        var callbackCalled = false;
+        await database.delete(database.syncEventLogTable).go();
+        var callbackCalled = false;
         SyncEvent? receivedEvent;
 
         eventProcessor.registerEventListener('transactions:create',
@@ -412,7 +413,8 @@ void main() {
           hash: 'test-hash',
         );
 
-        await eventProcessor.processEvent(event);        expect(callbackCalled, isTrue);
+        await eventProcessor.processEvent(event);
+        expect(callbackCalled, isTrue);
         expect(receivedEvent?.eventId, equals('test-event-1'));
       });
 

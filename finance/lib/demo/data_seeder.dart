@@ -14,13 +14,13 @@ import '../features/transactions/domain/entities/transaction_enums.dart';
 import '../features/transactions/domain/repositories/transaction_repository.dart';
 
 /// Comprehensive data seeder for demo and testing purposes
-/// 
+///
 /// This class provides realistic sample data for all major features:
 /// - Categories (default + custom)
 /// - Accounts (with colors, currencies, balances)
 /// - Transactions (regular, subscriptions, loans with collect/settle)
 /// - Budgets (manual-add and automatic types)
-/// 
+///
 /// Usage:
 /// ```dart
 /// if (kDebugMode) {
@@ -50,13 +50,12 @@ class DataSeeder {
   static Future<void> seedAll() async {
     try {
       print('🌱 Initializing demo data seeder...');
-      
+
       final seeder = DataSeeder._internal();
       seeder._initializeRepositories();
-      
+
       await seeder.seedAllData();
       await seeder.printDataSummary();
-      
     } catch (e) {
       print('❌ Failed to seed demo data: $e');
       rethrow;
@@ -67,12 +66,11 @@ class DataSeeder {
   static Future<void> clearAll() async {
     try {
       print('🧹 Clearing all demo data...');
-      
+
       final seeder = DataSeeder._internal();
       seeder._initializeRepositories();
-      
+
       await seeder.clearAllData();
-      
     } catch (e) {
       print('❌ Failed to clear demo data: $e');
       rethrow;
@@ -83,24 +81,26 @@ class DataSeeder {
   Future<void> seedAllData() async {
     try {
       print('🌱 Starting comprehensive data seeding...');
-      
+
       // 1. Categories first (needed for other entities)
       await _seedCategories();
-      
+
       // 2. Accounts next (needed for transactions)
       final accounts = await _seedAccounts();
-      
+
       // 3. Transactions (needs categories and accounts)
       final transactions = await _seedTransactions(accounts);
-      
+
       // 4. Budgets last (can reference categories and transactions)
       await _seedBudgets(accounts);
-      
+
       print('✅ Data seeding completed successfully!');
       print('   Total seeded data:');
-      print('   - Categories: ${DefaultCategories.allCategories.length + 3} (default + custom)');
+      print(
+          '   - Categories: ${DefaultCategories.allCategories.length + 3} (default + custom)');
       print('   - Accounts: ${accounts.length} with different currencies');
-      print('   - Transactions: ${transactions.length} including subscriptions and loans');
+      print(
+          '   - Transactions: ${transactions.length} including subscriptions and loans');
       print('   - Budgets: 6 (3 manual-add + 3 automatic)');
     } catch (e) {
       print('❌ Data seeding failed: $e');
@@ -119,12 +119,12 @@ class DataSeeder {
         // Seed default categories from DefaultCategories
         await _seedDefaultCategories();
       } else {
-        print('   Default categories already exist (${existingCategories.length} found)');
+        print(
+            '   Default categories already exist (${existingCategories.length} found)');
       }
 
       // Add 3 custom categories (2 expense, 1 income) if they don't exist
       await _seedCustomCategories();
-      
     } catch (e) {
       print('   ❌ Failed to seed categories: $e');
       rethrow;
@@ -134,7 +134,7 @@ class DataSeeder {
   Future<void> _seedDefaultCategories() async {
     final now = DateTime.now();
     int seededCount = 0;
-    
+
     // Income categories
     for (final defaultCat in DefaultCategories.incomeCategories) {
       try {
@@ -151,7 +151,8 @@ class DataSeeder {
         await _categoryRepository.createCategory(category);
         seededCount++;
       } catch (e) {
-        print('   Warning: Failed to create income category ${defaultCat.name}: $e');
+        print(
+            '   Warning: Failed to create income category ${defaultCat.name}: $e');
       }
     }
 
@@ -171,25 +172,26 @@ class DataSeeder {
         await _categoryRepository.createCategory(category);
         seededCount++;
       } catch (e) {
-        print('   Warning: Failed to create expense category ${defaultCat.name}: $e');
+        print(
+            '   Warning: Failed to create expense category ${defaultCat.name}: $e');
       }
     }
-    
+
     print('   Created $seededCount default categories');
   }
 
   Future<void> _seedCustomCategories() async {
     final now = DateTime.now();
     // final existingCategories = await _categoryRepository.getAllCategories();
-    
+
     // // Check if custom categories already exist
-    // final hasCustomCategories = existingCategories.any((c) => 
-    //   c.syncId.startsWith('custom-') || 
-    //   c.name.contains('Side Projects') || 
-    //   c.name.contains('Pet Care') || 
+    // final hasCustomCategories = existingCategories.any((c) =>
+    //   c.syncId.startsWith('custom-') ||
+    //   c.name.contains('Side Projects') ||
+    //   c.name.contains('Pet Care') ||
     //   c.name.contains('Freelance Work')
     // );
-    
+
     // if (hasCustomCategories) {
     //   print('   Custom categories already exist, skipping...');
     //   return;
@@ -236,7 +238,8 @@ class DataSeeder {
         await _categoryRepository.createCategory(category);
         createdCount++;
       } catch (e) {
-        print('   Warning: Failed to create custom category ${category.name}: $e');
+        print(
+            '   Warning: Failed to create custom category ${category.name}: $e');
       }
     }
 
@@ -252,16 +255,40 @@ class DataSeeder {
 
     final accountData = [
       // Default account with positive balance
-      ('Checking Account', 2500.0, 'USD', true, const Color(0xFF2196F3)), // Blue
+      (
+        'Checking Account',
+        2500.0,
+        'USD',
+        true,
+        const Color(0xFF2196F3)
+      ), // Blue
       // Savings with higher balance
-      ('Savings Account', 15000.0, 'USD', false, const Color(0xFF4CAF50)), // Green
+      (
+        'Savings Account',
+        15000.0,
+        'USD',
+        false,
+        const Color(0xFF4CAF50)
+      ), // Green
       // Cash wallet with smaller amount
       ('Cash Wallet', 200.0, 'USD', false, const Color(0xFF795548)), // Brown
       // Credit card with negative balance (debt)
       ('Credit Card', -850.0, 'USD', false, const Color(0xFFF44336)), // Red
       // Foreign currency accounts
-      ('Euro Travel Fund', 500.0, 'EUR', false, const Color(0xFF9C27B0)), // Purple
-      ('Japanese Savings', 150000.0, 'JPY', false, const Color(0xFFFF9800)), // Orange
+      (
+        'Euro Travel Fund',
+        500.0,
+        'EUR',
+        false,
+        const Color(0xFF9C27B0)
+      ), // Purple
+      (
+        'Japanese Savings',
+        150000.0,
+        'JPY',
+        false,
+        const Color(0xFFFF9800)
+      ), // Orange
     ];
 
     int createdCount = 0;
@@ -287,7 +314,8 @@ class DataSeeder {
       }
     }
 
-    print('   Created $createdCount accounts with various currencies and colors');
+    print(
+        '   Created $createdCount accounts with various currencies and colors');
     return accounts;
   }
 
@@ -560,21 +588,25 @@ class DataSeeder {
       int createdCount = 0;
       for (final transaction in allTransactionData) {
         try {
-          final created = await _transactionRepository.createTransaction(transaction);
+          final created =
+              await _transactionRepository.createTransaction(transaction);
           transactions.add(created);
           createdCount++;
         } catch (e) {
-          print('   Warning: Failed to create transaction ${transaction.title}: $e');
+          print(
+              '   Warning: Failed to create transaction ${transaction.title}: $e');
         }
       }
 
       print('   Created $createdCount transactions including:');
       print('     - ${incomeTransactions.length} income transactions');
       print('     - ${expenseTransactions.length} expense transactions');
-      print('     - ${subscriptionTransactions.length} subscriptions (with skip/pay actions)');
-      print('     - ${creditTransactions.length} credit transactions (with collect action)');
-      print('     - ${debtTransactions.length} debt transactions (with settle action)');
-
+      print(
+          '     - ${subscriptionTransactions.length} subscriptions (with skip/pay actions)');
+      print(
+          '     - ${creditTransactions.length} credit transactions (with collect action)');
+      print(
+          '     - ${debtTransactions.length} debt transactions (with settle action)');
     } catch (e) {
       print('   ❌ Failed to seed transactions: $e');
       rethrow;
@@ -683,7 +715,9 @@ class DataSeeder {
           createdAt: now,
           updatedAt: now,
           syncId: 'demo-budget-food-auto-${_uuid.v4()}',
-          walletFks: [checkingAccountId], // Automatic mode - tracks checking account
+          walletFks: [
+            checkingAccountId
+          ], // Automatic mode - tracks checking account
           excludeDebtCreditInstallments: true,
           isIncomeBudget: false,
         ),
@@ -724,7 +758,7 @@ class DataSeeder {
       // Create all budgets
       final allBudgets = [...manualBudgets, ...automaticBudgets];
       int createdCount = 0;
-      
+
       for (final budget in allBudgets) {
         try {
           await _budgetRepository.createBudget(budget);
@@ -735,10 +769,11 @@ class DataSeeder {
       }
 
       print('   Created $createdCount budgets:');
-      print('     - ${manualBudgets.length} manual-add budgets (require transaction linking)');
-      print('     - ${automaticBudgets.length} automatic budgets (with account/category filters)');
+      print(
+          '     - ${manualBudgets.length} manual-add budgets (require transaction linking)');
+      print(
+          '     - ${automaticBudgets.length} automatic budgets (with account/category filters)');
       print('     - Including 1 income budget for freelance tracking');
-      
     } catch (e) {
       print('   ❌ Failed to seed budgets: $e');
       rethrow;
@@ -748,64 +783,15 @@ class DataSeeder {
   /// Clears all demo data (useful for testing)
   Future<void> clearAllData() async {
     print('🧹 Clearing all demo data...');
-    
+
     try {
       // Delete in reverse order to respect foreign key constraints
-      final transactions = await _transactionRepository.getAllTransactions();
-      int deletedTransactions = 0;
-      for (final transaction in transactions) {
-        if (transaction.syncId.startsWith('demo-')) {
-          try {
-            await _transactionRepository.deleteTransaction(transaction.id!);
-            deletedTransactions++;
-          } catch (e) {
-            print('   Warning: Failed to delete transaction ${transaction.title}: $e');
-          }
-        }
-      }
+      await _transactionRepository.deleteAllTransactions();
+      await _budgetRepository.deleteAllBudgets();
+      await _accountRepository.deleteAllAccounts();
+      await _categoryRepository.deleteAllCategories();
 
-      final budgets = await _budgetRepository.getAllBudgets();
-      int deletedBudgets = 0;
-      for (final budget in budgets) {
-        if (budget.syncId.startsWith('demo-')) {
-          try {
-            await _budgetRepository.deleteBudget(budget.id!);
-            deletedBudgets++;
-          } catch (e) {
-            print('   Warning: Failed to delete budget ${budget.name}: $e');
-          }
-        }
-      }
-
-      final accounts = await _accountRepository.getAllAccounts();
-      int deletedAccounts = 0;
-      for (final account in accounts) {
-        if (account.syncId.startsWith('demo-')) {
-          try {
-            await _accountRepository.deleteAccount(account.id!);
-            deletedAccounts++;
-          } catch (e) {
-            print('   Warning: Failed to delete account ${account.name}: $e');
-          }
-        }
-      }
-
-      final categories = await _categoryRepository.getAllCategories();
-      int deletedCategories = 0;
-      for (final category in categories) {
-        if (category.syncId.startsWith('custom-') || category.syncId.startsWith('demo-')) {
-          try {
-            await _categoryRepository.deleteCategory(category.id!);
-            deletedCategories++;
-          } catch (e) {
-            print('   Warning: Failed to delete category ${category.name}: $e');
-          }
-        }
-      }
-
-      print('✅ Demo data cleared successfully!');
-      print('   Deleted: $deletedTransactions transactions, $deletedBudgets budgets, $deletedAccounts accounts, $deletedCategories categories');
-      
+      print('✅ All tables cleared successfully!');
     } catch (e) {
       print('❌ Failed to clear demo data: $e');
       rethrow;
@@ -823,10 +809,12 @@ class DataSeeder {
 
       print('   Loan payment examples ready (trigger collect/settle from UI)');
       print('   Available actions:');
-      print('     - Credit loans: Use "Collect" action to record partial/full repayments');
-      print('     - Debt loans: Use "Settle" action to record partial/full settlements');
-      print('     - Subscriptions: Use "Skip" or "Pay" actions for recurring payments');
-      
+      print(
+          '     - Credit loans: Use "Collect" action to record partial/full repayments');
+      print(
+          '     - Debt loans: Use "Settle" action to record partial/full settlements');
+      print(
+          '     - Subscriptions: Use "Skip" or "Pay" actions for recurring payments');
     } catch (e) {
       print('   ❌ Failed to create loan payment examples: $e');
       rethrow;
@@ -836,7 +824,7 @@ class DataSeeder {
   /// Provides a summary of all seeded data for verification
   Future<void> printDataSummary() async {
     print('\n📊 === DATA SEEDING SUMMARY ===');
-    
+
     try {
       final categories = await _categoryRepository.getAllCategories();
       final accounts = await _accountRepository.getAllAccounts();
@@ -852,28 +840,34 @@ class DataSeeder {
 
       print('\nAccounts (${accounts.length} total):');
       for (final acc in accounts) {
-        final balanceStr = acc.balance >= 0 ? '\$${acc.balance}' : '-\$${acc.balance.abs()}';
-        print('  - ${acc.name} ($balanceStr ${acc.currency}) ${acc.isDefault ? '[Default]' : ''}');
+        final balanceStr =
+            acc.balance >= 0 ? '\$${acc.balance}' : '-\$${acc.balance.abs()}';
+        print(
+            '  - ${acc.name} ($balanceStr ${acc.currency}) ${acc.isDefault ? '[Default]' : ''}');
       }
 
       print('\nTransactions (${transactions.length} total):');
       final demoTxns = transactions.where((t) => t.syncId.startsWith('demo-'));
       for (final txn in demoTxns) {
-        final amountStr = txn.amount >= 0 ? '+\$${txn.amount}' : '-\$${txn.amount.abs()}';
-        print('  - ${txn.title} ($amountStr) [${txn.transactionType.name}] [${txn.transactionState.name}]');
+        final amountStr =
+            txn.amount >= 0 ? '+\$${txn.amount}' : '-\$${txn.amount.abs()}';
+        print(
+            '  - ${txn.title} ($amountStr) [${txn.transactionType.name}] [${txn.transactionState.name}]');
       }
 
       print('\nBudgets (${budgets.length} total):');
-      final demoBudgets = budgets.where((b) => b.syncId.startsWith('demo-budget-'));
+      final demoBudgets =
+          budgets.where((b) => b.syncId.startsWith('demo-budget-'));
       for (final budget in demoBudgets) {
         final modeStr = budget.manualAddMode ? 'Manual' : 'Auto';
         final typeStr = budget.isIncomeBudget ? 'Income' : 'Expense';
-        final progress = (budget.spent / budget.amount * 100).toStringAsFixed(1);
-        print('  - ${budget.name} (\$${budget.spent}/\$${budget.amount} - ${progress}%) [$modeStr] [$typeStr]');
+        final progress =
+            (budget.spent / budget.amount * 100).toStringAsFixed(1);
+        print(
+            '  - ${budget.name} (\$${budget.spent}/\$${budget.amount} - ${progress}%) [$modeStr] [$typeStr]');
       }
 
       print('\n✅ All data seeded successfully and verified!');
-      
     } catch (e) {
       print('❌ Failed to generate data summary: $e');
     }

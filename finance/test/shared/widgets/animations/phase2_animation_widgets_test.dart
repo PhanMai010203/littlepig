@@ -192,7 +192,8 @@ void main() {
               ],
             ),
           ),
-        );        await tester.pump();
+        );
+        await tester.pump();
         expect(find.byType(SizedBox), findsNWidgets(3));
       });
 

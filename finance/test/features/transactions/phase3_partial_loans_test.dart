@@ -46,16 +46,19 @@ void main() {
         );
 
         // Assert: Check parent transaction is updated
-        final updatedCredit = await repository.getTransactionById(createdCredit.id!);
+        final updatedCredit =
+            await repository.getTransactionById(createdCredit.id!);
         expect(updatedCredit!.remainingAmount, equals(700.0)); // 1000 - 300
-        expect(updatedCredit.transactionState, equals(TransactionState.actionRequired));
+        expect(updatedCredit.transactionState,
+            equals(TransactionState.actionRequired));
 
         // Assert: Check child payment transaction is created
         final payments = await repository.getLoanPayments(createdCredit.id!);
         expect(payments.length, equals(1));
-        
+
         final payment = payments.first;
-        expect(payment.amount, equals(300.0)); // Positive amount (money received)
+        expect(
+            payment.amount, equals(300.0)); // Positive amount (money received)
         expect(payment.title, equals('Loan collection'));
         expect(payment.transactionType, equals(TransactionType.income));
         expect(payment.parentTransactionId, equals(createdCredit.id));
@@ -88,12 +91,16 @@ void main() {
         );
 
         // Assert: Credit should be completed
-        final updatedCredit = await repository.getTransactionById(createdCredit.id!);
+        final updatedCredit =
+            await repository.getTransactionById(createdCredit.id!);
         expect(updatedCredit!.remainingAmount, equals(0.0));
-        expect(updatedCredit.transactionState, equals(TransactionState.completed));
+        expect(
+            updatedCredit.transactionState, equals(TransactionState.completed));
       });
 
-      test('should throw OverCollectionException when collecting more than remaining', () async {
+      test(
+          'should throw OverCollectionException when collecting more than remaining',
+          () async {
         // Arrange
         final credit = Transaction(
           title: 'Small loan',
@@ -150,16 +157,19 @@ void main() {
         );
 
         // Assert: Check parent transaction is updated
-        final updatedDebt = await repository.getTransactionById(createdDebt.id!);
+        final updatedDebt =
+            await repository.getTransactionById(createdDebt.id!);
         expect(updatedDebt!.remainingAmount, equals(1200.0)); // 2000 - 800
-        expect(updatedDebt.transactionState, equals(TransactionState.actionRequired));
+        expect(updatedDebt.transactionState,
+            equals(TransactionState.actionRequired));
 
         // Assert: Check child settlement transaction is created
         final settlements = await repository.getLoanPayments(createdDebt.id!);
         expect(settlements.length, equals(1));
-        
+
         final settlement = settlements.first;
-        expect(settlement.amount, equals(-800.0)); // Negative amount (money paid)
+        expect(
+            settlement.amount, equals(-800.0)); // Negative amount (money paid)
         expect(settlement.title, equals('Loan settlement'));
         expect(settlement.transactionType, equals(TransactionType.expense));
         expect(settlement.parentTransactionId, equals(createdDebt.id));
@@ -213,4 +223,4 @@ void main() {
       });
     });
   });
-} 
+}

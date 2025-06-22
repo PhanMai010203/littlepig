@@ -68,7 +68,8 @@ void main() {
         await AppSettings.set('animationLevel', 'reduced');
         final result =
             AnimationPerformanceService.getOptimizedDuration(baseDuration);
-        expect(result, equals(const Duration(milliseconds: 150))); // 50% of 300ms
+        expect(
+            result, equals(const Duration(milliseconds: 150))); // 50% of 300ms
       });
 
       test('returns base duration when animationLevel is normal', () async {
@@ -83,7 +84,8 @@ void main() {
         await AppSettings.set('animationLevel', 'enhanced');
         final result =
             AnimationPerformanceService.getOptimizedDuration(baseDuration);
-        expect(result, equals(const Duration(milliseconds: 360))); // 120% of 300ms
+        expect(
+            result, equals(const Duration(milliseconds: 360))); // 120% of 300ms
       });
     });
 

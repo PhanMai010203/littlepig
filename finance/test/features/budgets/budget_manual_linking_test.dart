@@ -35,7 +35,8 @@ void main() {
         );
 
         // Assert
-        final budgets = await repository.getBudgetsForTransaction(transaction.id!);
+        final budgets =
+            await repository.getBudgetsForTransaction(transaction.id!);
         expect(budgets.length, 1);
         expect(budgets.first.id, budget.id);
 
@@ -86,7 +87,8 @@ void main() {
         );
 
         // Assert
-        final budgets = await repository.getBudgetsForTransaction(transaction.id!);
+        final budgets =
+            await repository.getBudgetsForTransaction(transaction.id!);
         expect(budgets.isEmpty, true);
 
         final links = await repository.getTransactionLinksForBudget(budget.id!);
@@ -101,14 +103,17 @@ void main() {
         final transaction2 = await _createTestTransaction(database);
 
         // Act
-        await repository.addTransactionToBudget(transaction1.id!, budget1.id!, amount: 100.0);
-        await repository.addTransactionToBudget(transaction2.id!, budget1.id!, amount: 200.0);
-        await repository.addTransactionToBudget(transaction1.id!, budget2.id!, amount: 150.0);
+        await repository.addTransactionToBudget(transaction1.id!, budget1.id!,
+            amount: 100.0);
+        await repository.addTransactionToBudget(transaction2.id!, budget1.id!,
+            amount: 200.0);
+        await repository.addTransactionToBudget(transaction1.id!, budget2.id!,
+            amount: 150.0);
 
         // Assert
         final allLinks = await repository.getAllTransactionBudgetLinks();
         expect(allLinks.length, 3);
-        
+
         final amounts = allLinks.map((link) => link.amount).toList();
         expect(amounts, containsAll([100.0, 200.0, 150.0]));
       });
@@ -144,7 +149,8 @@ void main() {
     });
 
     group('Cascade Delete Tests', () {
-      test('should delete transaction budget links when budget is deleted', () async {
+      test('should delete transaction budget links when budget is deleted',
+          () async {
         // Arrange
         final budget = await _createTestBudget(repository);
         final transaction = await _createTestTransaction(database);
@@ -168,7 +174,8 @@ void main() {
 /// Helper to create a test budget
 Future<Budget> _createTestBudget(BudgetRepositoryImpl repository) async {
   final now = DateTime.now();
-  final uniqueId = '${now.millisecondsSinceEpoch}_${now.microsecondsSinceEpoch}';
+  final uniqueId =
+      '${now.millisecondsSinceEpoch}_${now.microsecondsSinceEpoch}';
   final budget = TestEntityBuilders.createTestBudget(
     syncId: 'test-budget-$uniqueId',
     name: 'Test Budget $uniqueId',
@@ -179,41 +186,43 @@ Future<Budget> _createTestBudget(BudgetRepositoryImpl repository) async {
 }
 
 /// Helper to create a test transaction
-Future<Transaction> _createTestTransaction(AppDatabase database, {double amount = 100.0}) async {
+Future<Transaction> _createTestTransaction(AppDatabase database,
+    {double amount = 100.0}) async {
   final now = DateTime.now();
-  final uniqueId = '${now.millisecondsSinceEpoch}_${now.microsecondsSinceEpoch}';
-  
+  final uniqueId =
+      '${now.millisecondsSinceEpoch}_${now.microsecondsSinceEpoch}';
+
   // Create a test account first
   final accountId = await database.into(database.accountsTable).insert(
-    AccountsTableCompanion.insert(
-      name: 'Test Account',
-      syncId: 'test_account_$uniqueId',
-    ),
-  );
+        AccountsTableCompanion.insert(
+          name: 'Test Account',
+          syncId: 'test_account_$uniqueId',
+        ),
+      );
 
   // Create a test category
   final categoryId = await database.into(database.categoriesTable).insert(
-    CategoriesTableCompanion.insert(
-      name: 'Test Category',
-      icon: '🧪',
-      color: 0xFF000000,
-      isExpense: true,
-      syncId: 'test_category_$uniqueId',
-    ),
-  );
+        CategoriesTableCompanion.insert(
+          name: 'Test Category',
+          icon: '🧪',
+          color: 0xFF000000,
+          isExpense: true,
+          syncId: 'test_category_$uniqueId',
+        ),
+      );
 
   // Create the transaction
   final transactionSyncId = 'test_transaction_$uniqueId';
   final transactionId = await database.into(database.transactionsTable).insert(
-    TransactionsTableCompanion.insert(
-      title: 'Test Transaction',
-      amount: amount,
-      categoryId: categoryId,
-      accountId: accountId,
-      date: now,
-      syncId: transactionSyncId,
-    ),
-  );
+        TransactionsTableCompanion.insert(
+          title: 'Test Transaction',
+          amount: amount,
+          categoryId: categoryId,
+          accountId: accountId,
+          date: now,
+          syncId: transactionSyncId,
+        ),
+      );
 
   return Transaction(
     id: transactionId,
@@ -226,4 +235,4 @@ Future<Transaction> _createTestTransaction(AppDatabase database, {double amount 
     updatedAt: now,
     syncId: transactionSyncId,
   );
-} 
+}

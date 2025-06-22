@@ -20,7 +20,7 @@ class _MainAppState extends State<MainApp> {
   @override
   void initState() {
     super.initState();
-    
+
     // Set up callback for theme changes from settings
     AppSettings.setAppStateChangeCallback(() {
       setState(() {
@@ -37,10 +37,12 @@ class _MainAppState extends State<MainApp> {
           create: (context) => getIt<NavigationBloc>(),
         ),
         BlocProvider(
-          create: (context) => getIt<SettingsBloc>()..add(const SettingsEvent.loadSettings()),
+          create: (context) =>
+              getIt<SettingsBloc>()..add(const SettingsEvent.loadSettings()),
         ),
       ],
-      child: BlocBuilder<SettingsBloc, SettingsState>(        builder: (context, settingsState) {
+      child: BlocBuilder<SettingsBloc, SettingsState>(
+        builder: (context, settingsState) {
           return MaterialApp.router(
             title: 'finance_app'.tr(),
             debugShowCheckedModeBanner: false,

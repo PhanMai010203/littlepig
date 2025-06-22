@@ -10,7 +10,8 @@ class CachedResult<T> {
 }
 
 class DatabaseCacheService {
-  static final DatabaseCacheService _instance = DatabaseCacheService._internal();
+  static final DatabaseCacheService _instance =
+      DatabaseCacheService._internal();
   factory DatabaseCacheService() {
     return _instance;
   }
@@ -47,4 +48,4 @@ class DatabaseCacheService {
   void cleanExpired() {
     _cache.removeWhere((key, value) => !value.isValid);
   }
-} 
+}

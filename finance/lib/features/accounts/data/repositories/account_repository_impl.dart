@@ -6,7 +6,9 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
-class AccountRepositoryImpl with CacheableRepositoryMixin implements AccountRepository {
+class AccountRepositoryImpl
+    with CacheableRepositoryMixin
+    implements AccountRepository {
   final AppDatabase _database;
   final _uuid = const Uuid();
 
@@ -99,7 +101,7 @@ class AccountRepositoryImpl with CacheableRepositoryMixin implements AccountRepo
         .write(companion);
 
     // Invalidate cache
-    await invalidateCache('account', id: account.id);
+    await invalidateEntityCache('account');
 
     return account.copyWith(updatedAt: now);
   }
@@ -107,11 +109,15 @@ class AccountRepositoryImpl with CacheableRepositoryMixin implements AccountRepo
   @override
   Future<void> deleteAccount(int id) async {
     await (_database.delete(_database.accountsTable)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((a) => a.id.equals(id)))
         .go();
-    
-    // Invalidate cache
-    await invalidateCache('account', id: id);
+    await invalidateEntityCache('account');
+  }
+
+  @override
+  Future<void> deleteAllAccounts() async {
+    await _database.delete(_database.accountsTable).go();
+    await invalidateEntityCache('account');
   }
 
   @override
@@ -123,9 +129,9 @@ class AccountRepositoryImpl with CacheableRepositoryMixin implements AccountRepo
       balance: Value(amount),
       updatedAt: Value(now),
     ));
-    
+
     // Invalidate cache
-    await invalidateCache('account', id: accountId);
+    await invalidateEntityCache('account');
   }
 
   @override
@@ -173,7 +179,7 @@ class AccountRepositoryImpl with CacheableRepositoryMixin implements AccountRepo
             ..where((tbl) => tbl.id.equals(existing.id!)))
           .write(companion);
     }
-    
+
     // Invalidate cache
     await invalidateEntityCache('account');
   }

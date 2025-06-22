@@ -8,7 +8,9 @@ import '../../domain/entities/transaction_enums.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../../budgets/domain/services/budget_update_service.dart';
 
-class TransactionRepositoryImpl with CacheableRepositoryMixin implements TransactionRepository {
+class TransactionRepositoryImpl
+    with CacheableRepositoryMixin
+    implements TransactionRepository {
   final AppDatabase _database;
   BudgetUpdateService? _budgetUpdateService;
 
@@ -168,14 +170,14 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
       objectiveLoanFk: Value(transaction.objectiveLoanFk),
 
       updatedAt: Value(DateTime.now()),
-      
+
       // Phase 3: Partial loan fields
       remainingAmount: Value(transaction.remainingAmount),
       parentTransactionId: Value(transaction.parentTransactionId),
-      
+
       // Keep syncId for updates
       syncId: Value(transaction.syncId),
-      
+
       // ✅ PHASE 4: No more redundant sync fields - event sourcing handles sync state
     );
 
@@ -183,7 +185,7 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
     final updatedTransaction = transaction.copyWith(updatedAt: DateTime.now());
 
     // Invalidate cache after updating transaction
-    await invalidateCache('transaction', id: transaction.id);
+    await invalidateEntityCache('transaction');
 
     // Trigger budget updates if service is available
     if (_budgetUpdateService != null) {
@@ -196,21 +198,16 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
 
   @override
   Future<void> deleteTransaction(int id) async {
-    // Get transaction before deletion for budget update
-    final transaction = await getTransactionById(id);
-
     await (_database.delete(_database.transactionsTable)
           ..where((t) => t.id.equals(id)))
         .go();
+    await invalidateEntityCache('transaction');
+  }
 
-    // Invalidate cache after deleting transaction
-    await invalidateCache('transaction', id: id);
-
-    // Trigger budget updates if service is available and transaction existed
-    if (_budgetUpdateService != null && transaction != null) {
-      await _budgetUpdateService!.updateBudgetOnTransactionChange(
-          transaction, TransactionChangeType.deleted);
-    }
+  @override
+  Future<void> deleteAllTransactions() async {
+    await _database.delete(_database.transactionsTable).go();
+    await invalidateEntityCache('transaction');
   }
 
   @override
@@ -273,15 +270,17 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
 
         createdAt: Value(transaction.createdAt),
         updatedAt: Value(transaction.updatedAt),
-        
+
         // Phase 3: Partial loan fields
         remainingAmount: Value(transaction.remainingAmount),
         parentTransactionId: Value(transaction.parentTransactionId),
-        
+
         // ✅ PHASE 4: Only sync_id field for sync operations
         syncId: transaction.syncId,
       );
       await _database.into(_database.transactionsTable).insert(companion);
+
+      await invalidateEntityCache('transaction');
 
       // Trigger budget updates for new sync transaction
       if (_budgetUpdateService != null) {
@@ -314,14 +313,16 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
         objectiveLoanFk: Value(transaction.objectiveLoanFk),
 
         updatedAt: Value(transaction.updatedAt),
-        
+
         // Phase 3: Partial loan fields
         remainingAmount: Value(transaction.remainingAmount),
         parentTransactionId: Value(transaction.parentTransactionId),
-        
+
         // ✅ PHASE 4: No redundant sync fields to update
       );
       await _database.update(_database.transactionsTable).replace(companion);
+
+      await invalidateEntityCache('transaction');
 
       // Trigger budget updates for updated sync transaction
       if (_budgetUpdateService != null) {
@@ -569,7 +570,7 @@ class TransactionRepositoryImpl with CacheableRepositoryMixin implements Transac
     if (!loan.isLoan) {
       return 0.0; // Not a loan transaction
     }
-    
+
     return loan.remainingAmount ?? loan.amount.abs();
   }
 }

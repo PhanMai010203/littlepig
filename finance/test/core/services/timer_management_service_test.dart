@@ -19,7 +19,8 @@ void main() {
       SharedPreferences.setMockInitialValues({});
 
       // Mock Battery Plus Plugin
-      const MethodChannel channel = MethodChannel('dev.fluttercommunity.plus/battery');
+      const MethodChannel channel =
+          MethodChannel('dev.fluttercommunity.plus/battery');
       channel.setMockMethodCallHandler((MethodCall methodCall) async {
         if (methodCall.method == 'getBatteryLevel') {
           return 100;
@@ -35,7 +36,7 @@ void main() {
     setUp(() async {
       // Get the service instance
       service = TimerManagementService.instance;
-      
+
       // Initialize App Settings for testing
       await AppSettings.initialize();
     });
@@ -57,7 +58,7 @@ void main() {
         );
 
         service.registerTask(task);
-        
+
         final metrics = service.getPerformanceMetrics();
         expect(metrics['registeredTasks'], equals(1));
         expect(metrics['taskStatus']['test_task']['priority'], equals(5));
@@ -146,7 +147,8 @@ void main() {
 
         final metrics = service.getPerformanceMetrics();
         final taskStatus = metrics['taskStatus']['failing_task'];
-        expect(taskStatus['consecutiveFailures'], equals(0)); // Reset after success
+        expect(taskStatus['consecutiveFailures'],
+            equals(0)); // Reset after success
       });
     });
 
@@ -166,7 +168,7 @@ void main() {
 
       test('should pause non-critical operations when app is detached', () {
         service.didChangeAppLifecycleState(AppLifecycleState.detached);
-        
+
         final metrics = service.getPerformanceMetrics();
         expect(metrics['isPaused'], isTrue);
       });
@@ -192,7 +194,7 @@ void main() {
 
       test('should provide comprehensive performance data', () {
         final metrics = service.getPerformanceMetrics();
-        
+
         expect(metrics, containsPair('isPaused', isA<bool>()));
         expect(metrics, containsPair('appState', isA<String>()));
         expect(metrics, containsPair('registeredTasks', isA<int>()));
@@ -214,7 +216,7 @@ void main() {
         expect(service.getPerformanceMetrics()['registeredTasks'], equals(1));
 
         service.dispose();
-        
+
         // After dispose, service should be clean
         expect(service.getPerformanceMetrics()['isInitialized'], isFalse);
         expect(service.getPerformanceMetrics()['registeredTasks'], equals(0));
@@ -234,7 +236,7 @@ void main() {
         // Task should execute if enough time has passed
         final future = now.add(const Duration(milliseconds: 150));
         expect(task.shouldExecute(future), isTrue);
-        
+
         // Task should not execute if not enough time has passed
         final nearFuture = now.add(const Duration(milliseconds: 50));
         expect(task.shouldExecute(nearFuture), isFalse);
@@ -261,4 +263,4 @@ void main() {
       });
     });
   });
-} 
+}

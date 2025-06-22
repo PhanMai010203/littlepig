@@ -20,7 +20,8 @@ enum FloatingMonitorPosition {
 /// Displays current animation state, frame rates, and optimization info
 class AnimationPerformanceMonitor extends StatefulWidget {
   const AnimationPerformanceMonitor({
-    this.refreshInterval = const Duration(milliseconds: 1000), // Phase 1: Optimized from 250ms to 1000ms
+    this.refreshInterval = const Duration(
+        milliseconds: 1000), // Phase 1: Optimized from 250ms to 1000ms
     this.showFullDetails = false,
     this.backgroundColor,
     this.textColor,
@@ -82,10 +83,10 @@ class _AnimationPerformanceMonitorState
     AnimationPerformanceService.removeListener(_updateMetrics);
     super.dispose();
   }
-  
+
   void _setupTimerManagement() {
     _timerTaskId = 'animation_performance_monitor_$hashCode';
-    
+
     final performanceTask = TimerTask(
       id: _timerTaskId!,
       interval: widget.refreshInterval,
@@ -95,10 +96,10 @@ class _AnimationPerformanceMonitorState
       pauseOnBackground: true, // Pause when backgrounded
       pauseOnLowBattery: true, // Pause when battery is low
     );
-    
+
     TimerManagementService.instance.registerTask(performanceTask);
   }
-  
+
   Future<void> _updateMetricsAsync() async {
     if (mounted) {
       _updateMetrics();

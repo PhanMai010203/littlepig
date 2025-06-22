@@ -14,10 +14,10 @@ class Phase3PartialLoansMigration {
     try {
       // Add the new columns to transactions table
       await _addPartialLoanFields();
-      
+
       // Initialize existing loan transactions
       await _initializeExistingLoans();
-      
+
       // Update schema version
       await _updateSchemaVersion();
 
@@ -33,8 +33,10 @@ class Phase3PartialLoansMigration {
     print('🔧 Adding partial loan payment fields...');
 
     // Check if columns already exist
-    final tableInfo = await _database.customSelect("PRAGMA table_info(transactions)").get();
-    final columnNames = tableInfo.map((row) => row.data['name'] as String).toList();
+    final tableInfo =
+        await _database.customSelect("PRAGMA table_info(transactions)").get();
+    final columnNames =
+        tableInfo.map((row) => row.data['name'] as String).toList();
 
     // Add remainingAmount column if it doesn't exist
     if (!columnNames.contains('remaining_amount')) {
@@ -102,4 +104,4 @@ class Phase3PartialLoansMigration {
 
     print('✅ Schema version updated to 9');
   }
-} 
+}

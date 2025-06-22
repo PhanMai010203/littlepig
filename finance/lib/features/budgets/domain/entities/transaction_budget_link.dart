@@ -54,4 +54,4 @@ class TransactionBudgetLink extends Equatable {
   String toString() {
     return 'TransactionBudgetLink{id: $id, transactionId: $transactionId, budgetId: $budgetId, amount: $amount}';
   }
-} 
+}

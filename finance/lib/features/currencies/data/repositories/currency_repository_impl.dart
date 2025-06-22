@@ -20,7 +20,9 @@ class CacheStrategy {
       Duration(days: 30); // Absolute expiry
 }
 
-class CurrencyRepositoryImpl with CacheableRepositoryMixin implements CurrencyRepository {
+class CurrencyRepositoryImpl
+    with CacheableRepositoryMixin
+    implements CurrencyRepository {
   final CurrencyLocalDataSource _currencyLocalDataSource;
   final ExchangeRateRemoteDataSource _exchangeRateRemoteDataSource;
   final ExchangeRateLocalDataSource _exchangeRateLocalDataSource;

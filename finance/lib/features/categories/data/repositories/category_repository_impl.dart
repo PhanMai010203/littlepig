@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
-class CategoryRepositoryImpl with CacheableRepositoryMixin implements CategoryRepository {
+class CategoryRepositoryImpl
+    with CacheableRepositoryMixin
+    implements CategoryRepository {
   final AppDatabase _database;
   final _uuid = const Uuid();
 
@@ -15,7 +17,8 @@ class CategoryRepositoryImpl with CacheableRepositoryMixin implements CategoryRe
   @override
   Future<List<Category>> getAllCategories() async {
     return cacheRead('getAllCategories', () async {
-      final categories = await _database.select(_database.categoriesTable).get();
+      final categories =
+          await _database.select(_database.categoriesTable).get();
       return categories.map(_mapToEntity).toList();
     });
   }
@@ -107,7 +110,7 @@ class CategoryRepositoryImpl with CacheableRepositoryMixin implements CategoryRe
           ..where((tbl) => tbl.id.equals(category.id!)))
         .write(companion);
 
-    await invalidateCache('category', id: category.id);
+    await invalidateEntityCache('category');
 
     return category.copyWith(updatedAt: now);
   }
@@ -115,9 +118,15 @@ class CategoryRepositoryImpl with CacheableRepositoryMixin implements CategoryRe
   @override
   Future<void> deleteCategory(int id) async {
     await (_database.delete(_database.categoriesTable)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((c) => c.id.equals(id)))
         .go();
-    await invalidateCache('category', id: id);
+    await invalidateEntityCache('category');
+  }
+
+  @override
+  Future<void> deleteAllCategories() async {
+    await _database.delete(_database.categoriesTable).go();
+    await invalidateEntityCache('category');
   }
 
   @override

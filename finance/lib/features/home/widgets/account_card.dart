@@ -11,7 +11,7 @@ class AccountCard extends StatelessWidget {
   final int index;
   final ValueChanged<int> onSelected;
 
-    const AccountCard({
+  const AccountCard({
     super.key,
     required this.title,
     required this.amount,
@@ -26,7 +26,8 @@ class AccountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     // Calculate dynamic width based on the amount text to avoid overflow.
     const double baseWidth = 170.0;
-    const double horizontalPadding = 32.0; // 16 padding on each side (left + right)
+    const double horizontalPadding =
+        32.0; // 16 padding on each side (left + right)
 
     final double textScaleFactor = MediaQuery.textScaleFactorOf(context);
     final amountPainter = TextPainter(

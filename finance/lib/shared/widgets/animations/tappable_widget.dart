@@ -78,7 +78,8 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _handleTapDown(TapDownDetails details) {
-    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation()) {
+    if (!AnimationUtils.shouldAnimate() ||
+        !AnimationUtils.canStartAnimation()) {
       return;
     }
 
@@ -136,7 +137,8 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   void _animateBounce() async {
-    if (!AnimationUtils.shouldAnimate() || !AnimationUtils.canStartAnimation()) {
+    if (!AnimationUtils.shouldAnimate() ||
+        !AnimationUtils.canStartAnimation()) {
       return;
     }
 

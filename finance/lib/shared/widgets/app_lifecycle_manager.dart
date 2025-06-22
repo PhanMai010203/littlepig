@@ -26,7 +26,7 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Initialize TimerManagementService if coordination is enabled
     if (widget.enableTimerCoordination) {
       _initializeTimerService();
@@ -50,7 +50,7 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
-    
+
     switch (state) {
       case AppLifecycleState.resumed:
         debugPrint('App resumed - setting high refresh rate');
@@ -76,10 +76,10 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
   Future<void> _onAppResumed() async {
     // Call custom callback if provided
     widget.onAppResume?.call();
-    
+
     // Always try to set high refresh rate when app resumes
     await PlatformService.setHighRefreshRate();
-    
+
     // Resume timer operations if coordination is enabled
     if (widget.enableTimerCoordination) {
       TimerManagementService.instance.resumeOperations();
@@ -102,4 +102,4 @@ class _AppLifecycleManagerState extends State<AppLifecycleManager>
   Widget build(BuildContext context) {
     return widget.child;
   }
-} 
+}

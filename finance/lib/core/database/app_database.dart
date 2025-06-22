@@ -69,20 +69,23 @@ class AppDatabase extends _$AppDatabase {
           // ✅ PHASE 1: Account Color Customization (v8 → v9)
           if (from < 9) {
             print('🎨 Starting Phase 1: Account Color Migration (v8 → v9)...');
-            await m.addColumn(accountsTable, accountsTable.color as GeneratedColumn);
+            await m.addColumn(
+                accountsTable, accountsTable.color as GeneratedColumn);
             print('✅ Phase 1 migration completed successfully!');
           }
 
           // ✅ PHASE 2: Manual Budget Links (v9 → v10)
           if (from < 10) {
-            print('🔗 Starting Phase 2: Manual Budget Links Migration (v9 → v10)...');
+            print(
+                '🔗 Starting Phase 2: Manual Budget Links Migration (v9 → v10)...');
             await m.createTable(transactionBudgetsTable);
             print('✅ Phase 2 migration completed successfully!');
           }
 
           // ✅ PHASE 3: Partial Loan Payments Migration (v10 → v11)
           if (from < 11) {
-            print('🏦 Starting Phase 3: Partial Loan Payments Migration (v10 → v11)...');
+            print(
+                '🏦 Starting Phase 3: Partial Loan Payments Migration (v10 → v11)...');
             final migration = Phase3PartialLoansMigration(this);
             await migration.executePhase3Migration();
             print('✅ Phase 3 migration completed successfully!');

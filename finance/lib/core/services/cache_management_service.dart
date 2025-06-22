@@ -26,10 +26,10 @@ class CacheManagementService {
       pauseOnBackground: true, // Can be paused when backgrounded
       pauseOnLowBattery: true, // Pause when battery is low
     );
-    
+
     TimerManagementService.instance.registerTask(cleanupTask);
   }
-  
+
   /// Cache cleanup task for TimerManagementService
   Future<void> _performCacheCleanup() async {
     try {

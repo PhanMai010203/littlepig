@@ -26,8 +26,12 @@ abstract class TransactionRepository {
   Future<double> getTotalByAccount(int accountId, DateTime? from, DateTime? to);
   Future<Map<int, double>> getSpendingByCategory(DateTime? from, DateTime? to);
 
-  Future<void> collectPartialCredit({required Transaction credit, required double amount});
-  Future<void> settlePartialDebt({required Transaction debt, required double amount});
+  Future<void> collectPartialCredit(
+      {required Transaction credit, required double amount});
+  Future<void> settlePartialDebt(
+      {required Transaction debt, required double amount});
   Future<List<Transaction>> getLoanPayments(int parentTransactionId);
   double getRemainingAmount(Transaction loan);
+
+  Future<void> deleteAllTransactions();
 }

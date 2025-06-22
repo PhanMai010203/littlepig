@@ -25,7 +25,8 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.home,
             name: AppRoutes.home,
-            pageBuilder: (context, state) => AppPageTransitions.noTransitionPage(
+            pageBuilder: (context, state) =>
+                AppPageTransitions.noTransitionPage(
               child: const HomePage(),
               name: state.name,
               key: state.pageKey,
@@ -34,7 +35,8 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.transactions,
             name: AppRoutes.transactions,
-            pageBuilder: (context, state) => AppPageTransitions.noTransitionPage(
+            pageBuilder: (context, state) =>
+                AppPageTransitions.noTransitionPage(
               child: const TransactionsPage(),
               name: state.name,
               key: state.pageKey,
@@ -43,7 +45,8 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.budgets,
             name: AppRoutes.budgets,
-            pageBuilder: (context, state) => AppPageTransitions.noTransitionPage(
+            pageBuilder: (context, state) =>
+                AppPageTransitions.noTransitionPage(
               child: const BudgetsPage(),
               name: state.name,
               key: state.pageKey,
@@ -52,7 +55,8 @@ class AppRouter {
           GoRoute(
             path: AppRoutes.more,
             name: AppRoutes.more,
-            pageBuilder: (context, state) => AppPageTransitions.noTransitionPage(
+            pageBuilder: (context, state) =>
+                AppPageTransitions.noTransitionPage(
               child: const MorePage(),
               name: state.name,
               key: state.pageKey,
@@ -64,16 +68,17 @@ class AppRouter {
       GoRoute(
         path: AppRoutes.settings,
         name: AppRoutes.settings,
-        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
           child: const SettingsPage(),
           name: state.name,
           key: state.pageKey,
         ),
       ),
-      
+
       // Example of custom transition routes
       // These demonstrate different transition types available
-      
+
       // Slide transition example (future transaction details page)
       GoRoute(
         path: '/transaction/:id',
@@ -89,7 +94,7 @@ class AppRouter {
           );
         },
       ),
-      
+
       // Fade transition example (future profile page)
       GoRoute(
         path: '/profile',
@@ -102,7 +107,7 @@ class AppRouter {
           );
         },
       ),
-      
+
       // Scale transition example (future add transaction page)
       GoRoute(
         path: '/add-transaction',
@@ -115,7 +120,7 @@ class AppRouter {
           );
         },
       ),
-      
+
       // Slide-fade transition example (future reports page)
       GoRoute(
         path: '/reports',
@@ -133,7 +138,8 @@ class AppRouter {
       GoRoute(
         path: '/demo',
         name: 'framework_demo',
-        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
           child: const FrameworkDemoPage(),
           name: state.name,
           key: state.pageKey,
@@ -143,7 +149,8 @@ class AppRouter {
       GoRoute(
         path: '/demo/slide-transition',
         name: 'slide_transition_demo',
-        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
           child: const SlideTransitionDemoPage(),
           name: state.name,
           key: state.pageKey,
@@ -152,7 +159,8 @@ class AppRouter {
       GoRoute(
         path: '/demo/fade-transition',
         name: 'fade_transition_demo',
-        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
           child: const FadeTransitionDemoPage(),
           name: state.name,
           key: state.pageKey,
@@ -161,7 +169,8 @@ class AppRouter {
       GoRoute(
         path: '/demo/scale-transition',
         name: 'scale_transition_demo',
-        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
           child: const ScaleTransitionDemoPage(),
           name: state.name,
           key: state.pageKey,
@@ -170,7 +179,8 @@ class AppRouter {
       GoRoute(
         path: '/demo/slide-fade-transition',
         name: 'slide_fade_transition_demo',
-        pageBuilder: (context, state) => AppPageTransitions.platformTransitionPage(
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
           child: const SlideFadeTransitionDemoPage(),
           name: state.name,
           key: state.pageKey,
@@ -178,7 +188,7 @@ class AppRouter {
       ),
     ],
   );
-  
+
   /// Helper method to build placeholder pages for demonstration
   /// In real implementation, these would be actual page widgets
   static Widget _buildPlaceholderPage(String title) {
@@ -216,4 +226,4 @@ class AppRouter {
       ),
     );
   }
-} 
+}

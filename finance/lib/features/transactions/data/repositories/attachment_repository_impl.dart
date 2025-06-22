@@ -17,7 +17,9 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/sync/google_drive_sync_service.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
-class AttachmentRepositoryImpl with CacheableRepositoryMixin implements AttachmentRepository {
+class AttachmentRepositoryImpl
+    with CacheableRepositoryMixin
+    implements AttachmentRepository {
   final AppDatabase _database;
   final GoogleSignIn _googleSignIn;
   final Uuid _uuid = const Uuid();
@@ -140,7 +142,7 @@ class AttachmentRepositoryImpl with CacheableRepositoryMixin implements Attachme
           ..where((table) => table.id.equals(attachment.id!)))
         .write(companion);
 
-    await invalidateCache('attachment', id: attachment.id);
+    await invalidateEntityCache('attachment');
 
     return attachment.copyWith(updatedAt: now);
   }
@@ -150,7 +152,7 @@ class AttachmentRepositoryImpl with CacheableRepositoryMixin implements Attachme
     await (_database.delete(_database.attachmentsTable)
           ..where((table) => table.id.equals(id)))
         .go();
-    await invalidateCache('attachment', id: id);
+    await invalidateEntityCache('attachment');
   }
 
   @override
@@ -162,7 +164,7 @@ class AttachmentRepositoryImpl with CacheableRepositoryMixin implements Attachme
       isDeleted: const Value(true),
       updatedAt: Value(DateTime.now()),
     ));
-    await invalidateCache('attachment', id: id);
+    await invalidateEntityCache('attachment');
   }
 
   @override
@@ -246,7 +248,6 @@ class AttachmentRepositoryImpl with CacheableRepositoryMixin implements Attachme
     } finally {
       client.close();
     }
-    await invalidateCache('attachment', id: attachment.id);
   }
 
   @override

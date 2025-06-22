@@ -645,8 +645,10 @@ void main() {
                         final result = await context.showOptions<String>(
                           title: 'Options',
                           options: [
-                            const BottomSheetOption(title: 'Option A', value: 'a'),
-                            const BottomSheetOption(title: 'Option B', value: 'b'),
+                            const BottomSheetOption(
+                                title: 'Option A', value: 'a'),
+                            const BottomSheetOption(
+                                title: 'Option B', value: 'b'),
                           ],
                         );
                       },

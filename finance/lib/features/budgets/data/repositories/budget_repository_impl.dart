@@ -7,7 +7,9 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:convert';
 
-class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetRepository {
+class BudgetRepositoryImpl
+    with CacheableRepositoryMixin
+    implements BudgetRepository {
   final AppDatabase _database;
   final _uuid = const Uuid();
 
@@ -174,26 +176,23 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
         .write(companion);
 
     // Invalidate cache after updating budget
-    await invalidateCache('budget', id: budget.id);
+    await invalidateEntityCache('budget');
 
     return budget.copyWith(updatedAt: now);
   }
 
   @override
   Future<void> deleteBudget(int id) async {
-    // ✅ PHASE 2: First delete all transaction-budget links for this budget
-    await (_database.delete(_database.transactionBudgetsTable)
-          ..where((tbl) => tbl.budgetId.equals(id)))
-        .go();
-
-    // Then delete the budget itself
     await (_database.delete(_database.budgetsTable)
-          ..where((tbl) => tbl.id.equals(id)))
+          ..where((b) => b.id.equals(id)))
         .go();
-
-    // Invalidate related caches
     await invalidateEntityCache('budget');
-    await invalidateEntityCache('transaction_budget_link');
+  }
+
+  @override
+  Future<void> deleteAllBudgets() async {
+    await _database.delete(_database.budgetsTable).go();
+    await invalidateEntityCache('budget');
   }
 
   @override
@@ -206,7 +205,7 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
       updatedAt: Value(now),
     ));
 
-    await invalidateCache('budget', id: budgetId);
+    await invalidateEntityCache('budget');
   }
 
   @override
@@ -311,14 +310,20 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
             ..where((tbl) => tbl.id.equals(existing.id!)))
           .write(companion);
     }
+
+    // Invalidate cache
+    await invalidateEntityCache('budget');
   }
 
   // ✅ PHASE 2: Manual budget linking methods
   @override
-  Future<void> addTransactionToBudget(int transactionId, int budgetId, {double? amount}) async {
+  Future<void> addTransactionToBudget(int transactionId, int budgetId,
+      {double? amount}) async {
     // Check if link already exists to prevent duplicates
     final existing = await (_database.select(_database.transactionBudgetsTable)
-          ..where((tbl) => tbl.transactionId.equals(transactionId) & tbl.budgetId.equals(budgetId)))
+          ..where((tbl) =>
+              tbl.transactionId.equals(transactionId) &
+              tbl.budgetId.equals(budgetId)))
         .getSingleOrNull();
 
     if (existing != null) {
@@ -337,17 +342,17 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
     // Create new link
     final now = DateTime.now();
     final syncId = _uuid.v4();
-    
+
     await _database.into(_database.transactionBudgetsTable).insert(
-      TransactionBudgetsTableCompanion.insert(
-        transactionId: transactionId,
-        budgetId: budgetId,
-        amount: Value(amount ?? 0.0),
-        syncId: syncId,
-        createdAt: Value(now),
-        updatedAt: Value(now),
-      ),
-    );
+          TransactionBudgetsTableCompanion.insert(
+            transactionId: transactionId,
+            budgetId: budgetId,
+            amount: Value(amount ?? 0.0),
+            syncId: syncId,
+            createdAt: Value(now),
+            updatedAt: Value(now),
+          ),
+        );
 
     // Invalidate related caches
     await invalidateEntityCache('budget');
@@ -355,9 +360,12 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
   }
 
   @override
-  Future<void> removeTransactionFromBudget(int transactionId, int budgetId) async {
+  Future<void> removeTransactionFromBudget(
+      int transactionId, int budgetId) async {
     await (_database.delete(_database.transactionBudgetsTable)
-          ..where((tbl) => tbl.transactionId.equals(transactionId) & tbl.budgetId.equals(budgetId)))
+          ..where((tbl) =>
+              tbl.transactionId.equals(transactionId) &
+              tbl.budgetId.equals(budgetId)))
         .go();
 
     // Invalidate related caches
@@ -373,10 +381,12 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
         final query = _database.select(_database.budgetsTable).join([
           innerJoin(
             _database.transactionBudgetsTable,
-            _database.budgetsTable.id.equalsExp(_database.transactionBudgetsTable.budgetId),
+            _database.budgetsTable.id
+                .equalsExp(_database.transactionBudgetsTable.budgetId),
           ),
         ])
-          ..where(_database.transactionBudgetsTable.transactionId.equals(transactionId));
+          ..where(_database.transactionBudgetsTable.transactionId
+              .equals(transactionId));
 
         final results = await query.get();
         return results
@@ -389,14 +399,17 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
   }
 
   @override
-  Future<List<TransactionBudgetLink>> getTransactionLinksForBudget(int budgetId) async {
+  Future<List<TransactionBudgetLink>> getTransactionLinksForBudget(
+      int budgetId) async {
     return cacheRead(
       'getTransactionLinksForBudget',
       () async {
         final links = await (_database.select(_database.transactionBudgetsTable)
               ..where((tbl) => tbl.budgetId.equals(budgetId)))
             .get();
-        return links.map<TransactionBudgetLink>(_mapTransactionBudgetLinkToEntity).toList();
+        return links
+            .map<TransactionBudgetLink>(_mapTransactionBudgetLinkToEntity)
+            .toList();
       },
       params: {'budgetId': budgetId},
       ttl: const Duration(minutes: 5),
@@ -408,14 +421,18 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
     return cacheRead(
       'getAllTransactionBudgetLinks',
       () async {
-        final links = await _database.select(_database.transactionBudgetsTable).get();
-        return links.map<TransactionBudgetLink>(_mapTransactionBudgetLinkToEntity).toList();
+        final links =
+            await _database.select(_database.transactionBudgetsTable).get();
+        return links
+            .map<TransactionBudgetLink>(_mapTransactionBudgetLinkToEntity)
+            .toList();
       },
       ttl: const Duration(minutes: 5),
     );
   }
 
-  TransactionBudgetLink _mapTransactionBudgetLinkToEntity(TransactionBudgetTableData data) {
+  TransactionBudgetLink _mapTransactionBudgetLinkToEntity(
+      TransactionBudgetTableData data) {
     return TransactionBudgetLink(
       id: data.id,
       transactionId: data.transactionId,

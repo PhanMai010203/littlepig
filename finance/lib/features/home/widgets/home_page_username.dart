@@ -25,7 +25,8 @@ class HomePageUsername extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsetsDirectional.symmetric(horizontal: 9),
         child: MediaQuery(
-          data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(1.0)),
+          data: MediaQuery.of(context)
+              .copyWith(textScaler: TextScaler.linear(1.0)),
           child: Text(
             "navigation.home".tr(),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(

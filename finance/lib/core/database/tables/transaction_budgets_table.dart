@@ -8,7 +8,7 @@ class TransactionBudgetsTable extends Table {
   String get tableName => 'transaction_budgets';
 
   IntColumn get id => integer().autoIncrement()();
-  
+
   IntColumn get transactionId => integer().references(TransactionsTable, #id)();
   IntColumn get budgetId => integer().references(BudgetsTable, #id)();
   RealColumn get amount => real().withDefault(const Constant(0.0))();
@@ -21,8 +21,8 @@ class TransactionBudgetsTable extends Table {
 
   @override
   List<String> get customConstraints => [
-    'FOREIGN KEY(transaction_id) REFERENCES transactions(id) ON DELETE CASCADE',
-    'FOREIGN KEY(budget_id) REFERENCES budgets(id) ON DELETE CASCADE',
-    'UNIQUE(transaction_id, budget_id)' // Prevent duplicate links
-  ];
-} 
+        'FOREIGN KEY(transaction_id) REFERENCES transactions(id) ON DELETE CASCADE',
+        'FOREIGN KEY(budget_id) REFERENCES budgets(id) ON DELETE CASCADE',
+        'UNIQUE(transaction_id, budget_id)' // Prevent duplicate links
+      ];
+}

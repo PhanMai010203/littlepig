@@ -251,9 +251,12 @@ void main() {
 
       testWidgets('performance service tracks frame times', (tester) async {
         // Simulate frame time recording
-        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 16));
-        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 18));
-        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 15));
+        AnimationPerformanceService.recordFrameTime(
+            const Duration(milliseconds: 16));
+        AnimationPerformanceService.recordFrameTime(
+            const Duration(milliseconds: 18));
+        AnimationPerformanceService.recordFrameTime(
+            const Duration(milliseconds: 15));
 
         final metrics = AnimationPerformanceService.performanceMetrics;
 
@@ -597,7 +600,8 @@ void main() {
       test('performance data is consistent across calls', () {
         // Set up consistent state
         AnimationPerformanceService.resetPerformanceMetrics();
-        AnimationPerformanceService.recordFrameTime(const Duration(milliseconds: 16));
+        AnimationPerformanceService.recordFrameTime(
+            const Duration(milliseconds: 16));
 
         // Get multiple snapshots
         final profile1 = AnimationPerformanceService.getPerformanceProfile();

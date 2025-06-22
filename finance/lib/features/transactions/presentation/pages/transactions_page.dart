@@ -19,7 +19,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
   late final TransactionRepository _transactionRepository;
   late DateTime _selectedMonth;
   final ScrollController _monthScrollController = ScrollController();
-  
+
   List<Transaction> _allTransactions = [];
   bool _isLoading = true;
 
@@ -44,7 +44,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
     try {
       final transactions = await _transactionRepository.getAllTransactions();
-      
+
       // Sort transactions by date (newest first)
       transactions.sort((a, b) => b.date.compareTo(a.date));
 
@@ -56,7 +56,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
       setState(() {
         _isLoading = false;
       });
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error loading transactions: $e')),
@@ -70,8 +70,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
       _selectedMonth = month;
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +196,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
     // Group transactions by date
     final groupedTransactions = <DateTime, List<Transaction>>{};
     for (final transaction in selectedMonthTransactions) {
-      final day = DateTime(transaction.date.year, transaction.date.month, transaction.date.day);
+      final day = DateTime(
+          transaction.date.year, transaction.date.month, transaction.date.day);
       if (groupedTransactions[day] == null) {
         groupedTransactions[day] = [];
       }
