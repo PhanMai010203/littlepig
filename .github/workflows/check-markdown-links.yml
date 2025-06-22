@@ -26,7 +26,7 @@
             with:
               # We specify the 'docs' folder to check all markdown files within it.
               use-quiet-mode: 'yes'
-              folder-path: 'docs/'
+              folder-path: 'finance/docs/'
               # This config tells the checker how to handle certain links.
               # For example, it will ignore the dummy 'YOUR_GOOGLE_CLIENT_ID' link.
               config-file: '.github/workflows/mlc_config.json'
