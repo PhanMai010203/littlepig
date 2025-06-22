@@ -8,6 +8,7 @@ import '../datasources/currency_local_data_source.dart';
 import '../datasources/exchange_rate_remote_data_source.dart';
 import '../datasources/exchange_rate_local_data_source.dart';
 import '../models/exchange_rate_model.dart';
+import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
 /// Enhanced cache durations for better offline support
 class CacheStrategy {
@@ -19,7 +20,7 @@ class CacheStrategy {
       Duration(days: 30); // Absolute expiry
 }
 
-class CurrencyRepositoryImpl implements CurrencyRepository {
+class CurrencyRepositoryImpl with CacheableRepositoryMixin implements CurrencyRepository {
   final CurrencyLocalDataSource _currencyLocalDataSource;
   final ExchangeRateRemoteDataSource _exchangeRateRemoteDataSource;
   final ExchangeRateLocalDataSource _exchangeRateLocalDataSource;
@@ -67,46 +68,54 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
 
   @override
   Future<List<Currency>> getAllCurrencies() async {
-    final currencies = await _currencyLocalDataSource.getAllCurrencies();
-    return currencies.map((model) => model.toEntity()).toList();
+    return cacheRead('getAllCurrencies', () async {
+      final currencies = await _currencyLocalDataSource.getAllCurrencies();
+      return currencies.map((model) => model.toEntity()).toList();
+    });
   }
 
   @override
   Future<Currency?> getCurrencyByCode(String code) async {
-    final currencyMap = await _currencyLocalDataSource.getCurrencyMap();
-    final model = currencyMap[code.toUpperCase()];
-    return model?.toEntity();
+    return cacheReadSingle('getCurrencyByCode', () async {
+      final currencyMap = await _currencyLocalDataSource.getCurrencyMap();
+      final model = currencyMap[code.toUpperCase()];
+      return model?.toEntity();
+    }, params: {'code': code});
   }
 
   @override
   Future<List<Currency>> getPopularCurrencies() async {
-    final currencies = await getAllCurrencies();
+    return cacheRead('getPopularCurrencies', () async {
+      final currencies = await getAllCurrencies();
 
-    // Filter for well-known currencies with complete information
-    final popular = currencies.where((currency) {
-      return currency.isKnown &&
-          currency.symbol.isNotEmpty &&
-          currency.name.isNotEmpty &&
-          _isPopularCurrency(currency.code);
-    }).toList();
+      // Filter for well-known currencies with complete information
+      final popular = currencies.where((currency) {
+        return currency.isKnown &&
+            currency.symbol.isNotEmpty &&
+            currency.name.isNotEmpty &&
+            _isPopularCurrency(currency.code);
+      }).toList();
 
-    // Sort by code for consistent ordering
-    popular.sort((a, b) => a.code.compareTo(b.code));
+      // Sort by code for consistent ordering
+      popular.sort((a, b) => a.code.compareTo(b.code));
 
-    return popular;
+      return popular;
+    });
   }
 
   @override
   Future<List<Currency>> searchCurrencies(String query) async {
-    final currencies = await getAllCurrencies();
-    final lowercaseQuery = query.toLowerCase();
+    return cacheRead('searchCurrencies', () async {
+      final currencies = await getAllCurrencies();
+      final lowercaseQuery = query.toLowerCase();
 
-    return currencies.where((currency) {
-      return currency.code.toLowerCase().contains(lowercaseQuery) ||
-          currency.name.toLowerCase().contains(lowercaseQuery) ||
-          (currency.countryName?.toLowerCase().contains(lowercaseQuery) ??
-              false);
-    }).toList();
+      return currencies.where((currency) {
+        return currency.code.toLowerCase().contains(lowercaseQuery) ||
+            currency.name.toLowerCase().contains(lowercaseQuery) ||
+            (currency.countryName?.toLowerCase().contains(lowercaseQuery) ??
+                false);
+      }).toList();
+    }, params: {'query': query});
   }
 
   @override

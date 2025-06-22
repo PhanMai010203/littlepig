@@ -64,10 +64,16 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
 
   @override
   Future<List<Budget>> getBudgetsByCategory(int categoryId) async {
-    final budgets = await (_database.select(_database.budgetsTable)
-          ..where((tbl) => tbl.categoryId.equals(categoryId)))
-        .get();
-    return budgets.map<Budget>(_mapToEntity).toList();
+    return cacheRead(
+      'getBudgetsByCategory',
+      () async {
+        final budgets = await (_database.select(_database.budgetsTable)
+              ..where((tbl) => tbl.categoryId.equals(categoryId)))
+            .get();
+        return budgets.map<Budget>(_mapToEntity).toList();
+      },
+      params: {'categoryId': categoryId},
+    );
   }
 
   @override
@@ -199,6 +205,8 @@ class BudgetRepositoryImpl with CacheableRepositoryMixin implements BudgetReposi
       spent: Value(spentAmount),
       updatedAt: Value(now),
     ));
+
+    await invalidateCache('budget', id: budgetId);
   }
 
   @override

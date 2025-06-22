@@ -4,8 +4,9 @@ import '../../../../core/database/app_database.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
+import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
-class AccountRepositoryImpl implements AccountRepository {
+class AccountRepositoryImpl with CacheableRepositoryMixin implements AccountRepository {
   final AppDatabase _database;
   final _uuid = const Uuid();
 
@@ -13,16 +14,28 @@ class AccountRepositoryImpl implements AccountRepository {
 
   @override
   Future<List<Account>> getAllAccounts() async {
-    final accounts = await _database.select(_database.accountsTable).get();
-    return accounts.map(_mapToEntity).toList();
+    return cacheRead(
+      'getAllAccounts',
+      () async {
+        final accounts = await _database.select(_database.accountsTable).get();
+        return accounts.map(_mapToEntity).toList();
+      },
+      ttl: const Duration(minutes: 5),
+    );
   }
 
   @override
   Future<Account?> getAccountById(int id) async {
-    final account = await (_database.select(_database.accountsTable)
-          ..where((tbl) => tbl.id.equals(id)))
-        .getSingleOrNull();
-    return account != null ? _mapToEntity(account) : null;
+    return cacheReadSingle(
+      'getAccountById',
+      () async {
+        final account = await (_database.select(_database.accountsTable)
+              ..where((tbl) => tbl.id.equals(id)))
+            .getSingleOrNull();
+        return account != null ? _mapToEntity(account) : null;
+      },
+      params: {'id': id},
+    );
   }
 
   @override
@@ -58,6 +71,9 @@ class AccountRepositoryImpl implements AccountRepository {
 
     final id = await _database.into(_database.accountsTable).insert(companion);
 
+    // Invalidate cache
+    await invalidateEntityCache('account');
+
     return account.copyWith(
       id: id,
       syncId: syncId,
@@ -82,6 +98,9 @@ class AccountRepositoryImpl implements AccountRepository {
           ..where((tbl) => tbl.id.equals(account.id!)))
         .write(companion);
 
+    // Invalidate cache
+    await invalidateCache('account', id: account.id);
+
     return account.copyWith(updatedAt: now);
   }
 
@@ -90,6 +109,9 @@ class AccountRepositoryImpl implements AccountRepository {
     await (_database.delete(_database.accountsTable)
           ..where((tbl) => tbl.id.equals(id)))
         .go();
+    
+    // Invalidate cache
+    await invalidateCache('account', id: id);
   }
 
   @override
@@ -101,6 +123,9 @@ class AccountRepositoryImpl implements AccountRepository {
       balance: Value(amount),
       updatedAt: Value(now),
     ));
+    
+    // Invalidate cache
+    await invalidateCache('account', id: accountId);
   }
 
   @override
@@ -148,6 +173,9 @@ class AccountRepositoryImpl implements AccountRepository {
             ..where((tbl) => tbl.id.equals(existing.id!)))
           .write(companion);
     }
+    
+    // Invalidate cache
+    await invalidateEntityCache('account');
   }
 
   Account _mapToEntity(AccountsTableData data) {

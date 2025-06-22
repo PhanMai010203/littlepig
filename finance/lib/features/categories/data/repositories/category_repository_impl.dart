@@ -4,8 +4,9 @@ import '../../../../core/database/app_database.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
-class CategoryRepositoryImpl implements CategoryRepository {
+class CategoryRepositoryImpl with CacheableRepositoryMixin implements CategoryRepository {
   final AppDatabase _database;
   final _uuid = const Uuid();
 
@@ -13,32 +14,44 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
   @override
   Future<List<Category>> getAllCategories() async {
-    final categories = await _database.select(_database.categoriesTable).get();
-    return categories.map(_mapToEntity).toList();
+    return cacheRead('getAllCategories', () async {
+      final categories = await _database.select(_database.categoriesTable).get();
+      return categories.map(_mapToEntity).toList();
+    });
   }
 
   @override
   Future<List<Category>> getExpenseCategories() async {
-    final categories = await (_database.select(_database.categoriesTable)
-          ..where((tbl) => tbl.isExpense.equals(true)))
-        .get();
-    return categories.map(_mapToEntity).toList();
+    return cacheRead('getExpenseCategories', () async {
+      final categories = await (_database.select(_database.categoriesTable)
+            ..where((tbl) => tbl.isExpense.equals(true)))
+          .get();
+      return categories.map(_mapToEntity).toList();
+    });
   }
 
   @override
   Future<List<Category>> getIncomeCategories() async {
-    final categories = await (_database.select(_database.categoriesTable)
-          ..where((tbl) => tbl.isExpense.equals(false)))
-        .get();
-    return categories.map(_mapToEntity).toList();
+    return cacheRead('getIncomeCategories', () async {
+      final categories = await (_database.select(_database.categoriesTable)
+            ..where((tbl) => tbl.isExpense.equals(false)))
+          .get();
+      return categories.map(_mapToEntity).toList();
+    });
   }
 
   @override
   Future<Category?> getCategoryById(int id) async {
-    final category = await (_database.select(_database.categoriesTable)
-          ..where((tbl) => tbl.id.equals(id)))
-        .getSingleOrNull();
-    return category != null ? _mapToEntity(category) : null;
+    return cacheReadSingle(
+      'getCategoryById',
+      () async {
+        final category = await (_database.select(_database.categoriesTable)
+              ..where((tbl) => tbl.id.equals(id)))
+            .getSingleOrNull();
+        return category != null ? _mapToEntity(category) : null;
+      },
+      params: {'id': id},
+    );
   }
 
   @override
@@ -68,6 +81,8 @@ class CategoryRepositoryImpl implements CategoryRepository {
     final id =
         await _database.into(_database.categoriesTable).insert(companion);
 
+    await invalidateEntityCache('category');
+
     return category.copyWith(
       id: id,
       syncId: syncId,
@@ -92,6 +107,8 @@ class CategoryRepositoryImpl implements CategoryRepository {
           ..where((tbl) => tbl.id.equals(category.id!)))
         .write(companion);
 
+    await invalidateCache('category', id: category.id);
+
     return category.copyWith(updatedAt: now);
   }
 
@@ -100,6 +117,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
     await (_database.delete(_database.categoriesTable)
           ..where((tbl) => tbl.id.equals(id)))
         .go();
+    await invalidateCache('category', id: id);
   }
 
   @override
@@ -148,6 +166,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
             ..where((tbl) => tbl.id.equals(existing.id!)))
           .write(companion);
     }
+    await invalidateEntityCache('category');
   }
 
   Category _mapToEntity(CategoriesTableData data) {

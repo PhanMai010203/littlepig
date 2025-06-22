@@ -15,8 +15,9 @@ import '../../domain/entities/attachment.dart';
 import '../../domain/repositories/attachment_repository.dart';
 import '../../../../core/database/app_database.dart';
 import '../../../../core/sync/google_drive_sync_service.dart';
+import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
-class AttachmentRepositoryImpl implements AttachmentRepository {
+class AttachmentRepositoryImpl with CacheableRepositoryMixin implements AttachmentRepository {
   final AppDatabase _database;
   final GoogleSignIn _googleSignIn;
   final Uuid _uuid = const Uuid();
@@ -60,6 +61,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     final id =
         await _database.into(_database.attachmentsTable).insert(companion);
 
+    await invalidateEntityCache('attachment');
+
     return attachment.copyWith(
       id: id,
       syncId: syncId,
@@ -69,34 +72,48 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
 
   @override
   Future<Attachment?> getAttachmentById(int id) async {
-    final query = _database.select(_database.attachmentsTable)
-      ..where((table) => table.id.equals(id));
+    return cacheReadSingle(
+      'getAttachmentById',
+      () async {
+        final query = _database.select(_database.attachmentsTable)
+          ..where((table) => table.id.equals(id));
 
-    final row = await query.getSingleOrNull();
-    return row != null ? _mapRowToAttachment(row) : null;
+        final row = await query.getSingleOrNull();
+        return row != null ? _mapRowToAttachment(row) : null;
+      },
+      params: {'id': id},
+    );
   }
 
   @override
   Future<List<Attachment>> getAttachmentsByTransaction(
       int transactionId) async {
-    final query = _database.select(_database.attachmentsTable)
-      ..where((table) =>
-          table.transactionId.equals(transactionId) &
-          table.isDeleted.equals(false))
-      ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]);
+    return cacheRead(
+      'getAttachmentsByTransaction',
+      () async {
+        final query = _database.select(_database.attachmentsTable)
+          ..where((table) =>
+              table.transactionId.equals(transactionId) &
+              table.isDeleted.equals(false))
+          ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]);
 
-    final rows = await query.get();
-    return rows.map(_mapRowToAttachment).toList();
+        final rows = await query.get();
+        return rows.map(_mapRowToAttachment).toList();
+      },
+      params: {'transactionId': transactionId},
+    );
   }
 
   @override
   Future<List<Attachment>> getAllAttachments() async {
-    final query = _database.select(_database.attachmentsTable)
-      ..where((table) => table.isDeleted.equals(false))
-      ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]);
+    return cacheRead('getAllAttachments', () async {
+      final query = _database.select(_database.attachmentsTable)
+        ..where((table) => table.isDeleted.equals(false))
+        ..orderBy([(table) => OrderingTerm.desc(table.createdAt)]);
 
-    final rows = await query.get();
-    return rows.map(_mapRowToAttachment).toList();
+      final rows = await query.get();
+      return rows.map(_mapRowToAttachment).toList();
+    });
   }
 
   @override
@@ -123,6 +140,8 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
           ..where((table) => table.id.equals(attachment.id!)))
         .write(companion);
 
+    await invalidateCache('attachment', id: attachment.id);
+
     return attachment.copyWith(updatedAt: now);
   }
 
@@ -131,6 +150,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     await (_database.delete(_database.attachmentsTable)
           ..where((table) => table.id.equals(id)))
         .go();
+    await invalidateCache('attachment', id: id);
   }
 
   @override
@@ -142,6 +162,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
       isDeleted: const Value(true),
       updatedAt: Value(DateTime.now()),
     ));
+    await invalidateCache('attachment', id: id);
   }
 
   @override
@@ -225,6 +246,7 @@ class AttachmentRepositoryImpl implements AttachmentRepository {
     } finally {
       client.close();
     }
+    await invalidateCache('attachment', id: attachment.id);
   }
 
   @override
