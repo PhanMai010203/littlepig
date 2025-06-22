@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'dart:math' as math;
 
 class AccountCard extends StatelessWidget {
   final String title;
@@ -21,11 +22,30 @@ class AccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Calculate dynamic width based on the amount text to avoid overflow.
+    const double baseWidth = 170.0;
+    const double horizontalPadding = 32.0; // 16 padding on each side (left + right)
+
+    final double textScaleFactor = MediaQuery.textScaleFactorOf(context);
+    final amountPainter = TextPainter(
+      text: TextSpan(
+        text: amount,
+        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
+      maxLines: 1,
+      textScaleFactor: textScaleFactor,
+      locale: Localizations.localeOf(context),
+      textDirection: TextDirection.ltr,
+    )..layout();
+
+    final double calculatedWidth = amountPainter.width + horizontalPadding;
+    final double cardWidth = math.max(baseWidth, calculatedWidth);
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        width: 170,
+        width: cardWidth,
         height: 110,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -99,6 +119,8 @@ class AccountCard extends StatelessWidget {
             Text(
               amount,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              softWrap: false,
+              overflow: TextOverflow.visible,
             ),
             const SizedBox(height: 4),
             Text(
