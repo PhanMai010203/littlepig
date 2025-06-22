@@ -1804,4 +1804,4 @@ The system is production-ready and will scale with your application's growth. Al
 
 ## 📝 **Quick Reference**
 
-For a high-level overview of the sync service API, key methods, and a quick-reference cheatsheet, please see the **[Data Sync Engine](https://github.com/maientertainment/finance/blob/docs-revamp/docs/README.md#02--core-infrastructure-)** section in the main project `README.md`. It serves as the central hub for development recipes and API entry points.
+For a high-level overview of the sync service API, key methods, and a quick-reference cheatsheet, please see the **[Data Sync Engine](https://github.com/PhanMai010203/littlepig/blob/docs-revamp/finance/docs/README.md#02--core-infrastructure-)** section in the main project `README.md`. It serves as the central hub for development recipes and API entry points.
