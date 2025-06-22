@@ -180,20 +180,20 @@ class DataSeeder {
 
   Future<void> _seedCustomCategories() async {
     final now = DateTime.now();
-    final existingCategories = await _categoryRepository.getAllCategories();
+    // final existingCategories = await _categoryRepository.getAllCategories();
     
-    // Check if custom categories already exist
-    final hasCustomCategories = existingCategories.any((c) => 
-      c.syncId.startsWith('custom-') || 
-      c.name.contains('Side Projects') || 
-      c.name.contains('Pet Care') || 
-      c.name.contains('Freelance Work')
-    );
+    // // Check if custom categories already exist
+    // final hasCustomCategories = existingCategories.any((c) => 
+    //   c.syncId.startsWith('custom-') || 
+    //   c.name.contains('Side Projects') || 
+    //   c.name.contains('Pet Care') || 
+    //   c.name.contains('Freelance Work')
+    // );
     
-    if (hasCustomCategories) {
-      print('   Custom categories already exist, skipping...');
-      return;
-    }
+    // if (hasCustomCategories) {
+    //   print('   Custom categories already exist, skipping...');
+    //   return;
+    // }
 
     final customCategories = [
       // 2 expense categories
@@ -249,15 +249,6 @@ class DataSeeder {
 
     final now = DateTime.now();
     final accounts = <Account>[];
-
-    // Check if demo accounts already exist
-    final existingAccounts = await _accountRepository.getAllAccounts();
-    final hasDemoAccounts = existingAccounts.any((a) => a.syncId.startsWith('demo-account-'));
-    
-    if (hasDemoAccounts) {
-      print('   Demo accounts already exist, returning existing accounts...');
-      return existingAccounts.where((a) => a.syncId.startsWith('demo-account-')).toList();
-    }
 
     final accountData = [
       // Default account with positive balance
@@ -343,15 +334,6 @@ class DataSeeder {
 
       final checkingAccount = accounts.first; // Default account
       final savingsAccount = accounts.length > 1 ? accounts[1] : accounts.first;
-
-      // Check if demo transactions already exist
-      final existingTransactions = await _transactionRepository.getAllTransactions();
-      final hasDemoTransactions = existingTransactions.any((t) => t.syncId.startsWith('demo-'));
-      
-      if (hasDemoTransactions) {
-        print('   Demo transactions already exist, skipping transaction seeding...');
-        return existingTransactions.where((t) => t.syncId.startsWith('demo-')).toList();
-      }
 
       // 1. Regular Income Transactions
       final incomeTransactions = [
@@ -614,17 +596,7 @@ class DataSeeder {
       return;
     }
 
-
     try {
-      // Check if demo budgets already exist
-      final existingBudgets = await _budgetRepository.getAllBudgets();
-      final hasDemoBudgets = existingBudgets.any((b) => b.syncId.startsWith('demo-budget-'));
-      
-      if (hasDemoBudgets) {
-        print('   Demo budgets already exist, skipping budget seeding...');
-        return;
-      }
-
       // Get categories for reference
       final categories = await _categoryRepository.getAllCategories();
       if (categories.isEmpty) {
