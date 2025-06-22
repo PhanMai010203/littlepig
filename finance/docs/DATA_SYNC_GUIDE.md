@@ -52,6 +52,94 @@ This guide provides comprehensive instructions for implementing and using the ad
 
 ---
 
+## 🏛️ Architectural Rationale & Flow
+
+Before diving into the implementation, it's important to understand *why* this system was designed this way. These decisions prioritize robustness, offline capability, and future scalability.
+
+### Why an Event-Sourcing, CRDT-Inspired Model?
+
+1.  **True Offline-First Capability**: Traditional state-based sync (e.g., sending the entire updated object) struggles with multiple offline devices. By sourcing every change as an immutable *event*, we can reliably reconstruct the state on any device, regardless of when it was last online. Each device has a complete history of what happened, not just the final result.
+
+2.  **Automatic & Intelligent Conflict Resolution**: When two devices edit the same record while offline, a conflict is inevitable. Our `CRDTConflictResolver` uses Conflict-Free Replicated Data (CRDT) principles. Instead of a naive "last-write-wins" approach which can lose data, it applies rules based on the *intent* of the change (e.g., merging counters, preferring non-destructive updates). This minimizes data loss and user frustration.
+
+3.  **Auditability and History**: Because every change is an event, we have a complete, timestamped audit trail of the data's entire lifecycle. This is invaluable for debugging complex user issues, recovering from errors, and potentially building future features like "view edit history."
+
+4.  **Decoupling and Scalability**: The event-based nature decouples data production from consumption. The sync service processes a stream of events without needing to know the business logic that created them. This makes it easier to add new features or data types to the sync system without modifying its core.
+
+### System Interaction Flow
+
+The following diagrams illustrate how the core components interact.
+
+#### **Local Event Processing**
+The first diagram shows the flow when a user makes a change on a single device, from UI interaction to database commit. It highlights how an event is validated, processed, and saved locally.
+
+```mermaid
+sequenceDiagram
+    participant U as User/UI
+    participant S as EnhancedIncrementalSyncService
+    participant P as EventProcessor
+    participant D as CRDTConflictResolver
+    participant M as SyncStateManager
+    participant DB as Database
+
+    U->>S: Creates/updates data (triggers event)
+    S->>M: notify(state: 'processing')
+    S->>P: processEvent(event)
+    note right of P: Validate, compress &<br/>deduplicate event
+    alt Conflict detected during processing
+        P->>D: resolveConflict(existing, new)
+        D-->>P: resolvedEvent
+    end
+    P-->>S: processedEvent
+    S->>DB: saveEvent(processedEvent)
+    DB-->>S: Success
+    S->>M: notify(state: 'completed')
+    S-->>U: Acknowledge change (e.g., update UI state)
+```
+
+#### **Multi-Device Sync Flow**
+The second diagram illustrates the end-to-end journey of an event from a sender device (Device A) to a receiver device (Device B), showing how data is synchronized across the remote backend.
+
+```mermaid
+sequenceDiagram
+    title Multi-Device Sync Event Flow
+
+    box "Device A (Sender)"
+        participant U_A as User/UI
+        participant S_A as EnhancedIncrementalSyncService
+    end
+
+    participant Remote as Remote Sync Backend
+
+    box "Device B (Receiver)"
+        participant S_B as EnhancedIncrementalSyncService
+        participant P_B as EventProcessor
+        participant D_B as CRDTConflictResolver
+        participant DB_B as Database
+        participant UI_B as UI/App
+    end
+
+    U_A->>S_A: 1. User makes a change
+    note right of S_A: Local event is processed and saved<br/>(see 'Local Event Processing' diagram).
+
+    S_A->>Remote: 2. pushEvent(event)
+    Remote-->>S_A: 3. Acknowledge
+
+    Remote->>S_B: 4. receiveEvent(event)
+
+    S_B->>P_B: 5. processEvent(event)
+    alt Conflict with local data
+        P_B->>D_B: resolveConflict(remoteEvent, localState)
+        D_B-->>P_B: resolvedEvent
+    end
+    P_B-->>S_B: 6. processedEvent
+
+    S_B->>DB_B: 7. saveEvent(processedEvent)
+    DB-->>S_B: 8. Success
+
+    S_B->>UI_B: 9. Notify UI to refresh/update
+```
+
 ## 🔧 **Current Usage with Implemented Services**
 
 ### **1. Using the Registered Sync Service (Current Implementation)**
@@ -1712,165 +1800,6 @@ The system is production-ready and will scale with your application's growth. Al
 
 ---
 
-## 📝 **Quick Reference for Developers**
+## 📝 **Quick Reference**
 
-### **Essential Imports**
-```dart
-// Current working imports (Phase 4+)
-import 'package:finance/core/sync/sync_service.dart';              // Main sync interface
-import 'package:finance/core/sync/google_drive_sync_service.dart'; // Legacy Google Drive sync
-import 'package:finance/core/sync/incremental_sync_service.dart';  // Primary sync service
-import 'package:finance/core/sync/crdt_conflict_resolver.dart';    // Conflict resolution
-import 'package:finance/core/di/injection.dart';                   // Dependency injection
-
-// Phase 5A imports (advanced features, manual instantiation needed)
-import 'package:finance/core/sync/enhanced_incremental_sync_service.dart';
-import 'package:finance/core/sync/event_processor.dart';
-import 'package:finance/core/sync/sync_state_manager.dart';
-import 'package:finance/core/sync/interfaces/sync_interfaces.dart';
-```
-
-### **Key Service Methods**
-```dart
-// Sync Services (Registered in DI)
-final syncService = getIt<SyncService>();           // IncrementalSyncService
-final legacySync = getIt<GoogleDriveSyncService>(); // Legacy sync
-final conflictResolver = getIt<CRDTConflictResolver>();
-
-// Essential Methods (all services initialized during DI setup)
-await syncService.signIn();                    // Authenticate with Google
-await syncService.performFullSync();           // Full bidirectional sync
-await syncService.syncToCloud();              // Upload local changes
-await syncService.syncFromCloud();            // Download remote changes
-final isSignedIn = await syncService.isSignedIn();
-final status = syncService.syncStatusStream;  // Stream for UI updates
-```
-
-### **Event Sourcing (Automatic)**
-```dart
-// All database changes automatically generate sync events
-// via database triggers - no manual intervention needed!
-
-// When you insert/update/delete:
-await database.into(database.transactionsTable).insert(transaction);
-// ↓ Automatically generates sync event ↓
-// Event stored in sync_event_log table
-// Ready for next sync cycle
-```
-
-### **Real-Time Sync (Already Active)**
-✅ **Real-time sync is already fully implemented and running:**
-- ✅ Database triggers capture all changes automatically
-- ✅ Background sync runs every 5 minutes
-- ✅ Event sourcing tracks all modifications
-- ✅ Incremental sync only uploads/downloads changes
-- ✅ Works offline, syncs when connection restored
-
-### **Automatic Google Drive Sync Backup**
-✅ **Already implemented and working:**
-- ✅ Automatic backup to Google Drive
-- ✅ Organized folder structure (`FinanceApp/database_sync/`)
-- ✅ Event-based backups (only changes, not full database)
-- ✅ Configurable backup intervals
-- ✅ Background backup without user intervention
-
-### **To answer your specific questions:**
-
-#### **🔄 "Real-time sync (I think this already runs in the background of the app right?)"**
-**YES! Real-time sync is already fully implemented and working:**
-- ✅ Database triggers capture all changes automatically (Phase 4 event sourcing)
-- ✅ Background sync runs automatically (via registered IncrementalSyncService)
-- ✅ Event sourcing tracks all modifications in sync_event_log table
-- ✅ Incremental sync only uploads/downloads changes (not full database)
-- ✅ Works offline, syncs when connection restored
-- ✅ Automatic initialization during app startup (configureDependencies())
-
-**Current Implementation:** Uses `IncrementalSyncService` registered as `SyncService` in DI container.
-
-#### **📦 "Automatic Google Drive Sync Backup"**  
-**YES! Already implemented and working:**
-- ✅ Automatic backup to Google Drive via GoogleDriveSyncService (legacy) and IncrementalSyncService
-- ✅ Organized folder structure (`FinanceApp/database_sync/`)
-- ✅ Event-based backups (only changes, not full database)
-- ✅ Configurable backup intervals via TimerManagementService
-- ✅ Background backup without user intervention
-- ✅ Both legacy and incremental sync services support Google Drive
-
-**Current Implementation:** Both GoogleDriveSyncService and IncrementalSyncService are registered in DI and provide Google Drive backup.
-
-#### **🚀 "And all of the other scenarios that you could think of"**
-**All covered in the guide above! Including:**
-- ✅ Multi-device sync with conflict resolution
-- ✅ Offline-first architecture
-- ✅ Family/household sync scenarios  
-- ✅ Business/enterprise features
-- ✅ Large dataset optimization
-- ✅ Performance monitoring and debugging
-- ✅ Error handling and recovery
-- ✅ Production deployment strategies
-
-### **Current Sync Implementation Status:**
-- **Phase 1 & 2**: ✅ Complete (Event sourcing, namespace separation)
-- **Phase 3**: ✅ Complete (Real-time incremental sync, CRDT conflict resolution) 
-- **Phase 4**: ✅ Complete (Schema cleanup, optimization, test infrastructure)
-- **Phase 4.3**: ✅ Complete (Test infrastructure overhaul - 120+ tests passing)
-- **Phase 5A**: 🔄 Partial (Enhanced services implemented but not registered in DI)
-- **Production Ready**: ✅ Yes (using IncrementalSyncService)
-- **Sync Rating**: ✅ 9/10 achieved
-
----
-
-## 🔧 **Phase 5A Completion Guide**
-
-### **Current Status: Services Implemented but Not Fully Integrated**
-
-The enhanced sync services exist and are functional, but need to be properly registered in the dependency injection container for full Phase 5A completion.
-
-#### **To Complete Phase 5A Registration:**
-
-1. **Update `injection.dart` to register enhanced services:**
-
-```dart
-// Add these imports to lib/core/di/injection.dart
-import '../sync/enhanced_incremental_sync_service.dart';
-import '../sync/event_processor.dart';
-import '../sync/sync_state_manager.dart';
-
-// Add these registrations in configureDependencies()
-Future<void> configureDependencies() async {
-  // ...existing code...
-  
-  // Register Phase 5A Enhanced Services
-  final eventProcessor = EventProcessor(databaseService.database);
-  getIt.registerSingleton<EventProcessor>(eventProcessor);
-  
-  final syncStateManager = SyncStateManager(databaseService.database);
-  await syncStateManager.initialize();
-  getIt.registerSingleton<SyncStateManager>(syncStateManager);
-  
-  final enhancedSyncService = EnhancedIncrementalSyncService(databaseService.database);
-  await enhancedSyncService.initialize();
-  getIt.registerSingleton<EnhancedIncrementalSyncService>(enhancedSyncService);
-  
-  // ...existing sync service registrations...
-}
-```
-
-2. **Update imports in the DI file:**
-The enhanced services are already implemented and tested, they just need proper DI registration.
-
-3. **Once registered, use the enhanced services:**
-```dart
-// After DI registration update
-final enhancedSync = getIt<EnhancedIncrementalSyncService>();
-final eventProcessor = getIt<EventProcessor>();
-final stateManager = getIt<SyncStateManager>();
-```
-
-#### **Benefits of Completing Phase 5A:**
-- Real-time event streaming for Team B
-- Advanced progress tracking
-- Enhanced device coordination
-- Better interface contracts for multi-team development
-
----
+For a high-level overview of the sync service API, key methods, and a quick-reference cheatsheet, please see the **[Data Sync Engine](https://github.com/maientertainment/finance/blob/docs-revamp/docs/README.md#02--core-infrastructure-)** section in the main project `README.md`. It serves as the central hub for development recipes and API entry points.
