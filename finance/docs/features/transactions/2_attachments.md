@@ -1,196 +1,186 @@
 # Transactions: Attachments Guide
 
-This guide provides a comprehensive overview of how to work with transaction attachments, including adding, retrieving, and managing them with Google Drive integration.
+This guide provides a comprehensive overview of how to work with transaction attachments, including local caching, file compression, and robust Google Drive integration.
 
-## Setup for Attachments
+## Core Concepts
 
-In addition to the basic transaction setup, you will need the `AttachmentRepository` and the `FilePickerService`.
+The attachment system is designed to be efficient and robust, balancing local storage usage with reliable cloud backup on Google Drive.
 
-```dart
-import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
-import 'package:finance/features/transactions/domain/repositories/attachment_repository.dart';
-import 'package:finance/features/transactions/domain/entities/transaction.dart';
-import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
-import 'package:finance/features/transactions/domain/entities/attachment.dart';
-import 'package:finance/core/services/file_picker_service.dart';
-import 'package:finance/core/di/injection.dart';
+1.  **Local-First Access**: Files, especially images from the camera, are cached locally for quick access.
+2.  **Intelligent Caching**: Camera images are cached for 30 days. After that, the local copy is deleted to save space, but the file remains safe in Google Drive.
+3.  **On-Demand Downloads**: If you try to access a file that's no longer cached locally, the app will automatically download it from Google Drive.
+4.  **Smart Google Drive Storage**:
+    *   **Organized Folders**: Files are stored in a clean `Attachments/YYYY/MM/<TransactionID>` structure.
+    *   **Deduplication**: The system calculates a hash for each file. If the same file is uploaded again for the same transaction, it won't create a duplicate, saving storage space.
+    *   **Resilience**: Deleting an attachment from the app moves it to the trash in Google Drive, so it can be recovered if needed.
 
-// Get the repositories and services
-final transactionRepository = getIt<TransactionRepository>();
-final attachmentRepository = getIt<AttachmentRepository>();
-final filePickerService = getIt<FilePickerService>();
-```
+## Key Components
+
+-   `AttachmentRepository`: The low-level repository responsible for all database and file system operations, including Google Drive communication.
+-   `FilePickerService` (Not shown): A higher-level service that likely uses `AttachmentRepository` to provide a simplified UI-facing API for picking and managing attachments. Most features should interact with the `FilePickerService`.
+
+---
 
 ## Working with Attachments
 
-### Adding Attachments to Transactions
+### Adding an Attachment (Conceptual Flow)
 
-The attachment system follows this flow:
-1.  User chooses attachment source (camera, gallery, or file picker).
-2.  Files are compressed if they are images.
-3.  Files are uploaded to Google Drive.
-4.  Google Drive links are generated and stored.
+While you would typically use a `FilePickerService`, the underlying process managed by `AttachmentRepository` is as follows:
+
+1.  A local file path is provided (e.g., from a camera or file picker).
+2.  If the file is an image, it's compressed to save space.
+3.  An `Attachment` entity is created in the local database, pointing to the local file.
+4.  The file is then uploaded to Google Drive in the background. The upload process is smart: it checks if a file with the same content already exists in the transaction's attachment folder on Drive to prevent duplicates.
+5.  Once uploaded, the `Attachment` entity is updated with the `googleDriveFileId`.
 
 ```dart
-// Check if user can add attachments (Google Drive authorization)
-if (!await filePickerService.canAddAttachments()) {
-  // Request Google Drive authorization
-  final authorized = await filePickerService.requestGoogleDriveAuthorization();
-  if (!authorized) {
-    print('Google Drive authorization is required to add attachments');
-    return;
-  }
-}
+// Example: Creating and uploading an attachment manually
+// Note: This is for advanced use. In the app, a service would handle this.
 
-// Add attachments to a transaction
-try {
-  final attachments = await filePickerService.addAttachments(transactionId);
-  print('Added ${attachments.length} attachments to transaction');
-  
-  for (final attachment in attachments) {
-    print('Attachment: ${attachment.fileName} (${attachment.type})');
-    if (attachment.googleDriveLink != null) {
-      print('View at: ${attachment.googleDriveLink}');
-    }
-  }
-} catch (e) {
-  print('Failed to add attachments: $e');
+// 1. Compress and store the file locally first
+final newAttachmentStub = await attachmentRepository.compressAndStoreFile(
+  '/path/to/local/image.jpg',
+  transactionId,
+  'receipt.jpg',
+  isCapturedFromCamera: true, // This enables the 30-day local cache
+);
+
+// 2. Create the record in the database
+final createdAttachment = await attachmentRepository.createAttachment(newAttachmentStub);
+
+// 3. Upload to Google Drive
+// This handles folder creation, deduplication, etc.
+await attachmentRepository.uploadToGoogleDrive(createdAttachment);
+
+print('Attachment created and upload process started.');
+```
+
+### Retrieving an Attachment File Path
+
+You should never assume a file exists locally. Always use `getLocalFilePath` to ensure the file is available, as it will download it from Google Drive if needed.
+
+```dart
+// Get a local, viewable file path for an attachment
+final localPath = await attachmentRepository.getLocalFilePath(attachment);
+
+if (localPath != null) {
+  // Use the file at localPath
+  print('File is available at: $localPath');
+} else {
+  print('Could not retrieve file from local cache or Google Drive.');
 }
 ```
 
-### Manual Attachment Management
+### Getting Attachments for a Transaction
 
-#### Get Attachments for a Transaction
 ```dart
-// Get all attachments for a specific transaction
+// Get all non-deleted attachments for a specific transaction
 final attachments = await attachmentRepository.getAttachmentsByTransaction(transactionId);
 print('Found ${attachments.length} attachments');
+```
 
-for (final attachment in attachments) {
-  print('${attachment.fileName}: ${attachment.isAvailable ? "Available" : "Not available"}');
+### Deleting an Attachment
+
+Marking an attachment as deleted is a soft delete. It sets an `isDeleted` flag and moves the corresponding file in Google Drive to the trash. A background process will later delete the file from the local database.
+
+```dart
+// Soft-delete an attachment
+await attachmentRepository.markAsDeleted(attachment.id!);
+
+// The associated Google Drive file is moved to trash.
+// The local database entry is marked as deleted.
+```
+
+---
+
+## Attachment Entity
+
+The `Attachment` entity contains all the metadata for a single attachment.
+
+```dart
+// A simplified view of the Attachment entity's fields
+class Attachment {
+  final int? id;
+  final String syncId;
+  final int transactionId;
+
+  // File Info
+  final String fileName;
+  final String? filePath; // Path to the file on the local device
+  final AttachmentType type;
+  final String? mimeType;
+  final int? fileSizeBytes;
+  
+  // Google Drive Info
+  final String? googleDriveFileId;
+  final String? googleDriveLink; // A viewable link
+  final bool isUploaded;
+
+  // State & Cache Management
+  final bool isDeleted;
+  final bool isCapturedFromCamera; // Key for caching logic
+  final DateTime? localCacheExpiry; // Typically 30 days from creation if from camera
+
+  // Timestamps
+  final DateTime createdAt;
+  final DateTime updatedAt;
 }
 ```
 
-#### Create Attachment Manually
-```dart
-// Create attachment manually (for advanced use cases)
-final attachment = Attachment(
-  transactionId: transactionId,
-  fileName: 'receipt.jpg',
-  filePath: '/path/to/local/file.jpg',
-  type: AttachmentType.image,
-  mimeType: 'image/jpeg',
-  fileSizeBytes: 1024000,
-  createdAt: DateTime.now(),
-  updatedAt: DateTime.now(),
-  isUploaded: false,
-  isDeleted: false,
-  isCapturedFromCamera: false,
-  syncId: 'unique-attachment-id',
-);
+## Detailed Flow Diagram
 
-final createdAttachment = await attachmentRepository.createAttachment(attachment);
-
-// Upload to Google Drive
-await attachmentRepository.uploadToGoogleDrive(createdAttachment);
-```
-
-#### Delete Attachments
-```dart
-// Delete attachment (moves to Google Drive trash automatically)
-await filePickerService.deleteAttachment(attachmentId);
-
-// Or manually mark as deleted
-await attachmentRepository.markAsDeleted(attachmentId);
-```
-
-### Working with Different Attachment Types
-```dart
-// Check attachment properties
-if (attachment.isImage) {
-  print('This is an image attachment');
-} else if (attachment.isDocument) {
-  print('This is a document attachment');
-}
-
-// Check if attachment is available for viewing
-if (attachment.isAvailable) {
-  print('Attachment can be viewed at: ${attachment.googleDriveLink}');
-} else {
-  print('Attachment is not available (deleted or not uploaded)');
-}
-```
-
-## Google Drive Integration
-
-### Authorization Management
-```dart
-// Check if user is signed in to Google Drive
-final isSignedIn = await filePickerService.canAddAttachments();
-print('Google Drive authorized: $isSignedIn');
-
-// Request authorization if needed
-if (!isSignedIn) {
-  final authorized = await filePickerService.requestGoogleDriveAuthorization();
-  if (authorized) {
-    print('Google Drive authorization successful');
-  } else {
-    print('Google Drive authorization failed');
-  }
-}
-```
-
-### Managing Google Drive Files
-```dart
-// Get Google Drive download link for an attachment
-final downloadLink = await attachmentRepository.getGoogleDriveDownloadLink(
-  attachment.googleDriveFileId!,
-);
-
-if (downloadLink != null) {
-  print('View file at: $downloadLink');
-}
-
-// Delete file from Google Drive (moves to trash)
-await attachmentRepository.deleteFromGoogleDrive(attachment.googleDriveFileId!);
-```
-
-## Attachment Flow Implementation
-
-The attachment system follows this specific flow as requested:
+This diagram illustrates the complete lifecycle of an attachment, from creation to storage and retrieval.
 
 ```mermaid
 flowchart TD
-    A[User wants to add attachments when adding transaction] --> B{Choose attachment option}
+    subgraph "1. Creation & Local Storage"
+        A[User action: Add Attachment] --> B{Source?}
+        B --> C[Camera]
+        B --> D[Gallery/File]
+
+        C --> E[Photo captured]
+        D --> F[File selected]
+
+        E --> G{Compress Image}
+        F --> G
+        G --> H[Store file in local app cache]
+        H --> I[Create Attachment record in DB]
+        I --> J((Local File Ready))
+    end
+
+    subgraph "2. Google Drive Sync"
+        J --> K[Queue for upload]
+        K --> L{Calculate file hash}
+        L --> M[Check if hash exists in Drive folder]
+        M -->|No| N[Upload new file to Drive]
+        M -->|Yes| O[Skip upload, use existing file]
+        N --> P[Get Drive File ID & Link]
+        O --> P
+        P --> Q[Update DB record with Drive ID]
+        Q --> R((Backed Up))
+    end
+
+    subgraph "3. Retrieval & Caching"
+        S[User wants to view attachment] --> T{Is local file valid?}
+        T -->|Yes| U[Return local file path]
+        T -->|No| V{Is it on Drive?}
+        V -->|Yes| W[Download from Drive to local cache]
+        V -->|No| X[Return error/null]
+        W --> U
+        U --> Y((File Viewable))
+    end
     
-    B --> C[Take Photo]
-    B --> D[Select Photo]  
-    B --> E[Select File]
-    
-    C --> F[Open built-in camera]
-    D --> G[Open gallery picker]
-    E --> H[Open file picker]
-    
-    F --> I[Photo captured]
-    G --> J[Photo selected from gallery]
-    H --> K[File selected]
-    
-    I --> L{Is file a photo?}
-    J --> L
-    K --> L
-    
-    L -->|Yes| M[Compress photo file for Google Drive storage]
-    L -->|No| N[Proceed without compression]
-    
-    M --> O[Upload file to Google Drive]
-    N --> O
-    
-    O --> P[Generate Google Drive link]
-    P --> Q[Store link for user to view later]
-    
-    Q --> R{User deletes attachment?}
-    R -->|Yes| S[Move file to Google Drive trash automatically]
-    R -->|No| T[End - File remains accessible]
-    
-    S --> U[End - File moved to trash]
+    subgraph "4. Deletion"
+        Z[User deletes attachment] --> AA[Mark as deleted in DB]
+        AA --> BB[Move file to trash in Google Drive]
+        BB --> CC((Deleted))
+    end
+
+    subgraph "5. Cache Cleanup (Automated)"
+        DD[Timer runs periodically] --> EE[Find expired local cache files]
+        EE --> FF[For each expired file]
+        FF --> GG[Delete local file from device]
+        GG --> HH[Clear local file path in DB]
+        HH --> II((Cache Cleaned))
+    end
 ``` 
