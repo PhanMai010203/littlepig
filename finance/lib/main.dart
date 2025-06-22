@@ -30,7 +30,11 @@ void main() async {
 
   // Seed database in debug mode
   if (kDebugMode) {
-    await DataSeeder().seedDatabase();
+    try {
+      await DataSeeder.seedAll();
+    } catch (e) {
+      debugPrint('Failed to seed demo data: $e');
+    }
   }
 
   // Set up Bloc observer for debugging
