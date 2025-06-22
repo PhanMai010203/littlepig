@@ -192,29 +192,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
     }
     
-    if (_accountTiles.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AddAccountCard(
-              onTap: () {
-                // TODO: Navigate to add account page
-              },
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'No accounts yet',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
-              ),
-            ),
-          ],
-        ),
-      );
-    }
-    
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       clipBehavior: Clip.none,
@@ -226,7 +203,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             final tileData = entry.value;
             
             return Padding(
-              padding: EdgeInsets.only(right: index < _accountTiles.length - 1 ? 16 : 0),
+              padding: const EdgeInsets.only(right: 16),
               child: AccountCard(
                 title: tileData.account.name,
                 amount: tileData.formattedBalance,
@@ -238,15 +215,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
             );
           }),
-          // Add spacing and AddAccountCard at the end
-          if (_accountTiles.isNotEmpty) ...[
-            const SizedBox(width: 16),
-            AddAccountCard(
-              onTap: () {
-                // TODO: Navigate to add account page
-              },
-            ),
-          ],
+          // AddAccountCard at the end
+          AddAccountCard(
+            onTap: () {
+              // TODO: Navigate to add account page
+            },
+          ),
         ],
       ),
     );
