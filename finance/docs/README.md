@@ -191,6 +191,17 @@ This project leverages a set of robust and well-supported libraries to ensure a 
 - `Transaction.remainingAmount` – Outstanding amount for loans.  
 - `Transaction.availableActions` – Getter returning valid actions array.
 
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Scheduled
+    Scheduled --> Pending : on due date
+    Pending --> Completed : on <Pay> action
+    Pending --> Skipped : on <Skip> action
+    Completed --> [*]
+    Skipped --> [*]
+```
+
 **Budget Tracking**  
 *Repository (`BudgetRepository`)*
 - `createBudget(budget)` / `updateBudget(budget)` / `deleteBudget(id)` – CRUD operations for budgets.
@@ -343,6 +354,14 @@ class MyFeatureBloc extends Bloc<MyFeatureEvent, MyFeatureState> {
     });
   }
 }
+```
+
+```mermaid
+stateDiagram-v2
+    direction LR
+    [*] --> Loading
+    Loading --> Loaded : on <LoadData> event
+    Loaded --> [*]
 ```
 
 ### Code Generation

@@ -1,0 +1,17 @@
+{
+  "ignorePatterns": [
+    {
+      "pattern": "YOUR_GOOGLE_CLIENT_ID"
+    },
+    {
+      "pattern": "REVERSED_CLIENT_ID"
+    }
+  ],
+  "replacementPatterns": [
+    {
+      "pattern": "^(?!https?://)(?!#)(?!mailto:)(.+\\.md)$",
+      "replacement": "{{BASEURL}}../blob/main/docs/{{MATCH}}",
+      "comment": "This converts relative markdown links like 'ACCOUNTS_GUIDE.md' into full GitHub URLs for checking."
+    }
+  ]
+}

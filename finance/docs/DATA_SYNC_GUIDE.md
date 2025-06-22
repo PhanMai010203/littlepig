@@ -189,6 +189,8 @@ final conflictResolver = getIt<CRDTConflictResolver>();
 
 ## 🎯 **Phase 5A Team A Enhanced Features**
 
+> **Note on Phase 5 Development:** The features described below are part of the upcoming **Phase 5** development track. As outlined in our parallel development strategy, these components (e.g., `EnhancedIncrementalSyncService`, `EventProcessor`) are the core deliverables for our foundation team (Team A). They are currently under active development and are not yet registered in the main dependency injection container. The examples provided are for forward-looking reference and to define the interface contracts for our real-time experience team (Team B).
+
 ### **1. Using Enhanced Sync Service (Future Phase 5A)**
 
 *Note: EnhancedIncrementalSyncService exists but is not yet registered in DI. To use it:*
