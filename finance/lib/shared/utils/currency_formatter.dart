@@ -12,6 +12,7 @@ class CurrencyFormatter {
     bool showCode = false,
     bool compact = false,
     bool forceSign = false,
+    bool useCodeWithSymbol = false,
   }) {
     // Handle absolute zero if needed
     if (amount.abs() < pow(10, -currency.decimalDigits)) {
@@ -33,17 +34,23 @@ class CurrencyFormatter {
 
     String result = formattedNumber;
 
-    if (showSymbol && currency.symbol.isNotEmpty) {
-      // Determine symbol placement (typically before for most currencies)
-      if (_shouldPlaceSymbolAfter(currency.code)) {
-        result = '$formattedNumber ${currency.displaySymbol}';
-      } else {
-        result = '${currency.displaySymbol}$formattedNumber';
+    if (useCodeWithSymbol) {
+      // Custom format: Symbol - Amount - Code
+      result =
+          '${currency.displaySymbol} $formattedNumber ${currency.code}';
+    } else {
+      if (showSymbol && currency.symbol.isNotEmpty) {
+        // Determine symbol placement (typically before for most currencies)
+        if (_shouldPlaceSymbolAfter(currency.code)) {
+          result = '$formattedNumber ${currency.displaySymbol}';
+        } else {
+          result = '${currency.displaySymbol}$formattedNumber';
+        }
       }
-    }
 
-    if (showCode) {
-      result = '$result ${currency.code}';
+      if (showCode) {
+        result = '$result ${currency.code}';
+      }
     }
 
     return result;

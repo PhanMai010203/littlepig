@@ -16,6 +16,7 @@ extension AccountCurrencyExtension on Account {
     bool showSymbol = true,
     bool showCode = false,
     bool compact = false,
+    bool useCodeWithSymbol = false,
   }) async {
     final currencyEntity = await getCurrency(currencyRepository);
 
@@ -30,6 +31,7 @@ extension AccountCurrencyExtension on Account {
       showSymbol: showSymbol,
       showCode: showCode,
       compact: compact,
+      useCodeWithSymbol: useCodeWithSymbol,
     );
   }
 

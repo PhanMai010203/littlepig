@@ -41,6 +41,29 @@ Since every transaction is linked to an account via the `accountId`, you can eas
 - **How it Works**: The `TransactionRepository` provides methods to query transactions based on the `accountId`. By fetching all transactions for a given `accountId`, you can get the total count.
 - **Example Use Case**: Displaying "25 Transactions" on an account details page.
 
+### Currency Symbol & Formatting
+
+The **Accounts** module does **not** store a currency symbol directly on the `Account` entity. Instead, it relies on the shared [Currency Management System](../currency/index.md) to resolve the appropriate symbol based on the 3-letter `currency` **code** saved on each account.
+
+Key points:
+1. Use `AccountCurrencyExtension.formatBalance(...)` (see `lib/shared/extensions/account_currency_extension.dart`) to obtain a **fully-formatted** balance string that automatically:
+   - Fetches the matching `Currency` entity from the local repository.
+   - Applies correct symbol placement (before or after the amount) according to locale conventions.
+   - Optionally appends the currency **code** when `showCode: true`.
+2. Under the hood this delegates to `CurrencyFormatter.formatAmount(...)`, ensuring consistent rounding and localisation everywhere in the app.
+
+```dart
+// Example – display an account balance with symbol & code
+final formatted = await account.formatBalance(
+  getIt<CurrencyRepository>(),
+  showSymbol: true,          // e.g. "$1,234.56"
+  showCode: true,            // e.g. "$1,234.56 USD"
+  compact: true,             // e.g. "$1.2K"
+);
+```
+
+> 💡 **Tip**: Always format balances via the extension (or `CurrencyService`) instead of manual string interpolation. This guarantees consistent rounding, symbol placement, and localisation across the entire application.
+
 ## 3. Integration & Best Practices
 
 - **Default Account**: It is recommended to have a default account set. This streamlines the process of adding new transactions, as the account field can be pre-filled.

@@ -119,6 +119,7 @@ Essential reading for any feature that performs frequent database reads.
 **Key Points**
 - Accounts are the source of funds for transactions (e.g., bank accounts, cash).
 - Each account has a name, balance, and currency.
+- Balances can be formatted with locale-aware **currency symbols** via `AccountCurrencyExtension`.
 - Every transaction is linked to an account to track its impact.
 
 ---

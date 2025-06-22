@@ -8,7 +8,8 @@ class AccountCard extends StatelessWidget {
   final String transactions;
   final Color color;
   final bool isSelected;
-  final VoidCallback onTap;
+  final int index;
+  final ValueChanged<int> onSelected;
 
     const AccountCard({
     super.key,
@@ -17,7 +18,8 @@ class AccountCard extends StatelessWidget {
     required this.transactions,
     required this.color,
     required this.isSelected,
-    required this.onTap,
+    required this.index,
+    required this.onSelected,
   });
 
   @override
@@ -42,7 +44,7 @@ class AccountCard extends StatelessWidget {
     final double cardWidth = math.max(baseWidth, calculatedWidth);
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => onSelected(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         width: cardWidth,

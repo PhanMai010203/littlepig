@@ -261,13 +261,13 @@ class DataSeeder {
 
     final accountData = [
       // Default account with positive balance
-      ('Checking Account - Tài khoản chính', 2500.0, 'USD', true, const Color(0xFF2196F3)), // Blue
+      ('Checking Account', 2500.0, 'USD', true, const Color(0xFF2196F3)), // Blue
       // Savings with higher balance
-      ('Savings Account - Tiết kiệm', 15000.0, 'USD', false, const Color(0xFF4CAF50)), // Green
+      ('Savings Account', 15000.0, 'USD', false, const Color(0xFF4CAF50)), // Green
       // Cash wallet with smaller amount
-      ('Cash Wallet - Tiền mặt', 200.0, 'USD', false, const Color(0xFF795548)), // Brown
+      ('Cash Wallet', 200.0, 'USD', false, const Color(0xFF795548)), // Brown
       // Credit card with negative balance (debt)
-      ('Credit Card - Thẻ tín dụng', -850.0, 'USD', false, const Color(0xFFF44336)), // Red
+      ('Credit Card', -850.0, 'USD', false, const Color(0xFFF44336)), // Red
       // Foreign currency accounts
       ('Euro Travel Fund', 500.0, 'EUR', false, const Color(0xFF9C27B0)), // Purple
       ('Japanese Savings', 150000.0, 'JPY', false, const Color(0xFFFF9800)), // Orange
@@ -613,6 +613,7 @@ class DataSeeder {
       print('   ❌ No accounts available for budget seeding');
       return;
     }
+
 
     try {
       // Check if demo budgets already exist
