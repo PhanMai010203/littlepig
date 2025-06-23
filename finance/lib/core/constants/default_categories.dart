@@ -58,7 +58,7 @@ class DefaultCategories {
     DefaultCategory(
       name: 'Ăn uống - Food',
       emoji: '🍽️',
-      color: 0xFFFF6B35, // Orange
+      color: 0xFFb7c4ca,
       isExpense: true,
       syncId: 'expense-food',
     ),
