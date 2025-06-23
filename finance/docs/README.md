@@ -264,7 +264,7 @@ stateDiagram-v2
 
 **UI Core Widgets**  
 - `AppText()` / `AppTextStyles.*()` – Consistent typography wrappers & presets.
-- `PageTemplate()` – Standard sliver-friendly page scaffold.
+- `PageTemplate()` – Configurable, sliver-friendly page scaffold with a collapsing app bar.
 - `LanguageSelector()` – Drop-in language picker.
 - `.tappable()` / `TappableWidget` – Add unified tap feedback.
 

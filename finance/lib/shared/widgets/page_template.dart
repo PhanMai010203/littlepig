@@ -3,14 +3,13 @@ import 'package:flutter/material.dart';
 import 'animations/fade_in.dart';
 import 'animations/animation_utils.dart';
 
-const double _kExpandedHeight = 120.0;
-const double _kToolbarHeight = 60.0;
+const double _kDefaultExpandedHeight = 120.0;
+const double _kDefaultToolbarHeight = 60.0;
 
 /// Enhanced PageTemplate for Phase 5
 ///
 /// Now includes:
 /// - FadeIn animation wrapper for page entrances
-/// - AnimatedSwitcher for smooth title transitions
 /// - Enhanced customization options
 /// - Back button with animation support
 /// - Integration with the animation framework
@@ -24,6 +23,9 @@ class PageTemplate extends StatefulWidget {
     this.showBackButton = true,
     this.onBackPressed,
     this.customAppBar,
+    this.expandedHeight = _kDefaultExpandedHeight,
+    this.toolbarHeight = _kDefaultToolbarHeight,
+    this.titleTextStyle,
     super.key,
   });
 
@@ -35,6 +37,9 @@ class PageTemplate extends StatefulWidget {
   final bool showBackButton;
   final VoidCallback? onBackPressed;
   final PreferredSizeWidget? customAppBar;
+  final double expandedHeight;
+  final double toolbarHeight;
+  final TextStyle? titleTextStyle;
 
   @override
   State<PageTemplate> createState() => _PageTemplateState();
@@ -70,14 +75,14 @@ class _PageTemplateState extends State<PageTemplate> {
                 builder: (context, child) {
                   final appBarOpacity = _scrollController.hasClients
                       ? (_scrollController.offset /
-                              (_kExpandedHeight - _kToolbarHeight))
+                              (widget.expandedHeight - widget.toolbarHeight))
                           .clamp(0.0, 1.0)
                       : 0.0;
 
                   return SliverAppBar(
                     pinned: true,
-                    expandedHeight: _kExpandedHeight,
-                    toolbarHeight: _kToolbarHeight,
+                    expandedHeight: widget.expandedHeight,
+                    toolbarHeight: widget.toolbarHeight,
                     actions: widget.actions,
                     backgroundColor: Colors.transparent,
                     elevation: 0,
@@ -105,10 +110,11 @@ class _PageTemplateState extends State<PageTemplate> {
                           centerTitle: false,
                           title: Text(
                             widget.title!, // safe to use ! because of the check
-                            style: theme.textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: onSurfaceColor,
-                            ),
+                            style: widget.titleTextStyle ??
+                                theme.textTheme.titleLarge?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: onSurfaceColor,
+                                ),
                           ),
                         ),
                       ],
