@@ -154,7 +154,7 @@ class AddAccountCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 120,
-        height: 120,
+        height: 110,
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(16),
