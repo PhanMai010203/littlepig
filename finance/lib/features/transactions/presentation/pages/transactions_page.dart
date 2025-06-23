@@ -7,6 +7,8 @@ import '../widgets/month_selector.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/entities/transaction.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../features/categories/domain/entities/category.dart';
+import '../../../../features/categories/domain/repositories/category_repository.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -17,18 +19,21 @@ class TransactionsPage extends StatefulWidget {
 
 class _TransactionsPageState extends State<TransactionsPage> {
   late final TransactionRepository _transactionRepository;
+  late final CategoryRepository _categoryRepository;
   late DateTime _selectedMonth;
   final ScrollController _monthScrollController = ScrollController();
 
   List<Transaction> _allTransactions = [];
+  Map<int, Category> _categories = {};
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
     _transactionRepository = getIt<TransactionRepository>();
+    _categoryRepository = getIt<CategoryRepository>();
     _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
-    _loadTransactions();
+    _loadData();
   }
 
   @override
@@ -37,19 +42,24 @@ class _TransactionsPageState extends State<TransactionsPage> {
     super.dispose();
   }
 
-  Future<void> _loadTransactions() async {
+  Future<void> _loadData() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      final transactions = await _transactionRepository.getAllTransactions();
+      final transactionsFuture = _transactionRepository.getAllTransactions();
+      final categoriesFuture = _categoryRepository.getAllCategories();
+
+      final transactions = await transactionsFuture;
+      final categories = await categoriesFuture;
 
       // Sort transactions by date (newest first)
       transactions.sort((a, b) => b.date.compareTo(a.date));
 
       setState(() {
         _allTransactions = transactions;
+        _categories = {for (var c in categories) c.id!: c};
         _isLoading = false;
       });
     } catch (e) {
@@ -59,7 +69,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading transactions: $e')),
+          SnackBar(content: Text('Error loading data: $e')),
         );
       }
     }
@@ -236,18 +246,23 @@ class _TransactionsPageState extends State<TransactionsPage> {
   Widget _buildTransactionTile(Transaction transaction) {
     final double amount = transaction.amount;
     final bool isIncome = amount > 0;
+    final category = _categories[transaction.categoryId];
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: isIncome
-              ? Colors.green.withValues(alpha: 0.1)
-              : Colors.red.withValues(alpha: 0.1),
-          child: Icon(
-            isIncome ? Icons.arrow_upward : Icons.arrow_downward,
-            color: isIncome ? Colors.green : Colors.red,
-          ),
+          backgroundColor: category?.color.withOpacity(0.15) ??
+              (isIncome
+                  ? Colors.green.withOpacity(0.1)
+                  : Colors.red.withOpacity(0.1)),
+          child: category != null
+              ? Text(category.icon, style: const TextStyle(fontSize: 22))
+              : Icon(
+                  isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                  color: isIncome ? Colors.green : Colors.red,
+                  size: 18,
+                ),
         ),
         title: AppText(transaction.title),
         subtitle: transaction.note != null && transaction.note!.isNotEmpty
