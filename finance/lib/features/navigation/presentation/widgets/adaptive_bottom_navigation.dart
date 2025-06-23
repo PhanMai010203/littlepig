@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../domain/entities/navigation_item.dart';
 // Phase 5 import
@@ -25,105 +26,22 @@ class AdaptiveBottomNavigation extends StatefulWidget {
       _AdaptiveBottomNavigationState();
 }
 
-class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
-    with TickerProviderStateMixin {
-  late List<AnimationController> _scaleControllers;
-  late List<Animation<double>> _scaleAnimations;
-  late AnimationController _indicatorController;
-  late Animation<double> _indicatorAnimation;
-
-  int _previousIndex = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    _previousIndex = widget.currentIndex;
-    _initializeAnimations();
-  }
-
-  void _initializeAnimations() {
-    // Scale animations for bounce effect
-    _scaleControllers = List.generate(
-      widget.items.length,
-      (index) => AnimationController(
-        duration: const Duration(milliseconds: 150),
-        vsync: this,
-      ),
-    );
-
-    _scaleAnimations = _scaleControllers.map((controller) {
-      return Tween<double>(begin: 1.0, end: 0.85).animate(
-        CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-      );
-    }).toList();
-
-    // Sliding indicator animation
-    _indicatorController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-
-    _indicatorAnimation = Tween<double>(
-      begin: _previousIndex.toDouble(),
-      end: widget.currentIndex.toDouble(),
-    ).animate(CurvedAnimation(
-      parent: _indicatorController,
-      curve: Curves.easeInOutCubic,
-    ));
-  }
-
-  @override
-  void didUpdateWidget(AdaptiveBottomNavigation oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.items.length != widget.items.length) {
-      // Dispose old controllers and reinitialize
-      _disposeControllers();
-      _initializeAnimations();
-    }
-
-    if (oldWidget.currentIndex != widget.currentIndex) {
-      _animateIndicator(oldWidget.currentIndex, widget.currentIndex);
-    }
-  }
-
-  void _animateIndicator(int from, int to) {
-    _previousIndex = from;
-    _indicatorAnimation = Tween<double>(
-      begin: from.toDouble(),
-      end: to.toDouble(),
-    ).animate(CurvedAnimation(
-      parent: _indicatorController,
-      curve: Curves.easeInOutCubic,
-    ));
-
-    _indicatorController.forward(from: 0.0);
-  }
-
-  @override
-  void dispose() {
-    _disposeControllers();
-    super.dispose();
-  }
-
-  void _disposeControllers() {
-    for (final controller in _scaleControllers) {
-      controller.dispose();
-    }
-    _indicatorController.dispose();
-  }
+class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
+  int _tappedIndex = -1;
 
   void _handleTap(int index) {
     // Call onTap immediately for instant response
     widget.onTap(index);
 
-    // Trigger bounce animation asynchronously
-    _playBounceAnimation(index);
-  }
-
-  void _playBounceAnimation(int index) async {
-    await _scaleControllers[index].forward();
-    _scaleControllers[index].reverse();
+    // Trigger bounce animation by setting the tapped index
+    setState(() => _tappedIndex = index);
+    
+    // Reset the tapped index after animation completes
+    Future.delayed(const Duration(milliseconds: 150), () {
+      if (mounted) {
+        setState(() => _tappedIndex = -1);
+      }
+    });
   }
 
   @override
@@ -146,46 +64,40 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation>
             builder: (context, constraints) {
               return Stack(
                 children: [
-                  // Sliding indicator
-                  AnimatedBuilder(
-                    animation: _indicatorAnimation,
-                    builder: (context, child) {
-                      final itemWidth =
-                          constraints.maxWidth / widget.items.length;
-                      final indicatorWidth =
-                          itemWidth * 0.7; // 70% of item width
-                      const indicatorHeight = 40.0;
-                      final leftPosition =
-                          (_indicatorAnimation.value * itemWidth) +
-                              (itemWidth - indicatorWidth) / 2;
-
-                      return Positioned(
-                        left: leftPosition,
-                        top: 8,
-                        child: Container(
-                          width: indicatorWidth,
-                          height: indicatorHeight,
-                          decoration: BoxDecoration(
-                            color:
-                                Theme.of(context).colorScheme.primaryContainer,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      );
-                    },
+                  // Sliding indicator with flutter_animate
+                  Positioned(
+                    top: 8,
+                    child: Container(
+                      width: (constraints.maxWidth / widget.items.length) * 0.7,
+                      height: 40.0,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.primaryContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    )
+                    .animate(target: widget.currentIndex.toDouble())
+                    .moveX(
+                      begin: (constraints.maxWidth / widget.items.length - 
+                              (constraints.maxWidth / widget.items.length) * 0.7) / 2,
+                      end: constraints.maxWidth,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOutCubic,
+                    ),
                   ),
+                  
                   // Navigation items
                   Row(
                     children: widget.items.asMap().entries.map((entry) {
                       final index = entry.key;
                       final item = entry.value;
                       final isSelected = index == widget.currentIndex;
+                      final isTapped = index == _tappedIndex;
 
                       return Expanded(
                         child: _AnimatedNavigationItem(
                           item: item,
                           isSelected: isSelected,
-                          scaleAnimation: _scaleAnimations[index],
+                          isTapped: isTapped,
                           onTap: () => _handleTap(index),
                           onLongPress: widget.onLongPress != null
                               ? () => widget.onLongPress!(index)
@@ -208,96 +120,97 @@ class _AnimatedNavigationItem extends StatelessWidget {
   const _AnimatedNavigationItem({
     required this.item,
     required this.isSelected,
-    required this.scaleAnimation,
+    required this.isTapped,
     required this.onTap,
     this.onLongPress,
   });
 
   final NavigationItem item;
   final bool isSelected;
-  final Animation<double> scaleAnimation;
+  final bool isTapped;
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: scaleAnimation,
-      builder: (context, child) {
-        return Transform.scale(
-          scale: scaleAnimation.value,
-          child: TappableWidget(
-            onTap: onTap,
-            onLongPress: onLongPress,
-            child: Container(
-              color: Colors.transparent,
-              // Fill the entire available space
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 8,
+    return TappableWidget(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Container(
+        color: Colors.transparent,
+        // Fill the entire available space
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 8,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Icon container with flutter_animate bounce effect
+            Container(
+              padding: const EdgeInsets.all(8),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: SvgPicture.asset(
+                  item.iconPath,
+                  key: ValueKey('${item.iconPath}_$isSelected'),
+                  width: 24,
+                  height: 24,
+                  colorFilter: ColorFilter.mode(
+                    isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Icon container (no background - indicator handles it)
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    child: AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 200),
-                      child: SvgPicture.asset(
-                        item.iconPath,
-                        key: ValueKey('${item.iconPath}_$isSelected'),
-                        width: 24,
-                        height: 24,
-                        colorFilter: ColorFilter.mode(
-                          isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.6),
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
+            )
+            .animate(target: isTapped ? 1.0 : 0.0)
+            .scaleXY(
+              begin: 1.0,
+              end: 0.85,
+              duration: const Duration(milliseconds: 150),
+              curve: Curves.easeInOut,
+            ),
+            
+            const SizedBox(height: 4),
+            
+            // Animated text
+            AnimatedDefaultTextStyle(
+              duration: const Duration(milliseconds: 200),
+              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: isSelected
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withValues(alpha: 0.6),
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w500,
+                      ) ??
+                  TextStyle(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.primary
+                        : Theme.of(context)
+                            .colorScheme
+                            .onSurface
+                            .withValues(alpha: 0.6),
                   ),
-                  const SizedBox(height: 4),
-                  // Animated text
-                  AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 200),
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: isSelected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context)
-                                      .colorScheme
-                                      .onSurface
-                                      .withValues(alpha: 0.6),
-                              fontWeight: isSelected
-                                  ? FontWeight.w600
-                                  : FontWeight.w500,
-                            ) ??
-                        TextStyle(
-                          color: isSelected
-                              ? Theme.of(context).colorScheme.primary
-                              : Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withValues(alpha: 0.6),
-                        ),
-                    child: Text(
-                      item.label.tr(),
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                ],
+              child: Text(
+                item.label.tr(),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 }
