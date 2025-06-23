@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 import '../../domain/repositories/transaction_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
@@ -13,6 +14,10 @@ import 'transactions_state.dart';
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final TransactionRepository _transactionRepository;
   final CategoryRepository _categoryRepository;
+
+  static const int _pageSize = 25;
+  Map<int, Category> _categories = {};
+  DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
 
   TransactionsBloc(
     this._transactionRepository,
@@ -28,6 +33,8 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     on<DeleteTransactionEvent>(_onDeleteTransaction);
     on<RefreshTransactions>(_onRefreshTransactions);
     on<ChangeSelectedMonth>(_onChangeSelectedMonth);
+    on<FetchNextTransactionPage>(_onFetchNextTransactionPage);
+    on<RefreshPaginatedTransactions>(_onRefreshPaginatedTransactions);
   }
 
   Future<void> _onLoadAllTransactions(
@@ -113,23 +120,21 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       LoadTransactionsWithCategories event, Emitter<TransactionsState> emit) async {
     emit(TransactionsLoading());
     try {
-      final transactionsFuture = _transactionRepository.getAllTransactions();
-      final categoriesFuture = _categoryRepository.getAllCategories();
+      // Load categories first
+      final categories = await _categoryRepository.getAllCategories();
+      _categories = {for (var c in categories) c.id!: c};
 
-      final transactions = await transactionsFuture;
-      final categories = await categoriesFuture;
+      // Initialize pagination with empty state
+      final initialPagingState = PagingState<int, Transaction>();
 
-      // Sort transactions by date (newest first)
-      transactions.sort((a, b) => b.date.compareTo(a.date));
-
-      final categoriesMap = {for (var c in categories) c.id!: c};
-      final currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
-
-      emit(TransactionsLoaded(
-        transactions: transactions,
-        categories: categoriesMap,
-        selectedMonth: currentMonth,
+      emit(TransactionsPaginated(
+        pagingState: initialPagingState,
+        categories: _categories,
+        selectedMonth: _selectedMonth,
       ));
+
+      // Trigger first page load
+      add(FetchNextTransactionPage());
     } catch (e) {
       emit(TransactionsError('Failed to load data: $e'));
     }
@@ -176,9 +181,84 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
 
   void _onChangeSelectedMonth(
       ChangeSelectedMonth event, Emitter<TransactionsState> emit) {
-    if (state is TransactionsLoaded) {
+    _selectedMonth = event.selectedMonth;
+    
+    if (state is TransactionsPaginated) {
+      final currentState = state as TransactionsPaginated;
+      emit(currentState.copyWith(selectedMonth: event.selectedMonth));
+      // Refresh pagination when month changes
+      add(RefreshPaginatedTransactions());
+    } else if (state is TransactionsLoaded) {
       final currentState = state as TransactionsLoaded;
       emit(currentState.copyWith(selectedMonth: event.selectedMonth));
     }
+  }
+
+  Future<void> _onFetchNextTransactionPage(
+      FetchNextTransactionPage event, Emitter<TransactionsState> emit) async {
+    if (state is! TransactionsPaginated) return;
+    
+    final currentState = state as TransactionsPaginated;
+    final currentPagingState = currentState.pagingState;
+    
+    // Prevent multiple simultaneous requests
+    if (currentPagingState.isLoading) return;
+    
+    try {
+      final nextPageKey = (currentPagingState.keys?.last ?? -1) + 1;
+      
+      // Set loading state
+      emit(currentState.copyWith(
+        pagingState: currentPagingState.copyWith(
+          isLoading: true,
+          error: null,
+        ),
+      ));
+
+      // Fetch transactions for the page
+      final newTransactions = await _transactionRepository.getTransactions(
+        page: nextPageKey,
+        limit: _pageSize,
+      );
+
+      // Filter transactions by selected month
+      final filteredTransactions = newTransactions.where((t) {
+        return t.date.year == _selectedMonth.year &&
+            t.date.month == _selectedMonth.month;
+      }).toList();
+
+      final isLastPage = newTransactions.length < _pageSize;
+
+      // Update the paging state
+      final updatedPagingState = currentPagingState.copyWith(
+        pages: [...?currentPagingState.pages, filteredTransactions],
+        keys: [...?currentPagingState.keys, nextPageKey],
+        hasNextPage: !isLastPage,
+        isLoading: false,
+      );
+
+      emit(currentState.copyWith(pagingState: updatedPagingState));
+    } catch (error) {
+      final errorPagingState = currentPagingState.copyWith(
+        error: error,
+        isLoading: false,
+      );
+      emit(currentState.copyWith(pagingState: errorPagingState));
+    }
+  }
+
+  Future<void> _onRefreshPaginatedTransactions(
+      RefreshPaginatedTransactions event, Emitter<TransactionsState> emit) async {
+    if (state is! TransactionsPaginated) return;
+    
+    final currentState = state as TransactionsPaginated;
+    
+    // Reset pagination state
+    final refreshedPagingState = PagingState<int, Transaction>();
+    
+    emit(currentState.copyWith(pagingState: refreshedPagingState));
+    
+    // Fetch first page
+    add(FetchNextTransactionPage());
   }
 }

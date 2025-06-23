@@ -30,7 +30,7 @@ dependencies:
   flutter_animate: ^4.5.2
   
   # Pagination for transactions (Phase 1.2)
-  infinite_scroll_pagination: ^4.0.0
+  infinite_scroll_pagination: ^5.1.0
   
   # UI & Icons
   flutter_svg: ^2.0.9

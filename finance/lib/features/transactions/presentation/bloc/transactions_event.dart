@@ -77,3 +77,7 @@ class ChangeSelectedMonth extends TransactionsEvent {
   @override
   List<Object?> get props => [selectedMonth];
 }
+
+class FetchNextTransactionPage extends TransactionsEvent {}
+
+class RefreshPaginatedTransactions extends TransactionsEvent {}
