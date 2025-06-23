@@ -26,6 +26,12 @@ dependencies:
   # Animation Framework (Phase 4)
   animations: ^2.0.7
   
+  # Performance-optimized animations (Phase 1.1)
+  flutter_animate: ^4.5.2
+  
+  # Pagination for transactions (Phase 1.2)
+  infinite_scroll_pagination: ^4.0.0
+  
   # UI & Icons
   flutter_svg: ^2.0.9
   cupertino_icons: ^1.0.2

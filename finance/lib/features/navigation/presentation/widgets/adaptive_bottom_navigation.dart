@@ -29,6 +29,12 @@ class AdaptiveBottomNavigation extends StatefulWidget {
 class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
   int _tappedIndex = -1;
 
+  double _calculateIndicatorPosition(double totalWidth) {
+    final itemWidth = totalWidth / widget.items.length;
+    final indicatorWidth = itemWidth * 0.7;
+    return (widget.currentIndex * itemWidth) + (itemWidth - indicatorWidth) / 2;
+  }
+
   void _handleTap(int index) {
     // Call onTap immediately for instant response
     widget.onTap(index);
@@ -64,9 +70,12 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
             builder: (context, constraints) {
               return Stack(
                 children: [
-                  // Sliding indicator with flutter_animate
-                  Positioned(
+                  // Sliding indicator with smooth animation
+                  AnimatedPositioned(
+                    left: _calculateIndicatorPosition(constraints.maxWidth),
                     top: 8,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
                     child: Container(
                       width: (constraints.maxWidth / widget.items.length) * 0.7,
                       height: 40.0,
@@ -74,14 +83,6 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
                         color: Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(12),
                       ),
-                    )
-                    .animate(target: widget.currentIndex.toDouble())
-                    .moveX(
-                      begin: (constraints.maxWidth / widget.items.length - 
-                              (constraints.maxWidth / widget.items.length) * 0.7) / 2,
-                      end: constraints.maxWidth,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
                     ),
                   ),
                   
@@ -169,10 +170,10 @@ class _AnimatedNavigationItem extends StatelessWidget {
                 ),
               ),
             )
-            .animate(target: isTapped ? 1.0 : 0.0)
+            .animate()
             .scaleXY(
-              begin: 1.0,
-              end: 0.85,
+              begin: isTapped ? 0.85 : 1.0,
+              end: 1.0,
               duration: const Duration(milliseconds: 150),
               curve: Curves.easeInOut,
             ),

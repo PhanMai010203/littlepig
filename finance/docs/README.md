@@ -256,7 +256,7 @@ stateDiagram-v2
 |---|---|
 | [UI Architecture & Theming](UI_ARCHITECTURE_AND_THEMING.md) | Clean Architecture for UI, theme setup (colors, text) & Material You support. |
 | [UI Core Widgets](UI_CORE_WIDGETS.md) | Reusable widgets for text, buttons, pages & lists. |
-| [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Rich animations with performance controls & examples. |
+| [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Guide to the app's animation system. **Note: The framework is being migrated from custom widgets to `flutter_animate`.** |
 | [UI Dialogs & Pop-ups](UI_DIALOGS_AND_POPUPS.md) | Dialog, bottom-sheet & modal frameworks. |
 | [UI Patterns & Best Practices](UI_PATTERNS_AND_BEST_PRACTICES.md) | State management with BLoC, error/loading patterns & lifecycle management. |
 | [UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md) | Widget testing setup, troubleshooting common UI issues & performance tips. |
