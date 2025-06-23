@@ -1,87 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../widgets/month_selector.dart';
-import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/entities/transaction.dart';
-import '../../../../core/di/injection.dart';
 import '../../../../features/categories/domain/entities/category.dart';
-import '../../../../features/categories/domain/repositories/category_repository.dart';
+import '../../../../core/di/injection.dart';
+import '../bloc/transactions_bloc.dart';
+import '../bloc/transactions_event.dart';
+import '../bloc/transactions_state.dart';
 
-class TransactionsPage extends StatefulWidget {
+class TransactionsPage extends StatelessWidget {
   const TransactionsPage({super.key});
 
   @override
-  State<TransactionsPage> createState() => _TransactionsPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => getIt<TransactionsBloc>()
+        ..add(LoadTransactionsWithCategories()),
+      child: const _TransactionsView(),
+    );
+  }
 }
 
-class _TransactionsPageState extends State<TransactionsPage> {
-  
-  late final TransactionRepository _transactionRepository;
-  late final CategoryRepository _categoryRepository;
-  late DateTime _selectedMonth;
-  final ScrollController _monthScrollController = ScrollController();
-
-  List<Transaction> _allTransactions = [];
-  Map<int, Category> _categories = {};
-  bool _isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _transactionRepository = getIt<TransactionRepository>();
-    _categoryRepository = getIt<CategoryRepository>();
-    _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
-    _loadData();
-  }
-
-  @override
-  void dispose() {
-    _monthScrollController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _loadData() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final transactionsFuture = _transactionRepository.getAllTransactions();
-      final categoriesFuture = _categoryRepository.getAllCategories();
-
-      final transactions = await transactionsFuture;
-      final categories = await categoriesFuture;
-
-      // Sort transactions by date (newest first)
-      transactions.sort((a, b) => b.date.compareTo(a.date));
-
-      setState(() {
-        _allTransactions = transactions;
-        _categories = {for (var c in categories) c.id!: c};
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error loading data: $e')),
-        );
-      }
-    }
-  }
-
-  void _onMonthSelected(DateTime month) {
-    setState(() {
-      _selectedMonth = month;
-    });
-  }
+class _TransactionsView extends StatelessWidget {
+  const _TransactionsView();
 
   @override
   Widget build(BuildContext context) {
@@ -114,28 +60,111 @@ class _TransactionsPageState extends State<TransactionsPage> {
         child: const Icon(Icons.add),
       ),
       slivers: [
-        if (_isLoading)
-          const SliverToBoxAdapter(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.all(32.0),
-                child: CircularProgressIndicator(),
-              ),
-            ),
-          )
-        else ...[
-          SliverToBoxAdapter(child: _buildMonthSelector()),
-          SliverToBoxAdapter(child: _buildSummary()),
-          _buildTransactionList(),
-        ],
+        BlocConsumer<TransactionsBloc, TransactionsState>(
+          listener: (context, state) {
+            if (state is TransactionsError) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.message)),
+              );
+            }
+          },
+          builder: (context, state) {
+            if (state is TransactionsLoading) {
+              return const SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: CircularProgressIndicator(),
+                  ),
+                ),
+              );
+            }
+
+            if (state is TransactionsError) {
+              return SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Column(
+                      children: [
+                        Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
+                        const SizedBox(height: 16),
+                        AppText(state.message, colorName: 'error'),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () => context.read<TransactionsBloc>().add(RefreshTransactions()),
+                          child: const AppText('Retry'),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }
+
+            if (state is TransactionsLoaded) {
+              return SliverMainAxisGroup(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _MonthSelectorWrapper(
+                      selectedMonth: state.selectedMonth,
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: _SummaryWrapper(
+                      transactions: state.transactions,
+                      selectedMonth: state.selectedMonth,
+                    ),
+                  ),
+                  _TransactionListWrapper(
+                    transactions: state.transactions,
+                    categories: state.categories,
+                    selectedMonth: state.selectedMonth,
+                  ),
+                ],
+              );
+            }
+
+            return const SliverToBoxAdapter(child: SizedBox.shrink());
+          },
+        ),
       ],
     );
   }
+}
 
-  Widget _buildSummary() {
-    final selectedMonthTransactions = _allTransactions.where((t) {
-      return t.date.year == _selectedMonth.year &&
-          t.date.month == _selectedMonth.month;
+class _MonthSelectorWrapper extends StatelessWidget {
+  const _MonthSelectorWrapper({
+    required this.selectedMonth,
+  });
+
+  final DateTime selectedMonth;
+
+  @override
+  Widget build(BuildContext context) {
+    return MonthSelector(
+      selectedMonth: selectedMonth,
+      onMonthSelected: (month) {
+        context.read<TransactionsBloc>().add(ChangeSelectedMonth(month));
+      },
+    );
+  }
+}
+
+class _SummaryWrapper extends StatelessWidget {
+  const _SummaryWrapper({
+    required this.transactions,
+    required this.selectedMonth,
+  });
+
+  final List<Transaction> transactions;
+  final DateTime selectedMonth;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedMonthTransactions = transactions.where((t) {
+      return t.date.year == selectedMonth.year &&
+          t.date.month == selectedMonth.month;
     }).toList();
 
     final income = selectedMonthTransactions
@@ -190,11 +219,24 @@ class _TransactionsPageState extends State<TransactionsPage> {
       ],
     );
   }
+}
 
-  Widget _buildTransactionList() {
-    final selectedMonthTransactions = _allTransactions.where((t) {
-      return t.date.year == _selectedMonth.year &&
-          t.date.month == _selectedMonth.month;
+class _TransactionListWrapper extends StatelessWidget {
+  const _TransactionListWrapper({
+    required this.transactions,
+    required this.categories,
+    required this.selectedMonth,
+  });
+
+  final List<Transaction> transactions;
+  final Map<int, Category> categories;
+  final DateTime selectedMonth;
+
+  @override
+  Widget build(BuildContext context) {
+    final selectedMonthTransactions = transactions.where((t) {
+      return t.date.year == selectedMonth.year &&
+          t.date.month == selectedMonth.month;
     }).toList();
 
     if (selectedMonthTransactions.isEmpty) {
@@ -236,7 +278,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
                   colorName: "textSecondary",
                 ),
               ),
-              ...transactionsOnDate.map((t) => _buildTransactionTile(t)),
+              ...transactionsOnDate.map((t) => _buildTransactionTile(t, context)),
             ],
           );
         },
@@ -245,10 +287,10 @@ class _TransactionsPageState extends State<TransactionsPage> {
     );
   }
 
-  Widget _buildTransactionTile(Transaction transaction) {
+  Widget _buildTransactionTile(Transaction transaction, BuildContext context) {
     final double amount = transaction.amount;
     final bool isIncome = amount > 0;
-    final category = _categories[transaction.categoryId];
+    final category = categories[transaction.categoryId];
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
@@ -444,14 +486,6 @@ class _TransactionsPageState extends State<TransactionsPage> {
           child: child,
         );
       },
-    );
-  }
-
-  Widget _buildMonthSelector() {
-    return MonthSelector(
-      selectedMonth: _selectedMonth,
-      onMonthSelected: _onMonthSelected,
-      scrollController: _monthScrollController,
     );
   }
 }

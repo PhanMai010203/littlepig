@@ -66,3 +66,14 @@ class DeleteTransactionEvent extends TransactionsEvent {
 }
 
 class RefreshTransactions extends TransactionsEvent {}
+
+class LoadTransactionsWithCategories extends TransactionsEvent {}
+
+class ChangeSelectedMonth extends TransactionsEvent {
+  final DateTime selectedMonth;
+
+  const ChangeSelectedMonth(this.selectedMonth);
+
+  @override
+  List<Object?> get props => [selectedMonth];
+}
