@@ -58,3 +58,17 @@ This file tracks the Library IDs that have been searched for and found in Contex
 - Contains comprehensive documentation for AnimatedBuilder, AnimationController, Tween, and positioning widgets
 - Coverage: Custom animations, fade transitions, smooth animations, and widget positioning
 - Retrieved documentation covers animation patterns and smooth transitions for Flutter widgets
+
+## Flutter Animate Library
+- Searched: /gskinner/flutter_animate - Add beautiful animated effects & builders in Flutter
+- Retrieved documentation on performance-optimized animations with unified API
+- Coverage: Effect chaining, performance considerations, custom animations, and animation builders
+- Contains patterns for reducing animation overhead and optimizing rendering performance
+- Trust Score: 7.8, 79 code snippets available
+
+## Flutter Navigation Performance
+- Searched: /context7/docs_flutter_dev-ui-navigation-deep-linking - Flutter navigation and deep linking documentation
+- Retrieved comprehensive navigation patterns, route management, and performance optimization guides
+- Coverage: Navigator optimization, lazy loading, route transition performance, and best practices
+- Contains guidance on reducing navigation overhead and improving page transition performance
+- 3748 code snippets available for navigation patterns
