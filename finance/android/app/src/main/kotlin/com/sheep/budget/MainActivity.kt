@@ -1,4 +1,4 @@
-package com.example.finance
+package com.sheep.budget
 
 import io.flutter.embedding.android.FlutterActivity
 
