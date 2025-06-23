@@ -2,13 +2,13 @@ import '../entities/transaction.dart';
 
 abstract class TransactionRepository {
   Future<List<Transaction>> getAllTransactions();
-  
+
   // 🆕 Phase 1.2: Paginated transactions for lazy loading
   Future<List<Transaction>> getTransactions({
     required int page,
     required int limit,
   });
-  
+
   Future<List<Transaction>> getTransactionsByAccount(int accountId);
   Future<List<Transaction>> getTransactionsByCategory(int categoryId);
   Future<List<Transaction>> getTransactionsByDateRange(

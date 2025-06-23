@@ -46,7 +46,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       final transactions = await _transactionRepository.getAllTransactions();
       // Sort transactions by date (newest first)
       transactions.sort((a, b) => b.date.compareTo(a.date));
-      
+
       final currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
       emit(TransactionsLoaded(
         transactions: transactions,
@@ -66,7 +66,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
           .getTransactionsByAccount(event.accountId);
       // Sort transactions by date (newest first)
       transactions.sort((a, b) => b.date.compareTo(a.date));
-      
+
       final currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
       emit(TransactionsLoaded(
         transactions: transactions,
@@ -86,7 +86,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
           .getTransactionsByCategory(event.categoryId);
       // Sort transactions by date (newest first)
       transactions.sort((a, b) => b.date.compareTo(a.date));
-      
+
       final currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
       emit(TransactionsLoaded(
         transactions: transactions,
@@ -98,15 +98,15 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     }
   }
 
-  Future<void> _onLoadTransactionsByDateRange(
-      LoadTransactionsByDateRange event, Emitter<TransactionsState> emit) async {
+  Future<void> _onLoadTransactionsByDateRange(LoadTransactionsByDateRange event,
+      Emitter<TransactionsState> emit) async {
     emit(TransactionsLoading());
     try {
       final transactions = await _transactionRepository
           .getTransactionsByDateRange(event.startDate, event.endDate);
       // Sort transactions by date (newest first)
       transactions.sort((a, b) => b.date.compareTo(a.date));
-      
+
       final currentMonth = DateTime(DateTime.now().year, DateTime.now().month);
       emit(TransactionsLoaded(
         transactions: transactions,
@@ -119,7 +119,8 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   }
 
   Future<void> _onLoadTransactionsWithCategories(
-      LoadTransactionsWithCategories event, Emitter<TransactionsState> emit) async {
+      LoadTransactionsWithCategories event,
+      Emitter<TransactionsState> emit) async {
     emit(TransactionsLoading());
     try {
       // Load categories first
@@ -185,7 +186,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       ChangeSelectedMonth event, Emitter<TransactionsState> emit) {
     _selectedMonth = event.selectedMonth;
     _consecutiveEmptyFetches = 0;
-    
+
     if (state is TransactionsPaginated) {
       final currentState = state as TransactionsPaginated;
       emit(currentState.copyWith(selectedMonth: event.selectedMonth));
@@ -200,16 +201,16 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   Future<void> _onFetchNextTransactionPage(
       FetchNextTransactionPage event, Emitter<TransactionsState> emit) async {
     if (state is! TransactionsPaginated) return;
-    
+
     final currentState = state as TransactionsPaginated;
     final currentPagingState = currentState.pagingState;
-    
+
     // Prevent multiple simultaneous requests
     if (currentPagingState.isLoading) return;
-    
+
     try {
       final nextPageKey = (currentPagingState.keys?.last ?? -1) + 1;
-      
+
       // Set loading state
       emit(currentState.copyWith(
         pagingState: currentPagingState.copyWith(
@@ -236,13 +237,15 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
         _consecutiveEmptyFetches = 0;
       }
 
-      final isLastPage = newTransactions.length < _pageSize || _consecutiveEmptyFetches > 5;
+      final isLastPage =
+          newTransactions.length < _pageSize || _consecutiveEmptyFetches > 5;
       if (isLastPage) {
         _consecutiveEmptyFetches = 0;
       }
 
       // Group transactions
-      final existingItems = currentState.pagingState.pages?.expand((page) => page).toList();
+      final existingItems =
+          currentState.pagingState.pages?.expand((page) => page).toList();
       final newItems = _groupTransactions(filteredTransactions, existingItems);
 
       // Update the paging state
@@ -263,21 +266,23 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     }
   }
 
-  List<TransactionListItem> _groupTransactions(List<Transaction> transactions, List<TransactionListItem>? existingItems) {
+  List<TransactionListItem> _groupTransactions(List<Transaction> transactions,
+      List<TransactionListItem>? existingItems) {
     if (transactions.isEmpty) {
       return [];
     }
 
     TransactionItem? lastTransactionItem;
     if (existingItems != null) {
-      final transactionItems = existingItems.whereType<TransactionItem>().toList();
+      final transactionItems =
+          existingItems.whereType<TransactionItem>().toList();
       if (transactionItems.isNotEmpty) {
         lastTransactionItem = transactionItems.last;
       }
     }
-    final lastTransactionDate = lastTransactionItem != null 
-      ? DateUtils.dateOnly(lastTransactionItem.transaction.date)
-      : null;
+    final lastTransactionDate = lastTransactionItem != null
+        ? DateUtils.dateOnly(lastTransactionItem.transaction.date)
+        : null;
 
     final newItems = <TransactionListItem>[];
     final groupedByDate = <DateTime, List<Transaction>>{};
@@ -290,26 +295,29 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       groupedByDate[day]!.add(transaction);
     }
 
-    final sortedDates = groupedByDate.keys.toList()..sort((a, b) => b.compareTo(a));
+    final sortedDates = groupedByDate.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
 
     for (final date in sortedDates) {
       final transactionsOnDate = groupedByDate[date]!;
-      final totalAmount = transactionsOnDate.fold<double>(0, (sum, t) => sum + t.amount);
-      
+      final totalAmount =
+          transactionsOnDate.fold<double>(0, (sum, t) => sum + t.amount);
+
       if (date != lastTransactionDate || (existingItems?.isEmpty ?? true)) {
-        newItems.add(DateHeaderItem(date, totalAmount, transactionsOnDate.length));
+        newItems
+            .add(DateHeaderItem(date, totalAmount, transactionsOnDate.length));
       } else {
         // Find header for this date and update total
-        final headerIndex = existingItems!.indexWhere((item) => item is DateHeaderItem && item.date == date);
+        final headerIndex = existingItems!
+            .indexWhere((item) => item is DateHeaderItem && item.date == date);
         if (headerIndex != -1) {
           final oldHeader = existingItems[headerIndex] as DateHeaderItem;
           final newTotal = oldHeader.totalAmount + totalAmount;
-          // This is tricky because PagingState is immutable. 
+          // This is tricky because PagingState is immutable.
           // A better approach is to not have header in item list but build it in UI.
           // For now, let's stick to the logic that may produce multiple headers for same date if pages are small.
           // The logic to avoid double headers is already there: `if (date != lastTransactionDate)`
         }
-        
       }
       newItems.addAll(transactionsOnDate.map((t) => TransactionItem(t)));
     }
@@ -322,20 +330,21 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
         final date = DateUtils.dateOnly(t.date);
         grouped.putIfAbsent(date, () => []).add(t);
       }
-      
+
       DateTime? lastDate;
-      if(existingItems?.isNotEmpty ?? false) {
+      if (existingItems?.isNotEmpty ?? false) {
         final lastItem = existingItems!.last;
         if (lastItem is TransactionItem) {
           lastDate = DateUtils.dateOnly(lastItem.transaction.date);
         }
       }
 
-      final sortedDates = grouped.keys.toList()..sort((a,b) => b.compareTo(a));
+      final sortedDates = grouped.keys.toList()..sort((a, b) => b.compareTo(a));
 
       for (var date in sortedDates) {
         if (date != lastDate) {
-          final total = grouped[date]!.fold<double>(0, (prev, curr) => prev + curr.amount);
+          final total = grouped[date]!
+              .fold<double>(0, (prev, curr) => prev + curr.amount);
           items.add(DateHeaderItem(date, total, grouped[date]!.length));
         }
         items.addAll(grouped[date]!.map((t) => TransactionItem(t)));
@@ -347,16 +356,17 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   }
 
   Future<void> _onRefreshPaginatedTransactions(
-      RefreshPaginatedTransactions event, Emitter<TransactionsState> emit) async {
+      RefreshPaginatedTransactions event,
+      Emitter<TransactionsState> emit) async {
     if (state is! TransactionsPaginated) return;
-    
+
     final currentState = state as TransactionsPaginated;
-    
+
     // Reset pagination state
     final refreshedPagingState = PagingState<int, TransactionListItem>();
-    
+
     emit(currentState.copyWith(pagingState: refreshedPagingState));
-    
+
     // Fetch first page
     add(FetchNextTransactionPage());
   }

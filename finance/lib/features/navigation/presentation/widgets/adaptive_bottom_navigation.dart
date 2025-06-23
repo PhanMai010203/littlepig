@@ -41,7 +41,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
 
     // Trigger bounce animation by setting the tapped index
     setState(() => _tappedIndex = index);
-    
+
     // Reset the tapped index after animation completes
     Future.delayed(const Duration(milliseconds: 150), () {
       if (mounted) {
@@ -85,7 +85,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
                       ),
                     ),
                   ),
-                  
+
                   // Navigation items
                   Row(
                     children: widget.items.asMap().entries.map((entry) {
@@ -169,17 +169,15 @@ class _AnimatedNavigationItem extends StatelessWidget {
                   ),
                 ),
               ),
-            )
-            .animate()
-            .scaleXY(
-              begin: isTapped ? 0.85 : 1.0,
-              end: 1.0,
-              duration: const Duration(milliseconds: 150),
-              curve: Curves.easeInOut,
-            ),
-            
+            ).animate().scaleXY(
+                  begin: isTapped ? 0.85 : 1.0,
+                  end: 1.0,
+                  duration: const Duration(milliseconds: 150),
+                  curve: Curves.easeInOut,
+                ),
+
             const SizedBox(height: 4),
-            
+
             // Animated text
             AnimatedDefaultTextStyle(
               duration: const Duration(milliseconds: 200),
@@ -190,9 +188,8 @@ class _AnimatedNavigationItem extends StatelessWidget {
                                 .colorScheme
                                 .onSurface
                                 .withValues(alpha: 0.6),
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.w500,
                       ) ??
                   TextStyle(
                     color: isSelected

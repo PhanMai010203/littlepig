@@ -14,6 +14,7 @@ import '../../helpers/entity_builders.dart';
 
 // Mocks
 class MockTransactionRepository extends Mock implements TransactionRepository {}
+
 class MockCategoryRepository extends Mock implements CategoryRepository {}
 
 void main() {
@@ -23,10 +24,15 @@ void main() {
   setUp(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     // Mock SharedPreferences for EasyLocalization
-    const MethodChannel channel = MethodChannel('plugins.flutter.io/shared_preferences');
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, (MethodCall methodCall) async {
+    const MethodChannel channel =
+        MethodChannel('plugins.flutter.io/shared_preferences');
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(channel, (MethodCall methodCall) async {
       if (methodCall.method == 'getAll') {
-        return <String, Object>{'flutter.EasyLocalization.Path': 'assets/translations', 'flutter.EasyLocalization.Locale': 'en'};
+        return <String, Object>{
+          'flutter.EasyLocalization.Path': 'assets/translations',
+          'flutter.EasyLocalization.Locale': 'en'
+        };
       }
       if (methodCall.method == 'setString') {
         return true;
@@ -46,7 +52,9 @@ void main() {
   });
 
   tearDown(() {
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/shared_preferences'), null);
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+            const MethodChannel('plugins.flutter.io/shared_preferences'), null);
     resetDependencies();
   });
 
@@ -55,7 +63,7 @@ void main() {
     tester.binding.window.physicalSizeTestValue = const Size(1080, 1920);
     tester.binding.window.devicePixelRatioTestValue = 1.0;
     addTearDown(tester.binding.window.clearPhysicalSizeTestValue);
-    
+
     // Required for EasyLocalization
     await tester.pumpWidget(
       EasyLocalization(
@@ -69,17 +77,22 @@ void main() {
     );
   }
 
-  final tCategory = TestEntityBuilders.createTestCategory(name: 'Food', icon: '🍔', color: const Color(0xFFFF9800));
+  final tCategory = TestEntityBuilders.createTestCategory(
+      name: 'Food', icon: '🍔', color: const Color(0xFFFF9800));
   final tTransactionsPage1 = List.generate(
     20,
-    (index) => TestEntityBuilders.createTestTransaction(title: 'Transaction $index'),
+    (index) =>
+        TestEntityBuilders.createTestTransaction(title: 'Transaction $index'),
   );
   final tTransactionsPage2 = List.generate(
     10,
-    (index) => TestEntityBuilders.createTestTransaction(title: 'Transaction ${index + 20}'),
+    (index) => TestEntityBuilders.createTestTransaction(
+        title: 'Transaction ${index + 20}'),
   );
 
-  testWidgets('should display loading indicator and then first page of transactions', (WidgetTester tester) async {
+  testWidgets(
+      'should display loading indicator and then first page of transactions',
+      (WidgetTester tester) async {
     // Arrange
     when(() => mockCategoryRepository.getAllCategories())
         .thenAnswer((_) async => [tCategory]);
@@ -88,10 +101,10 @@ void main() {
 
     // Act
     await pumpTransactionsPage(tester);
-    
+
     // Assert
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
-    
+
     await tester.pump(); // Allow the future to complete
     await tester.pump(); // Rebuild the widget
 
@@ -101,7 +114,8 @@ void main() {
     expect(find.text('Transaction 20'), findsNothing);
   });
 
-  testWidgets('should load next page when scrolling to the end', (WidgetTester tester) async {
+  testWidgets('should load next page when scrolling to the end',
+      (WidgetTester tester) async {
     // Arrange
     when(() => mockCategoryRepository.getAllCategories())
         .thenAnswer((_) async => [tCategory]);
@@ -115,7 +129,6 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-
     // Assert
     expect(find.text('Transaction 19'), findsOneWidget);
 
@@ -128,4 +141,4 @@ void main() {
     expect(find.text('Transaction 20'), findsOneWidget);
     expect(find.text('Transaction 29'), findsOneWidget);
   });
-} 
+}

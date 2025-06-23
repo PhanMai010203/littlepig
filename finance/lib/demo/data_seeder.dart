@@ -421,7 +421,7 @@ class DataSeeder {
           transactionState: TransactionState.completed,
           syncId: 'demo-txn-grocery-${_uuid.v4()}',
         ),
-                Transaction(
+        Transaction(
           title: 'Grocery Shopping - Siêu thị',
           note: '',
           amount: -55.50,

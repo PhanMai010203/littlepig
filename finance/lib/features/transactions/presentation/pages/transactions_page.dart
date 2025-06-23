@@ -18,8 +18,8 @@ class TransactionsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => getIt<TransactionsBloc>()
-        ..add(LoadTransactionsWithCategories()),
+      create: (context) =>
+          getIt<TransactionsBloc>()..add(LoadTransactionsWithCategories()),
       child: const _TransactionsView(),
     );
   }
@@ -86,12 +86,16 @@ class _TransactionsView extends StatelessWidget {
                     padding: const EdgeInsets.all(32.0),
                     child: Column(
                       children: [
-                        Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
+                        Icon(Icons.error,
+                            size: 64,
+                            color: Theme.of(context).colorScheme.error),
                         const SizedBox(height: 16),
                         AppText(state.message, colorName: 'error'),
                         const SizedBox(height: 16),
                         ElevatedButton(
-                          onPressed: () => context.read<TransactionsBloc>().add(RefreshTransactions()),
+                          onPressed: () => context
+                              .read<TransactionsBloc>()
+                              .add(RefreshTransactions()),
                           child: const AppText('Retry'),
                         ),
                       ],

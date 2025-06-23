@@ -38,12 +38,14 @@ class TransactionRepositoryImpl
     required int limit,
   }) async {
     final offset = page * limit;
-    
+
     return cacheRead(
       'getTransactions',
       () async {
         final query = _database.select(_database.transactionsTable)
-          ..orderBy([(t) => OrderingTerm.desc(t.date)]) // Order by date descending (newest first)
+          ..orderBy([
+            (t) => OrderingTerm.desc(t.date)
+          ]) // Order by date descending (newest first)
           ..limit(limit, offset: offset);
         final results = await query.get();
         return results.map(_mapTransactionData).toList();

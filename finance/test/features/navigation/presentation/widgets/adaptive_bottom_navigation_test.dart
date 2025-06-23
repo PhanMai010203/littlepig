@@ -56,12 +56,13 @@ void main() {
       );
     }
 
-    testWidgets('should render all navigation items', (WidgetTester tester) async {
+    testWidgets('should render all navigation items',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
 
       // Verify that all 4 default items are rendered
       expect(find.byType(AdaptiveBottomNavigation), findsOneWidget);
-      
+
       // Check for SVG icons (should have 4 icons for 4 items)
       expect(find.byType(SvgPicture), findsNWidgets(4));
 
@@ -71,7 +72,8 @@ void main() {
       }
     });
 
-    testWidgets('should highlight current selected item', (WidgetTester tester) async {
+    testWidgets('should highlight current selected item',
+        (WidgetTester tester) async {
       const selectedIndex = 2; // Budgets
       await tester.pumpWidget(createWidget(currentIndex: selectedIndex));
 
@@ -80,51 +82,54 @@ void main() {
       expect(indicatorFinder, findsOneWidget);
 
       // The indicator should be positioned for the selected item
-      final animatedPositioned = tester.widget<AnimatedPositioned>(indicatorFinder);
-      
+      final animatedPositioned =
+          tester.widget<AnimatedPositioned>(indicatorFinder);
+
       // Since we have 4 items and selectedIndex=2, the left position should be calculated
       // This verifies the indicator positioning logic
       expect(animatedPositioned.left, isNotNull);
       expect(animatedPositioned.left! > 0, isTrue);
     });
 
-    testWidgets('should call onTap when item is tapped', (WidgetTester tester) async {
+    testWidgets('should call onTap when item is tapped',
+        (WidgetTester tester) async {
       int? tappedIndex;
-      
+
       await tester.pumpWidget(createWidget(
         onTap: (index) => tappedIndex = index,
       ));
 
-             // Tap on the second item (Transactions)
-       await tester.tap(find.text('Transactions'));
-       await tester.pump();
+      // Tap on the second item (Transactions)
+      await tester.tap(find.text('Transactions'));
+      await tester.pump();
 
-       expect(tappedIndex, equals(1));
+      expect(tappedIndex, equals(1));
     });
 
-    testWidgets('should call onLongPress when item is long pressed', (WidgetTester tester) async {
+    testWidgets('should call onLongPress when item is long pressed',
+        (WidgetTester tester) async {
       int? longPressedIndex;
-      
+
       await tester.pumpWidget(createWidget(
         onLongPress: (index) => longPressedIndex = index,
       ));
 
-             // Long press on the third item (Budgets)
-       await tester.longPress(find.text('Budgets'));
-       await tester.pump();
+      // Long press on the third item (Budgets)
+      await tester.longPress(find.text('Budgets'));
+      await tester.pump();
 
-       expect(longPressedIndex, equals(2));
+      expect(longPressedIndex, equals(2));
     });
 
-    testWidgets('should animate indicator when currentIndex changes', (WidgetTester tester) async {
+    testWidgets('should animate indicator when currentIndex changes',
+        (WidgetTester tester) async {
       // Start with first item selected
       Widget widget = createWidget(currentIndex: 0);
       await tester.pumpWidget(widget);
 
       // Get initial indicator position
-      final initialIndicator = tester.widget<AnimatedPositioned>(
-        find.byType(AnimatedPositioned)
-      );
+      final initialIndicator =
+          tester.widget<AnimatedPositioned>(find.byType(AnimatedPositioned));
       final initialLeft = initialIndicator.left!;
 
       // Change to second item
@@ -132,9 +137,8 @@ void main() {
       await tester.pumpWidget(widget);
 
       // Get new indicator position
-      final newIndicator = tester.widget<AnimatedPositioned>(
-        find.byType(AnimatedPositioned)
-      );
+      final newIndicator =
+          tester.widget<AnimatedPositioned>(find.byType(AnimatedPositioned));
       final newLeft = newIndicator.left!;
 
       // Indicator position should have changed
@@ -142,57 +146,60 @@ void main() {
       expect(newLeft > initialLeft, isTrue);
     });
 
-    testWidgets('should trigger bounce animation on tap', (WidgetTester tester) async {
+    testWidgets('should trigger bounce animation on tap',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidget());
 
-             // Tap on an item to trigger bounce animation
-       await tester.tap(find.text('Home'));
-       await tester.pump(); // Trigger the animation start
+      // Tap on an item to trigger bounce animation
+      await tester.tap(find.text('Home'));
+      await tester.pump(); // Trigger the animation start
 
       // Advance time to see the animation effect
       await tester.pump(const Duration(milliseconds: 75)); // Mid-animation
-      
+
       // The widget should still be present and functional
       expect(find.byType(AdaptiveBottomNavigation), findsOneWidget);
-      
+
       // Complete the animation
       await tester.pump(const Duration(milliseconds: 200));
-      
+
       // Animation should be complete, widget still functional
       expect(find.byType(AdaptiveBottomNavigation), findsOneWidget);
     });
 
-    testWidgets('should handle rapid successive taps', (WidgetTester tester) async {
+    testWidgets('should handle rapid successive taps',
+        (WidgetTester tester) async {
       final List<int> tappedIndices = [];
-      
+
       await tester.pumpWidget(createWidget(
         onTap: (index) => tappedIndices.add(index),
       ));
 
-             // Rapidly tap different items
-       await tester.tap(find.text('Home'));
-       await tester.pump(const Duration(milliseconds: 10));
-       
-       await tester.tap(find.text('Transactions'));
-       await tester.pump(const Duration(milliseconds: 10));
-       
-       await tester.tap(find.text('Budgets'));
-       await tester.pump(const Duration(milliseconds: 10));
+      // Rapidly tap different items
+      await tester.tap(find.text('Home'));
+      await tester.pump(const Duration(milliseconds: 10));
+
+      await tester.tap(find.text('Transactions'));
+      await tester.pump(const Duration(milliseconds: 10));
+
+      await tester.tap(find.text('Budgets'));
+      await tester.pump(const Duration(milliseconds: 10));
 
       // All taps should be registered
       expect(tappedIndices, equals([0, 1, 2]));
     });
 
-    testWidgets('should maintain visual state during animation', (WidgetTester tester) async {
+    testWidgets('should maintain visual state during animation',
+        (WidgetTester tester) async {
       await tester.pumpWidget(createWidget(currentIndex: 1));
 
       // Verify initial visual state
       expect(find.byType(SvgPicture), findsNWidgets(4));
       expect(find.byType(AnimatedPositioned), findsOneWidget);
 
-             // Tap to trigger animation
-       await tester.tap(find.text('Transactions'));
-       await tester.pump();
+      // Tap to trigger animation
+      await tester.tap(find.text('Transactions'));
+      await tester.pump();
 
       // During animation, all visual elements should still be present
       expect(find.byType(SvgPicture), findsNWidgets(4));
@@ -206,13 +213,14 @@ void main() {
       expect(find.byType(AnimatedPositioned), findsOneWidget);
     });
 
-         testWidgets('should work with different numbers of items', (WidgetTester tester) async {
-       // Test with just 3 items
-       final customItems = [
-         testItems[0], // Home
-         testItems[1], // Transactions
-         testItems[2], // Budgets
-       ];
+    testWidgets('should work with different numbers of items',
+        (WidgetTester tester) async {
+      // Test with just 3 items
+      final customItems = [
+        testItems[0], // Home
+        testItems[1], // Transactions
+        testItems[2], // Budgets
+      ];
 
       await tester.pumpWidget(
         MaterialApp(
@@ -226,54 +234,56 @@ void main() {
         ),
       );
 
-             // Should render exactly 3 items
-       expect(find.byType(SvgPicture), findsNWidgets(3));
-       expect(find.text('Home'), findsOneWidget);
-       expect(find.text('Transactions'), findsOneWidget);
-       expect(find.text('Budgets'), findsOneWidget);
-       
-       // Should not render the 'more' item
-       expect(find.text('More'), findsNothing);
+      // Should render exactly 3 items
+      expect(find.byType(SvgPicture), findsNWidgets(3));
+      expect(find.text('Home'), findsOneWidget);
+      expect(find.text('Transactions'), findsOneWidget);
+      expect(find.text('Budgets'), findsOneWidget);
+
+      // Should not render the 'more' item
+      expect(find.text('More'), findsNothing);
     });
 
     group('flutter_animate Integration Tests', () {
-      testWidgets('should use flutter_animate for bounce effect', (WidgetTester tester) async {
+      testWidgets('should use flutter_animate for bounce effect',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
-                 // Tap to trigger flutter_animate bounce
-         await tester.tap(find.text('Home'));
-         await tester.pump();
+        // Tap to trigger flutter_animate bounce
+        await tester.tap(find.text('Home'));
+        await tester.pump();
 
-        // The widget should be using flutter_animate (this is verified by the import 
+        // The widget should be using flutter_animate (this is verified by the import
         // and usage in the source code we examined)
         expect(find.byType(AdaptiveBottomNavigation), findsOneWidget);
-        
+
         // Advance through the animation timeline
         await tester.pump(const Duration(milliseconds: 50));
         await tester.pump(const Duration(milliseconds: 100));
         await tester.pump(const Duration(milliseconds: 150));
-        
+
         // Animation should complete without errors
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('should handle animation completion correctly', (WidgetTester tester) async {
+      testWidgets('should handle animation completion correctly',
+          (WidgetTester tester) async {
         await tester.pumpWidget(createWidget());
 
-                 // Trigger animation
-         await tester.tap(find.text('Transactions'));
-         await tester.pump();
+        // Trigger animation
+        await tester.tap(find.text('Transactions'));
+        await tester.pump();
 
         // Let animation complete fully
         await tester.pump(const Duration(milliseconds: 200));
 
         // Should not have any pending timers or exceptions
         expect(tester.takeException(), isNull);
-        
-                 // Widget should still be functional after animation
-         await tester.tap(find.text('Budgets'));
-         expect(tester.takeException(), isNull);
+
+        // Widget should still be functional after animation
+        await tester.tap(find.text('Budgets'));
+        expect(tester.takeException(), isNull);
       });
     });
   });
-} 
+}

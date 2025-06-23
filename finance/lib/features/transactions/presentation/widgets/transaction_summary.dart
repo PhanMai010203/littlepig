@@ -97,7 +97,7 @@ class PaginatedTransactionSummary extends StatelessWidget {
         .whereType<TransactionItem>()
         .map((item) => item.transaction)
         .toList();
-    
+
     final selectedMonthTransactions = allTransactions.where((t) {
       return t.date.year == selectedMonth.year &&
           t.date.month == selectedMonth.month;
@@ -157,4 +157,4 @@ class PaginatedTransactionSummary extends StatelessWidget {
   }
 }
 
-// TransactionListItem types are imported from ../bloc/transactions_state.dart 
+// TransactionListItem types are imported from ../bloc/transactions_state.dart
