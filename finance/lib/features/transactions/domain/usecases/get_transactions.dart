@@ -11,6 +11,20 @@ class GetAllTransactions {
   }
 }
 
+// 🆕 Phase 1.2: Paginated transactions use case for lazy loading
+class GetTransactionsPaginated {
+  final TransactionRepository _repository;
+
+  GetTransactionsPaginated(this._repository);
+
+  Future<List<Transaction>> call({
+    required int page,
+    required int limit,
+  }) async {
+    return await _repository.getTransactions(page: page, limit: limit);
+  }
+}
+
 class GetTransactionsByAccount {
   final TransactionRepository _repository;
 

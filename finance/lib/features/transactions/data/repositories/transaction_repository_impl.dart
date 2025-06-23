@@ -33,6 +33,27 @@ class TransactionRepositoryImpl
   }
 
   @override
+  Future<List<Transaction>> getTransactions({
+    required int page,
+    required int limit,
+  }) async {
+    final offset = page * limit;
+    
+    return cacheRead(
+      'getTransactions',
+      () async {
+        final query = _database.select(_database.transactionsTable)
+          ..orderBy([(t) => OrderingTerm.desc(t.date)]) // Order by date descending (newest first)
+          ..limit(limit, offset: offset);
+        final results = await query.get();
+        return results.map(_mapTransactionData).toList();
+      },
+      params: {'page': page, 'limit': limit},
+      ttl: const Duration(minutes: 3), // Cache for 3 minutes
+    );
+  }
+
+  @override
   Future<List<Transaction>> getTransactionsByAccount(int accountId) async {
     return cacheRead(
       'getTransactionsByAccount',

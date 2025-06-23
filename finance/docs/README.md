@@ -130,6 +130,7 @@ This project leverages a set of robust and well-supported libraries to ensure a 
 | **`freezed`** | Code Generation | Generates immutable data classes and unions, reducing boilerplate and improving type safety. |
 | **`dio`** | Networking | A powerful HTTP client for Dart, which supports interceptors, global configuration, etc. |
 | **`flutter_animate`** | **Animation** | **A performant, declarative library for composing complex animations. Replaces manual `AnimationController` logic for improved readability and maintainability.** |
+| **`infinite_scroll_pagination`** | **UI/Pagination** | **Provides an efficient, out-of-the-box solution for creating paginated (lazy-loading) lists, preventing large data loads and improving UI performance.** |
 
 ---
 
@@ -152,6 +153,7 @@ This project leverages a set of robust and well-supported libraries to ensure a 
 
 **Transactions – Basics**  
 - `getAllTransactions()` – Fetch all transactions.  
+- `getTransactions(page, limit)` – **🆕 Phase 1.2:** Fetch a paginated list of transactions.  
 - `getTransactionsByAccount(accountId)` – Filter by account.  
 - `getTransactionsByCategory(categoryId)` – Filter by category.  
 - `getTransactionsByDateRange(from, to)` – Filter by date range.  
