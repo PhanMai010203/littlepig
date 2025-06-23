@@ -520,13 +520,17 @@ class _PaginatedSummaryWrapper extends StatelessWidget {
     required this.selectedMonth,
   });
 
-  final PagingState<int, Transaction> pagingState;
+  final PagingState<int, TransactionListItem> pagingState;
   final DateTime selectedMonth;
 
   @override
   Widget build(BuildContext context) {
     // Get all transactions from all pages
-    final allTransactions = pagingState.pages?.expand((page) => page).toList() ?? [];
+    final allItems = pagingState.pages?.expand((page) => page).toList() ?? [];
+    final allTransactions = allItems
+        .whereType<TransactionItem>()
+        .map((item) => item.transaction)
+        .toList();
     
     final selectedMonthTransactions = allTransactions.where((t) {
       return t.date.year == selectedMonth.year &&
@@ -594,18 +598,24 @@ class _PaginatedTransactionListWrapper extends StatelessWidget {
     required this.selectedMonth,
   });
 
-  final PagingState<int, Transaction> pagingState;
+  final PagingState<int, TransactionListItem> pagingState;
   final Map<int, Category> categories;
   final DateTime selectedMonth;
 
   @override
   Widget build(BuildContext context) {
-    return PagedSliverList<int, Transaction>(
+    return PagedSliverList<int, TransactionListItem>(
       state: pagingState,
       fetchNextPage: () => context.read<TransactionsBloc>().add(FetchNextTransactionPage()),
-      builderDelegate: PagedChildBuilderDelegate<Transaction>(
-        itemBuilder: (context, transaction, index) {
-          return _buildTransactionTile(transaction, context);
+      builderDelegate: PagedChildBuilderDelegate<TransactionListItem>(
+        itemBuilder: (context, item, index) {
+          if (item is DateHeaderItem) {
+            return _buildDateHeader(item);
+          }
+          if (item is TransactionItem) {
+            return _buildTransactionTile(item.transaction, context);
+          }
+          return const SizedBox.shrink();
         },
         firstPageErrorIndicatorBuilder: (context) => _buildErrorIndicator(context),
         newPageErrorIndicatorBuilder: (context) => _buildErrorIndicator(context),
@@ -633,6 +643,28 @@ class _PaginatedTransactionListWrapper extends StatelessWidget {
             child: AppText('No more transactions'),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildDateHeader(DateHeaderItem item) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          AppText(
+            DateFormat('EEEE, MMMM d').format(item.date),
+            fontWeight: FontWeight.bold,
+            colorName: "textSecondary",
+          ),
+          if (item.transactionCount > 1)
+            AppText(
+              NumberFormat.currency(symbol: '\$').format(item.totalAmount),
+              fontWeight: FontWeight.bold,
+              colorName: "textSecondary",
+            ),
+        ],
       ),
     );
   }

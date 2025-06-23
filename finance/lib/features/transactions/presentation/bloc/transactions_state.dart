@@ -15,7 +15,7 @@ class TransactionsInitial extends TransactionsState {}
 class TransactionsLoading extends TransactionsState {}
 
 class TransactionsPaginated extends TransactionsState {
-  final PagingState<int, Transaction> pagingState;
+  final PagingState<int, TransactionListItem> pagingState;
   final Map<int, Category> categories;
   final DateTime selectedMonth;
 
@@ -26,7 +26,7 @@ class TransactionsPaginated extends TransactionsState {
   });
 
   TransactionsPaginated copyWith({
-    PagingState<int, Transaction>? pagingState,
+    PagingState<int, TransactionListItem>? pagingState,
     Map<int, Category>? categories,
     DateTime? selectedMonth,
   }) {
@@ -85,4 +85,28 @@ class TransactionsError extends TransactionsState {
 
   @override
   List<Object?> get props => [message];
+}
+
+abstract class TransactionListItem extends Equatable {
+  const TransactionListItem();
+}
+
+class TransactionItem extends TransactionListItem {
+  final Transaction transaction;
+
+  const TransactionItem(this.transaction);
+
+  @override
+  List<Object?> get props => [transaction];
+}
+
+class DateHeaderItem extends TransactionListItem {
+  final DateTime date;
+  final double totalAmount;
+  final int transactionCount;
+
+  const DateHeaderItem(this.date, this.totalAmount, this.transactionCount);
+
+  @override
+  List<Object?> get props => [date, totalAmount, transactionCount];
 }
