@@ -114,7 +114,7 @@ Upon completion of this refactor, the main `PROJECT DOCS` (`docs/README.md`) mus
 *   **Proposed Change:**
     *   **Find this line:**
         ```markdown
-        | [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Rich animations with performance controls & examples. |
+        | [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Guide to the app's animation system. **Note: The framework is being migrated from custom widgets to `flutter_animate`.** |
         ```
     *   **Replace with:**
         ```markdown
@@ -205,6 +205,38 @@ graph TD
         *   Is an error message displayed if a page fails to load?
         *   Does pull-to-refresh work correctly?
     *   Update existing widget tests to work with the new paginated approach.
+
+### 1.2.5. Documentation Updates (`docs/README.md`)
+
+Upon completion of this refactor, the main `PROJECT DOCS` (`docs/README.md`) must be updated to reflect the introduction of the new pagination dependency and the changes to the transaction data access API.
+
+**1. Add New Core Technology:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `03 · Core Technologies & Key Dependencies 🛠️`.
+*   **Action:** Add a new row to the table for `infinite_scroll_pagination`.
+*   **Content:**
+
+| Library                    | Role             | Rationale                                                                                                                                    |
+| -------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| ...                        | ...              | ...                                                                                                                                          |
+| **`infinite_scroll_pagination`** | **UI/Pagination** | **Provides an efficient, out-of-the-box solution for creating paginated (lazy-loading) lists, preventing large data loads and improving UI performance.** |
+| ...                        | ...              | ...                                                                                                                                          |
+
+**2. Update Domain API Cheatsheet:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `04 · Domain Features 💼`, in the "Widget & Helper Cheatsheet" under "Transactions – Basics".
+*   **Action:** Modify the method signature for fetching transactions to reflect the new paginated approach.
+*   **Proposed Change:**
+    *   **Find this line:**
+        ```markdown
+        - `getAllTransactions()` – Fetch all transactions.
+        ```
+    *   **Replace with:**
+        ```markdown
+        - `getTransactions(page, limit)` – Fetch a paginated list of transactions.
+        ```
 
 ---
 
@@ -299,6 +331,40 @@ graph TD
 7.  **Update Documentation**:
     *   The `README.md` references a `DATABASE_CACHING_GUIDE.md`. Update that guide to reflect the new, superior caching strategy. Explain how to use the `cacheReadQuery` and `cacheWriteQuery` helpers and why manual key management is no longer necessary.
 
+### 1.3.5. Documentation Updates (`docs/README.md` & Associated Guides)
+
+Upon completion, the documentation must be updated to reflect the new automated caching paradigm, ensuring developers immediately adopt the correct, more straightforward pattern.
+
+**1. Update Core Infrastructure Cheatsheet:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `02 · Core Infrastructure 🔧`, in the "Quick reference – core services & helpers" under "Database Caching".
+*   **Action:** Rewrite the descriptions for `DatabaseCacheService` and `CacheableRepositoryMixin` to reflect the new automated, query-aware system.
+*   **Proposed Change:**
+    *   **Find this section:**
+        ```markdown
+        ***Database Caching***
+        - `DatabaseCacheService` – Singleton in-memory key→value store with TTL.
+        - `CacheableRepositoryMixin` – Adds `cacheRead`/`invalidateCache` helpers to repositories.
+        ```
+    *   **Replace with:**
+        ```markdown
+        ***Database Caching***
+        - `DatabaseCacheService` – Intelligent, query-aware in-memory cache. Supports prefix-based invalidation for automated cache clearing.
+        - `CacheableRepositoryMixin` – Provides **automated** query caching (`cacheReadQuery`) and invalidation (`cacheWriteQuery`), eliminating manual key management.
+        ```
+
+**2. Overhaul the Main Caching Guide:**
+
+*   **File:** `docs/DATABASE_CACHING_GUIDE.md`
+*   **Action:** This guide needs to be fundamentally rewritten to document the new, superior caching strategy. The old TTL-based, manual key-management approach is now obsolete.
+*   **Key updates for the guide:**
+    *   **Introduction:** Explain that the cache is no longer a simple key-value store but an automated query caching layer.
+    *   **Core Concept:** Describe how cache keys are now automatically generated from repository method names and parameters, making caching transparent.
+    *   **Usage (`cacheReadQuery`):** Provide a clear "before and after" code example showing how to refactor a repository read method to use the new `cacheReadQuery` helper. Emphasize that no manual key is needed.
+    *   **Usage (`cacheWriteQuery`):** Provide a clear example for write methods (create/update/delete). Explain how `cacheWriteQuery` accepts a prefix (e.g., `'transactions'`) and automatically invalidates all related cache entries after the write operation succeeds.
+    *   **Best Practices:** Explicitly state that manual cache management (`get()`, `set()`, `invalidate()`) should no longer be used directly in repositories. The new mixin helpers handle everything.
+
 ---
 
 ## Phase 2.1: Animation Framework Overhaul
@@ -387,6 +453,61 @@ graph TD
     *   The `README.md` and `UI_ANIMATION_FRAMEWORK.md` guide must be updated to reflect the removal of the old framework and the introduction of `flutter_animate`.
     *   Add examples of the new, preferred way to create animations.
 
+### 2.1.5. Documentation Updates (`docs/README.md` & `UI_ANIMATION_FRAMEWORK.md`)
+
+With the old custom animation framework now removed, the project documentation must be updated to establish `flutter_animate` as the new standard and provide clear guidance on its use.
+
+**1. Update UI Framework Guide Description:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `05 · UI & Navigation 🎨`, in the "UI Framework" table.
+*   **Action:** The migration to `flutter_animate` is now complete. Update the description to reflect that `flutter_animate` is the new standard, removing any mention of migration.
+*   **Proposed Change:**
+    *   **Find this line (or the one modified by Phase 1.1):**
+        ```markdown
+        | [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Guide to the app's animation system. **Note: The framework is being migrated from custom widgets to `flutter_animate`.** |
+        ```
+    *   **Replace with:**
+        ```markdown
+        | [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Guide to the app's animation system. **Note: The framework is being migrated from custom widgets to `flutter_animate`.** |
+        ```
+
+**2. Overhaul Animation Cheatsheet:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `05 · UI & Navigation 🎨`, in the "Quick reference – UI widgets & helpers" under "Animation Framework".
+*   **Action:** The old custom animation widgets (`FadeIn`, `SlideIn`, etc.) are now deleted. Replace the entire section with new examples demonstrating the `flutter_animate` API.
+*   **Proposed Change:**
+    *   **Find this section:**
+        ```markdown
+        **Animation Framework**
+        - `FadeIn`, `ScaleIn`, `SlideIn` – Entrance animations respecting motion settings.
+        - `BouncingWidget`, `BreathingWidget` – Looping attention-grabbers.
+        - `SlideFadeTransition()` – Combined slide + fade.
+        - `.openContainerNavigation()` – Easy Material container transform.
+        ```
+    *   **Replace with:**
+        ```markdown
+        **Animation Framework (`flutter_animate`)**
+        - `myWidget.animate().fadeIn()` – Simple fade-in effect.
+        - `myWidget.animate().slide(duration: 500.ms)` – Simple slide effect.
+        - `myWidget.animate().fade().slide()` – Chain multiple effects together.
+        - `myList.children.animate(interval: 100.ms).slideX()` – Staggered list animations.
+        ```
+
+**3. Overhaul the Main Animation Guide:**
+
+*   **File:** `docs/UI_ANIMATION_FRAMEWORK.md`
+*   **Action:** This guide needs a complete rewrite to remove all references to the old, deleted widgets (`FadeIn`, `SlideIn`, etc.) and replace them with comprehensive documentation for using `flutter_animate`.
+*   **Key updates for the guide:**
+    *   **Introduction:** State that `flutter_animate` is now the sole, official animation library for the project.
+    *   **Core Concepts:** Explain the declarative API using the `.animate()` extension. Cover chaining effects, setting durations, curves, and delays.
+    *   **Common Patterns:**
+        *   Provide "before and after" examples showing how `FadeIn(child: ...)` becomes `... .animate().fadeIn()`.
+        *   Demonstrate list animations with staggered effects (`.animate(interval: ...)`).
+        *   Show how to create more complex, multi-effect animations.
+    *   **Best Practices:** Emphasize removing the now-deleted imports from `lib/shared/widgets/animations/` and using the new syntax everywhere.
+
 ---
 
 ## Phase 2.2: PageTemplate Scroll Performance Optimization
@@ -465,6 +586,66 @@ graph TD
         *   Enable "Track Widget Builds".
         *   Confirm that the `SliverAppBar` and its `title` and `actions` are no longer rebuilding on every frame during the scroll. You should only see the background `Container` rebuilding.
 
+### 2.2.5. Documentation Updates (`docs/README.md` & `UI_TESTING_AND_TROUBLESHOOTING.md`)
+
+The optimization of `PageTemplate` is a perfect, practical example of a critical Flutter performance pattern. Documenting this pattern is more valuable than just noting the widget was improved. It provides a reusable lesson for future development.
+
+**1. Enhance Guide Description in Main README:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `05 · UI & Navigation 🎨`, in the "UI Framework" table.
+*   **Action:** Update the description for the `UI Testing & Troubleshooting` guide to explicitly mention performance patterns, making it more discoverable.
+*   **Proposed Change:**
+    *   **Find this line:**
+        ```markdown
+        | [UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md) | Widget testing setup, troubleshooting common UI issues & performance tips. |
+        ```
+    *   **Replace with:**
+        ```markdown
+        | [UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md) | Widget testing setup, troubleshooting common UI issues & key **UI performance patterns**. |
+        ```
+
+**2. Add "UI Performance Best Practices" to Troubleshooting Guide:**
+
+*   **File:** `docs/UI_TESTING_AND_TROUBLESHOOTING.md`
+*   **Action:** Add a new, detailed section to this guide that uses the `PageTemplate` refactor as a case study for two crucial performance optimizations.
+*   **Content to Add:**
+
+    ```markdown
+    ---
+    
+    ## UI Performance Best Practices
+    
+    This section covers key patterns for writing performant Flutter UI code, preventing common sources of jank and unnecessary builds.
+    
+    ### 1. Scope Builders Tightly to Minimize Rebuilds
+    
+    **Problem:** Using builders like `AnimatedBuilder`, `ValueListenableBuilder`, or `BlocBuilder` around large widget trees is a common source of performance issues. If the builder wraps a complex widget, the entire widget and all its children will be rebuilt every time the listened-to object changes, even if only a small part of the UI actually needs to be updated.
+    
+    **Solution:** Always scope builders as tightly as possible around only the widgets that need to be rebuilt. Move the builder down the widget tree so it wraps the smallest possible widget.
+    
+    **Case Study: The `PageTemplate` Refactor**
+    
+    -   **Before (Inefficient):** The `AnimatedBuilder` wrapped the entire `SliverAppBar`, causing it and its `title` and `actions` to rebuild on every scroll frame just to update the background color.
+    
+    -   **After (Efficient):** The `AnimatedBuilder` was moved *inside* the `SliverAppBar`'s `flexibleSpace` property. Now, it rebuilds *only* the `Container` responsible for the background color, leaving the rest of the app bar static and efficient.
+    
+    ### 2. Use `RepaintBoundary` to Isolate Static, Complex Widgets
+    
+    **Problem:** Even if a widget itself doesn't rebuild, it might still be forced to *repaint* if its parent changes. In the `PageTemplate` example, the changing background color of the app bar could cause the `title` widget to repaint on every frame, which is inefficient.
+    
+    **Solution:** Wrap static, complex, or expensive-to-paint widgets inside a `RepaintBoundary`. This creates a separate paint layer for the widget. The Flutter framework can then skip repainting this layer entirely if its contents haven't changed, even if other things around it are changing.
+    
+    **When to use it:**
+    -   When you have a complex widget (e.g., a custom painter, a chart) inside an animated container.
+    -   When you see static UI elements repainting unnecessarily with Flutter DevTools' "Highlight Repaints" feature.
+    
+    **Case Study: The `PageTemplate` Refactor**
+    
+    -   The `title` widget in the `SliverAppBar` was wrapped in a `RepaintBoundary`. This prevents it from being repainted every time the background color behind it animates, further improving scroll performance.
+    
+    ```
+
 ---
 
 ## Phase 3.1: Attachment System Optimization
@@ -502,7 +683,7 @@ As detailed in the `2analysis_insights.md` document, this optimization is motiva
 
 ### 3.1.4. Refactoring Procedure
 
-The process is structured to handle the database changes first, followed by the repository logic, and finally the UI updates.
+The process is structured to handle the database changes first, followed by the repository logic, and finally the UI.
 
 ```mermaid
 graph TD
@@ -540,6 +721,55 @@ graph TD
     *   Create or update integration tests to verify that creating an attachment correctly generates and saves a thumbnail.
     *   Manually test the full flow: add a new image attachment, verify the UI remains smooth, check that a thumbnail appears in the list, and confirm the full image opens correctly.
 
+### 3.1.5. Documentation Updates (`docs/README.md` & `ATTACHMENTS_SYSTEM.md`)
+
+The optimization of the attachment system introduces a more performant background processing model and a critical new feature (thumbnails). The documentation must be updated to guide developers on how to leverage these improvements and to reflect the updated repository APIs.
+
+**1. Update Domain API Cheatsheet:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `04 · Domain Features 💼`, in the "Widget & Helper Cheatsheet" under "Transactions – Attachments".
+*   **Action:** Update the description for `compressAndStoreFile` to highlight the new, efficient background processing and thumbnail generation. This signals the performance improvement at a high level.
+*   **Proposed Change:**
+    *   **Find this line:**
+        ```markdown
+        - `compressAndStoreFile(filePath, transactionId, fileName)` – Compress image/file and prepare it for local storage.
+        ```
+    *   **Replace with:**
+        ```markdown
+        - `compressAndStoreFile(...)` – **Efficiently processes an image in the background** to compress it and generate a thumbnail before storing.
+        ```
+
+**2. Overhaul the Main Attachments Guide:**
+
+*   **File:** `docs/ATTACHMENTS_SYSTEM.md`
+*   **Action:** This guide needs a comprehensive update to document the new architecture. The previous implementation details are now obsolete.
+*   **Key updates for the guide:**
+    *   **Introduction:** Revise the introduction to state that the system is optimized for performance, using background processing for compression and thumbnails for efficient rendering.
+    *   **Core Concept: Isolate-based Compression:**
+        *   Add a new section explaining that image compression is a heavy operation that is now offloaded to a background isolate using `compute()`.
+        *   Explain that this prevents UI jank when a user adds a large image.
+    *   **Core Concept: Thumbnail Generation:**
+        *   Add a new section detailing the thumbnail system.
+        *   Explain that a small thumbnail is automatically generated and stored alongside the full-size compressed image.
+        *   Document the database schema change: the addition of the `thumbnailPath` column to the `Attachments` table.
+    *   **Updated Usage Guide / Best Practices:**
+        *   Create a "Best Practices" section for displaying attachment images.
+        *   **Rule 1: Use Thumbnails for Lists:** Emphasize that any list or grid view of attachments MUST use the `attachment.thumbnailPath` to render the image. This is critical for scroll performance.
+        *   **Rule 2: Use Full Image for Detail Views:** The original (compressed) image path should only be used when displaying a single attachment in a full-screen or detail view.
+        *   Provide a clear code example:
+
+            ```dart
+            // Good: For a list view
+            Image.file(File(attachment.thumbnailPath!))
+            
+            // Good: For a detail view
+            Image.file(File(attachment.filePath))
+            
+            // Bad: Using full image in a list, causes poor performance
+            Image.file(File(attachment.filePath)) 
+            ```
+
 ---
 
 ## Phase 3.2: Asset Optimization (Fonts & Type Safety)
@@ -565,7 +795,7 @@ As detailed in `2analysis_insights.md`, this task is driven by asset analysis:
 
 1.  `pubspec.yaml`: To add the `flutter_gen` and `flutter_gen_runner` build dependencies and configure the tool.
 2.  `assets/fonts/`: The existing font files will be replaced with smaller, subsetted versions.
-3.  **All files using assets:** A project-wide search for asset paths (e.g., `'assets/...'`) is required to replace them with generated code (e.g., `Assets.images.myImage.path`).
+3.  **All files using assets:** A project-wide search for asset paths (e.g., `'assets/...'`) is required to replace them with generated code (e.g., `Assets` class).
 
 ### 3.2.4. Refactoring Procedure
 
@@ -602,6 +832,101 @@ graph TD
 4.  **Testing**:
     *   After refactoring, perform a full visual regression test of the application.
     *   Navigate to every screen and ensure all images, icons, and custom fonts are displayed correctly.
+
+### 3.2.5. Documentation Updates (`docs/README.md` & `FILE_STRUCTURE.md`)
+
+The migration to type-safe assets is a fundamental change in the development workflow. The documentation must be updated to make this new pattern clear, mandatory, and easy to adopt. Font subsetting should also be noted as a key optimization practice.
+
+**1. Add New Core Technology:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `03 · Core Technologies & Key Dependencies 🛠️`.
+*   **Action:** Add a new row to the table for `flutter_gen_runner` to formalize its role in the project.
+*   **Content:**
+
+| Library | Role | Rationale |
+|---|---|---|
+| ... | ... | ... |
+| **`flutter_gen_runner`** | **Code Generation** | **Generates type-safe code for assets (images, fonts, etc.), eliminating error-prone string paths and enabling compile-time verification.** |
+| ... | ... | ... |
+
+**2. Update Development Workflow Guide:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `07 · Development Workflow & Testing 👨‍💻`, under the "Code Generation" heading.
+*   **Action:** Update the text to explicitly include assets in the code generation process.
+*   **Proposed Change:**
+    *   **Find this paragraph:**
+        ```markdown
+        The project uses `freezed` for data classes and `drift` for the database. If you modify any file that requires code generation (e.g., `app_database.dart`, model files), run the build runner:
+        ```
+    *   **Replace with:**
+        ```markdown
+        The project uses code generation for data classes (`freezed`), the database (`drift`), and **assets (`flutter_gen`)**. If you add or change an asset, or modify a file that requires code generation (e.g., `app_database.dart`, model files), run the build runner:
+        ```
+
+**3. Add a "Working with Assets" Recipe:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `06 · Common Tasks & Development Recipes 🍳`.
+*   **Action:** Add a new row to the cookbook table for the common task of adding a new asset.
+*   **Content to Add:**
+
+| I need to... | Key Steps & Where to Look |
+| --- | --- |
+| ... | ... |
+| **...add a new image or other asset?** | 1. **Add File:** Place the asset file in the correct subfolder under `assets/`.<br/>2. **Generate Code:** Run `dart run build_runner build` to create the type-safe reference.<br/>3. **Use:** Reference the asset in your code using the generated `Assets` class (e.g., `Assets.images.myImage.path`). See the `FILE_STRUCTURE.md` for details. |
+| ... | ... |
+
+**4. Overhaul Asset Documentation in the File Structure Guide:**
+
+*   **File:** `docs/FILE_STRUCTURE.md`
+*   **Action:** This guide is the primary source for asset-related documentation. It needs a new section dedicated to the type-safe asset system and font optimization.
+*   **Content to Add:**
+
+    ```markdown
+    ---
+    
+    ## Asset Management
+    
+    This project uses a type-safe and optimized approach to asset management to improve developer experience, prevent runtime errors, and reduce application size.
+    
+    ### Type-Safe Asset Generation with `flutter_gen`
+    
+    We have eliminated raw string paths for assets (e.g., `'assets/images/logo.png'`). Instead, we use `flutter_gen` to automatically generate a class with static accessors for every asset.
+    
+    **Workflow for Adding a New Asset:**
+    1.  Place the new asset file (e.g., `new_icon.svg`) into the appropriate subdirectory within the `assets/` folder (e.g., `assets/icons/`).
+    2.  Run the build runner: `dart run build_runner build --delete-conflicting-outputs`.
+    3.  This will update the `lib/gen/assets.gen.dart` file. You can now access your asset in code with full type-safety and auto-completion.
+    
+    **Usage Example:**
+    
+    -   **Before (Error-prone):**
+        ```dart
+        Image.asset('assets/images/profile_avatar.png');
+        SvgPicture.asset('assets/icons/close_icon.svg');
+        ```
+    
+    -   **After (Safe and Recommended):**
+        ```dart
+        // The generated 'Assets' class provides direct access.
+        Image.asset(Assets.images.profileAvatar.path);
+        
+        // The generator even creates helpful methods for different asset types.
+        Assets.icons.closeIcon.svg(); 
+        ```
+    
+    This approach prevents typos, ensures that all referenced assets exist at compile time, and makes it easier to find unused assets.
+    
+    ### Font Subsetting for Optimization
+    
+    **Problem:** Font files often contain thousands of glyphs for many languages, making them very large. Bundling full font files significantly increases the app's download and installation size.
+    
+    **Solution:** We use **font subsetting**. Before being added to the `assets/fonts/` directory, all custom fonts are processed by a tool that removes any glyphs not used in our application. This reduces font file sizes by over 90% in most cases.
+    
+    **Best Practice:** If you need to add or update a font, ensure you use a subsetted version containing only the necessary character sets (e.g., Latin, common symbols) for the languages the app supports.
+    ```
 
 ---
 
@@ -663,6 +988,94 @@ graph TD
     *   Navigate away and back to the deferred feature. Verify that it now loads instantly, as the library is already in memory.
 5.  **Rollout**:
     *   Once the pattern is proven and tested on one feature, repeat the process for other identified non-critical features.
+
+### 3.3.5. Documentation Updates (`docs/README.md` & `NAVIGATION_ROUTING.md`)
+
+This optimization introduces a powerful new performance pattern. The documentation must be updated to make developers aware of it and guide them on its correct implementation.
+
+**1. Add a "Performance Recipe" to Main README:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `06 · Common Tasks & Development Recipes 🍳`.
+*   **Action:** Add a new row to the cookbook table for the task of optimizing startup time with deferred loading. This makes the pattern highly discoverable.
+*   **Content to Add:**
+
+| I need to... | Key Steps & Where to Look |
+| --- | --- |
+| ... | ... |
+| **...improve app startup time?** | 1. **Identify:** Choose non-critical features to lazy-load.<br/>2. **Implement:** Use `deferred as` to load the feature's code on-demand in the router.<br/>3. **Guide:** Follow the detailed instructions in the [Navigation & Routing](NAVIGATION_ROUTING.md) guide under "Deferred Loading". |
+| ... | ... |
+
+**2. Add "Deferred Loading" Section to the Navigation Guide:**
+
+*   **File:** `docs/NAVIGATION_ROUTING.md`
+*   **Action:** Add a new, detailed section to this guide explaining what deferred loading is, why it's important, and how to implement it with `go_router`.
+*   **Content to Add:**
+
+    ```markdown
+    ---
+    
+    ## Performance Optimization: Deferred Loading
+    
+    **Problem:** By default, all code for all application features is compiled and loaded into memory when the user starts the app. For large applications, this can significantly slow down the initial startup time.
+    
+    **Solution:** We use **deferred loading** (also known as lazy loading) to split our code into separate chunks. This allows us to load the code for certain features only when the user navigates to them for the first time. This technique is ideal for features that are not on the main screen, such as Settings or detailed analytics pages.
+    
+    ### How to Implement Deferred Loading with GoRouter
+    
+    We leverage Dart's `deferred as` syntax within our `app_router.dart` file.
+    
+    **Step 1: Change the Import to be Deferred**
+    
+    Identify the import for the page you want to lazy-load and change it from a regular import to a deferred one.
+    
+    -   **Before:**
+        ```dart
+        import 'package:finance/features/settings/presentation/pages/settings_page.dart';
+        ```
+    
+    -   **After:**
+        ```dart
+        import 'package:finance/features/settings/presentation/pages/settings_page.dart' deferred as settings_page;
+        ```
+    
+    **Step 2: Wrap the Route in a Loader Widget**
+    
+    Because the `settings` library now needs to be loaded asynchronously, you cannot directly instantiate the page. You must wrap it in a builder that can handle the loading process. A `FutureBuilder` is a good choice.
+    
+    -   **Before:**
+        ```dart
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsPage(),
+        )
+        ```
+    
+    -   **After:**
+        ```dart
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) {
+            return FutureBuilder<void>(
+              future: settings_page.loadLibrary(), // This triggers the load
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.done) {
+                  // When loaded, build the actual page
+                  return settings_page.SettingsPage();
+                } else {
+                  // While loading, show a spinner
+                  return const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  );
+                }
+              },
+            );
+          },
+        )
+        ```
+    
+    This pattern ensures a smooth user experience by showing a loading indicator while the required code is downloaded and loaded into memory. Subsequent visits to the route will be instant, as the library will already be loaded.
+    ```
 
 ---
 
@@ -739,6 +1152,87 @@ graph TD
     *   Run the app and verify it doesn't crash on startup.
     *   Trigger the conditions for sending custom metrics.
     *   Log into the monitoring tool's web dashboard and confirm that performance data and the custom metrics from your app are being received.
+
+### 4.1.5. Documentation Updates (`docs/README.md` & `UI_TESTING_AND_TROUBLESHOOTING.md`)
+
+The integration of remote performance monitoring is a critical step towards maintaining long-term application health. The documentation must be updated to reflect this new capability and guide the team on how to use it.
+
+**1. Add New Core Technology:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `03 · Core Technologies & Key Dependencies 🛠️`.
+*   **Action:** Add a new row to the table for the chosen monitoring library (e.g., `sentry_flutter`).
+*   **Content:**
+
+| Library | Role | Rationale |
+|---|---|---|
+| ... | ... | ... |
+| **`sentry_flutter`** | **Performance & Error Monitoring** | **Captures real-world performance data, custom metrics, and errors, enabling proactive issue detection and diagnostics.** |
+| ... | ... | ... |
+
+**2. Update Testing Philosophy:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `07 · Development Workflow & Testing 👨‍💻`, under the "Testing Philosophy" heading.
+*   **Action:** Add a bullet point for the new performance testing CI job to embed it into the team's standard practices.
+*   **Proposed Change:**
+    *   **Find this list:**
+        ```markdown
+        - **Unit Tests:** For business logic...
+        - **Widget Tests:** For individual widgets...
+        - **Integration Tests:** For critical, end-to-end user flows...
+        ```
+    *   **Add a new bullet point:**
+        ```markdown
+        - **Unit Tests:** For business logic...
+        - **Widget Tests:** For individual widgets...
+        - **Integration Tests:** For critical, end-to-end user flows...
+        - **Performance Tests:** Automated CI jobs run performance-critical integration tests in profile mode to establish and track performance baselines, preventing regressions.
+        ```
+
+**3. Add a "Performance Monitoring" Recipe:**
+
+*   **File:** `docs/README.md`
+*   **Location:** Section `06 · Common Tasks & Development Recipes 🍳`.
+*   **Action:** Add a new row to the cookbook table for the common task of checking application health.
+*   **Content to Add:**
+
+| I need to... | Key Steps & Where to Look |
+| --- | --- |
+| ... | ... |
+| **...check real-world app performance or errors?** | 1. **Dashboard:** Open the Sentry dashboard to view performance trends and crashes.<br/>2. **Custom Metrics:** Analyze the custom performance profiles sent from `AnimationPerformanceService`.<br/>3. **Guide:** See the `UI_TESTING_AND_TROUBLESHOOTING.md` guide for more details. |
+| ... | ... |
+
+**4. Add "Remote Performance Monitoring" Section to Troubleshooting Guide:**
+
+*   **File:** `docs/UI_TESTING_AND_TROUBLESHOOTING.md`
+*   **Action:** Add a new, detailed section to this guide explaining the "what" and "why" of our performance monitoring strategy.
+*   **Content to Add:**
+
+    ```markdown
+    ---
+    
+    ## Remote Performance Monitoring
+    
+    To ensure the application remains fast and reliable for real users on a wide variety of devices, we have integrated a remote performance and error monitoring service (Sentry). This service automatically captures crashes and allows us to proactively analyze the app's performance in the wild.
+    
+    ### What We Track
+    
+    Beyond standard metrics like screen load times, we send custom performance data to the monitoring service.
+    
+    -   **Source:** The `AnimationPerformanceService` continuously monitors the app's frame rate and UI responsiveness.
+    -   **Data:** Periodically, the service sends a detailed performance profile to the remote monitoring service. This profile includes metrics such as:
+        -   Average, worst, and best frame build times.
+        -   The number of janky frames detected.
+        -   The current `AnimationPerformanceMode` (e.g., `smooth`, `balanced`, `degraded`).
+    -   **Purpose:** This data allows us to identify device-specific performance issues, understand the real-world impact of complex animations, and validate the effectiveness of our adaptive performance system.
+    
+    ### How to Use It
+    
+    -   **Access:** Performance and crash data can be viewed on the project's Sentry dashboard (link should be available in the project's secure notes).
+    -   **Analysis:** When investigating a performance regression, check the dashboard for new trends in slow frames, an increase in janky frames, or a shift in the performance mode distribution across devices.
+    
+    ```
 
 ---
 

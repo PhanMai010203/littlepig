@@ -129,6 +129,7 @@ This project leverages a set of robust and well-supported libraries to ensure a 
 | **`get_it`** | Service Locator | A simple and fast service locator for dependency injection, decoupling components. |
 | **`freezed`** | Code Generation | Generates immutable data classes and unions, reducing boilerplate and improving type safety. |
 | **`dio`** | Networking | A powerful HTTP client for Dart, which supports interceptors, global configuration, etc. |
+| **`flutter_animate`** | **Animation** | **A performant, declarative library for composing complex animations. Replaces manual `AnimationController` logic for improved readability and maintainability.** |
 
 ---
 
