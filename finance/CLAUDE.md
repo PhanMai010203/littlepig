@@ -2,6 +2,32 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Prerequisites
+
+- **Flutter SDK:** Version 3.10.0 or higher
+- **Dart SDK:** Version 3.0.0 or higher  
+- **Android Studio/Xcode:** Latest stable versions
+- **Java:** Version 11 (for Android development)
+
+## Initial Setup
+
+### Google Services Configuration
+**Critical:** This app requires Google Drive integration for sync functionality.
+
+1. **Create Google Cloud Project:**
+   - Enable Google Drive API and Google Sign-In API
+   - Configure OAuth consent screen
+
+2. **Add Configuration Files:**
+   - Android: Place `google-services.json` in `android/app/`
+   - iOS: Add `GoogleService-Info.plist` to iOS project
+
+3. **Install Dependencies:**
+   ```bash
+   flutter pub get
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+
 ## Development Commands
 
 ### Code Generation

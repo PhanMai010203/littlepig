@@ -1,29 +1,3 @@
-Read file: lib/core/di/injection.dart
-
-Read file: lib/core/di/injection.dart
-
-Read file: lib/core/di/injection.config.dart
-
-Read file: lib/core/di/injection.config.dart
-
-Read file: lib/core/services/database_service.dart
-
-Read file: lib/features/budgets/presentation/bloc/budgets_event.dart
-
-Read file: lib/features/budgets/presentation/bloc/budgets_state.dart
-
-Read file: lib/features/budgets/presentation/bloc/budgets_state.dart
-
-Read file: lib/features/budgets/domain/entities/budget_history_entry.dart
-
-Read file: lib/features/budgets/presentation/bloc/budgets_bloc.dart
-
-Read file: lib/features/budgets/presentation/bloc/budgets_bloc.dart
-
-Here is a quick technical audit focused on the two areas you mentioned.  
-I split the feedback into “What’s wrong” and “How to fix” so you can move straight to the remedial work.
-
-────────────────────────────────────────
 1 .  Dependency-Injection (GetIt / Injectable)
 ────────────────────────────────────────
 
