@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
+import 'package:get_it/get_it.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
@@ -14,12 +15,8 @@ class TransactionRepositoryImpl
     with CacheableRepositoryMixin
     implements TransactionRepository {
   final AppDatabase _database;
-  BudgetUpdateService? _budgetUpdateService;
 
-  TransactionRepositoryImpl(
-    this._database, {
-    BudgetUpdateService? budgetUpdateService,
-  }) : _budgetUpdateService = budgetUpdateService;
+  TransactionRepositoryImpl(this._database);
 
   @override
   Future<List<Transaction>> getAllTransactions() async {
@@ -160,9 +157,10 @@ class TransactionRepositoryImpl
     // Invalidate cache after creating transaction
     await invalidateEntityCache('transaction');
 
-    // Trigger budget updates if service is available
-    if (_budgetUpdateService != null) {
-      await _budgetUpdateService!.updateBudgetOnTransactionChange(
+    // Trigger budget updates if service is registered to avoid circular DI
+    if (GetIt.I.isRegistered<BudgetUpdateService>()) {
+      final budgetUpdateService = GetIt.I<BudgetUpdateService>();
+      await budgetUpdateService.updateBudgetOnTransactionChange(
           createdTransaction, TransactionChangeType.created);
     }
 
@@ -212,9 +210,10 @@ class TransactionRepositoryImpl
     // Invalidate cache after updating transaction
     await invalidateEntityCache('transaction');
 
-    // Trigger budget updates if service is available
-    if (_budgetUpdateService != null) {
-      await _budgetUpdateService!.updateBudgetOnTransactionChange(
+    // Trigger budget updates if service is registered to avoid circular DI
+    if (GetIt.I.isRegistered<BudgetUpdateService>()) {
+      final budgetUpdateService = GetIt.I<BudgetUpdateService>();
+      await budgetUpdateService.updateBudgetOnTransactionChange(
           updatedTransaction, TransactionChangeType.updated);
     }
 
@@ -308,8 +307,9 @@ class TransactionRepositoryImpl
       await invalidateEntityCache('transaction');
 
       // Trigger budget updates for new sync transaction
-      if (_budgetUpdateService != null) {
-        await _budgetUpdateService!.updateBudgetOnTransactionChange(
+      if (GetIt.I.isRegistered<BudgetUpdateService>()) {
+        final budgetUpdateService = GetIt.I<BudgetUpdateService>();
+        await budgetUpdateService.updateBudgetOnTransactionChange(
             transaction, TransactionChangeType.created);
       }
     } else {
@@ -350,8 +350,9 @@ class TransactionRepositoryImpl
       await invalidateEntityCache('transaction');
 
       // Trigger budget updates for updated sync transaction
-      if (_budgetUpdateService != null) {
-        await _budgetUpdateService!.updateBudgetOnTransactionChange(
+      if (GetIt.I.isRegistered<BudgetUpdateService>()) {
+        final budgetUpdateService = GetIt.I<BudgetUpdateService>();
+        await budgetUpdateService.updateBudgetOnTransactionChange(
             transaction, TransactionChangeType.updated);
       }
     }
@@ -423,11 +424,6 @@ class TransactionRepositoryImpl
             row.read(_database.transactionsTable.amount.sum()) ?? 0.0,
           )),
     );
-  }
-
-  // ✅ PHASE 4: Method to set budget service after construction
-  void setBudgetUpdateService(BudgetUpdateService service) {
-    _budgetUpdateService = service;
   }
 
   // ✅ PHASE 4: Clean mapping without redundant sync fields

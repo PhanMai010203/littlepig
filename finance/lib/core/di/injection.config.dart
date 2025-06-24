@@ -99,11 +99,6 @@ extension GetItInjectableX on _i174.GetIt {
         _i771.ExchangeRateRemoteDataSourceImpl(httpClient: gh<_i519.Client>()));
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(
         () => _i222.CurrencyLocalDataSourceImpl());
-    gh.lazySingleton<_i421.TransactionRepository>(
-        () => _i443.TransactionRepositoryImpl(
-              gh<_i982.AppDatabase>(),
-              budgetUpdateService: gh<_i527.BudgetUpdateService>(),
-            ));
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
     gh.lazySingleton<_i1021.BudgetRepository>(
@@ -119,6 +114,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i201.SchemaCleanupMigration(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i266.CategoryRepository>(
         () => _i894.CategoryRepositoryImpl(gh<_i982.AppDatabase>()));
+    gh.lazySingleton<_i421.TransactionRepository>(
+        () => _i443.TransactionRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i1056.CurrencyRepository>(
         () => _i575.CurrencyRepositoryImpl(
               gh<_i222.CurrencyLocalDataSource>(),
