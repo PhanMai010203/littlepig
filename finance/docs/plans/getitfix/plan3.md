@@ -15,12 +15,12 @@ This document outlines the official, unified plan to refactor the application's 
 
 A thorough review confirms the critical issues stemming from our current DI setup:
 
-*   **Two Competing Systems:** `injection.dart` contains ~400 lines of manual registrations, while the generated `injection.config.dart` is sparse, handling only 3 BLoCs. This creates confusion and is error-prone.
-*   **Critical Missing Registrations:** Key components, most notably `BudgetsBloc` and `DatabaseService`, are absent from the generated configuration, leading to test failures and potential runtime crashes when not using the manual setup.
+*   **Two Competing Systems:** `injection.dart` contains ~400 lines of manual registrations, while the generated `injection.config.dart` is sparse, handling only a few BLoCs. This creates confusion and is error-prone.
+*   **Critical Missing Registrations:** Key components, most notably `BudgetsBloc` and several core services, are absent from the generated configuration, leading to test failures and potential runtime crashes when not using the manual setup.
 *   **High Maintenance Overhead:** The testing setup (`configureTestDependencies`) duplicates nearly all manual registrations, doubling the effort required to add or modify dependencies.
 *   **Dependency Count Mismatch:**
-    *   **Manual Registrations:** Over 35 services, repositories, and use cases.
-    *   **Generated Registrations:** Only 3 BLoCs.
+    *   **Manual Registrations:** Over 50 `registerSingleton` calls for services, repositories, and use cases across production and test setups.
+    *   **Generated Registrations:** Only 3 BLoCs (`TransactionsBloc`, `NavigationBloc`, `SettingsBloc`).
 
 ### 3. Guiding Principles
 
@@ -39,31 +39,30 @@ To ensure long-term success, this refactoring will adhere to the following princ
 
 The following files have been identified for modification.
 
-**Files Requiring `@injectable` Annotations (22 files):**
+**Files Requiring `@injectable` Annotations (~30 files):**
 ```
 lib/features/accounts/data/repositories/account_repository_impl.dart
-lib/features/budgets/data/repositories/budget_repository_impl.dart  
-lib/features/budgets/presentation/bloc/budgets_bloc.dart ⭐ CRITICAL
+lib/features/budgets/data/repositories/budget_repository_impl.dart
 lib/features/categories/data/repositories/category_repository_impl.dart
 lib/features/currencies/data/repositories/currency_repository_impl.dart
 lib/features/transactions/data/repositories/transaction_repository_impl.dart
 lib/features/transactions/data/repositories/attachment_repository_impl.dart
+lib/features/budgets/presentation/bloc/budgets_bloc.dart ⭐ CRITICAL
 lib/features/currencies/data/datasources/currency_local_data_source.dart
 lib/features/currencies/data/datasources/exchange_rate_local_data_source.dart
 lib/features/currencies/data/datasources/exchange_rate_remote_data_source.dart
-lib/features/currencies/domain/usecases/get_currencies.dart (and 5 other use cases)
+lib/features/currencies/domain/usecases/get_currencies.dart (and 6 other use cases in exchange_rate_operations.dart)
 lib/features/budgets/data/services/budget_filter_service_impl.dart
 lib/features/budgets/data/services/budget_update_service_impl.dart
 lib/features/budgets/data/services/budget_auth_service.dart
 lib/features/budgets/data/services/budget_csv_service.dart
 lib/services/currency_service.dart
-lib/services/finance_service.dart
 lib/core/services/file_picker_service.dart
 lib/core/sync/crdt_conflict_resolver.dart
 lib/core/database/migrations/schema_cleanup_migration.dart
 ```
 
-**Files Using `getIt<>` Calls to be Refactored (7+ files):**
+**Files Using `getIt<>` Calls to be Refactored (Over 15 call sites):**
 ```
 lib/services/finance_service.dart (6 calls)
 lib/demo/currency_demo.dart (1 call)
@@ -91,9 +90,9 @@ This project is broken down into five distinct, sequential phases to minimize ri
 
 | Task | Files | Complexity |
 |------|-------|------------|
-| 1.1 Add `@injectable` or `@LazySingleton` to all repository implementations | 7 repository files | ★★☆ |
+| 1.1 Add `@injectable` or `@LazySingleton` to all repository implementations | 6 repository files | ★★☆ |
 | 1.2 Add `@injectable` to all data source implementations | 3 datasource files | ★☆☆ |
-| 1.3 Add `@injectable` to all service implementations | 8 service files | ★★☆ |
+| 1.3 Add `@injectable` to all service implementations | ~10 service files | ★★☆ |
 | 1.4 **CRITICAL**: Add `@injectable` to `BudgetsBloc` | `budgets_bloc.dart` | ★★★ |
 | 1.5 Expand `RegisterModule` with async services and test environment alternates | `register_module.dart` | ★★★ |
 | 1.6 Run `build_runner` and resolve any initial generation errors | `injection.config.dart` | ★★☆ |
@@ -110,6 +109,8 @@ This project is broken down into five distinct, sequential phases to minimize ri
 | 2.3 Update `main.dart` to call the new wrapper without an environment (defaults to prod) | `main.dart` | ★★☆ |
 | 2.4 Create a test helper (`test/helpers/test_di.dart`) that calls the wrapper with `env: 'test'` | New file | ★★☆ |
 | 2.5 Update all test files to use the new test helper instead of `configureTestDependencies` | ~11 test files | ★★★ |
+
+**Note:** This phase should be merged atomically with Phase 1 to prevent a broken `main` branch.
 
 **Expected Outcome:** The application and all tests now run using the `injectable`-generated dependency graph. The old manual registration code is now dead code.
 
@@ -129,7 +130,7 @@ This project is broken down into five distinct, sequential phases to minimize ri
 
 | Task | Files | Complexity |
 |------|-------|------------|
-| 4.1 Create a `di_sanity_test.dart` to verify critical registrations | New test file | ★★☆ |
+| 4.1 Create a `di_sanity_test.dart` to verify critical registrations | `test/core/di/di_sanity_test.dart` | ★★☆ |
 | 4.2 Add a pre-commit hook or CI step that fails if `*.config.dart` is edited manually | Git hook / CI config | ★★★ |
 | 4.3 Ensure all tests still pass after the full refactor | Test suite | ★★☆ |
 
@@ -163,6 +164,7 @@ This project is broken down into five distinct, sequential phases to minimize ri
 | **`BudgetsBloc` not registered** | **HIGH** | Prioritized in Phase 1; guarded by sanity tests in Phase 4. |
 | **Circular Dependencies** | **MEDIUM** | Use `@lazy` annotation for one side of the dependency pair. Break cycles by introducing a third class if necessary. |
 | **Test Suite Breakage** | **MEDIUM** | Phased rollout ensures tests are run and fixed incrementally. A dedicated test DI helper minimizes per-test changes. |
+| **CI pipeline breakage** | **MEDIUM** | The new test helper (`test/helpers/test_di.dart`) must be created and all tests migrated in the same PR as the entry-point switch (Phase 2). This avoids an intermediate state where tests fail. |
 | **Async Initialization Failure** | **LOW** | Use `@preResolve` and ensure `main` is `async`. Guarded by app startup tests. |
 
 ### 10. Verification & Success Metrics
@@ -181,20 +183,41 @@ This project is broken down into five distinct, sequential phases to minimize ri
 ```dart
 @module
 abstract class RegisterModule {
-  // Existing: SharedPreferences, GoogleSignIn, etc.
-  
-  // Add new module providers for third-party or complex initializations.
+  // Provides a singleton instance of SharedPreferences.
+  // @preResolve tells injectable to await the Future before continuing.
   @preResolve
-  @LazySingleton
-  Future<DatabaseService> get databaseService async {
-    final service = DatabaseService();
-    await service.init(); // Assuming an async init method
-    return service;
-  }
+  @singleton
+  Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
+
+  // Provides a lazy singleton for GoogleSignIn.
+  @lazySingleton
+  GoogleSignIn get googleSignIn => GoogleSignIn(scopes: [
+        'https://www.googleapis.com/auth/drive.file',
+      ]);
   
+  // Provides the top-level AppDatabase instance from our service wrapper.
+  // This allows any class to inject the AppDatabase directly.
+  @lazySingleton
+  AppDatabase appDatabase(DatabaseService service) => service.database;
+
+  // Since DatabaseService itself has no dependencies, we can register it
+  // simply and let other providers depend on it.
+  @lazySingleton
+  DatabaseService get databaseService => DatabaseService();
+
+  // For the test environment, we provide an in-memory version of the DB service.
   @Environment('test')
   @LazySingleton(as: DatabaseService)
-  DatabaseService get testDatabaseService => InMemoryDatabaseService();
+  DatabaseService get testDatabaseService => DatabaseService.forTesting();
+
+  // Provides the main SyncService, ensuring it's initialized before use.
+  @preResolve
+  @LazySingleton(as: SyncService)
+  Future<SyncService> incrementalSyncService(AppDatabase db) async {
+    final service = IncrementalSyncService(db);
+    await service.initialize();
+    return service;
+  }
 }
 ```
 
