@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../services/database_service.dart';
+import '../database/app_database.dart';
+
 /// Injectable module for dependency registration
 /// This module handles the registration of core dependencies that require
 /// special initialization or are not easily handled by Injectable's
@@ -16,15 +19,15 @@ abstract class RegisterModule {
 
   /// Provides GoogleSignIn instance with required scopes
   @lazySingleton
-  GoogleSignIn googleSignIn() => GoogleSignIn(scopes: [
+  GoogleSignIn get googleSignIn => GoogleSignIn(scopes: [
         'https://www.googleapis.com/auth/drive.file',
       ]);
 
   /// Provides HTTP client for network operations
   @lazySingleton
-  http.Client httpClient() => http.Client();
+  http.Client get httpClient => http.Client();
 
-  // Note: DatabaseService and SyncService providers are temporarily disabled
-  // to resolve type conflicts during Phase 1. They will be handled in Phase 2.
-
+  /// Provides AppDatabase instance from DatabaseService
+  @lazySingleton
+  AppDatabase appDatabase(DatabaseService service) => service.database;
 }

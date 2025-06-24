@@ -1,6 +1,8 @@
 import 'package:drift/native.dart';
+import 'package:injectable/injectable.dart';
 import '../database/app_database.dart';
 
+@lazySingleton
 class DatabaseService {
   late final AppDatabase _database;
 
