@@ -186,12 +186,6 @@ Future<void> configureDependencies() async {
     ),
   );
 
-  // Update the TransactionRepository to include BudgetUpdateService
-  // This is a cleaner approach than unregister/re-register
-  final transactionRepo =
-      getIt<TransactionRepository>() as TransactionRepositoryImpl;
-  transactionRepo.setBudgetUpdateService(getIt<BudgetUpdateService>());
-
   // Register File Picker Service
   getIt.registerSingleton<FilePickerService>(
     FilePickerService(
@@ -364,12 +358,6 @@ Future<void> configureTestDependencies() async {
       getIt<BudgetAuthService>(),
     ),
   );
-
-  // Update the TransactionRepository to include BudgetUpdateService
-  // This is a cleaner approach than unregister/re-register
-  final transactionRepo =
-      getIt<TransactionRepository>() as TransactionRepositoryImpl;
-  transactionRepo.setBudgetUpdateService(getIt<BudgetUpdateService>());
 
   // Register File Picker Service
   getIt.registerSingleton<FilePickerService>(
