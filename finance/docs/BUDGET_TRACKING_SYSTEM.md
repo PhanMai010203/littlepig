@@ -1,30 +1,13 @@
-# Budget Tracking System – Usage Guide
+# Budget Tracking System – Frontend Development Guide
 
-## Overview
-The budget module lets you create, filter, and monitor budgets with advanced rules such as wallet or currency scopes, debt-credit exclusions, and real-time spent calculations.  
-This guide shows the most common APIs you will use from the **Domain** and **Data** layers after Phase 2 completion.
+## 1. Overview
+Welcome to the developer guide for the Budget Tracking System. This document provides a comprehensive overview of the architecture, state management, and key components of the budget feature, with a focus on frontend development.
 
----
-
-## 1.  Basic Setup
-```dart
-import 'package:finance/core/di/injection.dart';
-import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
-import 'package:finance/features/budgets/domain/services/budget_filter_service.dart';
-import 'package:finance/features/budgets/domain/services/budget_update_service.dart';
-
-final budgetRepository      = getIt<BudgetRepository>();
-final budgetFilterService   = getIt<BudgetFilterService>();
-final budgetUpdateService   = getIt<BudgetUpdateService>();
-```
-`BudgetRepository` handles CRUD operations; `BudgetFilterService` performs heavy-weight filtering & calculations;  
-`BudgetUpdateService` provides real-time streams that update automatically when transactions change.
+The budget module lets you create, filter, and monitor budgets with advanced rules such as wallet or currency scopes, debt-credit exclusions, and real-time spent calculations. It's built around the **BLoC (Business Logic Component)** pattern to ensure a clear separation of concerns and a reactive, predictable UI.
 
 ---
 
-## 2. Budget Types & Modes
-
-Before creating a budget, it's important to understand the two main types and two primary modes of operation.
+## 2. Core Concepts
 
 ### 2.1 Budget Types: Expense vs. Income
 
@@ -34,203 +17,231 @@ Before creating a budget, it's important to understand the two main types and tw
 ### 2.2 Budget Modes: Automatic vs. Manual
 
 -   **Automatic Mode (Wallet-Based):** This is the standard mode where the budget automatically tracks all transactions from specific wallets (`walletFks`). This is the most common use case.
--   **Manual Mode (No Wallets):** By **not** providing any `walletFks`, the budget enters "Manual Mode". In this mode, no transactions are tracked automatically. You must manually link individual transactions to the budget. This is useful for event-specific budgets (e.g., a "Vacation" budget) where you want to hand-pick expenses from multiple wallets.
+-   **Manual Mode (No Wallets):** By **not** providing any `walletFks`, the budget enters "Manual Mode". In this mode, no transactions are tracked automatically. You must manually link individual transactions to the budget. This is useful for event-specific budgets (e.g., a "Vacation" budget) where you want to hand-pick expenses from multiple wallets. The `budget.manualAddMode` getter can be used to check this in the UI.
 
 ---
 
-## 3.  Reading Budgets
-### 3.1 Get All Budgets
-```dart
-final budgets = await budgetRepository.getAllBudgets();
+## 3. BLoC State Management (for Frontend)
+
+The entire budget feature is orchestrated by the `BudgetsBloc`, which manages the state and business logic. Here's how the pieces fit together.
+
+### 3.1 State Flow Diagram
+```
+BudgetsInitial -> BudgetsLoading -> BudgetsLoaded (with real-time updates)
+                                -> BudgetsError
+
+BudgetDetailsLoading -> BudgetDetailsLoaded (with history & daily allowance)
+                    -> BudgetDetailsError
 ```
 
-### 3.2 Get Single Budget
+### 3.2 BudgetsState - UI State Representation
+These states represent all possible UI states in the budget feature. Each state contains the data needed to render the corresponding UI.
+
+#### `BudgetsInitial`
+The starting state before any budget data has been loaded.
+**UI Action:** Trigger `LoadAllBudgets` event.
+
+#### `BudgetsLoading`
+Indicates that budget data is currently being fetched.
+**UI Action:** Show a loading indicator (e.g., `CircularProgressIndicator`).
+
+#### `BudgetsError` / `BudgetDetailsError`
+Indicates an error occurred.
+**UI Action:** Display an error message and a "Retry" button.
+
+#### `BudgetsLoaded`
+This is the primary state for the budget list page. It contains all the data needed for the budget overview.
+-   `budgets`: `List<Budget>` - The list of all budgets.
+-   `realTimeSpentAmounts`: `Map<int, double>` - Live spending data for each budget.
+-   `dailySpendingAllowances`: `Map<int, double>` - Recommended daily spending to stay on track.
+-   `isRealTimeActive`: `bool` - Indicates if live updates are connected.
+-   `authenticatedBudgets`: `Map<int, bool>` - Tracks which budgets are unlocked via biometrics.
+-   `isExporting` & `exportStatus`: `bool`, `String?` - For showing export progress.
+
+**UI Example:**
 ```dart
-final budget = await budgetRepository.getBudgetById(budgetId);
+if (state is BudgetsLoaded) {
+  return ListView.builder(
+    itemCount: state.budgets.length,
+    itemBuilder: (context, index) {
+      final budget = state.budgets[index];
+      final spent = state.realTimeSpentAmounts[budget.id] ?? 0.0;
+      final dailyAllowance = state.dailySpendingAllowances[budget.id] ?? 0.0;
+      
+      return BudgetCard(
+        budget: budget,
+        spentAmount: spent,
+        dailyAllowance: dailyAllowance,
+        isManual: budget.manualAddMode,
+      );
+    },
+  );
+}
 ```
 
-### 3.3 Watch Real-Time Updates
+#### `BudgetDetailsLoading`
+Indicates that details for a single budget are being fetched.
+**UI Action:** Show a loading indicator on the details page.
+
+#### `BudgetDetailsLoaded`
+Contains detailed information for a single budget, including its history.
+-   `budget`: `Budget` - The specific budget being viewed.
+-   `history`: `List<BudgetHistoryEntry>` - Performance from past periods.
+-   `dailySpendingAllowance`: `double` - The daily spending allowance for the current period.
+
+**UI Example:**
 ```dart
-final sub = budgetUpdateService.watchAllBudgetUpdates().listen((budgets) {
-  // rebuild UI
-});
+if (state is BudgetDetailsLoaded) {
+  return DefaultTabController(
+    length: 3,
+    child: Scaffold(
+      appBar: AppBar(title: Text(state.budget.name)),
+      body: TabBarView(
+        children: [
+          BudgetOverviewTab(budget: state.budget, ...),
+          BudgetHistoryTab(history: state.history),
+          BudgetSettingsTab(budget: state.budget),
+        ],
+      ),
+    ),
+  );
+}
 ```
 
-> **Tip:** call `sub.cancel()` during `dispose()` to avoid memory leaks.
+#### Authentication States
+- `BudgetAuthenticationRequired`: UI should show a locked/blurred view and a button to trigger `AuthenticateForBudgetAccess`.
+- `BudgetAuthenticationSuccess`: UI can now show the sensitive budget details.
+- `BudgetAuthenticationFailed`: UI should show an error message.
 
----
+### 3.3 BudgetsEvent - User Actions
+These events represent user interactions and system triggers. Dispatch them to the `BudgetsBloc` to perform actions.
 
-## 4.  Creating Budgets
-### 4.1 Minimal Budget
+-   `LoadAllBudgets`: Fetches all budgets for the main list view. Call this in `initState` or on pull-to-refresh.
+-   `LoadBudgetDetails(budgetId)`: Fetches detailed data for a single budget. Call this when a user taps on a budget item.
+-   `CreateBudget(budget)`: Creates a new budget.
+-   `UpdateBudget(budget)`: Updates an existing budget.
+-   `DeleteBudget(budgetId)`: Deletes a budget.
+-   `StartRealTimeUpdates` / `StopRealTimeUpdates`: Handled automatically by the BLoC, but can be used to manage resources (e.g., in `dispose`).
+-   `AuthenticateForBudgetAccess(budgetId)`: Triggers biometric authentication.
+-   `RecalculateAllBudgets` / `RecalculateBudget(budgetId)`: Forces a manual recalculation of spent amounts. Useful for pull-to-refresh.
+-   `ExportBudgetData(budget)` / `ExportMultipleBudgets(budgets)`: Triggers a CSV export.
+
+**Example: Creating a Budget**
 ```dart
-final newBudget = Budget(
-  name:        'Groceries – May',
-  amount:      500,
-  spent:       0,
-  period:      BudgetPeriod.monthly,
-  categoryId:  15,
-  startDate:   DateTime(2024, 5, 1),
-  endDate:     DateTime(2024, 5, 31),
-  isActive:    true,
-  createdAt:   DateTime.now(),
-  updatedAt:   DateTime.now(),
-  syncId:      '',
+// Create an automatic budget (tracks all grocery spending from checking account)
+final automaticBudget = Budget(
+  name: 'Monthly Groceries',
+  amount: 400.0,
+  walletFks: ['checking-account-id'], // Makes it automatic
+  categoryId: groceryCategoryId,
+  excludeDebtCreditInstallments: true, // Exclude loan payments
+  period: BudgetPeriod.monthly,
+  // ... other fields
 );
-await budgetRepository.createBudget(newBudget);
-```
+context.read<BudgetsBloc>().add(CreateBudget(automaticBudget));
 
-### 4.2 Budget With Advanced Filters
-```dart
-final vacationBudget = Budget(
-  name:  'Vacation in Japan',
-  amount: 2000,
-  spent:  0,
+// Create a manual budget (user manually links vacation expenses)
+final manualBudget = Budget(
+  name: 'Vacation Fund',
+  amount: 2000.0,
+  walletFks: null, // Makes it manual - no automatic tracking
   period: BudgetPeriod.yearly,
-  startDate: DateTime(2024, 10, 1),
-  endDate:   DateTime(2024, 10, 20),
-  walletFks: ['2', '4'],
-  currencyFks: ['JPY'],
-  excludeDebtCreditInstallments: true,
-  excludeObjectiveInstallments: true,
-  normalizeToCurrency: 'USD',
-  isActive: true,
-  createdAt: DateTime.now(),
-  updatedAt: DateTime.now(),
-  syncId: '',
+  // ... other fields
 );
-await budgetRepository.createBudget(vacationBudget);
+context.read<BudgetsBloc>().add(CreateBudget(manualBudget));
 ```
+
+### 3.4 BudgetsBloc - Business Logic
+The `BudgetsBloc` is the central coordinator. Its key responsibilities include:
+-   Responding to UI events (`BudgetsEvent`).
+-   Interacting with repositories and services (`BudgetRepository`, `BudgetUpdateService`, `BudgetFilterService`).
+-   Emitting new states (`BudgetsState`) for the UI to consume.
+-   **Calculating Daily Spending Allowance:** Determines how much the user can spend per day to stay within the budget period limit. This value is provided in the `BudgetsLoaded` and `BudgetDetailsLoaded` states.
+-   **Managing Real-time Updates:** Subscribes to streams from `BudgetUpdateService` to provide live updates to spent amounts and budget data without requiring manual refreshes.
 
 ---
 
-## 5.  Calculations & Filtering
-### 5.1 Calculate Spent & Remaining
+## 4. Key Data Entities
+
+### 4.1 `Budget`
+The core entity representing a single budget.
+-   **Key Fields**: `id`, `name`, `amount`, `spent`, `period`, `startDate`, `endDate`.
+-   **Filtering**: `categoryId`, `walletFks`, `currencyFks`, `excludeDebtCreditInstallments`.
+-   **Mode**: `manualAddMode` (getter) returns `true` if `walletFks` is null/empty.
+-   **Computed Properties**: `remaining`, `percentageSpent`, `isOverBudget`.
+
+### 4.2 `BudgetHistoryEntry`
+Represents a single historical performance record for a budget in a past period. This is used for the "History" tab.
+-   **Key Fields**: `periodName`, `totalSpent`, `totalBudgeted`.
+-   **Computed Properties**: `difference`, `utilizationPercentage`, `isUnderBudget`, `isOverBudget`, `absoluteDifference`.
+
+**UI Example for History:**
 ```dart
-final spent      = await budgetFilterService.calculateBudgetSpent(vacationBudget);
-final remaining  = await budgetFilterService.calculateBudgetRemaining(vacationBudget);
-print('Spent: $spent  Remaining: $remaining');
+ListView.builder(
+  itemCount: historyEntries.length,
+  itemBuilder: (context, index) {
+    final entry = historyEntries[index];
+    final isOverBudget = entry.isOverBudget;
+    return ListTile(
+      title: Text(entry.periodName),
+      subtitle: Text('Spent: \$${entry.totalSpent.toStringAsFixed(2)}'),
+      trailing: Text(
+        isOverBudget 
+          ? 'Over by \$${entry.absoluteDifference.toStringAsFixed(2)}'
+          : 'Under by \$${entry.absoluteDifference.toStringAsFixed(2)}',
+        style: TextStyle(color: isOverBudget ? Colors.red : Colors.green),
+      ),
+    );
+  },
+)
 ```
 
-### 5.2 Get Filtered Transactions
-```dart
-final txns = await budgetFilterService.getFilteredTransactionsForBudget(
-  vacationBudget,
-  vacationBudget.startDate,
-  vacationBudget.endDate,
-);
-```
+### 4.3 `TransactionBudgetLink`
+An entity that links a `Transaction` to a `Budget`. This is primarily used for **manual mode** budgets to track which transactions have been hand-picked by the user.
+
+### 4.4 `BudgetPeriod` and Other Enums
+Located in `lib/features/budgets/domain/entities/budget_enums.dart`. These enums define fixed sets of values for budget properties.
+-   `BudgetPeriod`: `daily`, `weekly`, `monthly`, `yearly`.
+-   `BudgetTransactionFilter`: For advanced, low-level filtering.
+-   `BudgetShareType`: For shared/household budgets.
 
 ---
 
-## 6. Advanced Transaction Filtering
+## 5. Data Layer and Services (Brief)
 
-For highly specific scenarios, you can use the `budgetTransactionFilters` map to apply low-level filters. This gives you direct control over which transactions are included in the budget's calculation.
+The frontend primarily interacts with the `BudgetsBloc`. However, it's good to be aware of the underlying services.
 
--   **Enum Location**: `lib/features/budgets/domain/entities/budget_enums.dart`
-
-```dart
-import 'package:finance/features/budgets/domain/entities/budget_enums.dart';
-
-final filteredBudget = Budget(
-  // ... other properties
-  budgetTransactionFilters: {
-    'filterType': BudgetTransactionFilter.customFilter.index,
-    'includeTags': ['#business'],
-    'excludeTags': ['#personal-expense'],
-  }
-);
-```
-
-This feature is powerful but should be used with caution, as it can lead to complex and hard-to-debug budget behaviors.
+-   `BudgetRepository`: Handles basic CRUD operations for `Budget` entities.
+-   `BudgetFilterService`: Performs complex calculations like `calculateBudgetSpent` and fetching filtered transactions. This is used by the BLoC internally.
+-   `BudgetUpdateService`: Provides real-time streams (`watchAllBudgetUpdates`, `watchBudgetSpentAmounts`) that the BLoC subscribes to. This service is the magic behind the live updates.
+-   `BudgetCsvService`: Handles CSV import and export functionality.
 
 ---
 
-## 7. Shared Budgets
-The app supports a "Shared Budget" feature, where a primary budget can be linked to other budgets. This is useful for creating a master budget (e.g., "Total Household Expenses") that aggregates spending from several smaller, more specific budgets (e.g., "Groceries," "Utilities"). This system uses the `BudgetShareType` and `MemberExclusionType` enums to manage permissions and visibility.
+## 6. Outstanding TODOs
 
--   `sharedReferenceBudgetPk`: The `syncId` of the master budget you want to link to.
--   `budgetFksExclude`: A list of budget `syncId`s to explicitly exclude from the shared calculation, preventing double-counting.
-
-This feature is powerful but requires careful management of the relationships between budgets in your UI.
+-   **Implement Budget History Calculation**: The history data in `BudgetDetailsLoaded` is currently a placeholder. The logic needs to be implemented in `BudgetFilterService` to calculate past period performance for both automatic and manual budgets.
+    -   *Location:* `_onLoadBudgetDetails` in `budgets_bloc.dart`.
 
 ---
 
-## 8. Real-Time Streams
-After you inject `BudgetUpdateService`, every time a transaction is **created / updated / deleted** the service recomputes affected budgets and emits updated values.
+## 7. Quick BLoC Provider Example
+To use the `BudgetsBloc`, you'll provide it to the widget tree, typically at the page level.
+
 ```dart
-// Listen to spent-amount deltas only
-budgetUpdateService.watchBudgetSpentAmounts().listen((map) {
-  final spent = map[budgetId] ?? 0;
-});
-
-// Force a full recalculation (e.g. after bulk CSV import)
-await budgetUpdateService.recalculateAllBudgetSpentAmounts();
-// Or just one budget
-await budgetUpdateService.recalculateBudgetSpentAmount(budgetId);
-```
-
----
-
-## 9. CSV Import / Export
-The helper `BudgetCsvService` wraps the `csv` and `share_plus` packages.
-```dart
-import 'package:finance/features/budgets/data/services/budget_csv_service.dart';
-final csvService = BudgetCsvService();
-
-// Export single budget
-await csvService.exportBudgetToCSV(vacationBudget, 'vacation_budget.csv');
-
-// Export multiple budgets at once
-await csvService.exportBudgetsToCSV(budgets);
-```
-
-To **import** budgets back:
-```dart
-final imported = await csvService.importBudgetsFromCSV(filePath);
-for (final b in imported) {
-  await budgetRepository.createBudget(b);
-}
-```
-
----
-
-## 10. Biometric Protection (Optional)
-Enable biometric authentication before showing sensitive budget details:
-```dart
-final authOK = await budgetUpdateService.authenticateForBudgetAccess();
-if (!authOK) {
-  // show error / blur UI
-}
-```
-
----
-
-## 11. Common Gotchas
-1.  **Currency Normalisation** applies *after* filtering; make sure exchange-rate cache is fresh.
-2.  **Transfer Transactions** with same-currency are excluded by default until you set `includeTransferInOutWithSameCurrency = true`.
-3.  **Upcoming Transactions** are only included in calculations if you set `includeUpcomingTransactionFromBudget = true`.
-4.  **Spent Field** inside `Budget` is **read-only** – update it via `BudgetUpdateService` or let the system handle it.
-5.  **Objective Installments** are excluded only when you set `excludeObjectiveInstallments = true`.
-
----
-
-## 12. Quick BLoC Example
-```dart
-class BudgetOverviewBloc extends Bloc<BudgetsEvent, BudgetsState> {
-  BudgetOverviewBloc() : super(BudgetsInitial()) {
-    on<LoadAllBudgets>((_, emit) async {
-      final budgets = await budgetRepository.getAllBudgets();
-      emit(BudgetsLoaded(budgets: budgets));
-    });
+// In your budgets_page.dart
+class BudgetsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      // Create and provide the BudgetsBloc, and immediately trigger the event to load all budgets.
+      create: (context) => getIt<BudgetsBloc>()..add(LoadAllBudgets()),
+      child: Scaffold(
+        // ... build your UI using BlocBuilder/BlocListener
+      ),
+    );
   }
 }
 ```
-
----
-
-## 13. Further Reading
-• `lib/features/budgets/data/services/budget_filter_service_impl.dart` – full filtering logic.  
-• `docs/plan/TransactionsBudget/PHASE_2_IMPLEMENTATION_GUIDE.md` – detailed design doc.  
-• `test/features/budgets/budget_filter_service_test.dart` – sample unit tests.
 
 Enjoy budgeting! :moneybag: 

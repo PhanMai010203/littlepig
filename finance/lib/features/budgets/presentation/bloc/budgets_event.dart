@@ -8,8 +8,16 @@ abstract class BudgetsEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-// Existing events
 class LoadAllBudgets extends BudgetsEvent {}
+
+class LoadBudgetDetails extends BudgetsEvent {
+  final int budgetId;
+
+  const LoadBudgetDetails(this.budgetId);
+
+  @override
+  List<Object?> get props => [budgetId];
+}
 
 class CreateBudget extends BudgetsEvent {
   final Budget budget;
@@ -32,7 +40,6 @@ class DeleteBudget extends BudgetsEvent {
   List<Object?> get props => [budgetId];
 }
 
-// Real-time update events
 class StartRealTimeUpdates extends BudgetsEvent {}
 
 class StopRealTimeUpdates extends BudgetsEvent {}

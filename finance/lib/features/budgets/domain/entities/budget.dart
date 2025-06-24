@@ -16,25 +16,20 @@ class Budget extends Equatable {
   final DateTime updatedAt;
   final String syncId;
 
-  // Advanced filtering
   final bool excludeDebtCreditInstallments;
   final bool excludeObjectiveInstallments;
   final List<String>? walletFks;
   final List<String>? currencyFks;
 
-  // Shared budget support
   final String? sharedReferenceBudgetPk;
   final List<String>? budgetFksExclude;
 
-  // Currency & normalization
   final String? normalizeToCurrency;
   final bool isIncomeBudget;
 
-  // Transfer handling
   final bool includeTransferInOutWithSameCurrency;
   final bool includeUpcomingTransactionFromBudget;
 
-  // Metadata
   final DateTime? dateCreatedOriginal;
   final Map<String, dynamic>? budgetTransactionFilters;
 
@@ -52,7 +47,6 @@ class Budget extends Equatable {
     required this.updatedAt,
     required this.syncId,
 
-    // Advanced filtering parameters
     this.excludeDebtCreditInstallments = false,
     this.excludeObjectiveInstallments = false,
     this.walletFks,
@@ -81,7 +75,6 @@ class Budget extends Equatable {
     DateTime? updatedAt,
     String? syncId,
 
-    // Advanced filtering parameters
     bool? excludeDebtCreditInstallments,
     bool? excludeObjectiveInstallments,
     List<String>? walletFks,
@@ -109,7 +102,6 @@ class Budget extends Equatable {
       updatedAt: updatedAt ?? this.updatedAt,
       syncId: syncId ?? this.syncId,
 
-      // Advanced filtering assignments
       excludeDebtCreditInstallments:
           excludeDebtCreditInstallments ?? this.excludeDebtCreditInstallments,
       excludeObjectiveInstallments:
@@ -137,7 +129,6 @@ class Budget extends Equatable {
   double get percentageSpent => spent / amount;
   bool get isOverBudget => spent > amount;
 
-  /// Returns true if this is a manual-add budget (no wallet filters, requires explicit transaction links)
   bool get manualAddMode => walletFks == null;
 
   @override
@@ -155,7 +146,6 @@ class Budget extends Equatable {
         updatedAt,
         syncId,
 
-        // Advanced filtering props
         excludeDebtCreditInstallments,
         excludeObjectiveInstallments,
         walletFks,
