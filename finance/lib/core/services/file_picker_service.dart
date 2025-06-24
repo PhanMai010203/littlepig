@@ -2,12 +2,14 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../features/transactions/domain/entities/attachment.dart';
 import '../../features/transactions/domain/repositories/attachment_repository.dart';
 
 enum AttachmentSourceType { camera, gallery, file }
 
+@lazySingleton
 class FilePickerService {
   final ImagePicker _imagePicker = ImagePicker();
   final AttachmentRepository _attachmentRepository;

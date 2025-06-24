@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../domain/services/budget_update_service.dart';
 import '../../domain/services/budget_filter_service.dart';
@@ -8,6 +9,7 @@ import '../../domain/repositories/budget_repository.dart';
 import '../../../transactions/domain/entities/transaction.dart';
 import 'budget_auth_service.dart';
 
+@LazySingleton(as: BudgetUpdateService)
 class BudgetUpdateServiceImpl implements BudgetUpdateService {
   final BudgetRepository _budgetRepository;
   final BudgetFilterService _filterService;

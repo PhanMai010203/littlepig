@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:injectable/injectable.dart';
 import 'sync_event.dart';
 
 /// CRDT (Conflict-free Replicated Data Type) conflict resolver
 /// Implements intelligent conflict resolution using vector clocks and field-level merging
+@lazySingleton
 class CRDTConflictResolver {
   /// Resolve conflicts between multiple sync events for the same record
   Future<ConflictResolution> resolveCRDT(

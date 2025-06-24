@@ -1,5 +1,6 @@
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
@@ -8,6 +9,7 @@ import '../../domain/entities/transaction_enums.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../../budgets/domain/services/budget_update_service.dart';
 
+@LazySingleton(as: TransactionRepository)
 class TransactionRepositoryImpl
     with CacheableRepositoryMixin
     implements TransactionRepository {

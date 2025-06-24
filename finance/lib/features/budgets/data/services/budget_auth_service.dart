@@ -1,5 +1,7 @@
 import 'package:local_auth/local_auth.dart';
+import 'package:injectable/injectable.dart';
 
+@lazySingleton
 class BudgetAuthService {
   final LocalAuthentication _localAuth = LocalAuthentication();
 

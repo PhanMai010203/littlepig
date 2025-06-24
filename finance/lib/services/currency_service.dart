@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../features/currencies/domain/entities/currency.dart';
 import '../features/currencies/domain/entities/exchange_rate.dart';
 import '../features/currencies/domain/repositories/currency_repository.dart';
@@ -5,6 +6,7 @@ import '../features/accounts/domain/repositories/account_repository.dart';
 import '../shared/utils/currency_formatter.dart';
 
 /// High-level service for currency operations across the application
+@lazySingleton
 class CurrencyService {
   final CurrencyRepository _currencyRepository;
   final AccountRepository _accountRepository;

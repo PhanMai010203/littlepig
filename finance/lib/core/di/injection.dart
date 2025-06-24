@@ -52,7 +52,11 @@ import '../../features/budgets/data/services/budget_auth_service.dart';
 
 final getIt = GetIt.instance;
 
-@InjectableInit()
+@InjectableInit(
+  initializerName: 'init',
+  preferRelativeImports: true,
+  asExtension: true,
+)
 Future<void> configureDependencies() async {
   // Check if already initialized to prevent duplicate registration
   if (getIt.isRegistered<DatabaseService>()) {

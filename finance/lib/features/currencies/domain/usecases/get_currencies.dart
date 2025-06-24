@@ -1,7 +1,9 @@
+import 'package:injectable/injectable.dart';
 import '../entities/currency.dart';
 import '../repositories/currency_repository.dart';
 
 /// Use case for getting all currencies
+@lazySingleton
 class GetAllCurrencies {
   final CurrencyRepository _repository;
 
@@ -13,6 +15,7 @@ class GetAllCurrencies {
 }
 
 /// Use case for getting popular currencies
+@lazySingleton
 class GetPopularCurrencies {
   final CurrencyRepository _repository;
 
@@ -24,6 +27,7 @@ class GetPopularCurrencies {
 }
 
 /// Use case for searching currencies
+@lazySingleton
 class SearchCurrencies {
   final CurrencyRepository _repository;
 

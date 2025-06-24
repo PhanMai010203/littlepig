@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:injectable/injectable.dart';
 import '../../domain/entities/currency.dart';
 import '../../domain/entities/exchange_rate.dart';
 import '../../domain/repositories/currency_repository.dart';
@@ -20,6 +21,7 @@ class CacheStrategy {
       Duration(days: 30); // Absolute expiry
 }
 
+@LazySingleton(as: CurrencyRepository)
 class CurrencyRepositoryImpl
     with CacheableRepositoryMixin
     implements CurrencyRepository {

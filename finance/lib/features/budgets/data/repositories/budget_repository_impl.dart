@@ -5,8 +5,10 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'package:injectable/injectable.dart';
 import 'dart:convert';
 
+@LazySingleton(as: BudgetRepository)
 class BudgetRepositoryImpl
     with CacheableRepositoryMixin
     implements BudgetRepository {
