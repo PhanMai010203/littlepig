@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../services/database_service.dart';
 import '../database/app_database.dart';
+import '../sync/incremental_sync_service.dart';
+import '../sync/google_drive_sync_service.dart';
+import '../sync/sync_service.dart';
 
 /// Injectable module for dependency registration
 /// This module handles the registration of core dependencies that require
@@ -35,5 +38,26 @@ abstract class RegisterModule {
   @lazySingleton
   AppDatabase appDatabase(DatabaseService service) => service.database;
 
+  /// Provides IncrementalSyncService with async initialization
+  /// Uses @preResolve to handle the async initialize() call
+  @preResolve
+  Future<IncrementalSyncService> incrementalSyncService(AppDatabase database) async {
+    final service = IncrementalSyncService(database);
+    await service.initialize();
+    return service;
+  }
 
+  /// Provides GoogleDriveSyncService with async initialization
+  /// Uses @preResolve to handle the async initialize() call
+  @preResolve
+  Future<GoogleDriveSyncService> googleDriveSyncService(AppDatabase database) async {
+    final service = GoogleDriveSyncService(database);
+    await service.initialize();
+    return service;
+  }
+
+  /// Provides SyncService implementation
+  /// Uses IncrementalSyncService as the default implementation
+  @lazySingleton
+  SyncService syncService(IncrementalSyncService service) => service;
 }

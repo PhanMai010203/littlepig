@@ -18,8 +18,7 @@ class ExchangeRateRemoteDataSourceImpl implements ExchangeRateRemoteDataSource {
 
   final http.Client _httpClient;
 
-  ExchangeRateRemoteDataSourceImpl({http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
+  ExchangeRateRemoteDataSourceImpl(this._httpClient);
 
   @override
   Future<Map<String, ExchangeRateModel>> getExchangeRates() async {

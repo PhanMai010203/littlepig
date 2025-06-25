@@ -5,7 +5,6 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:drift/drift.dart';
-import 'package:injectable/injectable.dart';
 
 import 'sync_service.dart';
 import 'sync_event.dart';
@@ -15,7 +14,6 @@ import 'google_drive_sync_service.dart';
 
 /// Incremental sync service using event sourcing
 /// This implements Phase 3 of the sync upgrade - real-time event-driven sync
-@LazySingleton(as: SyncService)
 class IncrementalSyncService implements SyncService {
   static const List<String> _scopes = [
     'https://www.googleapis.com/auth/drive.file',
