@@ -1,4 +1,5 @@
-import '../core/di/injection.dart';
+import 'package:injectable/injectable.dart';
+
 import '../features/transactions/domain/repositories/transaction_repository.dart';
 import '../features/categories/domain/repositories/category_repository.dart';
 import '../features/accounts/domain/repositories/account_repository.dart';
@@ -8,22 +9,23 @@ import '../core/sync/sync_service.dart';
 import 'currency_service.dart';
 
 /// Example service demonstrating how to use the new repositories and sync system
+@injectable
 class FinanceService {
-  late final TransactionRepository _transactionRepository;
-  late final CategoryRepository _categoryRepository;
-  late final AccountRepository _accountRepository;
-  late final BudgetRepository _budgetRepository;
-  late final SyncService _syncService;
-  late final CurrencyService _currencyService;
+  final TransactionRepository _transactionRepository;
+  final CategoryRepository _categoryRepository;
+  final AccountRepository _accountRepository;
+  final BudgetRepository _budgetRepository;
+  final SyncService _syncService;
+  final CurrencyService _currencyService;
 
-  FinanceService() {
-    _transactionRepository = getIt<TransactionRepository>();
-    _categoryRepository = getIt<CategoryRepository>();
-    _accountRepository = getIt<AccountRepository>();
-    _budgetRepository = getIt<BudgetRepository>();
-    _syncService = getIt<SyncService>();
-    _currencyService = getIt<CurrencyService>();
-  }
+  FinanceService(
+    this._transactionRepository,
+    this._categoryRepository,
+    this._accountRepository,
+    this._budgetRepository,
+    this._syncService,
+    this._currencyService,
+  );
 
   /// Example: Get all expense categories
   Future<void> loadExpenseCategories() async {

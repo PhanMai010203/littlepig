@@ -30,20 +30,17 @@ import '../features/transactions/domain/repositories/transaction_repository.dart
 class DataSeeder {
   static const _uuid = Uuid();
 
-  late final AccountRepository _accountRepository;
-  late final CategoryRepository _categoryRepository;
-  late final TransactionRepository _transactionRepository;
-  late final BudgetRepository _budgetRepository;
+  final AccountRepository _accountRepository;
+  final CategoryRepository _categoryRepository;
+  final TransactionRepository _transactionRepository;
+  final BudgetRepository _budgetRepository;
 
-  DataSeeder._internal();
-
-  /// Private method to initialize repositories from GetIt
-  void _initializeRepositories() {
-    _accountRepository = getIt<AccountRepository>();
-    _categoryRepository = getIt<CategoryRepository>();
-    _transactionRepository = getIt<TransactionRepository>();
-    _budgetRepository = getIt<BudgetRepository>();
-  }
+  DataSeeder._internal(
+    this._accountRepository,
+    this._categoryRepository,
+    this._transactionRepository,
+    this._budgetRepository,
+  );
 
   /// Static method to seed all demo data
   /// This is the main entry point for debug data seeding
@@ -51,8 +48,12 @@ class DataSeeder {
     try {
       print('🌱 Initializing demo data seeder...');
 
-      final seeder = DataSeeder._internal();
-      seeder._initializeRepositories();
+      final seeder = DataSeeder._internal(
+        getIt<AccountRepository>(),
+        getIt<CategoryRepository>(),
+        getIt<TransactionRepository>(),
+        getIt<BudgetRepository>(),
+      );
 
       await seeder.seedAllData();
       await seeder.printDataSummary();
@@ -67,8 +68,12 @@ class DataSeeder {
     try {
       print('🧹 Clearing all demo data...');
 
-      final seeder = DataSeeder._internal();
-      seeder._initializeRepositories();
+      final seeder = DataSeeder._internal(
+        getIt<AccountRepository>(),
+        getIt<CategoryRepository>(),
+        getIt<TransactionRepository>(),
+        getIt<BudgetRepository>(),
+      );
 
       await seeder.clearAllData();
     } catch (e) {

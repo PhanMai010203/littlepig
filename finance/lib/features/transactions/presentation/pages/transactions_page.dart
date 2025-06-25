@@ -13,14 +13,28 @@ import '../widgets/transaction_summary.dart';
 import '../widgets/transaction_list.dart';
 
 class TransactionsPage extends StatelessWidget {
-  const TransactionsPage({super.key});
+  final TransactionsBloc? transactionsBloc;
+
+  const TransactionsPage({super.key, this.transactionsBloc});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) =>
-          getIt<TransactionsBloc>()..add(LoadTransactionsWithCategories()),
+          (transactionsBloc ?? getIt<TransactionsBloc>())..add(LoadTransactionsWithCategories()),
       child: const _TransactionsView(),
+    );
+  }
+}
+
+/// Provider widget that injects dependencies into TransactionsPage
+class TransactionsPageProvider extends StatelessWidget {
+  const TransactionsPageProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return TransactionsPage(
+      transactionsBloc: getIt<TransactionsBloc>(),
     );
   }
 }

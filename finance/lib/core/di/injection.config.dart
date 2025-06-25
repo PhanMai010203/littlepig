@@ -65,11 +65,13 @@ import '../../features/transactions/domain/repositories/transaction_repository.d
 import '../../features/transactions/presentation/bloc/transactions_bloc.dart'
     as _i439;
 import '../../services/currency_service.dart' as _i351;
+import '../../services/finance_service.dart' as _i19;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
 import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
 import '../sync/crdt_conflict_resolver.dart' as _i588;
+import '../sync/sync_service.dart' as _i520;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -151,6 +153,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i108.FilePickerService>(() => _i108.FilePickerService(
           gh<_i664.AttachmentRepository>(),
           gh<_i116.GoogleSignIn>(),
+        ));
+    gh.factory<_i19.FinanceService>(() => _i19.FinanceService(
+          gh<_i421.TransactionRepository>(),
+          gh<_i266.CategoryRepository>(),
+          gh<_i706.AccountRepository>(),
+          gh<_i1021.BudgetRepository>(),
+          gh<_i520.SyncService>(),
+          gh<_i351.CurrencyService>(),
         ));
     gh.lazySingleton<_i375.BudgetFilterService>(
         () => _i30.BudgetFilterServiceImpl(
