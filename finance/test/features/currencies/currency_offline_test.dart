@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
 import 'package:get_it/get_it.dart';
+import '../../helpers/test_di.dart';
 import 'package:finance/core/di/injection.dart';
 import 'package:finance/services/currency_service.dart';
 

@@ -67,6 +67,7 @@ import '../../features/transactions/presentation/bloc/transactions_bloc.dart'
 import '../../services/currency_service.dart' as _i351;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
+import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
 import '../sync/crdt_conflict_resolver.dart' as _i588;
 import 'register_module.dart' as _i291;
@@ -91,8 +92,9 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
     gh.lazySingleton<_i588.CRDTConflictResolver>(
         () => _i588.CRDTConflictResolver());
-    gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn());
-    gh.lazySingleton<_i519.Client>(() => registerModule.httpClient());
+    gh.lazySingleton<_i665.DatabaseService>(() => _i665.DatabaseService());
+    gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
+    gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i771.ExchangeRateRemoteDataSource>(() =>
@@ -101,15 +103,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i222.CurrencyLocalDataSourceImpl());
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
-    gh.lazySingleton<_i1021.BudgetRepository>(
-        () => _i654.BudgetRepositoryImpl(gh<_i982.AppDatabase>()));
-    gh.lazySingleton<_i706.AccountRepository>(
-        () => _i126.AccountRepositoryImpl(gh<_i982.AppDatabase>()));
-    gh.lazySingleton<_i664.AttachmentRepository>(
-        () => _i13.AttachmentRepositoryImpl(
-              gh<_i982.AppDatabase>(),
-              gh<_i116.GoogleSignIn>(),
-            ));
+    gh.lazySingleton<_i982.AppDatabase>(
+        () => registerModule.appDatabase(gh<_i665.DatabaseService>()));
     gh.lazySingleton<_i201.SchemaCleanupMigration>(
         () => _i201.SchemaCleanupMigration(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i266.CategoryRepository>(
@@ -122,14 +117,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i771.ExchangeRateRemoteDataSource>(),
               gh<_i349.ExchangeRateLocalDataSource>(),
             ));
-    gh.lazySingleton<_i351.CurrencyService>(() => _i351.CurrencyService(
-          gh<_i1056.CurrencyRepository>(),
-          gh<_i706.AccountRepository>(),
-        ));
-    gh.lazySingleton<_i108.FilePickerService>(() => _i108.FilePickerService(
-          gh<_i664.AttachmentRepository>(),
-          gh<_i116.GoogleSignIn>(),
-        ));
     gh.lazySingleton<_i126.GetAllCurrencies>(
         () => _i126.GetAllCurrencies(gh<_i1056.CurrencyRepository>()));
     gh.lazySingleton<_i126.GetPopularCurrencies>(
@@ -144,9 +131,26 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i116.SetCustomExchangeRate(gh<_i1056.CurrencyRepository>()));
     gh.lazySingleton<_i116.RefreshExchangeRates>(
         () => _i116.RefreshExchangeRates(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i1021.BudgetRepository>(
+        () => _i654.BudgetRepositoryImpl(gh<_i982.AppDatabase>()));
+    gh.lazySingleton<_i706.AccountRepository>(
+        () => _i126.AccountRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.factory<_i439.TransactionsBloc>(() => _i439.TransactionsBloc(
           gh<_i421.TransactionRepository>(),
           gh<_i266.CategoryRepository>(),
+        ));
+    gh.lazySingleton<_i664.AttachmentRepository>(
+        () => _i13.AttachmentRepositoryImpl(
+              gh<_i982.AppDatabase>(),
+              gh<_i116.GoogleSignIn>(),
+            ));
+    gh.lazySingleton<_i351.CurrencyService>(() => _i351.CurrencyService(
+          gh<_i1056.CurrencyRepository>(),
+          gh<_i706.AccountRepository>(),
+        ));
+    gh.lazySingleton<_i108.FilePickerService>(() => _i108.FilePickerService(
+          gh<_i664.AttachmentRepository>(),
+          gh<_i116.GoogleSignIn>(),
         ));
     gh.lazySingleton<_i375.BudgetFilterService>(
         () => _i30.BudgetFilterServiceImpl(
