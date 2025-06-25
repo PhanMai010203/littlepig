@@ -1,22 +1,22 @@
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
-import 'package:get_it/get_it.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
+import '../../../../core/events/transaction_event_publisher.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_enums.dart';
 import '../../domain/repositories/transaction_repository.dart';
-import '../../../budgets/domain/services/budget_update_service.dart';
 
 @LazySingleton(as: TransactionRepository)
 class TransactionRepositoryImpl
     with CacheableRepositoryMixin
     implements TransactionRepository {
   final AppDatabase _database;
+  final TransactionEventPublisher _eventPublisher;
 
-  TransactionRepositoryImpl(this._database);
+  TransactionRepositoryImpl(this._database, this._eventPublisher);
 
   @override
   Future<List<Transaction>> getAllTransactions() async {
@@ -157,12 +157,9 @@ class TransactionRepositoryImpl
     // Invalidate cache after creating transaction
     await invalidateEntityCache('transaction');
 
-    // Trigger budget updates if service is registered to avoid circular DI
-    if (GetIt.I.isRegistered<BudgetUpdateService>()) {
-      final budgetUpdateService = GetIt.I<BudgetUpdateService>();
-      await budgetUpdateService.updateBudgetOnTransactionChange(
-          createdTransaction, TransactionChangeType.created);
-    }
+    // Publish domain event for budget updates (decoupled from budget service)
+    _eventPublisher.publishTransactionChanged(
+        createdTransaction, TransactionChangeType.created);
 
     return createdTransaction;
   }
@@ -210,12 +207,9 @@ class TransactionRepositoryImpl
     // Invalidate cache after updating transaction
     await invalidateEntityCache('transaction');
 
-    // Trigger budget updates if service is registered to avoid circular DI
-    if (GetIt.I.isRegistered<BudgetUpdateService>()) {
-      final budgetUpdateService = GetIt.I<BudgetUpdateService>();
-      await budgetUpdateService.updateBudgetOnTransactionChange(
-          updatedTransaction, TransactionChangeType.updated);
-    }
+    // Publish domain event for budget updates (decoupled from budget service)
+    _eventPublisher.publishTransactionChanged(
+        updatedTransaction, TransactionChangeType.updated);
 
     return updatedTransaction;
   }
@@ -306,12 +300,9 @@ class TransactionRepositoryImpl
 
       await invalidateEntityCache('transaction');
 
-      // Trigger budget updates for new sync transaction
-      if (GetIt.I.isRegistered<BudgetUpdateService>()) {
-        final budgetUpdateService = GetIt.I<BudgetUpdateService>();
-        await budgetUpdateService.updateBudgetOnTransactionChange(
-            transaction, TransactionChangeType.created);
-      }
+      // Publish domain event for budget updates (decoupled from budget service)
+      _eventPublisher.publishTransactionChanged(
+          transaction, TransactionChangeType.created);
     } else {
       // ✅ PHASE 4: Always update with newer data from sync (no version comparison needed)
       final companion = TransactionsTableCompanion(
@@ -349,12 +340,9 @@ class TransactionRepositoryImpl
 
       await invalidateEntityCache('transaction');
 
-      // Trigger budget updates for updated sync transaction
-      if (GetIt.I.isRegistered<BudgetUpdateService>()) {
-        final budgetUpdateService = GetIt.I<BudgetUpdateService>();
-        await budgetUpdateService.updateBudgetOnTransactionChange(
-            transaction, TransactionChangeType.updated);
-      }
+      // Publish domain event for budget updates (decoupled from budget service)
+      _eventPublisher.publishTransactionChanged(
+          transaction, TransactionChangeType.updated);
     }
   }
 
@@ -587,6 +575,7 @@ class TransactionRepositoryImpl
 
   /// Helper method to get remaining amount for a loan transaction
   /// Returns the remaining amount to be collected/settled, or 0 if fully completed
+  @override
   double getRemainingAmount(Transaction loan) {
     if (!loan.isLoan) {
       return 0.0; // Not a loan transaction

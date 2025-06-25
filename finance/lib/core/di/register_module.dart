@@ -27,12 +27,13 @@ abstract class RegisterModule {
   @lazySingleton
   http.Client get httpClient => http.Client();
 
-  /// Provides DatabaseService instance for production
+  /// Provides DatabaseService instance
   @lazySingleton
   DatabaseService get databaseService => DatabaseService();
 
   /// Provides AppDatabase instance from DatabaseService
   @lazySingleton
   AppDatabase appDatabase(DatabaseService service) => service.database;
+
 
 }

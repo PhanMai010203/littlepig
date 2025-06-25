@@ -68,6 +68,7 @@ import '../../services/currency_service.dart' as _i351;
 import '../../services/finance_service.dart' as _i19;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
+import '../events/transaction_event_publisher.dart' as _i388;
 import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
 import '../sync/crdt_conflict_resolver.dart' as _i588;
@@ -95,6 +96,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
     gh.lazySingleton<_i588.CRDTConflictResolver>(
         () => _i588.CRDTConflictResolver());
+    gh.lazySingleton<_i388.TransactionEventPublisher>(
+        () => _i388.TransactionEventPublisher());
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
     gh.lazySingleton<_i665.DatabaseService>(
@@ -115,8 +118,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i201.SchemaCleanupMigration(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i266.CategoryRepository>(
         () => _i894.CategoryRepositoryImpl(gh<_i982.AppDatabase>()));
-    gh.lazySingleton<_i421.TransactionRepository>(
-        () => _i443.TransactionRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i1056.CurrencyRepository>(
         () => _i575.CurrencyRepositoryImpl(
               gh<_i222.CurrencyLocalDataSource>(),
@@ -141,14 +142,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i654.BudgetRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i706.AccountRepository>(
         () => _i126.AccountRepositoryImpl(gh<_i982.AppDatabase>()));
-    gh.factory<_i439.TransactionsBloc>(() => _i439.TransactionsBloc(
-          gh<_i421.TransactionRepository>(),
-          gh<_i266.CategoryRepository>(),
-        ));
     gh.lazySingleton<_i664.AttachmentRepository>(
         () => _i13.AttachmentRepositoryImpl(
               gh<_i982.AppDatabase>(),
               gh<_i116.GoogleSignIn>(),
+            ));
+    gh.lazySingleton<_i421.TransactionRepository>(
+        () => _i443.TransactionRepositoryImpl(
+              gh<_i982.AppDatabase>(),
+              gh<_i388.TransactionEventPublisher>(),
             ));
     gh.lazySingleton<_i351.CurrencyService>(() => _i351.CurrencyService(
           gh<_i1056.CurrencyRepository>(),
@@ -166,6 +168,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
         ));
+    gh.factory<_i439.TransactionsBloc>(() => _i439.TransactionsBloc(
+          gh<_i421.TransactionRepository>(),
+          gh<_i266.CategoryRepository>(),
+        ));
     gh.lazySingleton<_i375.BudgetFilterService>(
         () => _i30.BudgetFilterServiceImpl(
               gh<_i421.TransactionRepository>(),
@@ -179,6 +185,7 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i1021.BudgetRepository>(),
               gh<_i375.BudgetFilterService>(),
               gh<_i867.BudgetAuthService>(),
+              gh<_i388.TransactionEventPublisher>(),
             ));
     gh.factory<_i120.BudgetsBloc>(() => _i120.BudgetsBloc(
           gh<_i1021.BudgetRepository>(),

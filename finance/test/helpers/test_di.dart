@@ -1,6 +1,5 @@
 import 'package:drift/drift.dart';
 import 'package:finance/core/di/injection.dart';
-import 'package:finance/core/services/database_service.dart';
 
 /// Test helper for initializing dependencies with injectable system
 /// Uses environment-based DI and ensures test database isolation
@@ -12,13 +11,7 @@ Future<void> configureTestDependencies() async {
   await resetDependencies();
   
   // Initialize injectable dependencies with test environment
-  // This will use the @Environment('test') providers from RegisterModule
+  // The @Environment('test') providers in RegisterModule automatically provide
+  // the test database and other test-specific implementations
   await configureDependencies('test');
-  
-  // Additional test isolation: Replace DatabaseService with test version
-  // This ensures tests use in-memory database instead of production SQLite
-  if (getIt.isRegistered<DatabaseService>()) {
-    await getIt.unregister<DatabaseService>();
-    getIt.registerLazySingleton<DatabaseService>(() => DatabaseService.forTesting());
-  }
 }
