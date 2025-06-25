@@ -67,10 +67,6 @@ node_modules/
 *.sw?
 # OS specific
 
-# Task files
-# tasks.json
-# tasks/ 
-
 # Agents
 .windsurf/
 .roo/
@@ -78,3 +74,7 @@ node_modules/
 .taskmaster/
 .trae/
 .clinerules/
+
+# Task files
+# tasks.json
+# tasks/ 
