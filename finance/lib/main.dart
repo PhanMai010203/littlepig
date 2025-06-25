@@ -16,6 +16,11 @@ import 'features/accounts/domain/repositories/account_repository.dart';
 import 'features/categories/domain/repositories/category_repository.dart';
 import 'features/transactions/domain/repositories/transaction_repository.dart';
 import 'features/budgets/domain/repositories/budget_repository.dart';
+import 'features/currencies/domain/repositories/currency_repository.dart';
+import 'features/budgets/presentation/bloc/budgets_bloc.dart';
+import 'features/navigation/presentation/bloc/navigation_bloc.dart';
+import 'features/settings/presentation/bloc/settings_bloc.dart';
+import 'features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
@@ -33,6 +38,8 @@ void main() async {
   await configureDependencies();
 
   // Seed database in debug mode
+  // Note: Keeping getIt calls here as main.dart is an acceptable entry point for DI access
+  // This is the only place where service locator pattern is used outside of DI configuration
   if (kDebugMode) {
     try {
       final dataSeeder = DataSeeder(
@@ -81,7 +88,15 @@ void main() async {
           onAppResume: () async {
             await PlatformService.setHighRefreshRate();
           },
-          child: const MainAppProvider(),
+          child: MainAppProvider(
+            accountRepository: getIt<AccountRepository>(),
+            transactionRepository: getIt<TransactionRepository>(),
+            currencyRepository: getIt<CurrencyRepository>(),
+            navigationBloc: getIt<NavigationBloc>(),
+            settingsBloc: getIt<SettingsBloc>(),
+            transactionsBloc: getIt<TransactionsBloc>(),
+            budgetsBloc: getIt<BudgetsBloc>(),
+          ),
         ),
       ),
     ),

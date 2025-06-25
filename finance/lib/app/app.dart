@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 
-import '../core/di/injection.dart';
 import '../features/accounts/domain/repositories/account_repository.dart';
 import '../features/transactions/domain/repositories/transaction_repository.dart';
 import '../features/currencies/domain/repositories/currency_repository.dart';
@@ -14,20 +13,37 @@ import '../features/settings/presentation/bloc/settings_bloc.dart';
 import '../features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'router/app_router.dart';
 
-/// Main App Provider - Injects dependencies from DI container into MainApp
+/// Main App Provider - Receives dependencies via constructor and passes them to MainApp
 class MainAppProvider extends StatelessWidget {
-  const MainAppProvider({super.key});
+  final AccountRepository accountRepository;
+  final TransactionRepository transactionRepository;
+  final CurrencyRepository currencyRepository;
+  final NavigationBloc navigationBloc;
+  final SettingsBloc settingsBloc;
+  final TransactionsBloc transactionsBloc;
+  final BudgetsBloc budgetsBloc;
+
+  const MainAppProvider({
+    super.key,
+    required this.accountRepository,
+    required this.transactionRepository,
+    required this.currencyRepository,
+    required this.navigationBloc,
+    required this.settingsBloc,
+    required this.transactionsBloc,
+    required this.budgetsBloc,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MainApp(
-      accountRepository: getIt<AccountRepository>(),
-      transactionRepository: getIt<TransactionRepository>(),
-      currencyRepository: getIt<CurrencyRepository>(),
-      navigationBloc: getIt<NavigationBloc>(),
-      settingsBloc: getIt<SettingsBloc>(),
-      transactionsBloc: getIt<TransactionsBloc>(),
-      budgetsBloc: getIt<BudgetsBloc>(),
+      accountRepository: accountRepository,
+      transactionRepository: transactionRepository,
+      currencyRepository: currencyRepository,
+      navigationBloc: navigationBloc,
+      settingsBloc: settingsBloc,
+      transactionsBloc: transactionsBloc,
+      budgetsBloc: budgetsBloc,
     );
   }
 }
