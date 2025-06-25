@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../core/constants/default_categories.dart';
-import '../core/di/injection.dart';
 import '../features/accounts/domain/entities/account.dart';
 import '../features/accounts/domain/repositories/account_repository.dart';
 import '../features/budgets/domain/entities/budget.dart';
@@ -35,52 +34,12 @@ class DataSeeder {
   final TransactionRepository _transactionRepository;
   final BudgetRepository _budgetRepository;
 
-  DataSeeder._internal(
+  DataSeeder(
     this._accountRepository,
     this._categoryRepository,
     this._transactionRepository,
     this._budgetRepository,
   );
-
-  /// Static method to seed all demo data
-  /// This is the main entry point for debug data seeding
-  static Future<void> seedAll() async {
-    try {
-      print('🌱 Initializing demo data seeder...');
-
-      final seeder = DataSeeder._internal(
-        getIt<AccountRepository>(),
-        getIt<CategoryRepository>(),
-        getIt<TransactionRepository>(),
-        getIt<BudgetRepository>(),
-      );
-
-      await seeder.seedAllData();
-      await seeder.printDataSummary();
-    } catch (e) {
-      print('❌ Failed to seed demo data: $e');
-      rethrow;
-    }
-  }
-
-  /// Static method to clear all demo data
-  static Future<void> clearAll() async {
-    try {
-      print('🧹 Clearing all demo data...');
-
-      final seeder = DataSeeder._internal(
-        getIt<AccountRepository>(),
-        getIt<CategoryRepository>(),
-        getIt<TransactionRepository>(),
-        getIt<BudgetRepository>(),
-      );
-
-      await seeder.clearAllData();
-    } catch (e) {
-      print('❌ Failed to clear demo data: $e');
-      rethrow;
-    }
-  }
 
   /// Seeds all demo data in the correct order
   Future<void> seedAllData() async {
@@ -798,22 +757,16 @@ class DataSeeder {
     }
   }
 
-  /// Clears all demo data (useful for testing)
+  /// Clears all data from the repositories
   Future<void> clearAllData() async {
-    print('🧹 Clearing all demo data...');
-
-    try {
-      // Delete in reverse order to respect foreign key constraints
-      await _transactionRepository.deleteAllTransactions();
-      await _budgetRepository.deleteAllBudgets();
-      await _accountRepository.deleteAllAccounts();
-      await _categoryRepository.deleteAllCategories();
-
-      print('✅ All tables cleared successfully!');
-    } catch (e) {
-      print('❌ Failed to clear demo data: $e');
-      rethrow;
-    }
+    print('🧹 Clearing all data...');
+    // Implement clearing logic for each repository
+    // This is just an example, actual implementation might differ
+    await _transactionRepository.deleteAllTransactions();
+    await _budgetRepository.deleteAllBudgets();
+    await _accountRepository.deleteAllAccounts();
+    await _categoryRepository.deleteAllCategories();
+    print('✅ All data cleared successfully!');
   }
 
   /// Seeds additional partial loan payment examples

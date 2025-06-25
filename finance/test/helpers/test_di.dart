@@ -1,17 +1,18 @@
 import 'package:drift/drift.dart';
 import 'package:finance/core/di/injection.dart';
 
-/// Test helper for initializing dependencies with injectable system
-/// Uses environment-based DI and ensures test database isolation
+/// Initializes the dependency injection framework for a test environment.
+///
+/// This function ensures that all necessary services, repositories, and BLoCs
+/// are registered with GetIt using the 'test' environment configuration.
+/// It should be called in the `setUp` or `setUpAll` block of a test file.
+///
+/// It also includes a reset of GetIt before configuration to ensure that
+/// tests are hermetic and do not interfere with each other.
 Future<void> configureTestDependencies() async {
-  // Configure drift to suppress multiple database warnings in tests  
-  driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
-  
-  // Reset dependencies first to avoid conflicts
-  await resetDependencies();
-  
-  // Initialize injectable dependencies with test environment
-  // The @Environment('test') providers in RegisterModule automatically provide
-  // the test database and other test-specific implementations
+  // Reset GetIt to ensure a clean slate for each test or test suite
+  await getIt.reset();
+
+  // Configure dependencies for the 'test' environment
   await configureDependencies('test');
 }

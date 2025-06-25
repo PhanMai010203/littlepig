@@ -4,7 +4,6 @@ import 'package:easy_localization/easy_localization.dart';
 
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/app_text.dart';
-import '../../../../core/di/injection.dart';
 import '../bloc/transactions_bloc.dart';
 import '../bloc/transactions_event.dart';
 import '../bloc/transactions_state.dart';
@@ -13,31 +12,18 @@ import '../widgets/transaction_summary.dart';
 import '../widgets/transaction_list.dart';
 
 class TransactionsPage extends StatelessWidget {
-  final TransactionsBloc? transactionsBloc;
-
-  const TransactionsPage({super.key, this.transactionsBloc});
+  const TransactionsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          (transactionsBloc ?? getIt<TransactionsBloc>())..add(LoadTransactionsWithCategories()),
-      child: const _TransactionsView(),
-    );
+    // The BlocProvider is now in app.dart, so we just use the bloc.
+    // We initiate the first event load here.
+    context.read<TransactionsBloc>().add(LoadTransactionsWithCategories());
+    return const _TransactionsView();
   }
 }
 
-/// Provider widget that injects dependencies into TransactionsPage
-class TransactionsPageProvider extends StatelessWidget {
-  const TransactionsPageProvider({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return TransactionsPage(
-      transactionsBloc: getIt<TransactionsBloc>(),
-    );
-  }
-}
 
 class _TransactionsView extends StatelessWidget {
   const _TransactionsView();

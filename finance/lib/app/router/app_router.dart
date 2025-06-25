@@ -1,11 +1,15 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../../features/accounts/domain/repositories/account_repository.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
+import '../../features/currencies/domain/repositories/currency_repository.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/more/presentation/pages/more_page.dart';
 import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
@@ -27,7 +31,11 @@ class AppRouter {
             name: AppRoutes.home,
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
-              child: const HomePageProvider(),
+              child: HomePage(
+                accountRepository: context.read<AccountRepository>(),
+                transactionRepository: context.read<TransactionRepository>(),
+                currencyRepository: context.read<CurrencyRepository>(),
+              ),
               name: state.name,
               key: state.pageKey,
             ),
@@ -37,7 +45,7 @@ class AppRouter {
             name: AppRoutes.transactions,
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
-              child: const TransactionsPageProvider(),
+              child: const TransactionsPage(),
               name: state.name,
               key: state.pageKey,
             ),
@@ -47,7 +55,7 @@ class AppRouter {
             name: AppRoutes.budgets,
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
-              child: const BudgetsPageProvider(),
+              child: const BudgetsPage(),
               name: state.name,
               key: state.pageKey,
             ),

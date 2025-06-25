@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:finance/shared/widgets/page_template.dart';
-import 'package:finance/core/di/injection.dart';
 import 'package:finance/features/accounts/domain/repositories/account_repository.dart';
 import 'package:finance/features/accounts/domain/entities/account.dart';
 import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
@@ -233,16 +232,4 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 }
 
-/// Provider widget that injects dependencies into HomePage
-class HomePageProvider extends StatelessWidget {
-  const HomePageProvider({super.key});
 
-  @override
-  Widget build(BuildContext context) {
-    return HomePage(
-      accountRepository: getIt<AccountRepository>(),
-      transactionRepository: getIt<TransactionRepository>(),
-      currencyRepository: getIt<CurrencyRepository>(),
-    );
-  }
-}

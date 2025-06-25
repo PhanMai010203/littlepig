@@ -12,6 +12,10 @@ import 'core/theme/material_you.dart';
 import 'core/services/platform_service.dart';
 import 'shared/widgets/app_lifecycle_manager.dart';
 import 'demo/data_seeder.dart';
+import 'features/accounts/domain/repositories/account_repository.dart';
+import 'features/categories/domain/repositories/category_repository.dart';
+import 'features/transactions/domain/repositories/transaction_repository.dart';
+import 'features/budgets/domain/repositories/budget_repository.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
@@ -31,8 +35,14 @@ void main() async {
   // Seed database in debug mode
   if (kDebugMode) {
     try {
-      await DataSeeder.clearAll();
-      await DataSeeder.seedAll();
+      final dataSeeder = DataSeeder(
+        getIt<AccountRepository>(),
+        getIt<CategoryRepository>(),
+        getIt<TransactionRepository>(),
+        getIt<BudgetRepository>(),
+      );
+      await dataSeeder.clearAllData();
+      await dataSeeder.seedAllData();
     } catch (e) {
       debugPrint('Failed to seed demo data: $e');
     }
