@@ -1,6 +1,7 @@
 import 'dart:async';
 import '../entities/budget.dart';
 import '../../../transactions/domain/entities/transaction.dart';
+import '../../../../core/events/transaction_event_publisher.dart';
 
 abstract class BudgetUpdateService {
   Future<void> updateBudgetOnTransactionChange(
@@ -23,4 +24,3 @@ abstract class BudgetUpdateService {
   void dispose();
 }
 
-enum TransactionChangeType { created, updated, deleted }

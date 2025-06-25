@@ -7,6 +7,7 @@ import '../../domain/services/budget_filter_service.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/repositories/budget_repository.dart';
 import '../../../transactions/domain/entities/transaction.dart';
+import '../../../../core/events/transaction_event_publisher.dart';
 import 'budget_auth_service.dart';
 
 @LazySingleton(as: BudgetUpdateService)
@@ -14,6 +15,7 @@ class BudgetUpdateServiceImpl implements BudgetUpdateService {
   final BudgetRepository _budgetRepository;
   final BudgetFilterService _filterService;
   final BudgetAuthService _authService;
+  final TransactionEventPublisher _eventPublisher;
 
   // Real-time update streams
   final BehaviorSubject<List<Budget>> _budgetUpdatesController =
@@ -25,12 +27,17 @@ class BudgetUpdateServiceImpl implements BudgetUpdateService {
   final Map<String, DateTime> _operationStartTimes = {};
   final Map<String, int> _operationCounts = {};
 
+  // Event subscription
+  late StreamSubscription<TransactionChangedEvent> _eventSubscription;
+
   BudgetUpdateServiceImpl(
     this._budgetRepository,
     this._filterService,
     this._authService,
+    this._eventPublisher,
   ) {
     _initializeStreams();
+    _subscribeToTransactionEvents();
   }
 
   void _initializeStreams() async {
@@ -46,6 +53,13 @@ class BudgetUpdateServiceImpl implements BudgetUpdateService {
       }
     }
     _budgetSpentController.add(spentAmounts);
+  }
+
+  void _subscribeToTransactionEvents() {
+    _eventSubscription = _eventPublisher.events.listen((event) {
+      // Handle transaction events asynchronously to avoid blocking
+      updateBudgetOnTransactionChange(event.transaction, event.changeType);
+    });
   }
 
   @override
@@ -255,6 +269,7 @@ class BudgetUpdateServiceImpl implements BudgetUpdateService {
 
   @override
   void dispose() {
+    _eventSubscription.cancel();
     _budgetUpdatesController.close();
     _budgetSpentController.close();
   }
