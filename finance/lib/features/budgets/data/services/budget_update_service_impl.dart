@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:rxdart/rxdart.dart';
 import 'package:injectable/injectable.dart';
 
@@ -56,9 +57,17 @@ class BudgetUpdateServiceImpl implements BudgetUpdateService {
   }
 
   void _subscribeToTransactionEvents() {
-    _eventSubscription = _eventPublisher.events.listen((event) {
+    _eventSubscription = _eventPublisher.events.listen((event) async {
       // Handle transaction events asynchronously to avoid blocking
-      updateBudgetOnTransactionChange(event.transaction, event.changeType);
+      try {
+        await updateBudgetOnTransactionChange(event.transaction, event.changeType);
+      } catch (e, s) {
+        log(
+          'Error updating budget on transaction change',
+          error: e,
+          stackTrace: s,
+        );
+      }
     });
   }
 

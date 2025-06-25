@@ -32,7 +32,13 @@ abstract class RegisterModule {
 
   /// Provides DatabaseService instance
   @lazySingleton
+  @Environment(Environment.prod)
+  @Environment(Environment.dev)
   DatabaseService get databaseService => DatabaseService();
+
+  @lazySingleton
+  @Environment(Environment.test)
+  DatabaseService get testDatabaseService => DatabaseService.forTesting();
 
   /// Provides AppDatabase instance from DatabaseService
   @lazySingleton

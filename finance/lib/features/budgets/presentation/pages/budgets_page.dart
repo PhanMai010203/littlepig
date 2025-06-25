@@ -12,14 +12,23 @@ import '../bloc/budgets_state.dart';
 /// This widget serves as the entry point for the budget management UI.
 /// It uses a [BlocBuilder] to react to state changes, displaying a loading
 /// indicator, an error message, or the list of budgets.
-class BudgetsPage extends StatelessWidget {
+class BudgetsPage extends StatefulWidget {
   const BudgetsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<BudgetsPage> createState() => _BudgetsPageState();
+}
+
+class _BudgetsPageState extends State<BudgetsPage> {
+  @override
+  void initState() {
+    super.initState();
     // Initiate the first event load. The BlocProvider is now in app.dart.
     context.read<BudgetsBloc>().add(LoadAllBudgets());
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return PageTemplate(
       title: 'navigation.budgets'.tr(),
       actions: [

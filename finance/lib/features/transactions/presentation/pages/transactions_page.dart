@@ -11,19 +11,27 @@ import '../widgets/month_selector_wrapper.dart';
 import '../widgets/transaction_summary.dart';
 import '../widgets/transaction_list.dart';
 
-class TransactionsPage extends StatelessWidget {
+class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends State<TransactionsPage> {
+  @override
+  void initState() {
+    super.initState();
     // The BlocProvider is now in app.dart, so we just use the bloc.
     // We initiate the first event load here.
     context.read<TransactionsBloc>().add(LoadTransactionsWithCategories());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return const _TransactionsView();
   }
 }
-
-
 
 class _TransactionsView extends StatelessWidget {
   const _TransactionsView();
