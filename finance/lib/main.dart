@@ -71,7 +71,7 @@ void main() async {
           onAppResume: () async {
             await PlatformService.setHighRefreshRate();
           },
-          child: const MainApp(),
+          child: const MainAppProvider(),
         ),
       ),
     ),

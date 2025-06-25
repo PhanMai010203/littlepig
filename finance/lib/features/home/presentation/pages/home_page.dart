@@ -22,7 +22,16 @@ class AccountTileData {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final AccountRepository accountRepository;
+  final TransactionRepository transactionRepository;
+  final CurrencyRepository currencyRepository;
+
+  const HomePage({
+    super.key,
+    required this.accountRepository,
+    required this.transactionRepository,
+    required this.currencyRepository,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -67,12 +76,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /// Loads accounts and assembles AccountTileData
   Future<void> _loadAccounts() async {
     try {
-      final accountRepository = getIt<AccountRepository>();
-      final transactionRepository = getIt<TransactionRepository>();
-      final currencyRepository = getIt<CurrencyRepository>();
-
       // 1. Retrieve all accounts
-      final accounts = await accountRepository.getAllAccounts();
+      final accounts = await widget.accountRepository.getAllAccounts();
 
       // 2. For each account, get transaction count and formatted balance
       final List<AccountTileData> tiles = [];
@@ -80,12 +85,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       for (final account in accounts) {
         // Get transaction count for this account
         final transactions =
-            await transactionRepository.getTransactionsByAccount(account.id!);
+            await widget.transactionRepository.getTransactionsByAccount(account.id!);
         final transactionCount = transactions.length;
 
         // Format balance using AccountCurrencyExtension
         final formattedBalance = await account.formatBalance(
-          currencyRepository,
+          widget.currencyRepository,
           showSymbol: true,
           useCodeWithSymbol: true,
         );
@@ -224,6 +229,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Provider widget that injects dependencies into HomePage
+class HomePageProvider extends StatelessWidget {
+  const HomePageProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return HomePage(
+      accountRepository: getIt<AccountRepository>(),
+      transactionRepository: getIt<TransactionRepository>(),
+      currencyRepository: getIt<CurrencyRepository>(),
     );
   }
 }

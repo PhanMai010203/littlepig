@@ -5,14 +5,15 @@ import '../services/currency_service.dart';
 /// Demonstration script showing the currency system functionality
 /// This can be run as part of the main app to demonstrate real asset loading
 class CurrencyDemo {
-  static Future<void> runDemo() async {
+  static Future<void> runDemo([CurrencyService? currencyService]) async {
     print('=== Currency System Demo ===');
 
     try {
-      // Initialize dependencies
-      await configureDependencies();
-
-      final currencyService = getIt<CurrencyService>();
+      // Initialize dependencies if not provided
+      if (currencyService == null) {
+        await configureDependencies();
+        currencyService = getIt<CurrencyService>();
+      }
 
       print('\n1. Loading all currencies...');
       final allCurrencies = await currencyService.getAllCurrencies();

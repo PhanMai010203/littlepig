@@ -15,13 +15,15 @@ import '../bloc/budgets_state.dart';
 /// to react to state changes, displaying a loading indicator, an error message,
 /// or the list of budgets.
 class BudgetsPage extends StatelessWidget {
-  const BudgetsPage({super.key});
+  final BudgetsBloc? budgetsBloc;
+
+  const BudgetsPage({super.key, this.budgetsBloc});
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       // Create and provide the BudgetsBloc, and immediately trigger the event to load all budgets.
-      create: (context) => getIt<BudgetsBloc>()..add(LoadAllBudgets()),
+      create: (context) => (budgetsBloc ?? getIt<BudgetsBloc>())..add(LoadAllBudgets()),
       child: PageTemplate(
         title: 'navigation.budgets'.tr(),
         actions: [
@@ -93,6 +95,18 @@ class BudgetsPage extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Provider widget that injects dependencies into BudgetsPage
+class BudgetsPageProvider extends StatelessWidget {
+  const BudgetsPageProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BudgetsPage(
+      budgetsBloc: getIt<BudgetsBloc>(),
     );
   }
 }

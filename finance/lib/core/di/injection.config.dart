@@ -65,11 +65,14 @@ import '../../features/transactions/domain/repositories/transaction_repository.d
 import '../../features/transactions/presentation/bloc/transactions_bloc.dart'
     as _i439;
 import '../../services/currency_service.dart' as _i351;
+import '../../services/finance_service.dart' as _i19;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
 import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
 import '../sync/crdt_conflict_resolver.dart' as _i588;
+import '../sync/incremental_sync_service.dart' as _i767;
+import '../sync/sync_service.dart' as _i520;
 import 'register_module.dart' as _i291;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -92,9 +95,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
     gh.lazySingleton<_i588.CRDTConflictResolver>(
         () => _i588.CRDTConflictResolver());
-    gh.lazySingleton<_i665.DatabaseService>(() => _i665.DatabaseService());
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
+    gh.lazySingleton<_i665.DatabaseService>(
+        () => registerModule.databaseService);
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i771.ExchangeRateRemoteDataSource>(() =>
@@ -105,6 +109,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i349.ExchangeRateLocalDataSourceImpl());
     gh.lazySingleton<_i982.AppDatabase>(
         () => registerModule.appDatabase(gh<_i665.DatabaseService>()));
+    gh.lazySingleton<_i520.SyncService>(
+        () => _i767.IncrementalSyncService(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i201.SchemaCleanupMigration>(
         () => _i201.SchemaCleanupMigration(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i266.CategoryRepository>(
@@ -151,6 +157,14 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i108.FilePickerService>(() => _i108.FilePickerService(
           gh<_i664.AttachmentRepository>(),
           gh<_i116.GoogleSignIn>(),
+        ));
+    gh.factory<_i19.FinanceService>(() => _i19.FinanceService(
+          gh<_i421.TransactionRepository>(),
+          gh<_i266.CategoryRepository>(),
+          gh<_i706.AccountRepository>(),
+          gh<_i1021.BudgetRepository>(),
+          gh<_i520.SyncService>(),
+          gh<_i351.CurrencyService>(),
         ));
     gh.lazySingleton<_i375.BudgetFilterService>(
         () => _i30.BudgetFilterServiceImpl(

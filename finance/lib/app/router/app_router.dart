@@ -27,7 +27,7 @@ class AppRouter {
             name: AppRoutes.home,
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
-              child: const HomePage(),
+              child: const HomePageProvider(),
               name: state.name,
               key: state.pageKey,
             ),
@@ -37,7 +37,7 @@ class AppRouter {
             name: AppRoutes.transactions,
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
-              child: const TransactionsPage(),
+              child: const TransactionsPageProvider(),
               name: state.name,
               key: state.pageKey,
             ),
@@ -47,7 +47,7 @@ class AppRouter {
             name: AppRoutes.budgets,
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
-              child: const BudgetsPage(),
+              child: const BudgetsPageProvider(),
               name: state.name,
               key: state.pageKey,
             ),

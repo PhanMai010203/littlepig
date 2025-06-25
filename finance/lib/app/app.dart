@@ -10,7 +10,10 @@ import '../features/settings/presentation/bloc/settings_bloc.dart';
 import 'router/app_router.dart';
 
 class MainApp extends StatefulWidget {
-  const MainApp({super.key});
+  final NavigationBloc? navigationBloc;
+  final SettingsBloc? settingsBloc;
+
+  const MainApp({super.key, this.navigationBloc, this.settingsBloc});
 
   @override
   State<MainApp> createState() => _MainAppState();
@@ -34,11 +37,11 @@ class _MainAppState extends State<MainApp> {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) => getIt<NavigationBloc>(),
+          create: (context) => widget.navigationBloc ?? getIt<NavigationBloc>(),
         ),
         BlocProvider(
           create: (context) =>
-              getIt<SettingsBloc>()..add(const SettingsEvent.loadSettings()),
+              (widget.settingsBloc ?? getIt<SettingsBloc>())..add(const SettingsEvent.loadSettings()),
         ),
       ],
       child: BlocBuilder<SettingsBloc, SettingsState>(
@@ -56,6 +59,19 @@ class _MainAppState extends State<MainApp> {
           );
         },
       ),
+    );
+  }
+}
+
+/// Provider widget that injects dependencies into MainApp
+class MainAppProvider extends StatelessWidget {
+  const MainAppProvider({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MainApp(
+      navigationBloc: getIt<NavigationBloc>(),
+      settingsBloc: getIt<SettingsBloc>(),
     );
   }
 }
