@@ -84,6 +84,9 @@ class _MainAppState extends State<MainApp> {
         // This will rebuild the app with new theme settings
       });
     });
+
+    // Dispatch initial load settings event once when the widget is inserted into the tree
+    widget.settingsBloc.add(const SettingsEvent.loadSettings());
   }
 
   @override
@@ -106,7 +109,7 @@ class _MainAppState extends State<MainApp> {
             value: widget.navigationBloc,
           ),
           BlocProvider.value(
-            value: widget.settingsBloc..add(const SettingsEvent.loadSettings()),
+            value: widget.settingsBloc,
           ),
           BlocProvider.value(
             value: widget.transactionsBloc,
