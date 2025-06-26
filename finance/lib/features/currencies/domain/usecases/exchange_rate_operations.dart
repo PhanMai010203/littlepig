@@ -1,7 +1,9 @@
+import 'package:injectable/injectable.dart';
 import '../entities/exchange_rate.dart';
 import '../repositories/currency_repository.dart';
 
 /// Use case for converting currency amounts
+@lazySingleton
 class ConvertCurrency {
   final CurrencyRepository _repository;
 
@@ -26,6 +28,7 @@ class ConvertCurrency {
 }
 
 /// Use case for getting exchange rates
+@lazySingleton
 class GetExchangeRates {
   final CurrencyRepository _repository;
 
@@ -37,6 +40,7 @@ class GetExchangeRates {
 }
 
 /// Use case for setting custom exchange rate
+@lazySingleton
 class SetCustomExchangeRate {
   final CurrencyRepository _repository;
 
@@ -56,6 +60,7 @@ class SetCustomExchangeRate {
 }
 
 /// Use case for refreshing exchange rates
+@lazySingleton
 class RefreshExchangeRates {
   final CurrencyRepository _repository;
 

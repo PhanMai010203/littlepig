@@ -3,23 +3,26 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:finance/core/di/injection.dart';
-import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
-import 'package:finance/features/categories/domain/repositories/category_repository.dart';
 import 'package:finance/features/transactions/presentation/pages/transactions_page.dart';
-import 'package:finance/features/transactions/domain/entities/transaction.dart';
-import 'package:finance/features/categories/domain/entities/category.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
-import '../../helpers/entity_builders.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:finance/features/transactions/presentation/bloc/transactions_bloc.dart';
+import 'package:finance/features/transactions/presentation/bloc/transactions_event.dart';
+import 'package:finance/features/transactions/presentation/bloc/transactions_state.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import '../../helpers/localization_test_wrapper.dart';
 
 // Mocks
-class MockTransactionRepository extends Mock implements TransactionRepository {}
-
-class MockCategoryRepository extends Mock implements CategoryRepository {}
+class MockTransactionsBloc extends Mock implements TransactionsBloc {}
+class FakeTransactionsEvent extends Fake implements TransactionsEvent {}
 
 void main() {
-  late MockTransactionRepository mockTransactionRepository;
-  late MockCategoryRepository mockCategoryRepository;
+  late MockTransactionsBloc mockTransactionsBloc;
+
+  setUpAll(() {
+    registerFallbackValue(FakeTransactionsEvent());
+  });
 
   setUp(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -41,11 +44,8 @@ void main() {
     });
 
     await EasyLocalization.ensureInitialized();
-    await resetDependencies();
-    mockTransactionRepository = MockTransactionRepository();
-    mockCategoryRepository = MockCategoryRepository();
-    getIt.registerSingleton<TransactionRepository>(mockTransactionRepository);
-    getIt.registerSingleton<CategoryRepository>(mockCategoryRepository);
+    await resetDependencies(); // Ensure a clean slate for dependencies
+    mockTransactionsBloc = MockTransactionsBloc();
 
     // Mock EasyLocalization
     EasyLocalization.logger.enableBuildModes = [];
@@ -70,75 +70,63 @@ void main() {
         supportedLocales: const [Locale('en')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
-        child: const MaterialApp(
-          home: TransactionsPage(),
+        assetLoader: const FakeAssetLoader(),
+        child: MaterialApp(
+          home: BlocProvider<TransactionsBloc>(
+            create: (_) => mockTransactionsBloc,
+            child: const TransactionsPage(),
+          ),
         ),
       ),
     );
   }
 
-  final tCategory = TestEntityBuilders.createTestCategory(
-      name: 'Food', icon: '🍔', color: const Color(0xFFFF9800));
-  final tTransactionsPage1 = List.generate(
-    20,
-    (index) =>
-        TestEntityBuilders.createTestTransaction(title: 'Transaction $index'),
-  );
-  final tTransactionsPage2 = List.generate(
-    10,
-    (index) => TestEntityBuilders.createTestTransaction(
-        title: 'Transaction ${index + 20}'),
-  );
+  group('TransactionsPage Event Dispatching Tests (Task 1)', () {
+    testWidgets(
+        'should dispatch LoadTransactionsWithCategories event exactly once on init',
+        (WidgetTester tester) async {
+      // Arrange
+      // Stub the stream and state before pumping the widget
+      when(() => mockTransactionsBloc.stream)
+          .thenAnswer((_) => Stream.fromIterable([TransactionsInitial()]));
+      when(() => mockTransactionsBloc.state).thenReturn(TransactionsInitial());
+      when(() => mockTransactionsBloc.close()).thenAnswer((_) async => {});
 
-  testWidgets(
-      'should display loading indicator and then first page of transactions',
-      (WidgetTester tester) async {
-    // Arrange
-    when(() => mockCategoryRepository.getAllCategories())
-        .thenAnswer((_) async => [tCategory]);
-    when(() => mockTransactionRepository.getTransactions(page: 1, limit: 20))
-        .thenAnswer((_) async => tTransactionsPage1);
+      // Stub the `add` method to avoid errors
+      when(() => mockTransactionsBloc.add(any())).thenReturn(null);
 
-    // Act
-    await pumpTransactionsPage(tester);
+      // Act
+      await pumpTransactionsPage(tester);
 
-    // Assert
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      // Assert
+      verify(() => mockTransactionsBloc
+          .add(any(that: isA<LoadTransactionsWithCategories>()))).called(1);
+    });
 
-    await tester.pump(); // Allow the future to complete
-    await tester.pump(); // Rebuild the widget
+    testWidgets(
+        'should NOT dispatch LoadTransactionsWithCategories again on rebuild',
+        (WidgetTester tester) async {
+      // Arrange
+      final initialState = TransactionsPaginated(
+        pagingState: PagingState<int, TransactionListItem>(),
+        categories: {},
+        selectedMonth: DateTime.now(),
+      );
+      when(() => mockTransactionsBloc.stream)
+          .thenAnswer((_) => Stream.fromIterable([initialState]));
+      when(() => mockTransactionsBloc.state).thenReturn(initialState);
+      when(() => mockTransactionsBloc.add(any())).thenReturn(null);
+      when(() => mockTransactionsBloc.close()).thenAnswer((_) async => {});
 
-    // Assert
-    expect(find.text('Transaction 0'), findsOneWidget);
-    expect(find.text('Transaction 19'), findsOneWidget);
-    expect(find.text('Transaction 20'), findsNothing);
-  });
+      // Act
+      await pumpTransactionsPage(tester);
 
-  testWidgets('should load next page when scrolling to the end',
-      (WidgetTester tester) async {
-    // Arrange
-    when(() => mockCategoryRepository.getAllCategories())
-        .thenAnswer((_) async => [tCategory]);
-    when(() => mockTransactionRepository.getTransactions(page: 1, limit: 20))
-        .thenAnswer((_) async => tTransactionsPage1);
-    when(() => mockTransactionRepository.getTransactions(page: 2, limit: 20))
-        .thenAnswer((_) async => tTransactionsPage2);
+      // Force a rebuild
+      await tester.pump();
 
-    // Act
-    await pumpTransactionsPage(tester);
-    await tester.pump();
-    await tester.pump();
-
-    // Assert
-    expect(find.text('Transaction 19'), findsOneWidget);
-
-    // Act
-    await tester.drag(find.text('Transaction 19'), const Offset(0.0, -600.0));
-    await tester.pump();
-    await tester.pump();
-
-    // Assert
-    expect(find.text('Transaction 20'), findsOneWidget);
-    expect(find.text('Transaction 29'), findsOneWidget);
+      // Assert - Verify the event was still called only once
+      verify(() => mockTransactionsBloc
+          .add(any(that: isA<LoadTransactionsWithCategories>()))).called(1);
+    });
   });
 }

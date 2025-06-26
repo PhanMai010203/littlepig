@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../domain/entities/budget_history_entry.dart';
 import '../../domain/repositories/budget_repository.dart';
@@ -9,6 +10,7 @@ import '../../domain/entities/budget.dart';
 import 'budgets_event.dart';
 import 'budgets_state.dart';
 
+@injectable
 class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
   final BudgetRepository _budgetRepository;
   final BudgetUpdateService _budgetUpdateService;

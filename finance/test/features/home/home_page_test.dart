@@ -11,16 +11,20 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AccountCard(
-              title: 'Test Account',
-              amount: '\$1,000.00',
-              transactions: '5 transactions',
-              color: Colors.blue,
-              isSelected: false,
-              index: 2,
-              onSelected: (index) {
-                selectedIndex = index;
-              },
+            body: TickerMode(
+              enabled: false,
+              child: AccountCard(
+                title: 'Test Account',
+                amount: '\$1,000.00',
+                transactions: '5 transactions',
+                color: Colors.blue,
+                isSelected: false,
+                index: 2,
+                onSelected: (index) {
+                  selectedIndex = index;
+                },
+                enableMarquee: false,
+              ),
             ),
           ),
         ),
@@ -37,14 +41,18 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AccountCard(
-              title: 'Selected Account',
-              amount: '\$1,000.00',
-              transactions: '5 transactions',
-              color: Colors.blue,
-              isSelected: true,
-              index: 0,
-              onSelected: (index) {},
+            body: TickerMode(
+              enabled: false,
+              child: AccountCard(
+                title: 'Selected Account',
+                amount: '\$1,000.00',
+                transactions: '5 transactions',
+                color: Colors.blue,
+                isSelected: true,
+                index: 0,
+                onSelected: (index) {},
+                enableMarquee: false,
+              ),
             ),
           ),
         ),
@@ -64,14 +72,18 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AccountCard(
-              title: 'My Savings Account',
-              amount: '\$5,000.00',
-              transactions: '25 transactions',
-              color: Colors.green,
-              isSelected: false,
-              index: 1,
-              onSelected: (index) {},
+            body: TickerMode(
+              enabled: false,
+              child: AccountCard(
+                title: 'My Savings Account',
+                amount: '\$5,000.00',
+                transactions: '25 transactions',
+                color: Colors.green,
+                isSelected: false,
+                index: 1,
+                onSelected: (index) {},
+                enableMarquee: false,
+              ),
             ),
           ),
         ),
@@ -87,14 +99,18 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: AccountCard(
-              title: 'Unselected Account',
-              amount: '\$2,000.00',
-              transactions: '10 transactions',
-              color: Colors.red,
-              isSelected: false,
-              index: 3,
-              onSelected: (index) {},
+            body: TickerMode(
+              enabled: false,
+              child: AccountCard(
+                title: 'Unselected Account',
+                amount: '\$2,000.00',
+                transactions: '10 transactions',
+                color: Colors.red,
+                isSelected: false,
+                index: 3,
+                onSelected: (index) {},
+                enableMarquee: false,
+              ),
             ),
           ),
         ),

@@ -4,8 +4,10 @@ import '../../../../core/database/app_database.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
+import 'package:injectable/injectable.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
+@LazySingleton(as: AccountRepository)
 class AccountRepositoryImpl
     with CacheableRepositoryMixin
     implements AccountRepository {

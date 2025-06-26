@@ -2,7 +2,15 @@
   "permissions": {
     "allow": [
       "Bash(dart run build_runner build:*)",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "Bash(find:*)",
+      "Bash(flutter test:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(flutter analyze:*)",
+      "mcp__context7__resolve-library-id",
+      "Bash(flutter packages pub run build_runner build:*)",
+      "Bash(flutter packages pub run:*)"
     ],
     "deny": []
   }

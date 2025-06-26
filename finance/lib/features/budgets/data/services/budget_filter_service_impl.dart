@@ -1,3 +1,4 @@
+import 'package:injectable/injectable.dart';
 import '../../domain/services/budget_filter_service.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/repositories/budget_repository.dart';
@@ -7,6 +8,7 @@ import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../../../services/currency_service.dart';
 import 'budget_csv_service.dart';
 
+@LazySingleton(as: BudgetFilterService)
 class BudgetFilterServiceImpl implements BudgetFilterService {
   final TransactionRepository _transactionRepository;
   final AccountRepository _accountRepository;

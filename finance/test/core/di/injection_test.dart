@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../helpers/test_di.dart';
 import 'package:finance/core/di/injection.dart';
 import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:finance/features/categories/domain/repositories/category_repository.dart';

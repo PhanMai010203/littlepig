@@ -1,19 +1,13 @@
 import 'package:flutter/material.dart';
-import '../core/di/injection.dart';
 import '../services/currency_service.dart';
 
 /// Demonstration script showing the currency system functionality
 /// This can be run as part of the main app to demonstrate real asset loading
 class CurrencyDemo {
-  static Future<void> runDemo() async {
+  static Future<void> runDemo({required CurrencyService currencyService}) async {
     print('=== Currency System Demo ===');
 
     try {
-      // Initialize dependencies
-      await configureDependencies();
-
-      final currencyService = getIt<CurrencyService>();
-
       print('\n1. Loading all currencies...');
       final allCurrencies = await currencyService.getAllCurrencies();
       print('Found ${allCurrencies.length} currencies');
@@ -85,7 +79,7 @@ class CurrencyDemo {
   }
 
   /// Widget that can be added to the app to run the demo
-  static Widget buildDemoWidget() {
+  static Widget buildDemoWidget({required CurrencyService currencyService}) {
     return Scaffold(
       appBar: AppBar(title: const Text('Currency System Demo')),
       body: Padding(
@@ -100,7 +94,7 @@ class CurrencyDemo {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () async {
-                await runDemo();
+                await runDemo(currencyService: currencyService);
               },
               child: const Text('Run Currency Demo'),
             ),

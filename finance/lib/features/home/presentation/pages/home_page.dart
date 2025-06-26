@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:finance/shared/widgets/page_template.dart';
-import 'package:finance/core/di/injection.dart';
 import 'package:finance/features/accounts/domain/repositories/account_repository.dart';
 import 'package:finance/features/accounts/domain/entities/account.dart';
 import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
@@ -22,7 +21,16 @@ class AccountTileData {
 }
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final AccountRepository accountRepository;
+  final TransactionRepository transactionRepository;
+  final CurrencyRepository currencyRepository;
+
+  const HomePage({
+    super.key,
+    required this.accountRepository,
+    required this.transactionRepository,
+    required this.currencyRepository,
+  });
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -67,12 +75,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /// Loads accounts and assembles AccountTileData
   Future<void> _loadAccounts() async {
     try {
-      final accountRepository = getIt<AccountRepository>();
-      final transactionRepository = getIt<TransactionRepository>();
-      final currencyRepository = getIt<CurrencyRepository>();
-
       // 1. Retrieve all accounts
-      final accounts = await accountRepository.getAllAccounts();
+      final accounts = await widget.accountRepository.getAllAccounts();
 
       // 2. For each account, get transaction count and formatted balance
       final List<AccountTileData> tiles = [];
@@ -80,12 +84,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       for (final account in accounts) {
         // Get transaction count for this account
         final transactions =
-            await transactionRepository.getTransactionsByAccount(account.id!);
+            await widget.transactionRepository.getTransactionsByAccount(account.id!);
         final transactionCount = transactions.length;
 
         // Format balance using AccountCurrencyExtension
         final formattedBalance = await account.formatBalance(
-          currencyRepository,
+          widget.currencyRepository,
           showSymbol: true,
           useCodeWithSymbol: true,
         );
@@ -227,3 +231,5 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 }
+
+

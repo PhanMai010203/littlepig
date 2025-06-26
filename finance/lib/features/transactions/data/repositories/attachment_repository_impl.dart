@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:injectable/injectable.dart';
 
 import '../../domain/entities/attachment.dart';
 import '../../domain/repositories/attachment_repository.dart';
@@ -17,6 +18,7 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/sync/google_drive_sync_service.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
 
+@LazySingleton(as: AttachmentRepository)
 class AttachmentRepositoryImpl
     with CacheableRepositoryMixin
     implements AttachmentRepository {

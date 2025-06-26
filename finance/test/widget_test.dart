@@ -11,7 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import 'package:finance/app/app.dart';
-import 'package:finance/core/di/injection.dart';
+import 'helpers/test_di.dart';
 
 void main() {
   setUpAll(() {

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:injectable/injectable.dart';
 import '../models/exchange_rate_model.dart';
 
 /// Data source for persisting exchange rates locally
@@ -14,6 +15,7 @@ abstract class ExchangeRateLocalDataSource {
   Future<void> clearCache();
 }
 
+@LazySingleton(as: ExchangeRateLocalDataSource)
 class ExchangeRateLocalDataSourceImpl implements ExchangeRateLocalDataSource {
   static const String _exchangeRatesKey = 'cached_exchange_rates';
   static const String _customRatesKey = 'custom_exchange_rates';

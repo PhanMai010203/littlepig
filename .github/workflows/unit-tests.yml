@@ -1,0 +1,41 @@
+name: Flutter Unit Tests
+
+on:
+  push:
+    branches: ["main", "master", "getit_fix"]
+    paths:
+      - "finance/**.dart"
+      - ".github/workflows/unit-tests.yml"
+  pull_request:
+    branches: ["main", "master", "getit_fix"]
+    paths:
+      - "finance/**.dart"
+      - ".github/workflows/unit-tests.yml"
+
+jobs:
+  unit_tests:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: finance
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v4
+        with:
+          flutter-version: "3.32.0"
+
+      - name: Install project dependencies
+        run: flutter pub get
+
+      - name: Run unit tests (finance/test)
+        run: flutter test --coverage test
+
+      - name: Upload unit-test coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: unit-test-coverage-report
+          path: finance/coverage/ 

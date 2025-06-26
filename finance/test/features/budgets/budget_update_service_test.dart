@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -8,8 +9,14 @@ import 'package:finance/features/budgets/data/services/budget_auth_service.dart'
 import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:finance/features/budgets/domain/entities/budget.dart';
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
+import 'package:finance/core/events/transaction_event_publisher.dart';
+import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
 
 class MockBudgetRepository extends Mock implements BudgetRepository {}
+
+class MockTransactionRepository extends Mock implements TransactionRepository {}
+
+class MockTransactionEventPublisher extends Mock implements TransactionEventPublisher {}
 
 class MockBudgetFilterService extends Mock implements BudgetFilterService {}
 
@@ -29,11 +36,18 @@ void main() {
     late MockBudgetRepository mockBudgetRepository;
     late MockBudgetFilterService mockFilterService;
     late MockBudgetAuthService mockAuthService;
+    late MockTransactionRepository mockTransactionRepository;
+    late MockTransactionEventPublisher mockTransactionEventPublisher;
 
     setUp(() {
       mockBudgetRepository = MockBudgetRepository();
       mockFilterService = MockBudgetFilterService();
       mockAuthService = MockBudgetAuthService();
+      mockTransactionRepository = MockTransactionRepository();
+      mockTransactionEventPublisher = MockTransactionEventPublisher();
+
+      when(() => mockTransactionEventPublisher.events)
+          .thenAnswer((_) => const Stream.empty());
 
       // Setup default mock responses to prevent initialization errors
       when(() => mockBudgetRepository.getAllBudgets())
@@ -43,6 +57,7 @@ void main() {
         mockBudgetRepository,
         mockFilterService,
         mockAuthService,
+        mockTransactionEventPublisher,
       );
     });
 
@@ -333,6 +348,153 @@ void main() {
         expect(metrics.containsKey('operation_counts'), isTrue);
         expect(metrics.containsKey('average_durations'), isTrue);
         expect(metrics.containsKey('total_operations'), isTrue);
+      });
+    });
+
+    group('Task 3 Verification: Async Event Handling', () {
+      test('should handle async transaction events with proper await and error handling', () async {
+        // Arrange
+        final transaction = Transaction(
+          id: 1,
+          title: 'Test transaction',
+          amount: -100.0,
+          date: DateTime.now(),
+          accountId: 1,
+          categoryId: 1,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncId: 'test-sync-1',
+        );
+
+        final budget = Budget(
+          id: 1,
+          name: 'Test Budget',
+          amount: 1000.0,
+          spent: 50.0,
+          period: BudgetPeriod.monthly,
+          startDate: DateTime.now().subtract(const Duration(days: 15)),
+          endDate: DateTime.now().add(const Duration(days: 15)),
+          isActive: true,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncId: 'test-sync-1',
+        );
+
+        // Setup mocks for event handling test
+        reset(mockBudgetRepository);
+        reset(mockFilterService);
+        reset(mockTransactionEventPublisher);
+
+        when(() => mockBudgetRepository.getAllBudgets())
+            .thenAnswer((_) async => [budget]);
+        when(() => mockFilterService.shouldIncludeTransaction(budget, transaction))
+            .thenAnswer((_) async => true);
+        when(() => mockBudgetRepository.updateBudget(any()))
+            .thenAnswer((_) async => budget.copyWith(spent: 150.0));
+
+        // Create a stream controller to simulate transaction events
+        final eventController = StreamController<TransactionChangedEvent>();
+        when(() => mockTransactionEventPublisher.events)
+            .thenAnswer((_) => eventController.stream);
+
+        // Create service with mocked event publisher
+        final service = BudgetUpdateServiceImpl(
+          mockBudgetRepository,
+          mockFilterService,
+          mockAuthService,
+          mockTransactionEventPublisher,
+        );
+
+        // Act - Publish a transaction event
+        final event = TransactionChangedEvent(
+          transaction: transaction,
+          changeType: TransactionChangeType.created,
+          timestamp: DateTime.now(),
+        );
+        
+        // Give the service a moment to subscribe to events
+        await Future.delayed(const Duration(milliseconds: 10));
+        
+        // Publish the event
+        eventController.add(event);
+        
+        // Give async processing time to complete
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Assert - Verify that the async update was called
+        verify(() => mockBudgetRepository.getAllBudgets()).called(greaterThan(1));
+        verify(() => mockFilterService.shouldIncludeTransaction(budget, transaction)).called(greaterThan(0));
+        verify(() => mockBudgetRepository.updateBudget(any())).called(greaterThan(0));
+
+        // Clean up
+        await eventController.close();
+        service.dispose();
+      });
+
+      test('should handle errors in async event processing gracefully', () async {
+        // Arrange
+        final transaction = Transaction(
+          id: 1,
+          title: 'Test transaction',
+          amount: -100.0,
+          date: DateTime.now(),
+          accountId: 1,
+          categoryId: 1,
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+          syncId: 'test-sync-1',
+        );
+
+        // Setup mocks for initialization
+        reset(mockBudgetRepository);
+        reset(mockFilterService);
+        reset(mockTransactionEventPublisher);
+
+        // Allow initialization to succeed but budget updates to fail
+        when(() => mockBudgetRepository.getAllBudgets())
+            .thenAnswer((_) async => []);
+        when(() => mockFilterService.shouldIncludeTransaction(any(), any()))
+            .thenThrow(Exception('Service error'));
+
+        // Create a stream controller to simulate transaction events
+        final eventController = StreamController<TransactionChangedEvent>();
+        when(() => mockTransactionEventPublisher.events)
+            .thenAnswer((_) => eventController.stream);
+
+        // Create service with mocked event publisher
+        final service = BudgetUpdateServiceImpl(
+          mockBudgetRepository,
+          mockFilterService,
+          mockAuthService,
+          mockTransactionEventPublisher,
+        );
+
+        // Act - Publish a transaction event that will cause an error
+        final event = TransactionChangedEvent(
+          transaction: transaction,
+          changeType: TransactionChangeType.created,
+          timestamp: DateTime.now(),
+        );
+        
+        // Give the service a moment to subscribe to events
+        await Future.delayed(const Duration(milliseconds: 10));
+        
+        // Publish the event (this should not crash the service)
+        eventController.add(event);
+        
+        // Give async processing time to complete
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        // Assert - Verify that the error was handled gracefully
+        // The service should still be functional and not crash
+        expect(service, isNotNull);
+        
+        // Verify the service attempted to process the event but the error was caught
+        verify(() => mockBudgetRepository.getAllBudgets()).called(greaterThan(0));
+
+        // Clean up
+        await eventController.close();
+        service.dispose();
       });
     });
   });

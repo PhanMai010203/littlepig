@@ -5,8 +5,10 @@ import '../../../../core/database/app_database.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
 import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
+import 'package:injectable/injectable.dart';
 import 'dart:convert';
 
+@LazySingleton(as: BudgetRepository)
 class BudgetRepositoryImpl
     with CacheableRepositoryMixin
     implements BudgetRepository {
@@ -183,16 +185,34 @@ class BudgetRepositoryImpl
 
   @override
   Future<void> deleteBudget(int id) async {
-    await (_database.delete(_database.budgetsTable)
-          ..where((b) => b.id.equals(id)))
-        .go();
+    // Delete budget and its related transaction links in a single transaction
+    await _database.transaction(() async {
+      // 1. Remove links referencing this budget
+      await (_database.delete(_database.transactionBudgetsTable)
+            ..where((tbl) => tbl.budgetId.equals(id)))
+          .go();
+
+      // 2. Delete the budget itself
+      await (_database.delete(_database.budgetsTable)
+            ..where((b) => b.id.equals(id)))
+          .go();
+    });
+
+    // Invalidate caches for both budgets and transaction-budget links
     await invalidateEntityCache('budget');
+    await invalidateEntityCache('transaction_budget_link');
   }
 
   @override
   Future<void> deleteAllBudgets() async {
-    await _database.delete(_database.budgetsTable).go();
+    await _database.transaction(() async {
+      // Clear links first to maintain FK consistency
+      await _database.delete(_database.transactionBudgetsTable).go();
+      await _database.delete(_database.budgetsTable).go();
+    });
+
     await invalidateEntityCache('budget');
+    await invalidateEntityCache('transaction_budget_link');
   }
 
   @override

@@ -10,6 +10,7 @@ class AccountCard extends StatelessWidget {
   final bool isSelected;
   final int index;
   final ValueChanged<int> onSelected;
+  final bool enableMarquee;
 
   const AccountCard({
     super.key,
@@ -20,6 +21,7 @@ class AccountCard extends StatelessWidget {
     required this.isSelected,
     required this.index,
     required this.onSelected,
+    this.enableMarquee = true,
   });
 
   @override
@@ -48,8 +50,8 @@ class AccountCard extends StatelessWidget {
       onTap: () => onSelected(index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
+        clipBehavior: Clip.hardEdge,
         width: cardWidth,
-        height: 110,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
@@ -68,6 +70,7 @@ class AccountCard extends StatelessWidget {
           ],
         ),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
@@ -89,19 +92,24 @@ class AccountCard extends StatelessWidget {
                           textDirection: TextDirection.ltr,
                         )..layout(maxWidth: constraints.maxWidth);
 
-                        if (textPainter.didExceedMaxLines) {
-                          return Marquee(
-                            text: title,
-                            style: style,
-                            scrollAxis: Axis.horizontal,
-                            blankSpace: 20.0,
-                            velocity: 30.0,
-                            pauseAfterRound: const Duration(seconds: 2),
-                            fadingEdgeEndFraction: 0.1,
-                            fadingEdgeStartFraction: 0.1,
-                          );
+                        // If animations are disabled or marquee explicitly disabled (e.g., in tests), avoid using Marquee to prevent pending timers.
+                        if (!enableMarquee || !TickerMode.of(context)) {
+                          return Text(title, style: style, overflow: TextOverflow.ellipsis);
                         } else {
-                          return Text(title, style: style);
+                          if (textPainter.didExceedMaxLines) {
+                            return Marquee(
+                              text: title,
+                              style: style,
+                              scrollAxis: Axis.horizontal,
+                              blankSpace: 20.0,
+                              velocity: 30.0,
+                              pauseAfterRound: const Duration(seconds: 2),
+                              fadingEdgeEndFraction: 0.1,
+                              fadingEdgeStartFraction: 0.1,
+                            );
+                          } else {
+                            return Text(title, style: style);
+                          }
                         }
                       },
                     ),
@@ -118,7 +126,7 @@ class AccountCard extends StatelessWidget {
                 ),
               ],
             ),
-            const Spacer(),
+            const SizedBox(height: 8),
             Text(
               amount,
               style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),

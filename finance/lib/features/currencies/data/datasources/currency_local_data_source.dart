@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:injectable/injectable.dart';
 import '../models/currency_model.dart';
 
 /// Data source for loading currency data from local assets
@@ -8,6 +9,7 @@ abstract class CurrencyLocalDataSource {
   Future<Map<String, CurrencyModel>> getCurrencyMap();
 }
 
+@LazySingleton(as: CurrencyLocalDataSource)
 class CurrencyLocalDataSourceImpl implements CurrencyLocalDataSource {
   static const String _currenciesPath = 'assets/data/currencies.json';
   static const String _currenciesInfoPath = 'assets/data/currenciesInfo.json';

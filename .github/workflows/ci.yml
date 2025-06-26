@@ -1,0 +1,41 @@
+name: Flutter CI
+
+on:
+  push:
+    branches: ["main", "master", "getit_fix"]
+  pull_request:
+    branches: ["main", "master", "getit_fix"]
+
+jobs:
+  build:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: finance
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.32.0"
+
+      - name: Install project dependencies
+        run: flutter pub get
+
+      - name: Ensure protection script is executable
+        run: chmod +x tools/check_generated_files.sh
+
+      - name: Verify generated files have not been edited manually
+        run: ./tools/check_generated_files.sh
+
+      - name: Run unit & widget tests (with coverage)
+        run: flutter test --coverage --machine | tee test-output.json
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: finance/coverage/ 

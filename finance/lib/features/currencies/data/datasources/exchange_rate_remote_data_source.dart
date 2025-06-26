@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:injectable/injectable.dart';
 import '../models/exchange_rate_model.dart';
 
 /// Data source for fetching exchange rates from remote API
@@ -9,6 +10,7 @@ abstract class ExchangeRateRemoteDataSource {
       String fromCurrency, String toCurrency);
 }
 
+@LazySingleton(as: ExchangeRateRemoteDataSource)
 class ExchangeRateRemoteDataSourceImpl implements ExchangeRateRemoteDataSource {
   static const String _baseUrl =
       'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1';
@@ -16,8 +18,7 @@ class ExchangeRateRemoteDataSourceImpl implements ExchangeRateRemoteDataSource {
 
   final http.Client _httpClient;
 
-  ExchangeRateRemoteDataSourceImpl({http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
+  ExchangeRateRemoteDataSourceImpl(this._httpClient);
 
   @override
   Future<Map<String, ExchangeRateModel>> getExchangeRates() async {

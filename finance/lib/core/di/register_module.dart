@@ -1,12 +1,13 @@
-import 'package:finance/core/database/app_database.dart';
-import 'package:finance/core/services/database_service.dart';
-import 'package:finance/core/sync/google_drive_sync_service.dart';
-import 'package:finance/core/sync/incremental_sync_service.dart';
-import 'package:finance/core/sync/sync_service.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../services/database_service.dart';
+import '../database/app_database.dart';
+import '../sync/incremental_sync_service.dart';
+import '../sync/google_drive_sync_service.dart';
+import '../sync/sync_service.dart';
 
 /// Injectable module for dependency registration
 /// This module handles the registration of core dependencies that require
@@ -21,48 +22,56 @@ abstract class RegisterModule {
 
   /// Provides GoogleSignIn instance with required scopes
   @lazySingleton
-  GoogleSignIn googleSignIn() => GoogleSignIn(scopes: [
+  GoogleSignIn get googleSignIn => GoogleSignIn(scopes: [
         'https://www.googleapis.com/auth/drive.file',
       ]);
 
   /// Provides HTTP client for network operations
   @lazySingleton
-  http.Client httpClient() => http.Client();
+  http.Client get httpClient => http.Client();
 
-  /// Provides DatabaseService instance
+  /// Provides DatabaseService instance for production and development
   @lazySingleton
-  DatabaseService databaseService() => DatabaseService();
+  @Environment(Environment.prod)
+  @Environment(Environment.dev)
+  DatabaseService get databaseService => DatabaseService();
 
-  /// Provides AppDatabase instance by exposing the database from DatabaseService
-  /// This allows the generated Injectable factories to inject AppDatabase directly
+  /// Provides DatabaseService instance for testing with in-memory database
   @lazySingleton
-  AppDatabase appDatabase(DatabaseService databaseService) => 
-      databaseService.database;
+  @Environment(Environment.test)
+  DatabaseService get testDatabaseService => DatabaseService.forTesting();
 
+  /// Provides AppDatabase instance from DatabaseService for production and development
+  @lazySingleton
+  @Environment(Environment.prod)
+  @Environment(Environment.dev)
+  AppDatabase appDatabase(DatabaseService service) => service.database;
+
+  /// Provides AppDatabase instance from test DatabaseService for testing
+  @lazySingleton
+  @Environment(Environment.test)
+  AppDatabase testAppDatabase(DatabaseService service) => service.database;
+
+  /// Provides IncrementalSyncService with async initialization
+  /// Uses @preResolve to handle the async initialize() call
   @preResolve
-  @LazySingleton(as: SyncService)
-  Future<SyncService> incrementalSyncService(AppDatabase db) async {
-    final service = IncrementalSyncService(db);
+  Future<IncrementalSyncService> incrementalSyncService(AppDatabase database) async {
+    final service = IncrementalSyncService(database);
     await service.initialize();
     return service;
   }
 
+  /// Provides GoogleDriveSyncService with async initialization
+  /// Uses @preResolve to handle the async initialize() call
   @preResolve
-  @lazySingleton
-  Future<GoogleDriveSyncService> googleDriveSyncService(AppDatabase db) async {
-    final service = GoogleDriveSyncService(db);
+  Future<GoogleDriveSyncService> googleDriveSyncService(AppDatabase database) async {
+    final service = GoogleDriveSyncService(database);
     await service.initialize();
     return service;
   }
 
-  /// Provides test-specific DatabaseService (for testing only)
-  @Environment('test')
-  @LazySingleton(as: DatabaseService)
-  DatabaseService testDatabaseService() => DatabaseService.forTesting();
-
-  /// Provides test-specific AppDatabase (for testing only)
-  @Environment('test')
-  @LazySingleton(as: AppDatabase)
-  AppDatabase testAppDatabase(DatabaseService databaseService) => 
-      databaseService.database;
+  /// Provides SyncService implementation
+  /// Uses IncrementalSyncService as the default implementation
+  @lazySingleton
+  SyncService syncService(IncrementalSyncService service) => service;
 }

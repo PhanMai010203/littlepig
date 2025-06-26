@@ -1,8 +1,10 @@
+import 'package:injectable/injectable.dart';
 import '../app_database.dart';
 
 /// Phase 4: Schema Cleanup Migration
 /// Removes redundant sync fields, keeping only essential syncId
 /// Rating improvement: 9→9.5/10
+@lazySingleton
 class SchemaCleanupMigration {
   final AppDatabase _database;
 
