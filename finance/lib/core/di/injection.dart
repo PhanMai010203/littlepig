@@ -18,7 +18,7 @@ Future<void> configureDependencies([String? environment]) async {
   }
 
   // Use injectable for all dependency registration
-  await getIt.init(environment: environment);
+  await getIt.init(environment: environment ?? Environment.prod);
   
   // Mark as initialized with the environment
   getIt.registerSingleton<String>(environment ?? 'prod', instanceName: 'environment');
