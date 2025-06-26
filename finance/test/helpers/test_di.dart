@@ -10,9 +10,6 @@ import 'package:finance/core/di/injection.dart';
 /// It also includes a reset of GetIt before configuration to ensure that
 /// tests are hermetic and do not interfere with each other.
 Future<void> configureTestDependencies() async {
-  // Reset GetIt to ensure a clean slate for each test or test suite
-  await getIt.reset();
-
-  // Configure dependencies for the 'test' environment
-  await configureDependencies('test');
+  // Configure dependencies for the 'test' environment with a clean slate
+  await configureDependenciesWithReset('test');
 }

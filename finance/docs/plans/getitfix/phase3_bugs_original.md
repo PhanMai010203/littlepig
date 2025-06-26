@@ -118,6 +118,42 @@ abstract class RegisterModule {
 
 ---
 
+### Task 2.5: Enable Safe Environment Switching in Tests
+
+**Problem**: After the test-environment providers were restored, developers still needed an ergonomic way to *switch* environments during a single test run.  Calling `configureDependencies('test')` **after** an earlier call with another environment had no effect because `configureDependencies` intentionally short-circuits when GetIt is already initialised.
+
+**Files Modified**:
+* `lib/core/di/injection.dart`  (new helper added)
+
+**Solution**:
+Add a small wrapper that resets GetIt **then** re-initialises it with the desired environment.  The helper keeps production code safe (because it will only be used explicitly in tests or hot-reload scenarios) while giving tests a one-liner to get a *fresh* environment.
+
+```dart
+// lib/core/di/injection.dart
+
+/// Reset all dependencies and re-configure with the desired environment.
+Future<void> configureDependenciesWithReset([String? environment]) async {
+  await resetDependencies();
+  await configureDependencies(environment);
+}
+```
+
+**How to use in tests**
+
+```dart
+// Arrange – fresh DI for a test environment
+setUp(() async {
+  await configureDependenciesWithReset('test');
+});
+
+// Switch to prod (rare, but now possible)
+await configureDependenciesWithReset('prod');
+```
+
+This keeps the original `configureDependencies()` semantics (idempotent for the same env) but makes switching explicit and safe.
+
+---
+
 ### Task 3: Await Asynchronous Budget Update
 
 **Problem**: An `async` method `updateBudgetOnTransactionChange` is called without `await`, causing potential unhandled exceptions and silent failures.
