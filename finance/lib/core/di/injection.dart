@@ -29,8 +29,20 @@ Future<void> resetDependencies() async {
   await getIt.reset();
 }
 
-/// Configure dependencies with reset option
-Future<void> configureDependenciesWithReset() async {
+/// Reset all dependencies and re-configure with the desired environment.
+///
+/// This is a convenience wrapper that lets tests or hot-reload scenarios
+/// switch between environments (e.g. `'test'`, `'prod'`, `'dev'`) in a
+/// single call.  Production code should typically call
+/// `configureDependencies()` once, but tests can do:
+///
+/// ```dart
+/// await configureDependenciesWithReset('test'); // fresh test env
+/// ```
+///
+/// Passing `null` keeps the default `'prod'` environment consistent with
+/// [configureDependencies].
+Future<void> configureDependenciesWithReset([String? environment]) async {
   await resetDependencies();
-  await configureDependencies();
+  await configureDependencies(environment);
 }
