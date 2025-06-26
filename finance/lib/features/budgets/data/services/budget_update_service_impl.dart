@@ -11,7 +11,7 @@ import '../../../transactions/domain/entities/transaction.dart';
 import '../../../../core/events/transaction_event_publisher.dart';
 import 'budget_auth_service.dart';
 
-@LazySingleton(as: BudgetUpdateService)
+@LazySingleton(as: BudgetUpdateService, env: [Environment.prod, Environment.dev])
 class BudgetUpdateServiceImpl implements BudgetUpdateService {
   final BudgetRepository _budgetRepository;
   final BudgetFilterService _filterService;
