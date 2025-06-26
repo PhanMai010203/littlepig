@@ -5,15 +5,23 @@ import 'package:finance/features/transactions/data/repositories/transaction_repo
 import 'package:finance/core/database/app_database.dart';
 import 'package:finance/core/database/migrations/phase3_partial_loans_migration.dart';
 import '../helpers/test_database_setup.dart';
+import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:finance/core/events/transaction_event_publisher.dart';
+
+class MockTransactionEventPublisher extends Mock
+    implements TransactionEventPublisher {}
 
 void main() {
   group('Phase 3: Partial Loans Integration Tests', () {
     late AppDatabase database;
-    late TransactionRepositoryImpl repository;
+    late TransactionRepository repository;
+    late MockTransactionEventPublisher mockEventPublisher;
 
     setUp(() async {
       database = await TestDatabaseSetup.createCleanTestDatabase();
-      repository = TransactionRepositoryImpl(database);
+      mockEventPublisher = MockTransactionEventPublisher();
+      repository = TransactionRepositoryImpl(database, mockEventPublisher);
     });
 
     tearDown(() async {

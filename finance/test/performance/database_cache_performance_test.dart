@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:finance/core/database/app_database.dart';
 import 'package:finance/core/services/database_cache_service.dart';
@@ -11,6 +12,14 @@ import 'package:finance/features/budgets/data/repositories/budget_repository_imp
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
 import 'package:finance/features/budgets/domain/entities/budget.dart';
 import 'package:finance/features/transactions/domain/entities/transaction_enums.dart';
+import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
+import 'package:finance/core/events/transaction_event_publisher.dart';
+import '../helpers/test_database_setup.dart';
+import '../helpers/entity_builders.dart';
+
+// Mocks
+class MockTransactionEventPublisher extends Mock
+    implements TransactionEventPublisher {}
 
 void main() {
   group('Database Cache Performance Tests', () {
@@ -24,6 +33,7 @@ void main() {
     late TransactionRepositoryImpl transactionRepo;
     late BudgetRepositoryImpl budgetRepo;
     late DatabaseCacheService cacheService;
+    late MockTransactionEventPublisher mockEventPublisher;
 
     setUpAll(() async {
       // Ensure Flutter binding is initialized for path_provider and other plugins
@@ -43,14 +53,24 @@ void main() {
         }
       });
 
+      // Setting a mock handler for the shared_preferences channel
+      const MethodChannel('plugins.flutter.io/shared_preferences')
+          .setMockMethodCallHandler((MethodCall methodCall) async {
+        if (methodCall.method == 'getAll') {
+          return <String, dynamic>{}; // Return an empty map for tests
+        }
+        return null;
+      });
+
       // Initialize database
-      database = await DatabaseConnectionOptimizer.getOptimizedDatabase();
+      database = await TestDatabaseSetup.createCleanTestDatabase();
 
       // Initialize cache service
       cacheService = DatabaseCacheService();
 
       // Initialize repositories
-      transactionRepo = TransactionRepositoryImpl(database);
+      mockEventPublisher = MockTransactionEventPublisher();
+      transactionRepo = TransactionRepositoryImpl(database, mockEventPublisher);
       budgetRepo = BudgetRepositoryImpl(database);
 
       // Seed test data

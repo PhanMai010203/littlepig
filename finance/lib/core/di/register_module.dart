@@ -30,19 +30,27 @@ abstract class RegisterModule {
   @lazySingleton
   http.Client get httpClient => http.Client();
 
-  /// Provides DatabaseService instance
+  /// Provides DatabaseService instance for production and development
   @lazySingleton
   @Environment(Environment.prod)
   @Environment(Environment.dev)
   DatabaseService get databaseService => DatabaseService();
 
+  /// Provides DatabaseService instance for testing with in-memory database
   @lazySingleton
   @Environment(Environment.test)
   DatabaseService get testDatabaseService => DatabaseService.forTesting();
 
-  /// Provides AppDatabase instance from DatabaseService
+  /// Provides AppDatabase instance from DatabaseService for production and development
   @lazySingleton
+  @Environment(Environment.prod)
+  @Environment(Environment.dev)
   AppDatabase appDatabase(DatabaseService service) => service.database;
+
+  /// Provides AppDatabase instance from test DatabaseService for testing
+  @lazySingleton
+  @Environment(Environment.test)
+  AppDatabase testAppDatabase(DatabaseService service) => service.database;
 
   /// Provides IncrementalSyncService with async initialization
   /// Uses @preResolve to handle the async initialize() call

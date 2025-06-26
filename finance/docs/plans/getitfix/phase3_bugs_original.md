@@ -1,3 +1,4 @@
+@ -0,0 +1,149 @@
 # Plan to Fix `get_it` and BLoC Integration Bugs (Phase 3)
 
 This document outlines the plan to fix several critical bugs related to BLoC event dispatching, test environment configuration, and asynchronous operations.
@@ -12,41 +13,77 @@ This document outlines the plan to fix several critical bugs related to BLoC eve
 
 ### Task 1: Fix Redundant BLoC Event Dispatching
 
-**Status**: ✅ **COMPLETELY VERIFIED** - Code implementation is correct, tests are passing, and functionality is confirmed.
+**Problem**: BLoC events are triggered inside the `build()` method, leading to performance degradation.
 
-**Verification Details**:
-- **Code Review**: Both `lib/features/budgets/presentation/pages/budgets_page.dart` and `lib/features/transactions/presentation/pages/transactions_page.dart` have been correctly converted to `StatefulWidget`.
-- **Event Dispatch**: The `LoadAllBudgets` and `LoadTransactionsWithCategories` events are correctly dispatched from within the `initState` method, ensuring they are called only once. The `build` methods are free from event dispatching logic.
-- **Test Execution**: ✅ All dedicated tests for Task 1 are now **PASSING**
-  - `budgets_page_test.dart`: 5 tests passed - Confirms LoadAllBudgets dispatched once on init, not on rebuilds
-  - `transactions_page_test.dart`: 2 tests passed - Confirms LoadTransactionsWithCategories dispatched once on init, not on rebuilds
-- **Test Environment Fix**: The test execution issue was resolved by regenerating the dependency injection configuration (`flutter packages pub run build_runner build --delete-conflicting-outputs`) which fixed parameter mismatches in the generated `injection.config.dart` file.
+**Files to Modify**:
+*   `lib/features/budgets/presentation/pages/budgets_page.dart`
+*   `lib/features/transactions/presentation/pages/transactions_page.dart`
 
-**Implementation Summary**:
+**Solution**:
+Convert `BudgetsPage` and `TransactionsPage` from `StatelessWidget` to `StatefulWidget`. Dispatch the initial data loading event once in the `initState()` method. This ensures the event is fired only when the widget is first inserted into the widget tree.
+
+**Implementation for `budgets_page.dart`**:
+
+To fix `budgets_page.dart`, I will convert it to a `StatefulWidget` and move the `LoadAllBudgets` event dispatch to `initState`.
+
 ```dart
-// Both pages follow this correct pattern:
+// lib/features/budgets/presentation/pages/budgets_page.dart
+
 class BudgetsPage extends StatefulWidget {
+  const BudgetsPage({super.key});
+
+  @override
+  State<BudgetsPage> createState() => _BudgetsPageState();
+}
+
+class _BudgetsPageState extends State<BudgetsPage> {
   @override
   void initState() {
     super.initState();
-    context.read<BudgetsBloc>().add(LoadAllBudgets()); // ✅ Once in initState
+    // Initiate the first event load. The BlocProvider is now in app.dart.
+    context.read<BudgetsBloc>().add(LoadAllBudgets());
   }
-  
+
   @override
   Widget build(BuildContext context) {
-    // ✅ Clean build method with no event dispatching
-    return PageTemplate(/* UI only */);
+    return const _BudgetsView();
   }
 }
 ```
 
-**Conclusion**: Task 1 is fully implemented, tested, and working correctly. The redundant BLoC event dispatching issue has been completely resolved.
+**Implementation for `transactions_page.dart`**:
+
+Similarly for `transactions_page.dart`, I will convert it to a `StatefulWidget` and move the `LoadTransactionsWithCategories` event dispatch to `initState`.
+
+```dart
+// lib/features/transactions/presentation/pages/transactions_page.dart
+
+class TransactionsPage extends StatefulWidget {
+  const TransactionsPage({super.key});
+
+  @override
+  State<TransactionsPage> createState() => _TransactionsPageState();
+}
+
+class _TransactionsPageState extends State<TransactionsPage> {
+  @override
+  void initState() {
+    super.initState();
+    // The BlocProvider is now in app.dart, so we just use the bloc.
+    // We initiate the first event load here.
+    context.read<TransactionsBloc>().add(LoadTransactionsWithCategories());
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const _TransactionsView();
+  }
+}
+```
 
 ---
 
 ### Task 2: Restore Test Environment Configuration
-
-**Status**: 🟡 **PENDING**
 
 **Problem**: Missing `@Environment('test')` providers for `DatabaseService` and `AppDatabase` in `register_module.dart` forces tests to use the production database.
 
@@ -56,11 +93,32 @@ class BudgetsPage extends StatefulWidget {
 **Solution**:
 Re-introduce the test-specific providers for `DatabaseService` and `AppDatabase` using the `@Environment('test')` annotation. This will register an in-memory database (`AppDatabase.forTesting`) for testing purposes, ensuring test isolation.
 
+**Proposed Implementation**:
+I will add the following annotated methods back to the `RegisterModule` class in `lib/core/di/register_module.dart`.
+
+```dart
+// lib/core/di/register_module.dart
+
+@module
+abstract class RegisterModule {
+
+  // ... existing prod/dev providers
+
+  @Environment('test')
+  @preResolve
+  @singleton
+  Future<AppDatabase> get testAppDatabase =>
+      Future.value(AppDatabase.forTesting(constructDb(logStatements: true)));
+
+  @Environment('test')
+  @Singleton(as: DatabaseService)
+  DatabaseService get TestDatabaseService => DatabaseService(getIt<AppDatabase>());
+}
+```
+
 ---
 
 ### Task 3: Await Asynchronous Budget Update
-
-**Status**: 🟡 **PENDING**
 
 **Problem**: An `async` method `updateBudgetOnTransactionChange` is called without `await`, causing potential unhandled exceptions and silent failures.
 
@@ -89,4 +147,4 @@ _eventSubscription =
 });
 ```
 
-</rewritten_file>
+</rewritten_file> 

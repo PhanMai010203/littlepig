@@ -13,6 +13,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:google_sign_in/google_sign_in.dart' as _i116;
 import 'package:http/http.dart' as _i519;
 import 'package:injectable/injectable.dart' as _i526;
+import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 import '../../features/accounts/data/repositories/account_repository_impl.dart'
     as _i126;
@@ -68,23 +69,38 @@ import '../../services/finance_service.dart' as _i19;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
 import '../events/transaction_event_publisher.dart' as _i388;
+import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
 import '../sync/crdt_conflict_resolver.dart' as _i588;
+import '../sync/google_drive_sync_service.dart' as _i465;
+import '../sync/incremental_sync_service.dart' as _i767;
 import '../sync/sync_service.dart' as _i520;
+import 'register_module.dart' as _i291;
+
+const String _prod = 'prod';
+const String _dev = 'dev';
+const String _test = 'test';
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
-  _i174.GetIt init({
+  Future<_i174.GetIt> init({
     String? environment,
     _i526.EnvironmentFilter? environmentFilter,
-  }) {
+  }) async {
     final gh = _i526.GetItHelper(
       this,
       environment,
       environmentFilter,
     );
+    final registerModule = _$RegisterModule();
+    await gh.factoryAsync<_i460.SharedPreferences>(
+      () => registerModule.prefs,
+      preResolve: true,
+    );
     gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
     gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc());
+    gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
+    gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
     gh.lazySingleton<_i388.TransactionEventPublisher>(
         () => _i388.TransactionEventPublisher());
     gh.lazySingleton<_i588.CRDTConflictResolver>(
@@ -95,10 +111,62 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i222.CurrencyLocalDataSourceImpl());
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
+    gh.lazySingleton<_i665.DatabaseService>(
+      () => registerModule.databaseService,
+      registerFor: {
+        _prod,
+        _dev,
+      },
+    );
+    gh.lazySingleton<_i665.DatabaseService>(
+      () => registerModule.testDatabaseService,
+      registerFor: {_test},
+    );
+    gh.lazySingleton<_i982.AppDatabase>(
+      () => registerModule.testAppDatabase(gh<_i665.DatabaseService>()),
+      registerFor: {_test},
+    );
+    gh.lazySingleton<_i771.ExchangeRateRemoteDataSource>(
+        () => _i771.ExchangeRateRemoteDataSourceImpl(gh<_i519.Client>()));
+    gh.lazySingleton<_i982.AppDatabase>(
+      () => registerModule.appDatabase(gh<_i665.DatabaseService>()),
+      registerFor: {
+        _prod,
+        _dev,
+      },
+    );
+    gh.lazySingleton<_i1056.CurrencyRepository>(
+        () => _i575.CurrencyRepositoryImpl(
+              gh<_i222.CurrencyLocalDataSource>(),
+              gh<_i771.ExchangeRateRemoteDataSource>(),
+              gh<_i349.ExchangeRateLocalDataSource>(),
+            ));
+    gh.lazySingleton<_i116.ConvertCurrency>(
+        () => _i116.ConvertCurrency(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i116.GetExchangeRates>(
+        () => _i116.GetExchangeRates(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i116.SetCustomExchangeRate>(
+        () => _i116.SetCustomExchangeRate(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i116.RefreshExchangeRates>(
+        () => _i116.RefreshExchangeRates(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i126.GetAllCurrencies>(
+        () => _i126.GetAllCurrencies(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i126.GetPopularCurrencies>(
+        () => _i126.GetPopularCurrencies(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i126.SearchCurrencies>(
+        () => _i126.SearchCurrencies(gh<_i1056.CurrencyRepository>()));
     gh.lazySingleton<_i1021.BudgetRepository>(
         () => _i654.BudgetRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i706.AccountRepository>(
         () => _i126.AccountRepositoryImpl(gh<_i982.AppDatabase>()));
+    await gh.factoryAsync<_i767.IncrementalSyncService>(
+      () => registerModule.incrementalSyncService(gh<_i982.AppDatabase>()),
+      preResolve: true,
+    );
+    await gh.factoryAsync<_i465.GoogleDriveSyncService>(
+      () => registerModule.googleDriveSyncService(gh<_i982.AppDatabase>()),
+      preResolve: true,
+    );
     gh.lazySingleton<_i664.AttachmentRepository>(
         () => _i13.AttachmentRepositoryImpl(
               gh<_i982.AppDatabase>(),
@@ -113,14 +181,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i201.SchemaCleanupMigration(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i266.CategoryRepository>(
         () => _i894.CategoryRepositoryImpl(gh<_i982.AppDatabase>()));
-    gh.lazySingleton<_i771.ExchangeRateRemoteDataSource>(
-        () => _i771.ExchangeRateRemoteDataSourceImpl(gh<_i519.Client>()));
-    gh.lazySingleton<_i1056.CurrencyRepository>(
-        () => _i575.CurrencyRepositoryImpl(
-              gh<_i222.CurrencyLocalDataSource>(),
-              gh<_i771.ExchangeRateRemoteDataSource>(),
-              gh<_i349.ExchangeRateLocalDataSource>(),
-            ));
+    gh.lazySingleton<_i520.SyncService>(
+        () => registerModule.syncService(gh<_i767.IncrementalSyncService>()));
     gh.lazySingleton<_i351.CurrencyService>(() => _i351.CurrencyService(
           gh<_i1056.CurrencyRepository>(),
           gh<_i706.AccountRepository>(),
@@ -137,20 +199,6 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
         ));
-    gh.lazySingleton<_i116.ConvertCurrency>(
-        () => _i116.ConvertCurrency(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i116.GetExchangeRates>(
-        () => _i116.GetExchangeRates(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i116.SetCustomExchangeRate>(
-        () => _i116.SetCustomExchangeRate(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i116.RefreshExchangeRates>(
-        () => _i116.RefreshExchangeRates(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i126.GetAllCurrencies>(
-        () => _i126.GetAllCurrencies(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i126.GetPopularCurrencies>(
-        () => _i126.GetPopularCurrencies(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i126.SearchCurrencies>(
-        () => _i126.SearchCurrencies(gh<_i1056.CurrencyRepository>()));
     gh.factory<_i439.TransactionsBloc>(() => _i439.TransactionsBloc(
           gh<_i421.TransactionRepository>(),
           gh<_i266.CategoryRepository>(),
@@ -178,3 +226,5 @@ extension GetItInjectableX on _i174.GetIt {
     return this;
   }
 }
+
+class _$RegisterModule extends _i291.RegisterModule {}
