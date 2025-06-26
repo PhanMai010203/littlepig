@@ -12,6 +12,8 @@ This document outlines the plan to fix several critical bugs related to BLoC eve
 
 ### Task 1: Fix Redundant BLoC Event Dispatching
 
+**Status**: Completed and verified with tests.
+
 **Problem**: BLoC events are triggered inside the `build()` method, leading to performance degradation.
 
 **Files to Modify**:
@@ -146,4 +148,4 @@ _eventSubscription =
 });
 ```
 
-</rewritten_file> 
+</rewritten_file>

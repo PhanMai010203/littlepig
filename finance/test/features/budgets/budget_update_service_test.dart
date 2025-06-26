@@ -8,8 +8,14 @@ import 'package:finance/features/budgets/data/services/budget_auth_service.dart'
 import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:finance/features/budgets/domain/entities/budget.dart';
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
+import 'package:finance/core/events/transaction_event_publisher.dart';
+import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
 
 class MockBudgetRepository extends Mock implements BudgetRepository {}
+
+class MockTransactionRepository extends Mock implements TransactionRepository {}
+
+class MockTransactionEventPublisher extends Mock implements TransactionEventPublisher {}
 
 class MockBudgetFilterService extends Mock implements BudgetFilterService {}
 
@@ -29,11 +35,18 @@ void main() {
     late MockBudgetRepository mockBudgetRepository;
     late MockBudgetFilterService mockFilterService;
     late MockBudgetAuthService mockAuthService;
+    late MockTransactionRepository mockTransactionRepository;
+    late MockTransactionEventPublisher mockTransactionEventPublisher;
 
     setUp(() {
       mockBudgetRepository = MockBudgetRepository();
       mockFilterService = MockBudgetFilterService();
       mockAuthService = MockBudgetAuthService();
+      mockTransactionRepository = MockTransactionRepository();
+      mockTransactionEventPublisher = MockTransactionEventPublisher();
+
+      when(() => mockTransactionEventPublisher.events)
+          .thenAnswer((_) => const Stream.empty());
 
       // Setup default mock responses to prevent initialization errors
       when(() => mockBudgetRepository.getAllBudgets())
@@ -43,6 +56,7 @@ void main() {
         mockBudgetRepository,
         mockFilterService,
         mockAuthService,
+        mockTransactionEventPublisher,
       );
     });
 

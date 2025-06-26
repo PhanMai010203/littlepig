@@ -4,15 +4,21 @@ import 'package:finance/features/transactions/domain/entities/transaction_enums.
 import 'package:finance/features/transactions/data/repositories/transaction_repository_impl.dart';
 import 'package:finance/core/database/app_database.dart';
 import '../../helpers/test_database_setup.dart';
+import 'package:finance/core/events/transaction_event_publisher.dart';
+import 'package:mocktail/mocktail.dart';
+
+class MockTransactionEventPublisher extends Mock implements TransactionEventPublisher {}
 
 void main() {
   group('Phase 3: Partial Loan Collection & Settlement Tests', () {
     late AppDatabase database;
     late TransactionRepositoryImpl repository;
+    late MockTransactionEventPublisher mockEventPublisher;
 
     setUp(() async {
       database = await TestDatabaseSetup.createCleanTestDatabase();
-      repository = TransactionRepositoryImpl(database);
+      mockEventPublisher = MockTransactionEventPublisher();
+      repository = TransactionRepositoryImpl(database, mockEventPublisher);
     });
 
     tearDown(() async {
