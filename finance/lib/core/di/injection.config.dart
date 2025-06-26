@@ -27,6 +27,8 @@ import '../../features/budgets/data/services/budget_filter_service_impl.dart'
     as _i30;
 import '../../features/budgets/data/services/budget_update_service_impl.dart'
     as _i249;
+import '../../features/budgets/data/services/budget_update_service_noop.dart'
+    as _i171;
 import '../../features/budgets/domain/repositories/budget_repository.dart'
     as _i1021;
 import '../../features/budgets/domain/services/budget_filter_service.dart'
@@ -77,9 +79,9 @@ import '../sync/incremental_sync_service.dart' as _i767;
 import '../sync/sync_service.dart' as _i520;
 import 'register_module.dart' as _i291;
 
+const String _test = 'test';
 const String _prod = 'prod';
 const String _dev = 'dev';
-const String _test = 'test';
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -109,6 +111,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(
         () => _i222.CurrencyLocalDataSourceImpl());
+    gh.lazySingleton<_i527.BudgetUpdateService>(
+      () => _i171.BudgetUpdateServiceNoOp(),
+      registerFor: {_test},
+    );
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
     gh.lazySingleton<_i665.DatabaseService>(
@@ -211,18 +217,23 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i351.CurrencyService>(),
               gh<_i871.BudgetCsvService>(),
             ));
-    gh.lazySingleton<_i527.BudgetUpdateService>(
-        () => _i249.BudgetUpdateServiceImpl(
-              gh<_i1021.BudgetRepository>(),
-              gh<_i375.BudgetFilterService>(),
-              gh<_i867.BudgetAuthService>(),
-              gh<_i388.TransactionEventPublisher>(),
-            ));
     gh.factory<_i120.BudgetsBloc>(() => _i120.BudgetsBloc(
           gh<_i1021.BudgetRepository>(),
           gh<_i527.BudgetUpdateService>(),
           gh<_i375.BudgetFilterService>(),
         ));
+    gh.lazySingleton<_i527.BudgetUpdateService>(
+      () => _i249.BudgetUpdateServiceImpl(
+        gh<_i1021.BudgetRepository>(),
+        gh<_i375.BudgetFilterService>(),
+        gh<_i867.BudgetAuthService>(),
+        gh<_i388.TransactionEventPublisher>(),
+      ),
+      registerFor: {
+        _prod,
+        _dev,
+      },
+    );
     return this;
   }
 }
