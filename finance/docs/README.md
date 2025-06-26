@@ -312,7 +312,7 @@ This section is a cookbook for common development scenarios. Instead of just poi
 | **...debug a slow screen or query?** | 1. **Caching:** Check if the data can be/is cached via `DatabaseCacheService` ([Database Caching](DATABASE_CACHING_GUIDE.md)).<br/>2. **SQL:** Analyze the Drift query performance using its tools.<br/>3. **UI:** Check for expensive widget rebuilds using Flutter DevTools. |
 | **...implement a complex, multi-step user flow?** | 1. **Navigation:** Use GoRouter's stateful shell routes or sub-routes ([Navigation Routing](NAVIGATION_ROUTING.md)).<br/>2. **UI:** Use `OpenContainer` transforms for a seamless experience ([UI Animation Framework](UI_ANIMATION_FRAMEWORK.md)).<br/>3. **State:** Model the flow with a dedicated BLoC or state machine. |
 | **...add a new type of recurring transaction?** | 1. **Model:** Extend `TransactionRecurrence` and associated logic ([Transactions – Advanced](TRANSACTIONS_ADVANCED_FEATURES.md)).<br/>2. **State:** Update `TransactionState` and `TransactionAction` if new lifecycle events are needed ([States & Actions](TRANSACTIONS_STATES_AND_ACTIONS.md)).<br/>3. **Integration:** Ensure it integrates with analytics and budgeting systems. |
-| **...build a new analytics dashboard?** | 1. **Data:** Add aggregation queries to the relevant repository ([Transactions – Analytics](TRANSACTIONS_ANALYTICS.md)).<br/>2. **Performance:** Cache expensive queries aggressively ([Database Caching](DATABASE_CACHING_GUIDE.md)).<br/>3. **Visualization:** Use custom painters or a charting library, wrapped in. our animation widgets for impact ([UI Animation Framework](UI_ANIMATION_FRAMEWORK.md)). |
+| **...build a new analytics dashboard?** | 1. **Data:** Add aggregation queries to the relevant repository ([Transactions – Analytics](TRANSACTIONS_ANALYTICS.md)).<br/>2. **Performance:** Cache expensive queries aggressively ([Database Caching](DATABASE_CACHING_GUIDE.md)).<br/>3. **Visualization:** Use custom painters or a charting library, wrapped in our animation widgets for impact ([UI Animation Framework](UI_ANIMATION_FRAMEWORK.md)). |
 | **...resolve a data sync conflict?** | 1. **Understand:** Read the `CRDTConflictResolver` logic in the [Data Sync Engine](DATA_SYNC_GUIDE.md).<br/>2. **Monitor:** Use `SyncStateManager` to observe sync events in real-time.<br/>3. **Test:** Write a unit test that reproduces the specific conflict scenario. |
 | **...create a custom, app-themed dialog?** | 1. **Framework:** Use `DialogService` to ensure consistent theming, haptics, and animations.<br/>2. **Content:** Build the dialog's content widget.<br/>3. **Launch:** Call `DialogService.showPopup()` ([UI Dialogs & Pop-ups](UI_DIALOGS_AND_POPUPS.md)). |
 | **...add support for file attachments to a new feature?** | 1. **Local First:** Use `compressAndStoreFile` to handle the file locally ([Attachments System](ATTACHMENTS_SYSTEM.md)).<br/>2. **Metadata:** Create the attachment record via `createAttachment` linking it to your parent entity.<br/>3. **Cloud Backup:** The system will handle Google Drive backup automatically. |
@@ -321,6 +321,42 @@ This section is a cookbook for common development scenarios. Instead of just poi
 | **...run a widget test with all providers?** | Use the `pumpApp(widget)` test helper to wrap your widget in `MaterialApp` and all necessary providers ([UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md)). |
 
 ---
+
+# ⚙️ Dependency Injection (Injectable + GetIt) 🧩
+
+Our entire dependency graph is powered by **Injectable** on top of the
+**GetIt** service-locator. Manual registration has been **fully removed** – if
+you find yourself writing `getIt.registerSingleton(...)` outside of a migration
+script you are almost certainly doing something wrong.
+
+| 🔗 Link | Description |
+| --- | --- |
+| [DI Workflow Guide](DI_WORKFLOW_GUIDE.md) | Comprehensive guide covering environments, annotations and common pitfalls. |
+
+### Quick Start
+
+1. **Add an Annotation** – Place `@injectable`, `@lazySingleton`, or
+   `@singleton` on the class you want registered. For 3rd-party types use a
+   `@module` in `core/di/register_module.dart`.
+2. **Generate** – Run:<br/>
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   ```
+3. **Initialize** – Call `await configureDependencies();` once at app start.
+4. **Testing** – Use `await configureDependenciesWithReset('test');` (preferred)
+   or the legacy `configureTestDependencies()` helper.
+
+### Key Conventions
+
+* `injection.config.dart` is **generated** – never edit it manually (CI will
+  fail if you do).
+* Prefer **constructor injection**; `getIt<...>()` in business logic is banned.
+* Environment names: `'prod'` (default), `'dev'`, `'test'`.
+* Async dependencies are created with `@preResolve` so they are available
+  before the first widget frame.
+
+> Tip: If the generator picks up stale files run
+> `flutter packages pub run build_runner clean` then regenerate.
 
 ## 07 · Development Workflow & Testing 👨‍💻
 
