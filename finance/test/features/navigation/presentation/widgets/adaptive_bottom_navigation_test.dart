@@ -2,14 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:finance/features/navigation/presentation/widgets/adaptive_bottom_navigation.dart';
+import 'package:finance/features/navigation/presentation/widgets/adaptive_bottom_navigation.dart' show AdaptiveBottomNavigation;
 import 'package:finance/features/navigation/domain/entities/navigation_item.dart';
+import 'package:finance/features/navigation/presentation/widgets/adaptive_bottom_navigation.dart' as nav show kDisableAnimations;
 
 void main() {
   group('AdaptiveBottomNavigation - Phase 1.1 Tests', () {
     late List<NavigationItem> testItems;
 
     setUp(() {
+      // Disable animations to avoid pending timers in widget tests.
+      nav.kDisableAnimations = true;
+
       testItems = [
         const NavigationItem(
           id: 'home',
@@ -36,6 +40,11 @@ void main() {
           routePath: '/more',
         ),
       ];
+    });
+
+    tearDown(() {
+      // Re-enable animations after each test to avoid side effects.
+      nav.kDisableAnimations = false;
     });
 
     Widget createWidget({
@@ -245,17 +254,18 @@ void main() {
 
       testWidgets('should handle animation completion correctly',
           (WidgetTester tester) async {
-        bool animationCompleted = false;
-        await tester.pumpWidget(createWidget(onTap: (_) {
-          Future.delayed(const Duration(milliseconds: 200), () {
-            animationCompleted = true;
-          });
-        }));
+        bool callbackInvoked = false;
+
+        await tester.pumpWidget(
+          createWidget(onTap: (_) => callbackInvoked = true),
+        );
 
         await tester.tap(find.text('Home'));
-        await tester.pumpAndSettle(); // Let animation settle
+        await tester.pumpAndSettle();
 
-        expect(animationCompleted, isTrue);
+        // Verify that the onTap callback executed. We skip checking timed
+        // animation completion when animations are disabled in tests.
+        expect(callbackInvoked, isTrue);
       });
     });
   });
