@@ -11,6 +11,7 @@ import 'package:finance/features/transactions/presentation/bloc/transactions_blo
 import 'package:finance/features/transactions/presentation/bloc/transactions_event.dart';
 import 'package:finance/features/transactions/presentation/bloc/transactions_state.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import '../../helpers/localization_test_wrapper.dart';
 
 // Mocks
 class MockTransactionsBloc extends Mock implements TransactionsBloc {}
@@ -69,6 +70,7 @@ void main() {
         supportedLocales: const [Locale('en')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
+        assetLoader: const FakeAssetLoader(),
         child: MaterialApp(
           home: BlocProvider<TransactionsBloc>(
             create: (_) => mockTransactionsBloc,

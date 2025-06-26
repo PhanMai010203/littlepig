@@ -15,6 +15,7 @@ import 'package:finance/features/budgets/domain/entities/budget.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'dart:ui';
 import '../../helpers/entity_builders.dart';
+import '../../helpers/localization_test_wrapper.dart';
 
 // Mocks
 class MockBudgetRepository extends Mock implements BudgetRepository {}
@@ -86,6 +87,7 @@ void main() {
         supportedLocales: const [Locale('en')],
         path: 'assets/translations',
         fallbackLocale: const Locale('en'),
+        assetLoader: const FakeAssetLoader(),
         child: MaterialApp(
           home: BlocProvider<BudgetsBloc>(
             create: (context) => mockBudgetsBloc,
