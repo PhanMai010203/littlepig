@@ -46,15 +46,32 @@ class BudgetsPage extends StatefulWidget {
 
 ### Task 2: Restore Test Environment Configuration
 
-**Status**: 🟡 **PENDING**
+**Status**: ✅ **COMPLETED** - Test environment configuration is correctly implemented and verified.
 
-**Problem**: Missing `@Environment('test')` providers for `DatabaseService` and `AppDatabase` in `register_module.dart` forces tests to use the production database.
+**Verification Details**:
+- **Code Review**: Confirmed `lib/core/di/register_module.dart` contains correct test environment providers:
+  - `testDatabaseService` with `@Environment('test')` annotation (line 41-42)
+  - `testAppDatabase` with `@Environment('test')` annotation (line 51-53)
+- **Generated Configuration**: Verified `lib/core/di/injection.config.dart` correctly registers test services:
+  - `testDatabaseService` registered for `_test` environment (lines 121-124)
+  - `testAppDatabase` registered for `_test` environment (lines 125-128)
+  - Production services correctly separated for `_prod` and `_dev` environments
+- **Test Infrastructure**: Confirmed existing test helper framework uses `configureDependencies('test')` correctly
+- **Database Isolation**: Test environment uses `DatabaseService.forTesting()` which creates `AppDatabase.forTesting(NativeDatabase.memory())`
 
-**File to Modify**:
-*   `lib/core/di/register_module.dart`
+**Implementation Summary**:
+```dart
+// register_module.dart - Test environment providers
+@lazySingleton
+@Environment(Environment.test)
+DatabaseService get testDatabaseService => DatabaseService.forTesting();
 
-**Solution**:
-Re-introduce the test-specific providers for `DatabaseService` and `AppDatabase` using the `@Environment('test')` annotation. This will register an in-memory database (`AppDatabase.forTesting`) for testing purposes, ensuring test isolation.
+@lazySingleton
+@Environment(Environment.test)
+AppDatabase testAppDatabase(DatabaseService service) => service.database;
+```
+
+**Conclusion**: Task 2 was already completed. The test environment configuration correctly isolates tests using in-memory databases, preventing tests from interfering with production data.
 
 ---
 
