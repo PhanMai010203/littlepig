@@ -10,6 +10,9 @@ jobs:
   build:
     name: Build & Test
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: finance
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,4 +38,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: coverage-report
-          path: coverage/ 
+          path: finance/coverage/ 
