@@ -35,7 +35,7 @@ jobs:
         run: flutter test --coverage test
 
       - name: Upload unit-test coverage report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: unit-test-coverage-report
           path: finance/coverage/ 
