@@ -6,6 +6,13 @@ import '../../../../shared/widgets/page_template.dart';
 import '../bloc/budgets_bloc.dart';
 import '../bloc/budgets_event.dart';
 import '../bloc/budgets_state.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../core/settings/app_settings.dart';
+import 'package:sa3_liquid/sa3_liquid.dart';
+import '../../../../shared/widgets/animations/tappable_widget.dart';
+import '../../../../shared/widgets/animations/fade_in.dart';
+import '../../../../shared/widgets/app_text.dart';
+import '../../domain/entities/budget.dart';
 
 /// The main page for the Budgets feature.
 ///
@@ -78,15 +85,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
                   itemCount: state.budgets.length,
                   itemBuilder: (context, index) {
                     final budget = state.budgets[index];
-                    // Placeholder for the detailed budget card widget.
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        title: Text(budget.name),
-                        subtitle: Text(
-                            'Amount: ${budget.amount.toStringAsFixed(2)}'),
-                      ),
-                    );
+                    return BudgetTile(budget: budget);
                   },
                 ),
               );
@@ -98,6 +97,189 @@ class _BudgetsPageState extends State<BudgetsPage> {
           },
         ),
       ],
+    );
+  }
+}
+
+class BudgetTile extends StatelessWidget {
+  const BudgetTile({super.key, required this.budget});
+
+  final Budget budget;
+
+  Color _pickColor(BuildContext context) {
+    // Attempt to derive color from budget.colour if available via reflection
+    try {
+      final colourField = budget as dynamic;
+      final colourValue = colourField.colour as String?;
+      if (colourValue != null) {
+        return HexColor(colourValue);
+      }
+    } catch (_) {
+      // Ignore if field not present
+    }
+    final palette = getSelectableColors();
+    return palette[budget.name.hashCode.abs() % palette.length];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color budgetColor = _pickColor(context);
+    const Color bgColor = Colors.white;
+
+    final bool expensiveMotion =
+        AppSettings.reduceAnimations || AppSettings.batterySaver ||
+            MediaQuery.of(context).disableAnimations;
+
+    return TappableWidget(
+      borderRadius: BorderRadius.circular(18),
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Budget details coming soon for ${budget.name}')),
+        );
+      },
+      child: Container(
+        height: 160,
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
+        decoration: BoxDecoration(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (!expensiveMotion)
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(18.0),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: AnimatedGooBackground(
+                          baseColor: budgetColor,
+                          randomOffset: budget.name.length,
+                        ),
+                      ),
+                      const Expanded(child: SizedBox.shrink()),
+                    ],
+                  ),
+                ),
+              ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    child: FadeIn(
+                      delay: const Duration(milliseconds: 150),
+                      child: _BudgetContent(budget: budget, accent: budgetColor),
+                    ),
+                  ),
+                ),
+                const Expanded(child: SizedBox.shrink()),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _BudgetContent extends StatelessWidget {
+  const _BudgetContent({required this.budget, required this.accent});
+  final Budget budget;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return BlocSelector<BudgetsBloc, BudgetsState, double>(
+      selector: (state) =>
+          state is BudgetsLoaded ? (state.realTimeSpentAmounts[budget.id] ?? 0.0) : 0.0,
+      builder: (context, spent) {
+        final remaining = budget.amount - spent;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            AppText(
+              budget.name,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            TweenAnimationBuilder<double>(
+              tween: Tween<double>(begin: budget.amount, end: remaining),
+              duration: const Duration(milliseconds: 600),
+              builder: (context, animatedRemaining, child) {
+                final isOverspent = animatedRemaining < 0;
+                return RichText(
+                  text: TextSpan(
+                    style: theme.textTheme.bodyMedium,
+                    children: [
+                      TextSpan(
+                        text: '\$${animatedRemaining.abs().toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextSpan(
+                        text: isOverspent
+                            ? ' overspent of \$${budget.amount.toStringAsFixed(0)}'
+                            : ' left of \$${budget.amount.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class AnimatedGooBackground extends StatelessWidget {
+  const AnimatedGooBackground({super.key, required this.baseColor, required this.randomOffset});
+
+  final Color baseColor;
+  final int randomOffset;
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
+    final color = brightness == Brightness.light ? baseColor.withOpacity(0.10) : baseColor.withOpacity(0.30);
+
+    return Transform(
+      transform: Matrix4.skewX(0.001),
+      child: PlasmaRenderer(
+        type: PlasmaType.infinity,
+        particles: 10,
+        color: color,
+        blur: 0.30,
+        size: 1.30,
+        speed: 3.30,
+        offset: 0,
+        blendMode: BlendMode.multiply,
+        particleType: ParticleType.atlas,
+        rotation: (randomOffset % 360).toDouble(),
+      ),
     );
   }
 }
