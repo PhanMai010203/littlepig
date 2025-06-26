@@ -97,16 +97,16 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.prefs,
       preResolve: true,
     );
-    gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
     gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc());
-    gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
-    gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
-    gh.lazySingleton<_i388.TransactionEventPublisher>(
-        () => _i388.TransactionEventPublisher());
+    gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
     gh.lazySingleton<_i588.CRDTConflictResolver>(
         () => _i588.CRDTConflictResolver());
-    gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
+    gh.lazySingleton<_i388.TransactionEventPublisher>(
+        () => _i388.TransactionEventPublisher());
+    gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
+    gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
+    gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(
         () => _i222.CurrencyLocalDataSourceImpl());
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
@@ -141,6 +141,12 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i771.ExchangeRateRemoteDataSource>(),
               gh<_i349.ExchangeRateLocalDataSource>(),
             ));
+    gh.lazySingleton<_i126.GetAllCurrencies>(
+        () => _i126.GetAllCurrencies(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i126.GetPopularCurrencies>(
+        () => _i126.GetPopularCurrencies(gh<_i1056.CurrencyRepository>()));
+    gh.lazySingleton<_i126.SearchCurrencies>(
+        () => _i126.SearchCurrencies(gh<_i1056.CurrencyRepository>()));
     gh.lazySingleton<_i116.ConvertCurrency>(
         () => _i116.ConvertCurrency(gh<_i1056.CurrencyRepository>()));
     gh.lazySingleton<_i116.GetExchangeRates>(
@@ -149,12 +155,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i116.SetCustomExchangeRate(gh<_i1056.CurrencyRepository>()));
     gh.lazySingleton<_i116.RefreshExchangeRates>(
         () => _i116.RefreshExchangeRates(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i126.GetAllCurrencies>(
-        () => _i126.GetAllCurrencies(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i126.GetPopularCurrencies>(
-        () => _i126.GetPopularCurrencies(gh<_i1056.CurrencyRepository>()));
-    gh.lazySingleton<_i126.SearchCurrencies>(
-        () => _i126.SearchCurrencies(gh<_i1056.CurrencyRepository>()));
     gh.lazySingleton<_i1021.BudgetRepository>(
         () => _i654.BudgetRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i706.AccountRepository>(
