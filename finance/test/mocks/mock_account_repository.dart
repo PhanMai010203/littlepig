@@ -64,6 +64,11 @@ class MockAccountRepository implements AccountRepository {
   }
 
   @override
+  Future<void> deleteAllAccounts() async {
+    // Mock bulk delete
+  }
+
+  @override
   Future<void> updateBalance(int accountId, double amount) async {
     // Mock balance update
   }
