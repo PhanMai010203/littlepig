@@ -221,7 +221,7 @@ class _Track extends StatelessWidget {
       width: width,
       height: 18,
       decoration: BoxDecoration(
-        color: getColor(context, "surfaceContainer"),
+        color: getColor(context, "surfaceContainerHigh"),
         borderRadius: BorderRadius.circular(11),
       ),
     );

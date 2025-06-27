@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sa3_liquid/sa3_liquid.dart';
 
 import '../../../../core/settings/app_settings.dart';
@@ -134,8 +135,6 @@ class BudgetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const Color bgColor = Colors.white;
-
     final bool expensiveMotion =
         AppSettings.reduceAnimations || AppSettings.batterySaver ||
             MediaQuery.of(context).disableAnimations;
@@ -158,11 +157,11 @@ class BudgetTile extends StatelessWidget {
         height: 160,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
         decoration: BoxDecoration(
-          color: bgColor,
+          color: getColor(context, "surfaceContainer"),
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: getColor(context, "shadowLight"),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),
@@ -193,7 +192,10 @@ class BudgetTile extends StatelessWidget {
               children: [
                 Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                    padding: EdgeInsets.only(
+                      left: 20.0,
+                      right: budget.manualAddMode ? 20.0 : 56.0, // Extra space for history button
+                    ),
                     child: FadeIn(
                       delay: const Duration(milliseconds: 150),
                       child: _BudgetHeaderContent(budget: budget, accent: budgetColor),
@@ -211,8 +213,62 @@ class BudgetTile extends StatelessWidget {
                 ),
               ],
             ),
+            // History button - only for automatic budgets
+            if (!budget.manualAddMode)
+              _buildHistoryButton(context, budgetColor),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryButton(BuildContext context, Color budgetColor) {
+    // Use dynamic pastel for theme-aware button color
+    final buttonColor = dynamicPastel(
+      context, 
+      budgetColor, 
+      amountLight: 0.75, // Light theme: more transparent
+      amountDark: 0.2,   // Dark theme: less transparent
+    );
+    
+    final iconColor = getColor(context, "text");
+
+    return Positioned(
+      top: 12,
+      right: 12,
+      child: FadeIn(
+        delay: const Duration(milliseconds: 350),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () => _showHistorySnackBar(context),
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: buttonColor,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Center(
+                child: SvgPicture.asset(
+                  'assets/icons/icon_history.svg',
+                  width: 16,
+                  height: 16,
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showHistorySnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('History for ${budget.name} coming soon'),
       ),
     );
   }
@@ -312,7 +368,9 @@ class AnimatedGooBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final color = brightness == Brightness.light ? baseColor.withOpacity(0.20) : baseColor.withOpacity(0.40);
+    final color = brightness == Brightness.light 
+        ? baseColor.withOpacity(0.20) 
+        : baseColor.withOpacity(0.20); // Reduced opacity for dark theme
 
     return Transform(
       transform: Matrix4.skewX(0.001),
@@ -324,7 +382,9 @@ class AnimatedGooBackground extends StatelessWidget {
         size: 1.30,
         speed: 5.30,
         offset: 0,
-        blendMode: BlendMode.multiply,
+        blendMode: brightness == Brightness.light 
+            ? BlendMode.multiply 
+            : BlendMode.screen, // Better blend mode for dark backgrounds
         particleType: ParticleType.atlas,
         rotation: (randomOffset % 360).toDouble(),
       ),
