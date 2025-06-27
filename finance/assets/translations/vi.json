@@ -64,7 +64,13 @@
     "no_budgets": "Chưa tạo ngân sách nào",
     "budget_created": "Đã tạo ngân sách thành công",
     "budget_updated": "Đã cập nhật ngân sách thành công",
-    "budget_deleted": "Đã xóa ngân sách thành công"
+    "budget_deleted": "Đã xóa ngân sách thành công",
+    "settings": "Thiết lập ngân sách",
+    "create": "Tạo ngân sách mới",
+    "empty": "Không tìm thấy ngân sách. Hãy tạo mới!",
+    "details_coming": "Chi tiết ngân sách cho {name} sẽ sớm có",
+    "overspent_of": "vượt quá ${amount}",
+    "left_of": "còn lại của ${amount}"
   },
 
   "categories": {

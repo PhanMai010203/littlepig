@@ -1,21 +1,22 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sa3_liquid/sa3_liquid.dart';
 
+import '../../../../core/settings/app_settings.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/animations/animated_count_text.dart';
+import '../../../../shared/widgets/animations/fade_in.dart';
+import '../../../../shared/widgets/animations/tappable_widget.dart';
+import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/page_template.dart';
+
+import '../../domain/entities/budget.dart';
 import '../bloc/budgets_bloc.dart';
 import '../bloc/budgets_event.dart';
 import '../bloc/budgets_state.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/settings/app_settings.dart';
-import 'package:sa3_liquid/sa3_liquid.dart';
-import '../../../../shared/widgets/animations/tappable_widget.dart';
-import '../../../../shared/widgets/animations/fade_in.dart';
-import '../../../../shared/widgets/app_text.dart';
-import '../../domain/entities/budget.dart';
 import '../widgets/budget_timeline.dart';
 import '../widgets/daily_allowance_label.dart';
-import '../../../../shared/widgets/animations/animated_count_text.dart';
 
 /// The main page for the Budgets feature.
 ///
@@ -41,65 +42,72 @@ class _BudgetsPageState extends State<BudgetsPage> {
   Widget build(BuildContext context) {
     return PageTemplate(
       title: 'navigation.budgets'.tr(),
-      actions: [
-        IconButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Budget settings (coming soon)')),
-            );
-          },
-          icon: const Icon(Icons.settings),
-        ),
-      ],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create new budget (coming soon)')),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+      actions: [_buildSettingsButton(context)],
+      floatingActionButton: _buildFab(context),
       slivers: [
         BlocBuilder<BudgetsBloc, BudgetsState>(
-          builder: (context, state) {
-            if (state is BudgetsLoading || state is BudgetsInitial) {
-              // Show a loading indicator while budgets are being fetched.
-              return const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-            if (state is BudgetsError) {
-              // Show an error message if something went wrong.
-              return SliverFillRemaining(
-                child: Center(child: Text('Error: ${state.message}')),
-              );
-            }
-            if (state is BudgetsLoaded) {
-              if (state.budgets.isEmpty) {
-                // Show a message if there are no budgets to display.
-                return const SliverFillRemaining(
-                  child: Center(child: Text('No budgets found. Create one!')),
-                );
-              }
-              // If budgets are loaded, display them in a list.
-              return SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList.builder(
-                  itemCount: state.budgets.length,
-                  itemBuilder: (context, index) {
-                    final budget = state.budgets[index];
-                    return BudgetTile(budget: budget);
-                  },
-                ),
-              );
-            }
-            // Fallback for any other unhandled state.
-            return const SliverFillRemaining(
-              child: Center(child: Text('Something went wrong.')),
-            );
-          },
+          builder: (context, state) => _buildBody(state),
         ),
       ],
+    );
+  }
+
+  /// Builds the appropriate sliver based on the current [BudgetsState].
+  Widget _buildBody(BudgetsState state) {
+    if (state is BudgetsLoading || state is BudgetsInitial) {
+      return _buildLoading();
+    }
+
+    if (state is BudgetsError) {
+      return _buildError(state.message);
+    }
+
+    if (state is BudgetsLoaded) {
+      if (state.budgets.isEmpty) return _buildEmpty();
+      return _buildBudgetList(state.budgets);
+    }
+
+    // Fallback – should rarely be reached.
+    return _buildError('Unhandled state: $state');
+  }
+
+  // ───────────────────────────────── UI Helpers ──────────────────────────────────
+
+  Widget _buildSettingsButton(BuildContext context) => IconButton(
+        icon: const Icon(Icons.settings),
+        onPressed: () => _showComingSoonSnackBar(context, 'budgets.settings'.tr()),
+        tooltip: 'budgets.settings'.tr(),
+      );
+
+  Widget _buildFab(BuildContext context) => FloatingActionButton(
+        child: const Icon(Icons.add),
+        onPressed: () => _showComingSoonSnackBar(context, 'budgets.create'.tr()),
+        tooltip: 'budgets.create'.tr(),
+      );
+
+  Widget _buildLoading() => const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      );
+
+  Widget _buildError(String message) => SliverFillRemaining(
+        child: Center(child: Text('common.error'.tr(namedArgs: {'message': message}))),
+      );
+
+  Widget _buildEmpty() => SliverFillRemaining(
+        child: Center(child: Text('budgets.empty'.tr())),
+      );
+
+  Widget _buildBudgetList(List<Budget> budgets) => SliverPadding(
+        padding: const EdgeInsets.all(16),
+        sliver: SliverList.builder(
+          itemCount: budgets.length,
+          itemBuilder: (context, index) => BudgetTile(budget: budgets[index]),
+        ),
+      );
+
+  void _showComingSoonSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
     );
   }
 }
@@ -126,19 +134,24 @@ class BudgetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    final Color budgetColor = _pickColor(context);
     const Color bgColor = Colors.white;
 
     final bool expensiveMotion =
         AppSettings.reduceAnimations || AppSettings.batterySaver ||
             MediaQuery.of(context).disableAnimations;
 
+    final Color budgetColor = _pickColor(context);
+
     return TappableWidget(
       borderRadius: BorderRadius.circular(18),
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Budget details coming soon for ${budget.name}')),
+          SnackBar(
+            content: Text(
+              'budgets.details_coming'
+                  .tr(namedArgs: {'name': budget.name}),
+            ),
+          ),
         );
       },
       child: Container(
@@ -221,7 +234,7 @@ class _BudgetHeaderContent extends StatelessWidget {
         final remaining = budget.amount - spent;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             AppText(
               budget.name,
@@ -236,6 +249,14 @@ class _BudgetHeaderContent extends StatelessWidget {
               duration: const Duration(milliseconds: 600),
               builder: (context, animatedRemaining) {
                 final isOverspent = animatedRemaining < 0;
+                final trailing = isOverspent
+                    ? 'budgets.overspent_of'.tr(namedArgs: {
+                        'amount': budget.amount.toStringAsFixed(0),
+                      })
+                    : 'budgets.left_of'.tr(namedArgs: {
+                        'amount': budget.amount.toStringAsFixed(0),
+                      });
+
                 return RichText(
                   text: TextSpan(
                     style: theme.textTheme.bodyMedium,
@@ -245,9 +266,7 @@ class _BudgetHeaderContent extends StatelessWidget {
                         style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
-                        text: isOverspent
-                            ? ' overspent of \$${budget.amount.toStringAsFixed(0)}'
-                            : ' left of \$${budget.amount.toStringAsFixed(0)}',
+                        text: ' $trailing',
                         style: const TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
                       ),
                     ],
