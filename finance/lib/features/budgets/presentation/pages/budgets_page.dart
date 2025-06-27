@@ -13,6 +13,8 @@ import '../../../../shared/widgets/animations/tappable_widget.dart';
 import '../../../../shared/widgets/animations/fade_in.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/budget.dart';
+import '../widgets/budget_timeline.dart';
+import '../widgets/daily_allowance_label.dart';
 
 /// The main page for the Budgets feature.
 ///
@@ -179,11 +181,19 @@ class BudgetTile extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: FadeIn(
                       delay: const Duration(milliseconds: 150),
-                      child: _BudgetContent(budget: budget, accent: budgetColor),
+                      child: _BudgetHeaderContent(budget: budget, accent: budgetColor),
                     ),
                   ),
                 ),
-                const Expanded(child: SizedBox.shrink()),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                    child: FadeIn(
+                      delay: const Duration(milliseconds: 250),
+                      child: _BudgetFooterContent(budget: budget, accent: budgetColor),
+                    ),
+                  ),
+                ),
               ],
             ),
           ],
@@ -193,8 +203,8 @@ class BudgetTile extends StatelessWidget {
   }
 }
 
-class _BudgetContent extends StatelessWidget {
-  const _BudgetContent({required this.budget, required this.accent});
+class _BudgetHeaderContent extends StatelessWidget {
+  const _BudgetHeaderContent({required this.budget, required this.accent});
   final Budget budget;
   final Color accent;
 
@@ -251,6 +261,28 @@ class _BudgetContent extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+}
+
+class _BudgetFooterContent extends StatelessWidget {
+  const _BudgetFooterContent({required this.budget, required this.accent});
+  final Budget budget;
+  final Color accent;
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.bottomCenter,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          BudgetTimeline(budget: budget, accent: accent),
+          const SizedBox(height: 12),
+          DailyAllowanceLabel(budget: budget),
+        ],
+      ),
     );
   }
 }
