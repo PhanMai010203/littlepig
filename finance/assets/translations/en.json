@@ -71,7 +71,38 @@
     "details_coming": "Budget details coming soon for {name}",
     "overspent_of": "overspent of ${amount}",
     "left_of": "left of ${amount}",
-    "today": "Today"
+    "today": "Today",
+
+    "form": {
+      "create_new_budget": "Create New Budget",
+      "create_subtitle": "Set up a new budget to track your spending",
+      "name": "Budget Name",
+      "name_hint": "e.g., Groceries, Entertainment",
+      "name_required": "Budget name is required",
+      "name_too_short": "Budget name must be at least 2 characters",
+      "budget_amount": "Budget Amount",
+      "target_amount": "Target Amount",
+      "amount_required": "Amount is required",
+      "amount_invalid": "Please enter a valid amount greater than 0",
+      "period": "Budget Period",
+      "income_budget": "Income Budget",
+      "expense_budget": "Expense Budget",
+      "income_description": "Track income against a target",
+      "expense_description": "Track spending within a limit",
+      "advanced_options": "Advanced Options",
+      "exclude_debt_credit": "Exclude debt & credit payments",
+      "exclude_debt_credit_description": "Exclude loan payments and credit transactions",
+      "create_budget": "Create Budget",
+      "created_successfully": "Budget '{name}' created successfully!",
+      "creation_failed": "Failed to create budget. Please try again."
+    },
+
+    "period": {
+      "daily": "Daily",
+      "weekly": "Weekly", 
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    }
   },
 
   "categories": {

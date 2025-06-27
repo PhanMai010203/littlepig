@@ -1,7 +1,9 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/page_template.dart';
+import '../../../../app/router/app_routes.dart';
 
 import '../../domain/entities/budget.dart';
 import '../bloc/budgets_bloc.dart';
@@ -66,14 +68,15 @@ class _BudgetsPageState extends State<BudgetsPage> {
 
   Widget _buildSettingsButton(BuildContext context) => IconButton(
         icon: const Icon(Icons.settings),
-        onPressed: () => _showComingSoonSnackBar(context, 'budgets.settings'.tr()),
+        onPressed: () =>
+            _showComingSoonSnackBar(context, 'budgets.settings'.tr()),
         tooltip: 'budgets.settings'.tr(),
       );
 
   Widget _buildFab(BuildContext context) => FloatingActionButton(
-        child: const Icon(Icons.add),
-        onPressed: () => _showComingSoonSnackBar(context, 'budgets.create'.tr()),
+        onPressed: () => context.push(AppRoutes.budgetCreate),
         tooltip: 'budgets.create'.tr(),
+        child: const Icon(Icons.add),
       );
 
   Widget _buildLoading() => const SliverFillRemaining(
@@ -81,7 +84,8 @@ class _BudgetsPageState extends State<BudgetsPage> {
       );
 
   Widget _buildError(String message) => SliverFillRemaining(
-        child: Center(child: Text('common.error'.tr(namedArgs: {'message': message}))),
+        child: Center(
+            child: Text('common.error'.tr(namedArgs: {'message': message}))),
       );
 
   Widget _buildEmpty() => SliverFillRemaining(
@@ -102,5 +106,3 @@ class _BudgetsPageState extends State<BudgetsPage> {
     );
   }
 }
-
-

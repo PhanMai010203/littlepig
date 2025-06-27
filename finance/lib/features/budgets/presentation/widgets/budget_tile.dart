@@ -99,19 +99,13 @@ class BudgetTile extends StatelessWidget {
                       left: 20.0,
                       right: budget.manualAddMode ? 20.0 : 56.0, // Extra space for history button
                     ),
-                    child: FadeIn(
-                      delay: const Duration(milliseconds: 150),
-                      child: _BudgetHeaderContent(budget: budget, accent: budgetColor),
-                    ),
+                    child: _BudgetHeaderContent(budget: budget, accent: budgetColor),
                   ),
                 ),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                    child: FadeIn(
-                      delay: const Duration(milliseconds: 250),
-                      child: _BudgetFooterContent(budget: budget, accent: budgetColor),
-                    ),
+                    child: _BudgetFooterContent(budget: budget, accent: budgetColor),
                   ),
                 ),
               ],
@@ -139,27 +133,24 @@ class BudgetTile extends StatelessWidget {
     return Positioned(
       top: 12,
       right: 12,
-      child: FadeIn(
-        delay: const Duration(milliseconds: 350),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: () => _showHistorySnackBar(context),
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              width: 32,
-              height: 32,
-              decoration: BoxDecoration(
-                color: buttonColor,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Center(
-                child: SvgPicture.asset(
-                  'assets/icons/icon_history.svg',
-                  width: 16,
-                  height: 16,
-                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
-                ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _showHistorySnackBar(context),
+          borderRadius: BorderRadius.circular(8),
+          child: Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(
+              color: buttonColor,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Center(
+              child: SvgPicture.asset(
+                'assets/icons/icon_history.svg',
+                width: 16,
+                height: 16,
+                colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
               ),
             ),
           ),

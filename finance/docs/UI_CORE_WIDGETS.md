@@ -64,6 +64,7 @@ This widget provides a standard page layout with a modern, collapsible `SliverAp
 -   **Collapsible App Bar:** The header starts large and shrinks into a standard `AppBar` as the user scrolls.
 -   **Theme-Aware:** The app bar's background opacity and color are tied to the current theme and scroll position.
 -   **Sliver-Based:** It uses a `CustomScrollView` under the hood, requiring its content to be provided as a list of sliver widgets.
+-   **⚡ Performance Optimized:** No entrance animations - content appears instantly for better performance.
 
 **Example Usage:**
 

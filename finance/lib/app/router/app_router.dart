@@ -11,14 +11,19 @@ import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
+import '../../features/budgets/presentation/pages/budget_create_page.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
 // Add these imports for demo pages
 import '../../demo/framework_demo_page.dart';
 import '../../demo/demo_transition_pages.dart';
+import 'animation_test.dart';
 
 class AppRouter {
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static final GoRouter router = GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.home,
     routes: [
       ShellRoute(
@@ -82,6 +87,29 @@ class AppRouter {
           name: state.name,
           key: state.pageKey,
         ),
+      ),
+
+      // Budget creation page
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.budgetCreate,
+        name: AppRoutes.budgetCreate,
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            key: state.pageKey,
+            child: const BudgetCreatePage(),
+            fullscreenDialog: true,
+            transitionDuration: const Duration(milliseconds: 300),
+            reverseTransitionDuration: const Duration(milliseconds: 125),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return AppTransitions.modalSlide(
+                animation: animation,
+                child: child,
+              );
+            },
+          );
+        },
       ),
 
       // Example of custom transition routes

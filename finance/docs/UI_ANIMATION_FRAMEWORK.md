@@ -4,9 +4,33 @@ The Finance App includes a comprehensive set of pre-built, settings-aware animat
 
 ---
 
+## ⚡ Performance Considerations
+
+**Important**: For optimal app performance, **page entrance animations have been disabled** in core components. The following components no longer use entrance animations:
+
+- **PageTemplate**: All pages using `PageTemplate` now load instantly without fade-in effects
+- **Budget pages**: `BudgetsPage`, `BudgetCreatePage`, and related components load immediately
+- **Transaction pages**: `TransactionsPage` and related components load immediately
+
+### When to Avoid Animations
+
+❌ **Avoid entrance animations for:**
+- Page content that loads on navigation
+- Large lists or heavy components
+- Critical UI elements that users expect to see immediately
+- Components that are frequently recreated
+
+✅ **Use animations for:**
+- User interactions (taps, hovers)
+- State changes within a page
+- Modal/dialog appearances
+- Loading states and micro-interactions
+
+---
+
 ## ✨ Animation Framework
 
-The app has a comprehensive set of pre-built, settings-aware animations that you should use to create a fluid user experience.
+The app has a comprehensive set of pre-built, settings-aware animations that you should use sparingly to create a fluid user experience.
 
 -   **Animation Widgets Location**: `lib/shared/widgets/animations/`
 -   **Animation Utilities**: `lib/shared/widgets/animations/animation_utils.dart`
@@ -28,25 +52,25 @@ import 'package:finance/shared/widgets/animations/slide_fade_transition.dart';
 import 'package:finance/shared/widgets/animations/shake_animation.dart';
 import 'package:finance/shared/widgets/animations/tappable_widget.dart';
 
-// Fade in animation
+// Fade in animation - USE SPARINGLY
 FadeIn(
   delay: Duration(milliseconds: 100),
-  child: MyCardWidget(),
+  child: MyInteractiveWidget(), // Only for interactions, not page content
 ),
 
-// Scale in animation
+// Scale in animation - USE SPARINGLY  
 ScaleIn(
   delay: Duration(milliseconds: 200),
-  child: MyButtonWidget(),
+  child: MyButtonWidget(), // Only for interactive elements
 ),
 
-// Slide in animation
+// Slide in animation - USE SPARINGLY
 SlideIn(
   direction: SlideDirection.left,
-  child: MyListItem(),
+  child: MyModalContent(), // Only for modals/dialogs
 ),
 
-// Tappable widget with feedback
+// Tappable widget with feedback - RECOMMENDED
 TappableWidget(
   onTap: () => _handleTap(),
   child: MyInteractiveWidget(),
@@ -55,8 +79,11 @@ TappableWidget(
 
 ### Staggered Animations
 
+**⚠️ Warning**: Staggered animations can significantly impact performance on page load. Use only for small lists or interactive elements within a page.
+
 ```dart
-// Create staggered list animations
+// ❌ DON'T: Use staggered animations for page content
+// ✅ DO: Use for small interactive lists or modal content
 Column(
   children: List.generate(items.length, (index) {
     return FadeIn(

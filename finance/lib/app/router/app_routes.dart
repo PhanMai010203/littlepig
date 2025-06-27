@@ -7,6 +7,7 @@ class AppRoutes {
 
   // Secondary routes
   static const String settings = '/settings';
+  static const String budgetCreate = '/budget/create';
 
   // Additional pages that can be customized in nav bar
   static const String goals = '/goals';

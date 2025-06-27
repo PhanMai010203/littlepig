@@ -65,66 +65,64 @@ class _PageTemplateState extends State<PageTemplate> {
     return Scaffold(
       backgroundColor: widget.backgroundColor ?? surfaceColor,
       floatingActionButton: widget.floatingActionButton,
-      body: FadeIn(
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            if (widget.title != null)
-              AnimatedBuilder(
-                animation: _scrollController,
-                builder: (context, child) {
-                  final appBarOpacity = _scrollController.hasClients
-                      ? (_scrollController.offset /
-                              (widget.expandedHeight - widget.toolbarHeight))
-                          .clamp(0.0, 1.0)
-                      : 0.0;
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          if (widget.title != null)
+            AnimatedBuilder(
+              animation: _scrollController,
+              builder: (context, child) {
+                final appBarOpacity = _scrollController.hasClients
+                    ? (_scrollController.offset /
+                            (widget.expandedHeight - widget.toolbarHeight))
+                        .clamp(0.0, 1.0)
+                    : 0.0;
 
-                  return SliverAppBar(
-                    pinned: true,
-                    expandedHeight: widget.expandedHeight,
-                    toolbarHeight: widget.toolbarHeight,
-                    actions: widget.actions,
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    scrolledUnderElevation: appBarOpacity > 0.95 ? 1 : 0,
-                    leading: widget.showBackButton && Navigator.canPop(context)
-                        ? IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed: widget.onBackPressed ??
-                                () => Navigator.pop(context),
-                          )
-                        : null,
-                    flexibleSpace: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // Background that fades in/out with scroll
-                        Container(
-                            color: primaryColor
-                                .withAlpha((255 * appBarOpacity).toInt())),
-                        // Title & collapse handling
-                        FlexibleSpaceBar(
-                          titlePadding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 8.0,
-                          ),
-                          centerTitle: false,
-                          title: Text(
-                            widget.title!, // safe to use ! because of the check
-                            style: widget.titleTextStyle ??
-                                theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: onSurfaceColor,
-                                ),
-                          ),
+                return SliverAppBar(
+                  pinned: true,
+                  expandedHeight: widget.expandedHeight,
+                  toolbarHeight: widget.toolbarHeight,
+                  actions: widget.actions,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: appBarOpacity > 0.95 ? 1 : 0,
+                  leading: widget.showBackButton && Navigator.canPop(context)
+                      ? IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: widget.onBackPressed ??
+                              () => Navigator.pop(context),
+                        )
+                      : null,
+                  flexibleSpace: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      // Background that fades in/out with scroll
+                      Container(
+                          color: primaryColor
+                              .withAlpha((255 * appBarOpacity).toInt())),
+                      // Title & collapse handling
+                      FlexibleSpaceBar(
+                        titlePadding: const EdgeInsets.symmetric(
+                          horizontal: 16.0,
+                          vertical: 8.0,
                         ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ...widget.slivers,
-          ],
-        ),
+                        centerTitle: false,
+                        title: Text(
+                          widget.title!, // safe to use ! because of the check
+                          style: widget.titleTextStyle ??
+                              theme.textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: onSurfaceColor,
+                              ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ...widget.slivers,
+        ],
       ),
     );
   }

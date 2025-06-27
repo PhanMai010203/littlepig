@@ -34,13 +34,10 @@ class DailyAllowanceLabel extends StatelessWidget {
         final remainingDays = budget.remainingDays(DateTime.now());
         // TODO: Localize this string properly and use currency formatting
         final message = 'You can spend \$${allowance.toStringAsFixed(0)}/day for $remainingDays more days';
-        return FadeIn(
-          delay: const Duration(milliseconds: 100),
-          child: AppText(
-            message,
-            fontSize: 11,
-            textColor: getColor(context, "textSecondary"),
-          ),
+        return AppText(
+          message,
+          fontSize: 11,
+          textColor: getColor(context, "textSecondary"),
         );
       },
     );

@@ -71,7 +71,38 @@
     "details_coming": "Chi tiết ngân sách cho {name} sẽ sớm có",
     "overspent_of": "vượt quá ${amount}",
     "left_of": "còn lại của ${amount}",
-    "today": "Hôm nay"
+    "today": "Hôm nay",
+
+    "form": {
+      "create_new_budget": "Tạo Ngân Sách Mới",
+      "create_subtitle": "Thiết lập ngân sách mới để theo dõi chi tiêu",
+      "name": "Tên ngân sách",
+      "name_hint": "vd: Thực phẩm, Giải trí",
+      "name_required": "Tên ngân sách là bắt buộc",
+      "name_too_short": "Tên ngân sách phải có ít nhất 2 ký tự",
+      "budget_amount": "Số tiền ngân sách",
+      "target_amount": "Số tiền mục tiêu",
+      "amount_required": "Số tiền là bắt buộc",
+      "amount_invalid": "Vui lòng nhập số tiền hợp lệ lớn hơn 0",
+      "period": "Chu kỳ ngân sách",
+      "income_budget": "Ngân sách thu nhập",
+      "expense_budget": "Ngân sách chi tiêu",
+      "income_description": "Theo dõi thu nhập theo mục tiêu",
+      "expense_description": "Theo dõi chi tiêu trong giới hạn",
+      "advanced_options": "Tùy chọn nâng cao",
+      "exclude_debt_credit": "Loại trừ thanh toán nợ & tín dụng",
+      "exclude_debt_credit_description": "Loại trừ thanh toán khoản vay và giao dịch tín dụng",
+      "create_budget": "Tạo ngân sách",
+      "created_successfully": "Ngân sách '{name}' đã được tạo thành công!",
+      "creation_failed": "Không thể tạo ngân sách. Vui lòng thử lại."
+    },
+
+    "period": {
+      "daily": "Hàng ngày",
+      "weekly": "Hàng tuần",
+      "monthly": "Hàng tháng",
+      "yearly": "Hàng năm"
+    }
   },
 
   "categories": {
