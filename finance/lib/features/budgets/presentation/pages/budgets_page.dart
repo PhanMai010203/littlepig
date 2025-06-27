@@ -15,6 +15,7 @@ import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/budget.dart';
 import '../widgets/budget_timeline.dart';
 import '../widgets/daily_allowance_label.dart';
+import '../../../../shared/widgets/animations/animated_count_text.dart';
 
 /// The main page for the Budgets feature.
 ///
@@ -125,6 +126,7 @@ class BudgetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = Theme.of(context).brightness;
     final Color budgetColor = _pickColor(context);
     const Color bgColor = Colors.white;
 
@@ -228,10 +230,11 @@ class _BudgetHeaderContent extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            TweenAnimationBuilder<double>(
-              tween: Tween<double>(begin: budget.amount, end: remaining),
+            AnimatedCount(
+              from: budget.amount,
+              to: remaining,
               duration: const Duration(milliseconds: 600),
-              builder: (context, animatedRemaining, child) {
+              builder: (context, animatedRemaining) {
                 final isOverspent = animatedRemaining < 0;
                 return RichText(
                   text: TextSpan(
@@ -239,19 +242,13 @@ class _BudgetHeaderContent extends StatelessWidget {
                     children: [
                       TextSpan(
                         text: '\$${animatedRemaining.abs().toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       ),
                       TextSpan(
                         text: isOverspent
                             ? ' overspent of \$${budget.amount.toStringAsFixed(0)}'
                             : ' left of \$${budget.amount.toStringAsFixed(0)}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.normal,
-                        ),
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
                       ),
                     ],
                   ),
@@ -296,7 +293,7 @@ class AnimatedGooBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brightness = Theme.of(context).brightness;
-    final color = brightness == Brightness.light ? baseColor.withOpacity(0.10) : baseColor.withOpacity(0.30);
+    final color = brightness == Brightness.light ? baseColor.withOpacity(0.20) : baseColor.withOpacity(0.40);
 
     return Transform(
       transform: Matrix4.skewX(0.001),
@@ -306,7 +303,7 @@ class AnimatedGooBackground extends StatelessWidget {
         color: color,
         blur: 0.30,
         size: 1.30,
-        speed: 3.30,
+        speed: 5.30,
         offset: 0,
         blendMode: BlendMode.multiply,
         particleType: ParticleType.atlas,

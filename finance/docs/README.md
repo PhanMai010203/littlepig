@@ -275,6 +275,7 @@ stateDiagram-v2
 - `FadeIn`, `ScaleIn`, `SlideIn` – Entrance animations respecting motion settings.  
 - `BouncingWidget`, `BreathingWidget` – Looping attention-grabbers.  
 - `SlideFadeTransition()` – Combined slide + fade.  
+- `AnimatedCount` – Smoothly counts between numeric values (useful for currency or stats).  
 - `.openContainerNavigation()` – Easy Material container transform.
 
 **Theming**  

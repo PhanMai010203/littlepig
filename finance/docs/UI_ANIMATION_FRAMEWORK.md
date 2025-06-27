@@ -71,4 +71,39 @@ Column(
     );
   }),
 )
-``` 
+```
+
+### Numeric Counter (AnimatedCount)
+
+Use `AnimatedCount` to animate numbers (currency, scores, statistics) without manual AnimationController logic.
+
+```dart
+AnimatedCount(
+  from: 0,
+  to: totalAmount,
+  duration: const Duration(milliseconds: 600),
+  builder: (context, value) => Text(
+    '\$${value.toStringAsFixed(0)}',
+    style: AppTextStyles.headlineMedium,
+  ),
+);
+```
+
+You can also build rich layouts:
+
+```dart
+AnimatedCount(
+  from: previousValue,
+  to: currentValue,
+  builder: (context, v) => RichText(
+    text: TextSpan(
+      children: [
+        TextSpan(text: '\$${v.toStringAsFixed(0)}', style: boldStyle),
+        const TextSpan(text: ' left'),
+      ],
+    ),
+  ),
+);
+```
+
+The widget lives in `lib/shared/widgets/animations/animated_count_text.dart` and internally uses `TweenAnimationBuilder`, automatically respecting reduce-motion settings (since duration will be `Duration.zero` when animations are disabled). 
