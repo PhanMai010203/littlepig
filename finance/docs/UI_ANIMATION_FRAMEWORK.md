@@ -133,4 +133,71 @@ AnimatedCount(
 );
 ```
 
-The widget lives in `lib/shared/widgets/animations/animated_count_text.dart` and internally uses `TweenAnimationBuilder`, automatically respecting reduce-motion settings (since duration will be `Duration.zero` when animations are disabled). 
+The widget lives in `lib/shared/widgets/animations/animated_count_text.dart` and internally uses `TweenAnimationBuilder`, automatically respecting reduce-motion settings (since duration will be `Duration.zero` when animations are disabled).
+
+---
+
+## 🔄 Enhanced Page Transitions *(Recently Added)*
+
+The animation framework now includes three specialized page transition types for better user experience, following Clean Architecture principles:
+
+### Modal Slide Transition
+Perfect for fullscreen dialogs, settings pages, and creation flows:
+```dart
+// In app_router.dart
+GoRoute(
+  parentNavigatorKey: _rootNavigatorKey,
+  path: '/budget-create',
+  name: 'budget_create',
+  pageBuilder: (context, state) => AppPageTransitions.modalSlideTransitionPage(
+    child: const BudgetCreatePage(),
+    name: state.name,
+    key: state.pageKey,
+    fullscreenDialog: true,
+  ),
+),
+```
+
+### Subtle Slide Transition  
+Gentle slide with minimal offset for elegant page changes:
+```dart
+GoRoute(
+  path: '/notifications',
+  name: 'notifications',
+  pageBuilder: (context, state) => AppPageTransitions.subtleSlideTransitionPage(
+    child: const NotificationsPage(),
+    name: state.name,
+    key: state.pageKey,
+    direction: SlideDirection.fromTop,
+    slideOffset: 0.05, // Very subtle movement
+  ),
+),
+```
+
+### Horizontal Slide Transition
+Optimized for tab-like navigation and category switching:
+```dart
+GoRoute(
+  path: '/categories',
+  name: 'categories',
+  pageBuilder: (context, state) => AppPageTransitions.horizontalSlideTransitionPage(
+    child: const CategoriesPage(),
+    name: state.name,
+    key: state.pageKey,
+    fromRight: true,
+    slideDistance: 0.3, // Moderate slide distance
+  ),
+),
+```
+
+### Transition Selection Guidelines
+
+| Transition Type | Use Case | Example |
+|-----------------|----------|---------|
+| `modalSlideTransitionPage` | Fullscreen dialogs, creation flows | Budget creation, settings |
+| `subtleSlideTransitionPage` | Related content, gentle navigation | Notifications, help pages |
+| `horizontalSlideTransitionPage` | Tab navigation, category switching | Category browsing, filters |
+| `platformTransitionPage` | Default choice for standard navigation | Settings, profile pages |
+| `noTransitionPage` | Performance-critical or shell routes | Main navigation tabs |
+
+**All transitions respect user animation preferences and follow the app's performance guidelines.** 

@@ -17,7 +17,7 @@ import 'page_transitions.dart';
 // Add these imports for demo pages
 import '../../demo/framework_demo_page.dart';
 import '../../demo/demo_transition_pages.dart';
-import 'animation_test.dart';
+
 
 class AppRouter {
   static final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -95,19 +95,11 @@ class AppRouter {
         path: AppRoutes.budgetCreate,
         name: AppRoutes.budgetCreate,
         pageBuilder: (context, state) {
-          return CustomTransitionPage(
+          return AppPageTransitions.modalSlideTransitionPage(
             key: state.pageKey,
             child: const BudgetCreatePage(),
+            name: state.name,
             fullscreenDialog: true,
-            transitionDuration: const Duration(milliseconds: 300),
-            reverseTransitionDuration: const Duration(milliseconds: 125),
-            transitionsBuilder:
-                (context, animation, secondaryAnimation, child) {
-              return AppTransitions.modalSlide(
-                animation: animation,
-                child: child,
-              );
-            },
           );
         },
       ),
@@ -167,6 +159,51 @@ class AppRouter {
             name: state.name,
             key: state.pageKey,
             direction: SlideDirection.fromBottom,
+          );
+        },
+      ),
+
+      // Modal slide transition example (settings modal)
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/settings-modal',
+        name: 'settings_modal',
+        pageBuilder: (context, state) {
+          return AppPageTransitions.modalSlideTransitionPage(
+            child: _buildPlaceholderPage('Settings Modal'),
+            name: state.name,
+            key: state.pageKey,
+            fullscreenDialog: true,
+          );
+        },
+      ),
+
+      // Subtle slide transition example (notifications)
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        pageBuilder: (context, state) {
+          return AppPageTransitions.subtleSlideTransitionPage(
+            child: _buildPlaceholderPage('Notifications'),
+            name: state.name,
+            key: state.pageKey,
+            direction: SlideDirection.fromTop,
+            slideOffset: 0.05,
+          );
+        },
+      ),
+
+      // Horizontal slide transition example (tab navigation simulation)
+      GoRoute(
+        path: '/categories',
+        name: 'categories',
+        pageBuilder: (context, state) {
+          return AppPageTransitions.horizontalSlideTransitionPage(
+            child: _buildPlaceholderPage('Categories'),
+            name: state.name,
+            key: state.pageKey,
+            fromRight: true,
+            slideDistance: 0.3,
           );
         },
       ),

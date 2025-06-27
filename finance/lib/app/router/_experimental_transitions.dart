@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
 
-class AppTransitions {
-  // Cashew-style subtle slide + fade
+/// EXPERIMENTAL ANIMATION REFERENCE - DO NOT USE IN PRODUCTION
+/// 
+/// This file contains experimental animation transitions that were used for testing.
+/// These transitions have been properly integrated into the main animation system
+/// at `lib/app/router/page_transitions.dart` as part of the `AppPageTransitions` class.
+/// 
+/// Use `AppPageTransitions.modalSlideTransitionPage()` instead of `AppTransitions.modalSlide()`
+/// Use `AppPageTransitions.subtleSlideTransitionPage()` instead of `AppTransitions.slideUpFade()`
+/// Use `AppPageTransitions.horizontalSlideTransitionPage()` instead of `AppTransitions.horizontalSlide()`
+/// 
+/// This file is kept for reference purposes only.
+/// 
+/// @deprecated Use AppPageTransitions methods instead
+class ExperimentalAppTransitions {
+  /// @deprecated Use AppPageTransitions.subtleSlideTransitionPage() instead
   static Widget slideUpFade({
     required Animation<double> animation,
     required Widget child,
@@ -24,7 +37,7 @@ class AppTransitions {
     );
   }
 
-  // Modal/bottom sheet style
+  /// @deprecated Use AppPageTransitions.modalSlideTransitionPage() instead
   static Widget modalSlide({
     required Animation<double> animation,
     required Widget child,
@@ -51,7 +64,7 @@ class AppTransitions {
     );
   }
 
-  // Horizontal slide (for tab-like navigation)
+  /// @deprecated Use AppPageTransitions.horizontalSlideTransitionPage() instead
   static Widget horizontalSlide({
     required Animation<double> animation,
     required Widget child,
