@@ -350,7 +350,7 @@ class _BudgetFooterContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          BudgetTimeline(budget: budget, accent: accent),
+          BudgetTimeline(budget: budget),
           const SizedBox(height: 12),
           DailyAllowanceLabel(budget: budget),
         ],

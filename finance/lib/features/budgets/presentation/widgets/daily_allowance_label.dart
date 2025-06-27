@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/budget.dart';
 import '../bloc/budgets_state.dart';
 import '../bloc/budgets_bloc.dart';
@@ -31,12 +32,14 @@ class DailyAllowanceLabel extends StatelessWidget {
       },
       builder: (context, allowance) {
         final remainingDays = budget.remainingDays(DateTime.now());
+        // TODO: Localize this string properly and use currency formatting
         final message = 'You can spend \$${allowance.toStringAsFixed(0)}/day for $remainingDays more days';
         return FadeIn(
           delay: const Duration(milliseconds: 100),
           child: AppText(
             message,
             fontSize: 11,
+            textColor: getColor(context, "textSecondary"),
           ),
         );
       },

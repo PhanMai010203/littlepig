@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import '../../domain/entities/budget.dart';
 
 import '../../../../shared/widgets/app_text.dart';
@@ -11,14 +12,20 @@ import 'budget_progress_bar.dart';
 ///
 /// Layout:   start-date  ──  [progress bar]  ──  end-date
 class BudgetTimeline extends StatelessWidget {
-  const BudgetTimeline({super.key, required this.budget, required this.accent});
+  const BudgetTimeline({super.key, required this.budget});
 
   final Budget budget;
-  final Color accent;
+
+  Color _pickAccentColor(BuildContext context) {
+    // This logic is consistent with how BudgetTile picks its color.
+    final palette = getSelectableColors();
+    return palette[budget.name.hashCode.abs() % palette.length];
+  }
 
   @override
   Widget build(BuildContext context) {
     final dateRange = DateTimeRange(start: budget.startDate, end: budget.endDate);
+    final accent = _pickAccentColor(context);
     return GestureDetector(
       onTap: () {
         // Optional: show detailed timeline popup (placeholder)

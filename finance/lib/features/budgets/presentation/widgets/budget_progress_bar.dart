@@ -99,7 +99,15 @@ class _BudgetProgressBarState extends State<BudgetProgressBar>
                 children: [
                   _Track(width: width),
                   if (ghostW > mainW)
-                    _Bar(width: ghostW, color: widget.accent.withValues(alpha: 0.25)),
+                    _Bar(
+                      width: ghostW,
+                      color: dynamicPastel(
+                        context,
+                        widget.accent,
+                        amountLight: 0.75, // Lighter in light theme
+                        amountDark: 0.6,   // A bit more solid in dark theme
+                      ),
+                    ),
                   // Animated main bar
                   TweenAnimationBuilder<double>(
                     tween: Tween<double>(begin: 0, end: mainW),
@@ -286,7 +294,7 @@ class _TodayIndicator extends StatelessWidget {
           Container(
             width: 3,
             height: 24,
-            color: indicatorColor.withValues(alpha: 0.4),
+            color: getColor(context, "textSecondary"),
           ),
         ],
       ),
