@@ -143,7 +143,7 @@ This project leverages a set of robust and well-supported libraries to ensure a 
 | [Transactions – Advanced](TRANSACTIONS_ADVANCED_FEATURES.md) | Subscriptions, recurring payments, loan tracking. |
 | [Transactions – States & Actions](TRANSACTIONS_STATES_AND_ACTIONS.md) | Lifecycle states (`pending`, `scheduled`, etc.) & context-aware actions. |
 | [Transactions – Integration](TRANSACTIONS_INTEGRATION.md) | Validation, error handling & best-practice integration. |
-| [Budget Tracking](BUDGET_TRACKING_SYSTEM.md) | Create, filter & monitor budgets with real-time streams. |
+| [Budget Tracking](BUDGET_TRACKING_SYSTEM.md) | Create, filter & monitor budgets with real-time streams. **UI refreshed – `BudgetsPage` refactored for cleaner state handling & helper-based layout (June 2025).** |
 | [Category Management](CATEGORIES_GUIDE.md) | Classify transactions with default and custom categories. |
 | [Account Management](ACCOUNTS_GUIDE.md) | Create accounts, set balances & currency handling. |
 
@@ -262,6 +262,7 @@ stateDiagram-v2
 | [UI Dialogs & Pop-ups](UI_DIALOGS_AND_POPUPS.md) | Dialog, bottom-sheet & modal frameworks. |
 | [UI Patterns & Best Practices](UI_PATTERNS_AND_BEST_PRACTICES.md) | State management with BLoC, error/loading patterns & lifecycle management. |
 | [UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md) | Widget testing setup, troubleshooting common UI issues & performance tips. |
+| [Language & Internationalization](LANGUAGE.md) | Comprehensive guide to Easy Localization, locale-aware formatting & adding new languages. |
 
 **Quick reference – UI widgets & helpers**
 
@@ -422,4 +423,4 @@ dart run build_runner build --delete-conflicting-outputs
 
 ---
 
-*Last updated: <!-- 2025-06-22 -->*
+*Last updated: <!-- 2025-06-27 -->*
