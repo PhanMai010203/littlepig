@@ -70,7 +70,8 @@
     "empty": "Không tìm thấy ngân sách. Hãy tạo mới!",
     "details_coming": "Chi tiết ngân sách cho {name} sẽ sớm có",
     "overspent_of": "vượt quá ${amount}",
-    "left_of": "còn lại của ${amount}"
+    "left_of": "còn lại của ${amount}",
+    "today": "Hôm nay"
   },
 
   "categories": {

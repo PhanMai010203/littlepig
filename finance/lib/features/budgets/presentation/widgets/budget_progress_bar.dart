@@ -286,7 +286,7 @@ class _TodayIndicator extends StatelessWidget {
               borderRadius: BorderRadius.circular(6),
             ),
             child: AppText(
-              'today'.tr(),
+              'budgets.today'.tr(),
               fontSize: 9,
               textColor: getColor(context, "white"),
             ),
@@ -294,7 +294,7 @@ class _TodayIndicator extends StatelessWidget {
           Container(
             width: 3,
             height: 24,
-            color: getColor(context, "textSecondary"),
+            color: getColor(context, "textSecondary").withValues(alpha: 0.2),
           ),
         ],
       ),

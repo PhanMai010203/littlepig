@@ -150,6 +150,12 @@ lib/features/
 │   └── presentation/                # UI layer
 │       └── pages/
 │           └── budgets_page.dart    # Budget management page
+│       └── widgets/
+│           ├── animated_goo_background.dart # Gooey animated background
+│           ├── budget_progress_bar.dart     # Budget progress bar
+│           ├── budget_tile.dart             # Budget list item
+│           ├── budget_timeline.dart         # Timeline visualization for budget
+│           └── daily_allowance_label.dart   # Daily spending allowance
 ├── accounts/                        # Account management feature
 │   ├── domain/                      # Business logic layer
 │   │   ├── entities/

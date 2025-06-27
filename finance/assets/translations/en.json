@@ -70,7 +70,8 @@
     "empty": "No budgets found. Create one!",
     "details_coming": "Budget details coming soon for {name}",
     "overspent_of": "overspent of ${amount}",
-    "left_of": "left of ${amount}"
+    "left_of": "left of ${amount}",
+    "today": "Today"
   },
 
   "categories": {
