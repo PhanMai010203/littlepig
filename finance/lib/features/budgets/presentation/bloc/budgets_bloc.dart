@@ -49,8 +49,8 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
 
     final now = DateTime.now();
 
-    // If the budget has expired, there's no allowance left.
-    if (now.isAfter(budget.endDate)) {
+    // If the budget has expired (now is after or at the end date), there's no allowance left.
+    if (now.isAfter(budget.endDate) || now.isAtSameMomentAs(budget.endDate)) {
       return 0.0;
     }
 
