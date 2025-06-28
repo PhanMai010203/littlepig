@@ -6,8 +6,8 @@ import '../../core/services/platform_service.dart';
 enum TextInputStyle { bubble, underline, minimal }
 
 // Global focus management for auto-restore functionality
-// FocusNode? _currentTextInputFocus;
-// bool shouldAutoRefocus = false;
+FocusNode? _currentTextInputFocus;
+bool _shouldAutoRefocus = false;
 
 void minimizeKeyboard(BuildContext context) {
   FocusNode? currentFocus = WidgetsBinding.instance.focusManager.primaryFocus;
@@ -26,34 +26,63 @@ void handleOnTapOutsideTextInput(BuildContext context) {
 }
 
 /// Widget wrapper for auto-focus restoration on app resume
-class ResumeTextFieldFocus extends StatelessWidget {
+class ResumeTextFieldFocus extends StatefulWidget {
   const ResumeTextFieldFocus({super.key, required this.child});
   final Widget child;
 
   @override
-  Widget build(BuildContext context) {
-    // Only apply focus restoration on Android
-    if (PlatformService.getPlatform() == PlatformOS.isAndroid) {
-      return Focus(
-        onFocusChange: (value) {
-          // Focus restoration logic - commented out for now
-          // if (value == false) {
-          //   Future.delayed(const Duration(milliseconds: 50), () {
-          //     _currentTextInputFocus = FocusScope.of(context).focusedChild;
-          //   });
-          // } else if (value == true) {
-          //   _currentTextInputFocus = FocusScope.of(context).focusedChild;
-          // }
+  State<ResumeTextFieldFocus> createState() => _ResumeTextFieldFocusState();
+}
 
-          // Future.delayed(Duration(milliseconds: value ? 5 : 0), () {
-          //   shouldAutoRefocus = true;
-          // });
-        },
-        child: child,
-      );
-    } else {
-      return child;
+class _ResumeTextFieldFocusState extends State<ResumeTextFieldFocus>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    // Observe lifecycle changes
+    WidgetsBinding.instance.addObserver(this);
+
+    // Track focus changes globally so we know which TextField had focus last
+    WidgetsBinding.instance.focusManager.addListener(_handleFocusChange);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    WidgetsBinding.instance.focusManager.removeListener(_handleFocusChange);
+    super.dispose();
+  }
+
+  void _handleFocusChange() {
+    _currentTextInputFocus = WidgetsBinding.instance.focusManager.primaryFocus;
+    // If focus is lost because app goes to background, remember to restore
+    if (_currentTextInputFocus == null) {
+      _shouldAutoRefocus = true;
     }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _shouldAutoRefocus) {
+      // Attempt to restore focus if possible
+      if (_currentTextInputFocus != null &&
+          _currentTextInputFocus!.canRequestFocus) {
+        Future.microtask(() => _currentTextInputFocus!.requestFocus());
+      }
+      _shouldAutoRefocus = false;
+    } else if (state == AppLifecycleState.paused) {
+      // Flag that we may need to restore focus when coming back
+      _shouldAutoRefocus = true;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Only apply focus restoration on Android where keyboard is usually dismissed
+    if (PlatformService.getPlatform() == PlatformOS.isAndroid) {
+      return widget.child;
+    }
+    return widget.child;
   }
 }
 

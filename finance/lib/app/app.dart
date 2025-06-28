@@ -12,6 +12,7 @@ import '../features/navigation/presentation/bloc/navigation_bloc.dart';
 import '../features/settings/presentation/bloc/settings_bloc.dart';
 import '../features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'router/app_router.dart';
+import '../shared/widgets/text_input.dart' show ResumeTextFieldFocus;
 
 /// Main App Provider - Receives dependencies via constructor and passes them to MainApp
 class MainAppProvider extends StatelessWidget {
@@ -120,16 +121,18 @@ class _MainAppState extends State<MainApp> {
         ],
         child: BlocBuilder<SettingsBloc, SettingsState>(
           builder: (context, settingsState) {
-            return MaterialApp.router(
-              title: 'finance_app'.tr(),
-              debugShowCheckedModeBanner: false,
-              theme: AppTheme.light(),
-              darkTheme: AppTheme.dark(),
-              themeMode: settingsState.themeMode,
-              routerConfig: AppRouter.router,
-              locale: context.locale,
-              supportedLocales: context.supportedLocales,
-              localizationsDelegates: context.localizationDelegates,
+            return ResumeTextFieldFocus(
+              child: MaterialApp.router(
+                title: 'finance_app'.tr(),
+                debugShowCheckedModeBanner: false,
+                theme: AppTheme.light(),
+                darkTheme: AppTheme.dark(),
+                themeMode: settingsState.themeMode,
+                routerConfig: AppRouter.router,
+                locale: context.locale,
+                supportedLocales: context.supportedLocales,
+                localizationsDelegates: context.localizationDelegates,
+              ),
             );
           },
         ),

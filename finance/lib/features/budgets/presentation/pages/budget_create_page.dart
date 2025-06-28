@@ -257,7 +257,9 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
           controller: _nameController,
           hintText: 'budgets.name_placeholder'.tr(),
           autofocus: true,
-          style: TextInputStyle.bubble,
+          style: TextInputStyle.underline,
+          handleOnTapOutside: true,
+          textCapitalization: TextCapitalization.words,
         ),
         const SizedBox(height: 20),
         ElevatedButton(
@@ -287,8 +289,10 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
           hintText: '0.00',
           autofocus: true,
           textInputAction: TextInputAction.done,
-          style: TextInputStyle.bubble,
+          style: TextInputStyle.underline,
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          handleOnTapOutside: true,
+          textCapitalization: TextCapitalization.none,
         ),
         const SizedBox(height: 20),
         ElevatedButton(
