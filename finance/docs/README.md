@@ -269,6 +269,7 @@ stateDiagram-v2
 **UI Core Widgets**  
 - `AppText()` / `AppTextStyles.*()` – Consistent typography wrappers & presets.
 - `PageTemplate()` – Configurable, sliver-friendly page scaffold with a collapsing app bar.
+- `CollapsibleAppBarTitle()` – Reusable scrolling app bar title with fade animation and customizable styling.
 - `LanguageSelector()` – Drop-in language picker.
 - `.tappable()` / `TappableWidget` – Add unified tap feedback.
 

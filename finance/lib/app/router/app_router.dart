@@ -95,11 +95,10 @@ class AppRouter {
         path: AppRoutes.budgetCreate,
         name: AppRoutes.budgetCreate,
         pageBuilder: (context, state) {
-          return AppPageTransitions.modalSlideTransitionPage(
+          return AppPageTransitions.platformTransitionPage(
             key: state.pageKey,
             child: const BudgetCreatePage(),
             name: state.name,
-            fullscreenDialog: true,
           );
         },
       ),

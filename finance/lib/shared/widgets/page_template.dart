@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 // Phase 5 imports
 import 'animations/fade_in.dart';
 import 'animations/animation_utils.dart';
+import 'collapsible_app_bar_title.dart';
 
 const double _kDefaultExpandedHeight = 120.0;
 const double _kDefaultToolbarHeight = 60.0;
@@ -93,30 +94,13 @@ class _PageTemplateState extends State<PageTemplate> {
                               () => Navigator.pop(context),
                         )
                       : null,
-                  flexibleSpace: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      // Background that fades in/out with scroll
-                      Container(
-                          color: primaryColor
-                              .withAlpha((255 * appBarOpacity).toInt())),
-                      // Title & collapse handling
-                      FlexibleSpaceBar(
-                        titlePadding: const EdgeInsets.symmetric(
-                          horizontal: 16.0,
-                          vertical: 8.0,
-                        ),
-                        centerTitle: false,
-                        title: Text(
-                          widget.title!, // safe to use ! because of the check
-                          style: widget.titleTextStyle ??
-                              theme.textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: onSurfaceColor,
-                              ),
-                        ),
-                      ),
-                    ],
+                  flexibleSpace: CollapsibleAppBarTitle(
+                    title: widget.title!, // safe to use ! because of the check
+                    scrollController: _scrollController,
+                    expandedHeight: widget.expandedHeight,
+                    toolbarHeight: widget.toolbarHeight,
+                    titleTextStyle: widget.titleTextStyle,
+                    backgroundColor: primaryColor,
                   ),
                 );
               },

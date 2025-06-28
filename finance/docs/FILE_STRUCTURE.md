@@ -256,6 +256,7 @@ lib/shared/
 │   │   └── open_container_navigation.dart # Material 3 OpenContainer navigation components
 │   ├── app_text.dart                # Custom text widgets with theming
 │   ├── page_template.dart           # Common page layout template (Enhanced in Phase 5 with FadeIn and AnimatedSwitcher)
+│   ├── collapsible_app_bar_title.dart # Reusable scrolling app bar title with fade animation
 │   └── language_selector.dart       # Language selection widget
 ├── extensions/                      # Reusable extension methods
 │   └── account_currency_extension.dart # Account to currency helpers and formatters
