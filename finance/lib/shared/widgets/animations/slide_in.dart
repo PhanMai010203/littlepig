@@ -124,12 +124,15 @@ class _SlideInState extends State<SlideIn> with SingleTickerProviderStateMixin {
     return AnimatedBuilder(
       animation: _slideAnimation,
       builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(
-            _slideAnimation.value.dx * MediaQuery.of(context).size.width,
-            _slideAnimation.value.dy * MediaQuery.of(context).size.height,
+        // Use ClipRect to prevent visual artifacts during slide animation
+        return ClipRect(
+          child: Transform.translate(
+            offset: Offset(
+              _slideAnimation.value.dx * MediaQuery.of(context).size.width,
+              _slideAnimation.value.dy * MediaQuery.of(context).size.height,
+            ),
+            child: child,
           ),
-          child: child,
         );
       },
       child: widget.child,

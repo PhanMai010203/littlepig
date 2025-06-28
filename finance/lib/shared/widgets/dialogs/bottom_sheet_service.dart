@@ -560,10 +560,10 @@ class BottomSheetService {
     Widget content,
     EdgeInsets? keyboardPadding,
   ) {
-    return AnimatedPadding(
+    return AnimatedContainer(
       padding: keyboardPadding ?? MediaQuery.of(context).viewInsets,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOutCubic,
+      duration: const Duration(milliseconds: 300), // Match native keyboard timing
+      curve: Curves.easeOutQuart, // More natural keyboard response
       child: content,
     );
   }
@@ -629,41 +629,60 @@ class BottomSheetService {
           });
         }
 
-        return DraggableScrollableSheet(
-          initialChildSize: initialSize,
-          minChildSize: minSize,
-          maxChildSize: maxSize,
-          snap: true,
-          snapSizes: snapSizes,
-          builder: (context, scrollController) {
-            Widget sheetContainer = Container(
-              decoration: BoxDecoration(
-                color: backgroundColor ?? colorScheme.surface,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16.0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.shadow.withValues(alpha: 0.1),
-                    blurRadius: elevation ?? 8.0,
-                    offset: const Offset(0, -2),
+        // Keyboard-aware DraggableScrollableSheet
+        return ValueListenableBuilder<bool>(
+          valueListenable: _keyboardVisibilityNotifier(context),
+          builder: (context, isKeyboardVisible, child) {
+            // Adjust snap sizes and initial size based on keyboard visibility
+            final adjustedSnapSizes = isKeyboardVisible && resizeForKeyboard
+                ? snapSizes.map((size) => (size * 0.7).clamp(0.3, 1.0)).toList()
+                : snapSizes;
+            
+            final adjustedInitialSize = isKeyboardVisible && resizeForKeyboard
+                ? (initialSize * 0.8).clamp(0.3, 1.0)
+                : initialSize;
+                
+            final adjustedMinSize = isKeyboardVisible && resizeForKeyboard
+                ? (minSize * 0.7).clamp(0.3, 1.0)
+                : minSize;
+
+            return DraggableScrollableSheet(
+              initialChildSize: adjustedInitialSize,
+              minChildSize: adjustedMinSize,
+              maxChildSize: maxSize,
+              snap: true,
+              snapSizes: adjustedSnapSizes,
+              builder: (context, scrollController) {
+                Widget sheetContainer = Container(
+                  decoration: BoxDecoration(
+                    color: backgroundColor ?? colorScheme.surface,
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(16.0)),
+                    boxShadow: [
+                      BoxShadow(
+                        color: colorScheme.shadow.withValues(alpha: 0.1),
+                        blurRadius: elevation ?? 8.0,
+                        offset: const Offset(0, -2),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: content,
+                  child: content,
+                );
+
+                // Apply theme context if available
+                if (effectiveThemeContext != null) {
+                  return Material(
+                    type: MaterialType.transparency,
+                    child: Theme(
+                      data: Theme.of(effectiveThemeContext),
+                      child: sheetContainer,
+                    ),
+                  );
+                }
+
+                return sheetContainer;
+              },
             );
-
-            // Apply theme context if available
-            if (effectiveThemeContext != null) {
-              return Material(
-                type: MaterialType.transparency,
-                child: Theme(
-                  data: Theme.of(effectiveThemeContext),
-                  child: sheetContainer,
-                ),
-              );
-            }
-
-            return sheetContainer;
           },
         );
       },
@@ -715,18 +734,28 @@ class BottomSheetService {
           effectiveThemeContext = null;
         }
 
+        // Wrap content with keyboard-aware positioning for standard sheets
+        Widget wrappedContent = resizeForKeyboard
+            ? Padding(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                child: content,
+              )
+            : content;
+
         // Apply theme context if available
         if (effectiveThemeContext != null) {
           return Material(
             type: MaterialType.transparency,
             child: Theme(
               data: Theme.of(effectiveThemeContext),
-              child: content,
+              child: wrappedContent,
             ),
           );
         }
 
-        return content;
+        return wrappedContent;
       },
     ).then((result) {
       onClosed?.call();
@@ -778,6 +807,27 @@ class BottomSheetService {
   /// Get width constraint for bottom sheet based on platform
   static double getBottomSheetWidth(BuildContext context) {
     return PlatformService.getWidthConstraint(context);
+  }
+
+  /// Create a ValueNotifier that tracks keyboard visibility
+  static ValueNotifier<bool> _keyboardVisibilityNotifier(BuildContext context) {
+    final notifier = ValueNotifier<bool>(false);
+    
+    // Initial keyboard state
+    notifier.value = MediaQuery.of(context).viewInsets.bottom > 0;
+    
+    // Create a simple MediaQuery listener that updates the notifier
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (context.mounted) {
+        // Update value immediately and let ValueListenableBuilder handle the rest
+        final currentValue = MediaQuery.of(context).viewInsets.bottom > 0;
+        if (notifier.value != currentValue) {
+          notifier.value = currentValue;
+        }
+      }
+    });
+    
+    return notifier;
   }
 }
 

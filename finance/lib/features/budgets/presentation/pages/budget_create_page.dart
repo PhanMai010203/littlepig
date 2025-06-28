@@ -273,10 +273,13 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
       ],
     );
 
-    BottomSheetService.showSimpleBottomSheet(
+    BottomSheetService.showCustomBottomSheet(
       context,
       content,
       title: 'budgets.enter_budget_name'.tr(),
+      resizeForKeyboard: true,
+      popupWithKeyboard: true, // Allow keyboard with this sheet
+      isScrollControlled: true,
     );
   }
 
@@ -306,10 +309,13 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
       ],
     );
 
-    BottomSheetService.showSimpleBottomSheet(
+    BottomSheetService.showCustomBottomSheet(
       context,
       content,
       title: 'budgets.enter_budget_amount'.tr(),
+      resizeForKeyboard: true,
+      popupWithKeyboard: true, // Allow keyboard with this sheet
+      isScrollControlled: true,
     );
   }
 
