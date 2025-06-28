@@ -1,13 +1,19 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-/// Performance optimization utilities and monitoring for Phase 1 UI optimizations
+/// Performance optimization utilities and monitoring for Phase 1 & 2 UI optimizations
 class PerformanceOptimizations {
   /// Feature flags for Phase 1 optimizations
   static const bool useOptimizedBottomSheets = true;
   static const bool useOptimizedAnimations = true;
   static const bool useOptimizedDialogs = true;
   static const bool useOptimizedCardRendering = true;
+  
+  /// Feature flags for Phase 2 optimizations (Keyboard & Rebuild Optimization)
+  static const bool useKeyboardOptimizations = true;
+  static const bool useSnapSizeCache = true;
+  static const bool useResponsiveLayoutBuilder = true;
+  static const bool useMediaQueryCaching = true;
   
   /// Debug-only performance monitoring
   static const bool enablePerformanceMonitoring = false; // Enable only in debug mode
@@ -40,6 +46,36 @@ class PerformanceOptimizations {
     if (kDebugMode && enablePerformanceMonitoring) {
       final status = layerCount <= 1 ? '✅' : '⚠️';
       debugPrint('🎬 Animation: $componentName has $layerCount layers $status');
+    }
+  }
+  
+  /// Phase 2: Track keyboard optimization usage
+  static void trackKeyboardOptimization(String componentName, String optimizationType) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('⌨️ Keyboard: $componentName using $optimizationType');
+    }
+  }
+  
+  /// Phase 2: Track snap size cache performance
+  static void trackSnapSizeCache(String component, bool cacheHit) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      final status = cacheHit ? 'HIT ✅' : 'MISS ❌';
+      debugPrint('📊 SnapCache: $component - $status');
+    }
+  }
+  
+  /// Phase 2: Track MediaQuery optimization
+  static void trackMediaQueryOptimization(String componentName, String optimizationType) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('📱 MediaQuery: $componentName using $optimizationType');
+    }
+  }
+  
+  /// Phase 2: Track widget rebuild optimization
+  static void trackRebuildOptimization(String componentName, int rebuildCount) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      final status = rebuildCount <= 1 ? '✅' : '⚠️';
+      debugPrint('🔄 Rebuild: $componentName rebuilt $rebuildCount times $status');
     }
   }
 }
@@ -159,11 +195,18 @@ class OptimizedRepaintBoundary extends StatelessWidget {
   }
 }
 
-/// Phase 1 performance metrics tracking
-class Phase1PerformanceTracker {
+/// Phase 1 & 2 performance metrics tracking
+class PerformanceTracker {
+  // Phase 1 metrics
   static final Map<String, int> _renderingOptimizations = {};
   static final Map<String, int> _themeCacheHits = {};
   static final Map<String, int> _hapticOptimizations = {};
+  
+  // Phase 2 metrics
+  static final Map<String, int> _keyboardOptimizations = {};
+  static final Map<String, int> _snapCacheHits = {};
+  static final Map<String, int> _mediaQueryOptimizations = {};
+  static final Map<String, int> _rebuildOptimizations = {};
   
   /// Track a rendering optimization
   static void trackRendering(String component) {
@@ -186,24 +229,61 @@ class Phase1PerformanceTracker {
     }
   }
   
-  /// Print performance summary
+  /// Phase 2: Track keyboard optimization
+  static void trackKeyboard(String component) {
+    if (kDebugMode) {
+      _keyboardOptimizations[component] = (_keyboardOptimizations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 2: Track snap cache hit
+  static void trackSnapCache(String component) {
+    if (kDebugMode) {
+      _snapCacheHits[component] = (_snapCacheHits[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 2: Track MediaQuery optimization
+  static void trackMediaQuery(String component) {
+    if (kDebugMode) {
+      _mediaQueryOptimizations[component] = (_mediaQueryOptimizations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 2: Track rebuild optimization
+  static void trackRebuild(String component) {
+    if (kDebugMode) {
+      _rebuildOptimizations[component] = (_rebuildOptimizations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Print comprehensive performance summary
   static void printSummary() {
     if (kDebugMode && PerformanceOptimizations.enablePerformanceMonitoring) {
-      debugPrint('\n📊 Phase 1 Performance Summary:');
+      debugPrint('\n📊 Performance Optimization Summary:');
+      debugPrint('--- Phase 1 (Foundation) ---');
       debugPrint('🎯 Rendering optimizations: ${_renderingOptimizations.length} components');
       debugPrint('🎨 Theme cache hits: ${_themeCacheHits.values.fold(0, (a, b) => a + b)}');
       debugPrint('📳 Haptic optimizations: ${_hapticOptimizations.length} components');
+      debugPrint('--- Phase 2 (Keyboard & Rebuild) ---');
+      debugPrint('⌨️ Keyboard optimizations: ${_keyboardOptimizations.length} components');
+      debugPrint('📊 Snap cache hits: ${_snapCacheHits.values.fold(0, (a, b) => a + b)}');
+      debugPrint('📱 MediaQuery optimizations: ${_mediaQueryOptimizations.length} components');
+      debugPrint('🔄 Rebuild optimizations: ${_rebuildOptimizations.length} components');
       debugPrint('');
     }
   }
 }
+
+/// Legacy alias for backward compatibility
+typedef Phase1PerformanceTracker = PerformanceTracker;
 
 /// Extension for easy performance tracking
 extension PerformanceTrackingExtension on Widget {
   /// Wrap with performance tracking for Material elevation
   Widget trackMaterialOptimization(String componentName) {
     if (kDebugMode) {
-      Phase1PerformanceTracker.trackRendering(componentName);
+      PerformanceTracker.trackRendering(componentName);
     }
     return this;
   }

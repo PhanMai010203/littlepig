@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'animation_utils.dart';
+import '../../utils/responsive_layout_builder.dart';
 
 /// Direction for slide animations
 enum SlideDirection {
@@ -126,12 +127,17 @@ class _SlideInState extends State<SlideIn> with SingleTickerProviderStateMixin {
       builder: (context, child) {
         // Use ClipRect to prevent visual artifacts during slide animation
         return ClipRect(
-          child: Transform.translate(
-            offset: Offset(
-              _slideAnimation.value.dx * MediaQuery.of(context).size.width,
-              _slideAnimation.value.dy * MediaQuery.of(context).size.height,
-            ),
-            child: child,
+          child: ResponsiveLayoutBuilder(
+            debugLabel: 'SlideIn',
+            builder: (context, constraints, layoutData) {
+              return Transform.translate(
+                offset: Offset(
+                  _slideAnimation.value.dx * layoutData.width,
+                  _slideAnimation.value.dy * layoutData.height,
+                ),
+                child: child,
+              );
+            },
           ),
         );
       },

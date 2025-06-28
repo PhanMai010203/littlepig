@@ -4,6 +4,8 @@ import '../animations/fade_in.dart';
 import '../animations/animation_utils.dart';
 import '../../../core/settings/app_settings.dart';
 import '../../../core/services/platform_service.dart';
+import '../../utils/snap_size_cache.dart';
+import '../../utils/responsive_layout_builder.dart';
 
 /// BottomSheetService - Phase 3.3 Implementation
 ///
@@ -79,8 +81,8 @@ class BottomSheetService {
       ? context
       : null;
 
-    // Calculate effective sizes with smart snapping
-    final effectiveSnapSizes = snapSizes ?? _getDefaultSnapSizes(
+    // Calculate effective sizes with smart snapping and caching
+    final effectiveSnapSizes = snapSizes ?? _getOptimizedSnapSizes(
       context: context,
       popupWithKeyboard: popupWithKeyboard,
       fullSnap: fullSnap,
@@ -326,8 +328,8 @@ class BottomSheetService {
     );
   }
 
-  /// Get default snap sizes based on screen height and keyboard state
-  static List<double> _getDefaultSnapSizes({
+  /// Get optimized snap sizes with caching (Phase 2 optimization)
+  static List<double> _getOptimizedSnapSizes({
     BuildContext? context,
     bool popupWithKeyboard = false,
     bool fullSnap = false,
@@ -337,28 +339,20 @@ class BottomSheetService {
       return [0.25, 0.5, 0.9];
     }
 
-    final mediaQuery = MediaQuery.of(context);
+    // Use cached MediaQuery data to avoid repeated lookups
+    final mediaQuery = CachedMediaQueryData.get(context, cacheKey: 'bottom_sheet_sizing');
     final size = mediaQuery.size;
     final isFullScreen = PlatformService.getIsFullScreen(context);
+    final isKeyboardVisible = mediaQuery.viewInsets.bottom > 0;
     
-    // Calculate device aspect ratio
-    final deviceAspectRatio = size.height / size.width;
-    
-    // Smart snapping based on budget app logic
-    if (popupWithKeyboard == false && 
-        fullSnap == false && 
-        isFullScreen == false && 
-        deviceAspectRatio > 2) {
-      // Standard two-point snapping for tall devices
-      return [0.6, 1.0];
-    } else {
-      // Near-full screen snapping for:
-      // - Keyboards present
-      // - Full snap requested
-      // - Full screen devices
-      // - Landscape orientation
-      return [0.95, 1.0];
-    }
+    // Use SnapSizeCache for performance optimization
+    return SnapSizeCache.getSnapSizes(
+      screenSize: size,
+      isKeyboardVisible: isKeyboardVisible,
+      fullSnap: fullSnap,
+      popupWithKeyboard: popupWithKeyboard,
+      isFullScreen: isFullScreen,
+    );
   }
 
   /// Build the main bottom sheet content
@@ -635,55 +629,45 @@ class BottomSheetService {
           });
         }
 
-        // Keyboard-aware DraggableScrollableSheet
-        return ValueListenableBuilder<bool>(
-          valueListenable: _keyboardVisibilityNotifier(context),
-          builder: (context, isKeyboardVisible, child) {
-            // Adjust snap sizes and initial size based on keyboard visibility
-            final adjustedSnapSizes = isKeyboardVisible && resizeForKeyboard
-                ? snapSizes.map((size) => (size * 0.7).clamp(0.3, 1.0)).toList()
-                : snapSizes;
-            
-            final adjustedInitialSize = isKeyboardVisible && resizeForKeyboard
-                ? (initialSize * 0.8).clamp(0.3, 1.0)
-                : initialSize;
-                
-            final adjustedMinSize = isKeyboardVisible && resizeForKeyboard
-                ? (minSize * 0.7).clamp(0.3, 1.0)
-                : minSize;
-
-            return DraggableScrollableSheet(
-              initialChildSize: adjustedInitialSize,
-              minChildSize: adjustedMinSize,
-              maxChildSize: maxSize,
-              snap: true,
-              snapSizes: adjustedSnapSizes,
-              builder: (context, scrollController) {
-                Widget sheetContainer = Material(
-                  type: MaterialType.card,
-                  color: backgroundColor ?? colorScheme.surface,
-                  elevation: elevation ?? 8.0,
-                  shadowColor: colorScheme.shadow,
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-                  ),
-                  child: content,
-                );
-
-                // Apply theme context if available
-                if (effectiveThemeContext != null) {
-                  return Material(
-                    type: MaterialType.transparency,
-                    child: Theme(
-                      data: Theme.of(effectiveThemeContext),
-                      child: sheetContainer,
-                    ),
-                  );
-                }
-
-                return sheetContainer;
-              },
+        // Optimized DraggableScrollableSheet (Phase 2: No ValueListenableBuilder)
+        return DraggableScrollableSheet(
+          initialChildSize: initialSize,
+          minChildSize: minSize,
+          maxChildSize: maxSize,
+          snap: true,
+          snapSizes: snapSizes,
+          builder: (context, scrollController) {
+            // Use AnimatedPadding for keyboard handling instead of rebuilding entire sheet
+            Widget sheetContainer = Material(
+              type: MaterialType.card,
+              color: backgroundColor ?? colorScheme.surface,
+              elevation: elevation ?? 8.0,
+              shadowColor: colorScheme.shadow,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+              ),
+              child: resizeForKeyboard && !popupWithKeyboard
+                  ? MediaQueryAlternatives.keyboardPadding(
+                      child: content,
+                      animated: true,
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutQuart,
+                    )
+                  : content,
             );
+
+            // Apply theme context if available
+            if (effectiveThemeContext != null) {
+              return Material(
+                type: MaterialType.transparency,
+                child: Theme(
+                  data: Theme.of(effectiveThemeContext),
+                  child: sheetContainer,
+                ),
+              );
+            }
+
+            return sheetContainer;
           },
         );
       },
@@ -737,13 +721,13 @@ class BottomSheetService {
           effectiveThemeContext = null;
         }
 
-        // Wrap content with keyboard-aware positioning for standard sheets
-        Widget wrappedContent = resizeForKeyboard
-            ? Padding(
-                padding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
+        // Wrap content with optimized keyboard-aware positioning for standard sheets
+        Widget wrappedContent = resizeForKeyboard && !popupWithKeyboard
+            ? MediaQueryAlternatives.keyboardPadding(
                 child: content,
+                animated: true,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutQuart,
               )
             : content;
 
@@ -812,26 +796,7 @@ class BottomSheetService {
     return PlatformService.getWidthConstraint(context);
   }
 
-  /// Create a ValueNotifier that tracks keyboard visibility
-  static ValueNotifier<bool> _keyboardVisibilityNotifier(BuildContext context) {
-    final notifier = ValueNotifier<bool>(false);
-    
-    // Initial keyboard state
-    notifier.value = MediaQuery.of(context).viewInsets.bottom > 0;
-    
-    // Create a simple MediaQuery listener that updates the notifier
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (context.mounted) {
-        // Update value immediately and let ValueListenableBuilder handle the rest
-        final currentValue = MediaQuery.of(context).viewInsets.bottom > 0;
-        if (notifier.value != currentValue) {
-          notifier.value = currentValue;
-        }
-      }
-    });
-    
-    return notifier;
-  }
+  /// Phase 2: Removed _keyboardVisibilityNotifier - now using AnimatedPadding approach
 }
 
 /// Animation types for bottom sheet entrance

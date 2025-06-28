@@ -261,7 +261,10 @@ lib/shared/
 ├── extensions/                      # Reusable extension methods
 │   └── account_currency_extension.dart # Account to currency helpers and formatters
 └── utils/                           # Shared utilities
-    └── currency_formatter.dart       # Currency formatting with locale support
+    ├── currency_formatter.dart       # Currency formatting with locale support
+    ├── performance_optimization.dart # Phase 1 & 2 - Performance monitoring and optimization utilities
+    ├── snap_size_cache.dart          # Phase 2 - Smart LRU cache for bottom sheet snap size calculations
+    └── responsive_layout_builder.dart # Phase 2 - MediaQuery optimization framework with LayoutBuilder patterns
 ```
 **Summary**: Shared components and utilities that can be used across multiple features, including a comprehensive animation and dialog framework, reusable widgets, and common utilities.
 
@@ -272,7 +275,7 @@ lib/shared/
 test/performance/
   └── phase_2_performance_test.dart   # Database cache performance benchmarks (Phase 2)
 ```
-**Summary**: Contains automated Stopwatch-based benchmarks to verify Phase 2 database optimization impact – ensuring cache retrieval is at least 2× faster than uncached database-like operations.
+**Summary**: Contains automated Stopwatch-based benchmarks to verify Phase 2 database optimization impact – ensuring cache retrieval is at least 2× faster than uncached database-like operations. Phase 2 also includes UI performance optimizations with keyboard handling and rebuild elimination.
 
 ## 🎨 Key Architecture Patterns
 
