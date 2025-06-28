@@ -6,6 +6,7 @@ import 'animation_utils.dart';
 import 'faded_button.dart';
 import '../../../core/services/platform_service.dart';
 import '../../../core/services/animation_performance_service.dart';
+import '../../utils/performance_optimization.dart';
 
 /// A widget that provides customizable tap feedback with animations
 /// Phase 6.2 implementation with performance optimization
@@ -52,10 +53,28 @@ class _TappableWidgetState extends State<TappableWidget>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+  
+  // Phase 3: Cache platform detection for performance
+  late final bool _isIOS;
+  late final bool _isAndroid;
+  late final bool _isDesktop;
 
   @override
   void initState() {
     super.initState();
+
+    // Phase 3: Cache platform detection once at initialization
+    final platform = PlatformService.getPlatform();
+    _isIOS = platform == PlatformOS.isIOS;
+    _isAndroid = platform == PlatformOS.isAndroid;
+    _isDesktop = PlatformService.isDesktop;
+    
+    // Track platform optimization usage
+    PerformanceOptimizations.trackPlatformOptimization(
+      'TappableWidget', 
+      platform.toString(), 
+      'cached platform detection'
+    );
 
     _controller = AnimationUtils.createController(
       vsync: this,
@@ -157,8 +176,13 @@ class _TappableWidgetState extends State<TappableWidget>
 
   @override
   Widget build(BuildContext context) {
-    // Use iOS-specific FadedButton for iOS platform
-    if (PlatformService.getPlatform() == PlatformOS.isIOS) {
+    // Phase 3: Use cached platform detection for better performance
+    if (_isIOS) {
+      PerformanceOptimizations.trackPlatformOptimization(
+        'TappableWidget', 
+        'iOS', 
+        'FadedButton'
+      );
       return FadedButton(
         onTap: widget.onTap != null ? _handleTap : null,
         onLongPress: widget.onLongPress != null ? _handleLongPress : null,
@@ -187,6 +211,7 @@ class _TappableWidgetState extends State<TappableWidget>
   }
 
   /// Build Material Design tappable widget for Android and other platforms
+  /// Phase 3: Enhanced with platform-specific optimizations
   Widget _buildMaterialTappable(BuildContext context) {
     Widget child = widget.child;
 
@@ -237,29 +262,54 @@ class _TappableWidgetState extends State<TappableWidget>
       }
     }
 
-    // Wrap with appropriate gesture detector and add mouse support
+    // Phase 3: Use platform-optimized interaction widgets
     Widget gestureChild = child;
     if (widget.onTap != null ||
         widget.onLongPress != null ||
         widget.onDoubleTap != null) {
-      gestureChild = GestureDetector(
-        onTapDown: widget.animationType != TapAnimationType.none
-            ? _handleTapDown
-            : null,
-        onTapUp:
-            widget.animationType != TapAnimationType.none ? _handleTapUp : null,
-        onTapCancel: widget.animationType != TapAnimationType.none
-            ? _handleTapCancel
-            : null,
-        onTap: widget.onTap != null ? _handleTap : null,
-        onLongPress: widget.onLongPress != null ? _handleLongPress : null,
-        onDoubleTap: widget.onDoubleTap != null ? _handleDoubleTap : null,
-        child: child,
-      );
+      
+      if (_isAndroid) {
+        // Use InkWell with InkSparkle for optimal Android performance
+        PerformanceOptimizations.trackPlatformOptimization(
+          'TappableWidget', 
+          'Android', 
+          'InkWell with InkSparkle'
+        );
+        gestureChild = Material(
+          type: MaterialType.transparency,
+          child: InkWell(
+            onTap: widget.onTap != null ? _handleTap : null,
+            onLongPress: widget.onLongPress != null ? _handleLongPress : null,
+            onDoubleTap: widget.onDoubleTap != null ? _handleDoubleTap : null,
+            splashFactory: InkSparkle.splashFactory, // More efficient splash
+            splashColor: widget.splashColor,
+            highlightColor: widget.highlightColor,
+            borderRadius: widget.borderRadius,
+            enableFeedback: widget.enableFeedback,
+            child: child,
+          ),
+        );
+      } else {
+        // Use GestureDetector for other platforms
+        gestureChild = GestureDetector(
+          onTapDown: widget.animationType != TapAnimationType.none
+              ? _handleTapDown
+              : null,
+          onTapUp:
+              widget.animationType != TapAnimationType.none ? _handleTapUp : null,
+          onTapCancel: widget.animationType != TapAnimationType.none
+              ? _handleTapCancel
+              : null,
+          onTap: widget.onTap != null ? _handleTap : null,
+          onLongPress: widget.onLongPress != null ? _handleLongPress : null,
+          onDoubleTap: widget.onDoubleTap != null ? _handleDoubleTap : null,
+          child: child,
+        );
+      }
     }
 
-    // Add right-click support for web/desktop
-    if (kIsWeb || PlatformService.isDesktop) {
+    // Phase 3: Use cached platform detection for web/desktop
+    if (kIsWeb || _isDesktop) {
       return _addMouseSupport(gestureChild);
     }
 

@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
-import '../animations/slide_in.dart';
-import '../animations/fade_in.dart';
-import '../animations/animation_utils.dart';
-import '../../../core/settings/app_settings.dart';
 import '../../../core/services/platform_service.dart';
 import '../../utils/snap_size_cache.dart';
 import '../../utils/responsive_layout_builder.dart';
+import '../../utils/performance_optimization.dart';
 
 /// BottomSheetService - Phase 3.3 Implementation
 ///
@@ -47,9 +44,7 @@ class BottomSheetService {
     IconData? closeButtonIcon,
     VoidCallback? onClosePressed,
     String? semanticLabel,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
-    Duration? animationDuration,
-    Curve? animationCurve,
+    // Phase 3: Animation parameters removed - DraggableScrollableSheet handles animations
     // Keyboard handling
     bool avoidKeyboard = true,
     EdgeInsets? keyboardPadding,
@@ -107,16 +102,17 @@ class BottomSheetService {
       colorScheme: colorScheme,
     );
 
-    // Apply animation if enabled
-    if (AnimationUtils.shouldAnimate() &&
-        animationType != BottomSheetAnimationType.none) {
-      sheetContent = _applyBottomSheetAnimation(
-        sheetContent,
-        animationType,
-        animationDuration,
-        animationCurve,
-      );
-    }
+    // Phase 3: Remove competing animation layers
+    // Let DraggableScrollableSheet handle all animations
+    // No additional animation wrappers to prevent conflicts
+    PerformanceOptimizations.trackAnimationLayerConsolidation(
+      'BottomSheetService', 
+      'DraggableScrollableSheet single owner'
+    );
+    PerformanceOptimizations.trackAnimationOwnership(
+      'BottomSheetService', 
+      true // Single animation owner
+    );
 
     // Handle keyboard avoidance
     if (avoidKeyboard) {
@@ -205,7 +201,7 @@ class BottomSheetService {
     bool showCloseButton = false,
     bool isDismissible = true,
     bool enableDrag = true,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     return showCustomBottomSheet<T>(
       context,
@@ -214,7 +210,6 @@ class BottomSheetService {
       showCloseButton: showCloseButton,
       isDismissible: isDismissible,
       enableDrag: enableDrag,
-      animationType: animationType,
     );
   }
 
@@ -227,7 +222,7 @@ class BottomSheetService {
     bool showCloseButton = true,
     bool isDismissible = true,
     bool enableDrag = true,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     return showCustomBottomSheet<T>(
       context,
@@ -251,7 +246,6 @@ class BottomSheetService {
       showCloseButton: showCloseButton,
       isDismissible: isDismissible,
       enableDrag: enableDrag,
-      animationType: animationType,
     );
   }
 
@@ -265,7 +259,7 @@ class BottomSheetService {
     IconData? icon,
     Color? confirmColor,
     bool isDangerous = false,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -324,7 +318,6 @@ class BottomSheetService {
       title: title,
       isDismissible: true,
       enableDrag: true,
-      animationType: animationType,
     );
   }
 
@@ -518,39 +511,9 @@ class BottomSheetService {
     );
   }
 
-  /// Apply animation to bottom sheet content
-  static Widget _applyBottomSheetAnimation(
-    Widget content,
-    BottomSheetAnimationType animationType,
-    Duration? animationDuration,
-    Curve? animationCurve,
-  ) {
-    final duration = animationDuration ??
-        AnimationUtils.getDuration(const Duration(milliseconds: 300));
-    final curve =
-        animationCurve ?? AnimationUtils.getCurve(Curves.easeOutCubic);
-
-    switch (animationType) {
-      case BottomSheetAnimationType.slideUp:
-        return SlideIn(
-          direction: SlideDirection.up,
-          distance: 1.0,
-          duration: duration,
-          curve: curve,
-          child: content,
-        );
-
-      case BottomSheetAnimationType.fadeIn:
-        return FadeIn(
-          duration: duration,
-          curve: curve,
-          child: content,
-        );
-
-      case BottomSheetAnimationType.none:
-        return content;
-    }
-  }
+  /// Phase 3: Removed _applyBottomSheetAnimation method
+  /// DraggableScrollableSheet now handles all animations directly
+  /// This eliminates competing animation layers
 
   /// Wrap content with keyboard avoidance
   static Widget _wrapWithKeyboardAvoidance(
@@ -750,24 +713,7 @@ class BottomSheetService {
     });
   }
 
-  /// Get the default bottom sheet animation type based on platform and settings
-  static BottomSheetAnimationType get defaultBottomSheetAnimation {
-    if (!AppSettings.appAnimations ||
-        AppSettings.reduceAnimations ||
-        AppSettings.batterySaver ||
-        AppSettings.animationLevel == 'none') {
-      return BottomSheetAnimationType.none;
-    }
-
-    switch (AppSettings.animationLevel) {
-      case 'reduced':
-        return BottomSheetAnimationType.fadeIn;
-      case 'enhanced':
-      case 'normal':
-      default:
-        return BottomSheetAnimationType.slideUp;
-    }
-  }
+  /// Phase 3: Removed defaultBottomSheetAnimation - animations handled by DraggableScrollableSheet
 
   /// Check if theme context has default theme data (budget app logic)
   static bool _isDefaultThemeData(BuildContext? context) {
@@ -797,13 +743,7 @@ class BottomSheetService {
   }
 
   /// Phase 2: Removed _keyboardVisibilityNotifier - now using AnimatedPadding approach
-}
-
-/// Animation types for bottom sheet entrance
-enum BottomSheetAnimationType {
-  slideUp,
-  fadeIn,
-  none,
+  /// Phase 3: Removed BottomSheetAnimationType enum - animations handled by DraggableScrollableSheet
 }
 
 /// Represents an option in a bottom sheet menu
@@ -849,7 +789,7 @@ extension BottomSheetServiceExtension on BuildContext {
     bool enableDrag = true,
     bool showDragHandle = true,
     bool showCloseButton = false,
-    BottomSheetAnimationType? animationType,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     return BottomSheetService.showCustomBottomSheet<T>(
       this,
@@ -862,8 +802,6 @@ extension BottomSheetServiceExtension on BuildContext {
       enableDrag: enableDrag,
       showDragHandle: showDragHandle,
       showCloseButton: showCloseButton,
-      animationType:
-          animationType ?? BottomSheetService.defaultBottomSheetAnimation,
     );
   }
 

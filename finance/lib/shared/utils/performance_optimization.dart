@@ -15,6 +15,16 @@ class PerformanceOptimizations {
   static const bool useResponsiveLayoutBuilder = true;
   static const bool useMediaQueryCaching = true;
   
+  /// Feature flags for Phase 3 optimizations (Animation Layer Consolidation)
+  static const bool useAnimationLayerConsolidation = true;
+  static const bool usePlatformOptimizedTappables = true;
+  static const bool useConsolidatedBottomSheetAnimations = true;
+  
+  /// Feature flags for Phase 4 optimizations (Physics & Snap Optimization)
+  static const bool useCustomSnapPhysics = true;
+  static const bool useOverscrollOptimization = true;
+  static const bool useOptimizedScrollBehavior = true;
+  
   /// Debug-only performance monitoring
   static const bool enablePerformanceMonitoring = false; // Enable only in debug mode
   
@@ -76,6 +86,70 @@ class PerformanceOptimizations {
     if (kDebugMode && enablePerformanceMonitoring) {
       final status = rebuildCount <= 1 ? '✅' : '⚠️';
       debugPrint('🔄 Rebuild: $componentName rebuilt $rebuildCount times $status');
+    }
+  }
+  
+  /// Phase 3: Track animation layer consolidation
+  static void trackAnimationLayerConsolidation(String componentName, String optimizationType) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('🎭 Animation: $componentName using $optimizationType');
+    }
+  }
+  
+  /// Phase 3: Track platform optimization usage
+  static void trackPlatformOptimization(String componentName, String platform, String optimizationType) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('🔧 Platform: $componentName on $platform using $optimizationType');
+    }
+  }
+  
+  /// Phase 3: Track single vs multiple animation ownership
+  static void trackAnimationOwnership(String componentName, bool hasSingleOwner) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      final status = hasSingleOwner ? 'single owner ✅' : 'multiple owners ⚠️';
+      debugPrint('🎪 Ownership: $componentName has $status');
+    }
+  }
+  
+  /// Phase 4: Track custom snap physics usage
+  static void trackSnapPhysics(String componentName, String physicsType) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('🎯 Snap: $componentName using $physicsType');
+    }
+  }
+  
+  /// Phase 4: Track overscroll optimization
+  static void trackOverscrollOptimization(String componentName, String optimizationType) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('📜 Overscroll: $componentName using $optimizationType');
+    }
+  }
+  
+  /// Phase 4: Track physics optimization
+  static void trackPhysicsOptimization(String componentName, String physicsType) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('⚙️ Physics: $componentName using $physicsType');
+    }
+  }
+  
+  /// Phase 4: Track snap completion events
+  static void trackSnapCompletion(String componentName, double snapPosition, bool hadHapticFeedback) {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      final hapticStatus = hadHapticFeedback ? 'with haptic ✅' : 'no haptic ❌';
+      debugPrint('🎪 Snap: $componentName snapped to $snapPosition $hapticStatus');
+    }
+  }
+  
+  /// Comprehensive performance summary for all phases
+  static void printPerformanceSummary() {
+    if (kDebugMode && enablePerformanceMonitoring) {
+      debugPrint('');
+      debugPrint('🚀 Performance Optimization Summary:');
+      debugPrint('   Phase 1: Material elevation, theme caching, haptic optimization');
+      debugPrint('   Phase 2: Keyboard handling, snap caching, MediaQuery optimization');
+      debugPrint('   Phase 3: Animation consolidation, platform optimization');
+      debugPrint('   Phase 4: Custom snap physics, overscroll optimization');
+      debugPrint('');
     }
   }
 }
@@ -207,6 +281,16 @@ class PerformanceTracker {
   static final Map<String, int> _snapCacheHits = {};
   static final Map<String, int> _mediaQueryOptimizations = {};
   static final Map<String, int> _rebuildOptimizations = {};
+  
+  // Phase 3 metrics
+  static final Map<String, int> _animationConsolidations = {};
+  static final Map<String, int> _platformOptimizations = {};
+  
+  // Phase 4 metrics
+  static final Map<String, int> _snapPhysicsOptimizations = {};
+  static final Map<String, int> _overscrollOptimizations = {};
+  static final Map<String, int> _physicsOptimizations = {};
+  static final Map<String, int> _snapCompletions = {};
   
   /// Track a rendering optimization
   static void trackRendering(String component) {
