@@ -140,6 +140,58 @@ class PlatformService {
     return false;
   }
 
+  /// Context-free version of isFullScreen for tappable system
+  /// Note: This requires a cached context or should be used sparingly
+  static bool get isFullScreen {
+    // For now, return a conservative estimate based on platform
+    // This could be enhanced with a global context provider if needed
+    if (getPlatform() == PlatformOS.isIOS || getPlatform() == PlatformOS.isAndroid) {
+      return true; // Assume modern mobile devices
+    }
+    return false; // Desktop/web default
+  }
+
+  /// Check if a context is valid for theme inheritance
+  /// Used by tappable system to determine theme context preservation
+  static bool isContextValidForTheme(BuildContext context) {
+    try {
+      // Attempt to access theme data to validate context
+      Theme.of(context);
+      return true;
+    } catch (e) {
+      debugPrint('Invalid context for theme access: $e');
+      return false;
+    }
+  }
+
+  /// Get appropriate width constraints for tappable elements
+  /// Helps with responsive design across platforms
+  static double getWidthConstraint(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final size = mediaQuery.size;
+
+    switch (getPlatform()) {
+      case PlatformOS.isIOS:
+      case PlatformOS.isAndroid:
+        // Mobile: use full width with padding
+        return size.width - 32.0; // 16px padding on each side
+      
+      case PlatformOS.isWeb:
+        // Web: constrain for better readability
+        return size.width > 768 ? 768.0 : size.width - 32.0;
+      
+      default:
+        // Desktop: use reasonable constraints
+        if (size.width > 1200) {
+          return 800.0; // Max width for desktop
+        } else if (size.width > 768) {
+          return size.width * 0.8; // 80% of screen width
+        } else {
+          return size.width - 32.0; // Mobile-like on small desktop windows
+        }
+    }
+  }
+
   /// Get platform-specific safe padding considerations
   static EdgeInsets getPlatformSafePadding(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -231,6 +283,20 @@ class PlatformService {
       'prefersCenteredDialogs': prefersCenteredDialogs,
       'platformCurve': platformCurve.toString(),
       'platformAnimationDuration': platformAnimationDuration.inMilliseconds,
+      'isFullScreen': isFullScreen,
     };
+  }
+
+  /// Get platform-specific cursor style for tappable elements
+  static MouseCursor getTappableCursor({bool disabled = false}) {
+    if (disabled) {
+      return SystemMouseCursors.forbidden;
+    }
+    
+    if (isWeb || isDesktop) {
+      return SystemMouseCursors.click;
+    }
+    
+    return MouseCursor.defer; // Mobile doesn't need custom cursors
   }
 }

@@ -88,7 +88,16 @@ class MyFeaturePage extends StatelessWidget {
               children: [
                 AppText("Content goes here!"),
                 const SizedBox(height: 16),
-                // Your other content widgets
+                // Example of platform-adaptive tappable card
+                Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(16),
+                    child: AppText('Tap me!'),
+                  ),
+                ).tappable(
+                  onTap: () => print('Card tapped!'),
+                  // Automatically uses iOS fade or Android ripple
+                ),
               ],
             ),
           ),
@@ -98,6 +107,10 @@ class MyFeaturePage extends StatelessWidget {
           itemCount: 20,
           itemBuilder: (context, index) => ListTile(
             title: AppText('Item ${index + 1}'),
+            // Right-click support on desktop automatically added
+            onLongPress: () => _showContextMenu(index),
+          ).tappable(
+            onTap: () => _selectItem(index),
           ),
         )
       ],
@@ -144,9 +157,18 @@ class SettingsPage extends StatelessWidget {
 
 ### `TappableWidget`
 
-This is a foundational wrapper widget that provides customizable tap feedback, including animations (scale, opacity) and haptic feedback. It is highly recommended for providing consistent user interaction feedback.
+This is a foundational wrapper widget that provides customizable tap feedback with **platform-specific behavior**. It automatically adapts to provide native-feeling interactions on iOS, Android, and desktop platforms.
 
 -   **Widget Location**: `lib/shared/widgets/animations/tappable_widget.dart`
+-   **iOS Implementation**: `lib/shared/widgets/animations/faded_button.dart`
+
+**Key Features:**
+
+-   🍎 **iOS**: Uses `FadedButton` with precise fade animations (150ms press, 230ms release)
+-   🤖 **Android**: Uses Material Design ripple effects with scale/opacity animations
+-   🖥️ **Desktop/Web**: Includes right-click support and appropriate mouse cursors
+-   ⚡ **Performance**: Respects animation settings and device capabilities
+-   📱 **Haptic**: Platform-appropriate haptic feedback (heavy impact on iOS long press)
 
 **Example 1: Using the `TappableWidget` wrapper**
 
@@ -162,14 +184,14 @@ TappableWidget(
 
 **Example 2: Using the `.tappable()` extension (Recommended)**
 
-The `.tappable()` extension is the most convenient way to add feedback to any widget.
+The `.tappable()` extension is the most convenient way to add feedback to any widget. It automatically adapts to the current platform:
 
 ```dart
 MyWidget(
   // ...
 ).tappable(
   onTap: () => print('Widget tapped!'),
-  animationType: TapAnimationType.scale,
+  animationType: TapAnimationType.scale, // Used on Android
   scaleFactor: 0.9,
 );
 
@@ -177,4 +199,11 @@ Icon(Icons.add).tappable(
   onTap: _increment,
   hapticFeedback: false,
 );
-``` 
+```
+
+**Platform-Specific Behavior:**
+
+- **iOS**: Automatically uses fade animation with `pressedOpacity: 0.5`
+- **Android**: Uses the specified `animationType` (scale, opacity, both, or none)
+- **Web/Desktop**: Adds right-click support that triggers `onLongPress` if defined
+- **All platforms**: Respects performance settings and reduces motion preferences 

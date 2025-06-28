@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'animation_utils.dart';
+import 'faded_button.dart';
 import '../../../core/services/platform_service.dart';
 import '../../../core/services/animation_performance_service.dart';
 
@@ -154,6 +157,37 @@ class _TappableWidgetState extends State<TappableWidget>
 
   @override
   Widget build(BuildContext context) {
+    // Use iOS-specific FadedButton for iOS platform
+    if (PlatformService.getPlatform() == PlatformOS.isIOS) {
+      return FadedButton(
+        onTap: widget.onTap != null ? _handleTap : null,
+        onLongPress: widget.onLongPress != null ? _handleLongPress : null,
+        pressedOpacity: _getIOSPressedOpacity(),
+        borderRadius: widget.borderRadius,
+        hapticFeedback: widget.hapticFeedback,
+        disabled: false,
+        child: widget.child,
+      );
+    }
+
+    // Use Material implementation for Android and other platforms
+    return _buildMaterialTappable(context);
+  }
+
+  /// Get appropriate pressed opacity for iOS based on animation type
+  double _getIOSPressedOpacity() {
+    switch (widget.animationType) {
+      case TapAnimationType.opacity:
+      case TapAnimationType.both:
+        return 0.7; // Match the opacity animation value
+      case TapAnimationType.scale:
+      case TapAnimationType.none:
+        return 0.5; // Default iOS pressed opacity
+    }
+  }
+
+  /// Build Material Design tappable widget for Android and other platforms
+  Widget _buildMaterialTappable(BuildContext context) {
     Widget child = widget.child;
 
     // Apply animation based on type
@@ -203,11 +237,12 @@ class _TappableWidgetState extends State<TappableWidget>
       }
     }
 
-    // Wrap with appropriate gesture detector
+    // Wrap with appropriate gesture detector and add mouse support
+    Widget gestureChild = child;
     if (widget.onTap != null ||
         widget.onLongPress != null ||
         widget.onDoubleTap != null) {
-      return GestureDetector(
+      gestureChild = GestureDetector(
         onTapDown: widget.animationType != TapAnimationType.none
             ? _handleTapDown
             : null,
@@ -223,7 +258,32 @@ class _TappableWidgetState extends State<TappableWidget>
       );
     }
 
-    return child;
+    // Add right-click support for web/desktop
+    if (kIsWeb || PlatformService.isDesktop) {
+      return _addMouseSupport(gestureChild);
+    }
+
+    return gestureChild;
+  }
+
+  /// Add mouse support with right-click handling for web/desktop
+  Widget _addMouseSupport(Widget child) {
+    if (widget.onLongPress == null) {
+      return child;
+    }
+
+    void onPointerDown(PointerDownEvent event) {
+      // Check if right mouse button clicked
+      if (event.kind == PointerDeviceKind.mouse &&
+          event.buttons == kSecondaryMouseButton) {
+        _handleLongPress();
+      }
+    }
+
+    return Listener(
+      onPointerDown: onPointerDown,
+      child: child,
+    );
   }
 }
 
