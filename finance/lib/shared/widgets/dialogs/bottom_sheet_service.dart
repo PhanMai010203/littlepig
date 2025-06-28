@@ -168,6 +168,8 @@ class BottomSheetService {
         onOpened: onOpened,
         onClosed: onClosed,
         onSizeChanged: onSizeChanged,
+        cachedTheme: theme,
+        cachedColorScheme: colorScheme,
       );
     } else {
       // Use standard modal bottom sheet
@@ -187,6 +189,8 @@ class BottomSheetService {
         popupWithKeyboard: popupWithKeyboard,
         onOpened: onOpened,
         onClosed: onClosed,
+        cachedTheme: theme,
+        cachedColorScheme: colorScheme,
       );
     }
   }
@@ -598,9 +602,11 @@ class BottomSheetService {
     VoidCallback? onOpened,
     VoidCallback? onClosed,
     void Function(double)? onSizeChanged,
+    ThemeData? cachedTheme,
+    ColorScheme? cachedColorScheme,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final theme = cachedTheme ?? Theme.of(context);
+    final colorScheme = cachedColorScheme ?? theme.colorScheme;
 
     return showModalBottomSheet<T>(
       context: context,
@@ -653,18 +659,13 @@ class BottomSheetService {
               snap: true,
               snapSizes: adjustedSnapSizes,
               builder: (context, scrollController) {
-                Widget sheetContainer = Container(
-                  decoration: BoxDecoration(
-                    color: backgroundColor ?? colorScheme.surface,
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(16.0)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: colorScheme.shadow.withValues(alpha: 0.1),
-                        blurRadius: elevation ?? 8.0,
-                        offset: const Offset(0, -2),
-                      ),
-                    ],
+                Widget sheetContainer = Material(
+                  type: MaterialType.card,
+                  color: backgroundColor ?? colorScheme.surface,
+                  elevation: elevation ?? 8.0,
+                  shadowColor: colorScheme.shadow,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
                   ),
                   child: content,
                 );
@@ -709,9 +710,11 @@ class BottomSheetService {
     bool popupWithKeyboard = false,
     VoidCallback? onOpened,
     VoidCallback? onClosed,
+    ThemeData? cachedTheme,
+    ColorScheme? cachedColorScheme,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final theme = cachedTheme ?? Theme.of(context);
+    final colorScheme = cachedColorScheme ?? theme.colorScheme;
 
     return showModalBottomSheet<T>(
       context: context,

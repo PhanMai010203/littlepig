@@ -245,7 +245,7 @@ class PopupFramework extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(top: isMobile ? 8.0 : 6.0),
               child: customSubtitleWidget ??
-                  _buildSubtitle(context, textTheme, isIOS),
+                  _buildSubtitle(context, textTheme, colorScheme, isIOS),
             ),
         ],
       ),
@@ -343,12 +343,12 @@ class PopupFramework extends StatelessWidget {
     }
   }
 
-  Widget _buildSubtitle(BuildContext context, TextTheme textTheme, bool isIOS) {
+  Widget _buildSubtitle(BuildContext context, TextTheme textTheme, ColorScheme colorScheme, bool isIOS) {
     return Text(
       subtitle!,
       style: subtitleTextStyle ??
           textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: colorScheme.onSurfaceVariant,
           ),
       textAlign: isIOS ? TextAlign.center : TextAlign.start,
     );

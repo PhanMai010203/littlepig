@@ -59,61 +59,59 @@ class BudgetTile extends StatelessWidget {
       child: Container(
         height: 160,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-        decoration: BoxDecoration(
+        child: Material(
+          type: MaterialType.card,
           color: getColor(context, "surfaceContainer"),
-          borderRadius: BorderRadius.circular(18),
-          boxShadow: [
-            BoxShadow(
-              color: getColor(context, "shadowLight"),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (!expensiveMotion)
-              Positioned.fill(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(18.0),
-                  child: Column(
-                    children: [
-                      Expanded(
-                        child: AnimatedGooBackground(
-                          baseColor: budgetColor,
-                          randomOffset: budget.name.length,
+          elevation: 4.0,
+          shadowColor: getColor(context, "shadowLight"),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              if (!expensiveMotion)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18.0),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: AnimatedGooBackground(
+                            baseColor: budgetColor,
+                            randomOffset: budget.name.length,
+                          ),
                         ),
-                      ),
-                      const Expanded(child: SizedBox.shrink()),
-                    ],
-                  ),
-                ),
-              ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: Padding(
-                    padding: EdgeInsets.only(
-                      left: 20.0,
-                      right: budget.manualAddMode ? 20.0 : 56.0, // Extra space for history button
+                        const Expanded(child: SizedBox.shrink()),
+                      ],
                     ),
-                    child: _BudgetHeaderContent(budget: budget, accent: budgetColor),
                   ),
                 ),
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
-                    child: _BudgetFooterContent(budget: budget, accent: budgetColor),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        left: 20.0,
+                        right: budget.manualAddMode ? 20.0 : 56.0, // Extra space for history button
+                      ),
+                      child: _BudgetHeaderContent(budget: budget, accent: budgetColor),
+                    ),
                   ),
-                ),
-              ],
-            ),
-            // History button - only for automatic budgets
-            if (!budget.manualAddMode)
-              _buildHistoryButton(context, budgetColor),
-          ],
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
+                      child: _BudgetFooterContent(budget: budget, accent: budgetColor),
+                    ),
+                  ),
+                ],
+              ),
+              // History button - only for automatic budgets
+              if (!budget.manualAddMode)
+                _buildHistoryButton(context, budgetColor),
+            ],
+          ),
         ),
       ),
     );
