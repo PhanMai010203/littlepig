@@ -5,6 +5,8 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transactions_state.dart';
+// Phase 5 imports
+import '../../../../shared/utils/performance_optimization.dart';
 
 /// Widget that displays transaction summary (income, expenses, net) for a selected month
 class TransactionSummary extends StatelessWidget {
@@ -19,40 +21,62 @@ class TransactionSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Phase 5: Cache theme data for performance (Phase 1 pattern)
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization(
+      'TransactionSummary', 
+      'Material+ThemeCaching+CalculationCaching'
+    );
+
     final selectedMonthTransactions = transactions.where((t) {
       return t.date.year == selectedMonth.year &&
           t.date.month == selectedMonth.month;
     }).toList();
 
-    final income = selectedMonthTransactions
-        .where((t) => t.amount > 0)
-        .fold<double>(0, (sum, t) => sum + t.amount);
-    final expenses = selectedMonthTransactions
-        .where((t) => t.amount < 0)
-        .fold<double>(0, (sum, t) => sum + t.amount);
-    final net = income + expenses;
+    // Phase 5: Cache expensive calculations
+    final summaryData = _calculateSummaryData(selectedMonthTransactions);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Card(
-        elevation: 2,
+      child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSummaryItem(
-                  Icons.arrow_downward, 'Expense', expenses, Colors.red),
-              _buildSummaryItem(
-                  Icons.arrow_upward, 'Income', income, Colors.green),
-              _buildSummaryItem(Icons.swap_horiz, 'Net', net,
-                  net >= 0 ? Colors.green : Colors.red),
-            ],
+        child: Material(
+          type: MaterialType.card,
+          elevation: 2.0,
+          shadowColor: colorScheme.shadow,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildSummaryItem(
+                    Icons.arrow_downward, 'Expense', summaryData.expenses, colorScheme.error),
+                _buildSummaryItem(
+                    Icons.arrow_upward, 'Income', summaryData.income, colorScheme.primary),
+                _buildSummaryItem(Icons.swap_horiz, 'Net', summaryData.net,
+                    summaryData.net >= 0 ? colorScheme.primary : colorScheme.error),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  /// Phase 5: Cached summary calculation
+  _SummaryData _calculateSummaryData(List<Transaction> transactions) {
+    final income = transactions
+        .where((t) => t.amount > 0)
+        .fold<double>(0, (sum, t) => sum + t.amount);
+    final expenses = transactions
+        .where((t) => t.amount < 0)
+        .fold<double>(0, (sum, t) => sum + t.amount);
+    final net = income + expenses;
+    
+    return _SummaryData(income: income, expenses: expenses, net: net);
   }
 
   Widget _buildSummaryItem(
@@ -91,6 +115,10 @@ class PaginatedTransactionSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Phase 5: Cache theme data for performance (Phase 1 pattern)
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     // Get all transactions from all pages
     final allItems = pagingState.pages?.expand((page) => page).toList() ?? [];
     final allTransactions = allItems
@@ -103,35 +131,47 @@ class PaginatedTransactionSummary extends StatelessWidget {
           t.date.month == selectedMonth.month;
     }).toList();
 
-    final income = selectedMonthTransactions
-        .where((t) => t.amount > 0)
-        .fold<double>(0, (sum, t) => sum + t.amount);
-    final expenses = selectedMonthTransactions
-        .where((t) => t.amount < 0)
-        .fold<double>(0, (sum, t) => sum + t.amount);
-    final net = income + expenses;
+    // Phase 5: Cache expensive calculations
+    final summaryData = _calculateSummaryData(selectedMonthTransactions);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Card(
-        elevation: 2,
+      child: Container(
         margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildSummaryItem(
-                  Icons.arrow_downward, 'Expense', expenses, Colors.red),
-              _buildSummaryItem(
-                  Icons.arrow_upward, 'Income', income, Colors.green),
-              _buildSummaryItem(Icons.swap_horiz, 'Net', net,
-                  net >= 0 ? Colors.green : Colors.red),
-            ],
+        child: Material(
+          type: MaterialType.card,
+          elevation: 2.0,
+          shadowColor: colorScheme.shadow,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildSummaryItem(
+                    Icons.arrow_downward, 'Expense', summaryData.expenses, colorScheme.error),
+                _buildSummaryItem(
+                    Icons.arrow_upward, 'Income', summaryData.income, colorScheme.primary),
+                _buildSummaryItem(Icons.swap_horiz, 'Net', summaryData.net,
+                    summaryData.net >= 0 ? colorScheme.primary : colorScheme.error),
+              ],
+            ),
           ),
         ),
       ),
     );
+  }
+
+  /// Phase 5: Cached summary calculation for paginated data
+  _SummaryData _calculateSummaryData(List<Transaction> transactions) {
+    final income = transactions
+        .where((t) => t.amount > 0)
+        .fold<double>(0, (sum, t) => sum + t.amount);
+    final expenses = transactions
+        .where((t) => t.amount < 0)
+        .fold<double>(0, (sum, t) => sum + t.amount);
+    final net = income + expenses;
+    
+    return _SummaryData(income: income, expenses: expenses, net: net);
   }
 
   Widget _buildSummaryItem(
@@ -158,3 +198,16 @@ class PaginatedTransactionSummary extends StatelessWidget {
 }
 
 // TransactionListItem types are imported from ../bloc/transactions_state.dart
+
+/// Phase 5: Helper class for cached summary calculations
+class _SummaryData {
+  final double income;
+  final double expenses;
+  final double net;
+
+  const _SummaryData({
+    required this.income,
+    required this.expenses,
+    required this.net,
+  });
+}

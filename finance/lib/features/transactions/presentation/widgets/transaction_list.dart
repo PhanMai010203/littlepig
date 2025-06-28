@@ -10,6 +10,11 @@ import '../../../../features/categories/domain/entities/category.dart';
 import '../bloc/transactions_bloc.dart';
 import '../bloc/transactions_event.dart';
 import '../bloc/transactions_state.dart'; // Import for TransactionListItem types
+// Phase 5 imports
+import '../../../../shared/utils/responsive_layout_builder.dart';
+import '../../../../shared/utils/performance_optimization.dart';
+import '../../../../shared/utils/no_overscroll_behavior.dart';
+import '../../../../shared/widgets/animations/tappable_widget.dart';
 
 /// Widget that displays a list of transactions grouped by date
 class TransactionList extends StatelessWidget {
@@ -26,6 +31,16 @@ class TransactionList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Phase 5: Cache theme data for performance (Phase 1 pattern)
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization(
+      'TransactionList', 
+      'SliverList+RepaintBoundary+ThemeCaching'
+    );
+
     final selectedMonthTransactions = transactions.where((t) {
       return t.date.year == selectedMonth.year &&
           t.date.month == selectedMonth.month;
@@ -39,9 +54,35 @@ class TransactionList extends StatelessWidget {
       );
     }
 
-    // Group transactions by date
+    // Phase 5: Group transactions efficiently
+    final groupedTransactions = _groupTransactionsByDate(selectedMonthTransactions);
+    final sortedKeys = groupedTransactions.keys.toList()
+      ..sort((a, b) => b.compareTo(a));
+
+    // Phase 5: Use optimized SliverList.builder with RepaintBoundary (Phase 4 pattern)
+    return SliverList.builder(
+      itemCount: sortedKeys.length,
+      itemBuilder: (context, index) {
+        final date = sortedKeys[index];
+        final transactionsOnDate = groupedTransactions[date]!;
+        
+        return RepaintBoundary(
+          key: ValueKey('transaction_group_${date.millisecondsSinceEpoch}'),
+          child: _TransactionGroupWidget(
+            date: date,
+            transactions: transactionsOnDate,
+            categories: categories,
+            colorScheme: colorScheme, // Pass cached theme
+          ),
+        );
+      },
+    );
+  }
+
+  /// Phase 5: Efficient transaction grouping helper
+  Map<DateTime, List<Transaction>> _groupTransactionsByDate(List<Transaction> transactions) {
     final groupedTransactions = <DateTime, List<Transaction>>{};
-    for (final transaction in selectedMonthTransactions) {
+    for (final transaction in transactions) {
       final day = DateTime(
           transaction.date.year, transaction.date.month, transaction.date.day);
       if (groupedTransactions[day] == null) {
@@ -49,36 +90,42 @@ class TransactionList extends StatelessWidget {
       }
       groupedTransactions[day]!.add(transaction);
     }
+    return groupedTransactions;
+  }
+}
 
-    final sortedKeys = groupedTransactions.keys.toList()
-      ..sort((a, b) => b.compareTo(a));
+/// Phase 5: Optimized transaction group widget with cached theme
+class _TransactionGroupWidget extends StatelessWidget {
+  const _TransactionGroupWidget({
+    required this.date,
+    required this.transactions,
+    required this.categories,
+    required this.colorScheme,
+  });
 
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final date = sortedKeys[index];
-          final transactionsOnDate = groupedTransactions[date]!;
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding:
-                    const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
-                child: AppText(
-                  DateFormat.yMMMMd().format(date),
-                  fontWeight: FontWeight.bold,
-                  colorName: "textSecondary",
-                ),
-              ),
-              ...transactionsOnDate.map((t) => TransactionTile(
-                    transaction: t,
-                    category: categories[t.categoryId],
-                  )),
-            ],
-          );
-        },
-        childCount: sortedKeys.length,
-      ),
+  final DateTime date;
+  final List<Transaction> transactions;
+  final Map<int, Category> categories;
+  final ColorScheme colorScheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+          child: AppText(
+            DateFormat.yMMMMd().format(date),
+            fontWeight: FontWeight.bold,
+            colorName: "textSecondary",
+          ),
+        ),
+        ...transactions.map((t) => TransactionTile(
+              transaction: t,
+              category: categories[t.categoryId],
+            )),
+      ],
     );
   }
 }
@@ -207,12 +254,25 @@ class TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Phase 5: Cache theme data for performance (Phase 1 pattern)
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
     final double amount = transaction.amount;
     final bool isIncome = amount > 0;
 
+    // Phase 5: Use Material elevation instead of Container (Phase 1 pattern)
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
-      child: ListTile(
+      child: Material(
+        type: MaterialType.card,
+        elevation: 2.0,
+        shadowColor: colorScheme.shadow,
+        child: TappableWidget(
+          onTap: () {
+            // TODO: Navigate to transaction details
+          },
+          child: ListTile(
         leading: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -294,9 +354,8 @@ class TransactionTile extends StatelessWidget {
             ),
           ],
         ),
-        onTap: () {
-          // TODO: Navigate to transaction details
-        },
+        ),
+      ),
       ),
     );
   }

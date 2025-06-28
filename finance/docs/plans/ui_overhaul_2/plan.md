@@ -348,61 +348,49 @@ class NoOverscrollBehavior extends ScrollBehavior {
 ---
 
 ### Phase 5: Universal Application (Week 9-10)
-**Focus**: Apply optimizations to all UI components
+**Focus**: Apply optimizations to all feature presentation layers and remaining UI components
 
-#### 5.1 PageTemplate Optimization
-**Target**: `lib/shared/widgets/page_template.dart`
+#### 5.1 Feature-Specific Component Optimization
+**Target**: Apply Phases 1-4 patterns to all feature presentation layers
+
+##### 5.1.1 Home Feature Components
+**Files to Optimize**:
+- ✅ `lib/features/home/widgets/account_card.dart` (Already optimized in Phase 1)
+- `lib/features/home/widgets/home_page_username.dart`
+- `lib/features/home/presentation/pages/home_page.dart`
 
 ```dart
-// ✅ Enhanced PageTemplate
-class PageTemplate extends StatefulWidget {
+// ✅ HomePage ScrollController & Theme Caching Optimization
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+  late final ColorScheme _colorScheme;
+  late final TextTheme _textTheme;
+  
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: CustomScrollView(
-        // Use const controller for better performance
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(
-          parent: AlwaysScrollableScrollPhysics(),
-        ),
-        slivers: [
-          SliverAppBar(
-            // Use RepaintBoundary for expensive app bar
-            flexibleSpace: RepaintBoundary(
-              child: FlexibleSpaceBar(
-                title: CollapsibleAppBarTitle(title: title),
-              ),
-            ),
-          ),
-          ...slivers,
-        ],
-      ),
+  void initState() {
+    super.initState();
+    // Cache theme data once at initialization (Phase 1 pattern)
+    final theme = Theme.of(context);
+    _colorScheme = theme.colorScheme;
+    _textTheme = theme.textTheme;
+    
+    // Platform-optimized animation controller (Phase 3 pattern)
+    _animationController = AnimationController(
+      vsync: this,
+      duration: PlatformService.isIOS 
+        ? const Duration(milliseconds: 2000)
+        : const Duration(milliseconds: 1800),
     );
   }
-}
-```
-
-#### 5.2 Animation Framework Enhancement
-**Target**: All animation widgets in `lib/shared/widgets/animations/`
-
-```dart
-// ✅ Performance-First Animation Pattern
-class FadeIn extends StatefulWidget {
+  
   @override
   Widget build(BuildContext context) {
-    if (!AnimationUtils.shouldAnimate()) {
-      return child; // Zero overhead when disabled
-    }
-    
-    return TweenAnimationBuilder<double>(
-      tween: Tween<double>(begin: 0.0, end: 1.0),
-      duration: AnimationUtils.getDuration(duration),
-      curve: AnimationUtils.getCurve(curve),
-      child: child, // Mark child as const-friendly
-      builder: (context, opacity, child) {
-        return Opacity(
-          opacity: opacity,
-          child: child,
+    // Use ResponsiveLayoutBuilder instead of direct MediaQuery (Phase 2 pattern)
+    return ResponsiveLayoutBuilder(
+      debugLabel: 'HomePage',
+      builder: (context, constraints, layoutData) {
+        return PageTemplate(
+          title: 'Finance Overview',
+          slivers: _buildOptimizedSlivers(layoutData),
         );
       },
     );
@@ -410,25 +398,714 @@ class FadeIn extends StatefulWidget {
 }
 ```
 
-#### 5.3 List Performance Optimization
-**Target**: All ListView and SliverList implementations
+##### 5.1.2 Transaction Feature Components
+**Files to Optimize**:
+- `lib/features/transactions/presentation/widgets/transaction_list.dart`
+- ✅ `lib/features/transactions/presentation/widgets/month_selector.dart` (Phase 2 MediaQuery optimization applied)
+- `lib/features/transactions/presentation/widgets/transaction_summary.dart`
+- `lib/features/transactions/presentation/widgets/month_selector_wrapper.dart`
+- `lib/features/transactions/presentation/pages/transactions_page.dart`
 
 ```dart
-// ✅ Optimized List Pattern
-SliverList.builder(
-  itemCount: items.length,
-  itemBuilder: (context, index) {
-    return RepaintBoundary(
-      key: ValueKey(items[index].id),
-      child: ListTile(
-        title: Text(items[index].title),
-      ).tappable(
-        onTap: () => _handleTap(index),
+// ✅ TransactionList SliverList Optimization
+class TransactionList extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Cache theme data (Phase 1 pattern)
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    // Group transactions efficiently
+    final groupedTransactions = _groupTransactionsByDate(selectedMonthTransactions);
+    
+    return SliverList.builder(
+      itemCount: groupedTransactions.length,
+      itemBuilder: (context, index) {
+        final entry = groupedTransactions.entries.elementAt(index);
+        return RepaintBoundary(
+          key: ValueKey('transaction_group_${entry.key.millisecondsSinceEpoch}'),
+          child: _TransactionGroupWidget(
+            date: entry.key,
+            transactions: entry.value,
+            categories: categories,
+            colorScheme: colorScheme, // Pass cached theme
+          ).withNoOverscroll(), // Phase 4 pattern
+        );
+      },
+    );
+  }
+}
+
+// ✅ Transaction Item with Material Elevation (Phase 1 pattern)
+class TransactionItem extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      type: MaterialType.card,
+      elevation: 2.0,
+      shadowColor: colorScheme.shadow,
+      child: TappableWidget( // Already optimized in Phase 3
+        onTap: onTap,
+        child: _buildTransactionContent(),
       ),
     );
-  },
-)
+  }
+}
 ```
+
+##### 5.1.3 Budget Feature Components
+**Files to Optimize**:
+- ✅ `lib/features/budgets/presentation/widgets/budget_tile.dart` (Already optimized in Phase 1)
+- `lib/features/budgets/presentation/widgets/budget_timeline.dart`
+- `lib/features/budgets/presentation/widgets/budget_progress_bar.dart`
+- `lib/features/budgets/presentation/widgets/daily_allowance_label.dart`
+- `lib/features/budgets/presentation/widgets/animated_goo_background.dart`
+- `lib/features/budgets/presentation/pages/budgets_page.dart`
+
+```dart
+// ✅ AnimatedGooBackground Performance Optimization
+class AnimatedGooBackground extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Cache theme data once (Phase 1 pattern)
+    final brightness = Theme.of(context).brightness;
+    final optimizedColor = brightness == Brightness.light
+        ? baseColor.withOpacity(0.20)
+        : baseColor.withOpacity(0.20);
+    
+    // Use RepaintBoundary for expensive plasma animation
+    return RepaintBoundary(
+      child: Transform(
+        transform: Matrix4.skewX(0.001),
+        child: PlasmaRenderer(
+          type: PlasmaType.infinity,
+          particles: PlatformService.isLowEndDevice ? 6 : 10, // Adaptive performance
+          color: optimizedColor,
+          blur: 0.30,
+          size: 1.30,
+          speed: PlatformService.isLowEndDevice ? 3.0 : 5.30, // Adaptive animation speed
+          offset: 0,
+          blendMode: brightness == Brightness.light
+              ? BlendMode.multiply
+              : BlendMode.screen,
+          particleType: ParticleType.atlas,
+          rotation: (randomOffset % 360).toDouble(),
+        ),
+      ),
+    );
+  }
+}
+
+// ✅ BudgetProgressBar with Cached Calculations
+class BudgetProgressBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // Use ResponsiveLayoutBuilder for size-dependent rendering (Phase 2 pattern)
+    return ResponsiveLayoutBuilder(
+      debugLabel: 'BudgetProgressBar',
+      builder: (context, constraints, layoutData) {
+        final progress = _calculateProgress(); // Cache expensive calculation
+        
+        return Material(
+          type: MaterialType.transparency,
+          child: CustomPaint(
+            size: Size(layoutData.contentWidth, 12),
+            painter: _BudgetProgressPainter(
+              progress: progress,
+              accent: accent,
+              background: Theme.of(context).colorScheme.surfaceVariant,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+##### 5.1.4 Navigation Feature Components
+**Files to Optimize**:
+- `lib/features/navigation/presentation/widgets/adaptive_bottom_navigation.dart`
+- `lib/features/navigation/presentation/widgets/main_shell.dart`
+- `lib/features/navigation/presentation/widgets/navigation_customization_content.dart`
+
+```dart
+// ✅ AdaptiveBottomNavigation Platform Optimization Enhancement
+class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
+  // Cache platform detection (Phase 3 pattern)
+  late final bool _isIOS;
+  late final bool _isAndroid;
+  
+  @override
+  void initState() {
+    super.initState();
+    final platform = PlatformService.getPlatform();
+    _isIOS = platform == PlatformOS.isIOS;
+    _isAndroid = platform == PlatformOS.isAndroid;
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    // Cache theme data (Phase 1 pattern)
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Material(
+      type: MaterialType.transparency,
+      child: ResponsiveLayoutBuilder( // Phase 2 pattern
+        debugLabel: 'AdaptiveBottomNavigation',
+        builder: (context, constraints, layoutData) {
+          return _buildPlatformOptimizedNavigation(
+            layoutData: layoutData,
+            colorScheme: colorScheme,
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildPlatformOptimizedNavigation({
+    required ResponsiveLayoutData layoutData,
+    required ColorScheme colorScheme,
+  }) {
+    // Platform-specific optimization (Phase 3 pattern)
+    if (_isIOS) {
+      return _buildIOSStyleNavigation(layoutData, colorScheme);
+    } else if (_isAndroid) {
+      return _buildMaterialStyleNavigation(layoutData, colorScheme);
+    }
+    return _buildDefaultNavigation(layoutData, colorScheme);
+  }
+}
+```
+
+##### 5.1.5 Settings & More Feature Components
+**Files to Optimize**:
+- `lib/features/settings/presentation/pages/settings_page.dart`
+- `lib/features/more/presentation/pages/more_page.dart`
+
+```dart
+// ✅ Settings Page with Optimized List Rendering
+class SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ResponsiveLayoutBuilder( // Phase 2 pattern
+      debugLabel: 'SettingsPage',
+      builder: (context, constraints, layoutData) {
+        return PageTemplate(
+          title: 'Settings',
+          slivers: [
+            SliverList.builder(
+              itemCount: settingsItems.length,
+              itemBuilder: (context, index) {
+                return RepaintBoundary(
+                  key: ValueKey('setting_${settingsItems[index].id}'),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: TappableWidget( // Already optimized
+                      onTap: () => _handleSettingTap(settingsItems[index]),
+                      child: _SettingsItemWidget(
+                        item: settingsItems[index],
+                        layoutData: layoutData,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+```
+
+#### 5.2 Shared Widget Framework Enhancement
+**Target**: Apply remaining optimizations to shared widgets
+
+##### 5.2.1 PageTemplate Ultimate Optimization
+**Target**: `lib/shared/widgets/page_template.dart`
+
+```dart
+// ✅ Enhanced PageTemplate with All Phase Optimizations
+class _PageTemplateState extends State<PageTemplate> {
+  late final ScrollController _scrollController;
+  late final ColorScheme _colorScheme;
+  late final TextTheme _textTheme;
+  
+  @override
+  void initState() {
+    super.initState();
+    // Theme caching (Phase 1 pattern)
+    final theme = Theme.of(context);
+    _colorScheme = theme.colorScheme;
+    _textTheme = theme.textTheme;
+    
+    _scrollController = ScrollController();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ResponsiveLayoutBuilder( // Phase 2 pattern
+      debugLabel: 'PageTemplate',
+      builder: (context, constraints, layoutData) {
+        return Scaffold(
+          backgroundColor: widget.backgroundColor ?? _colorScheme.surface,
+          floatingActionButton: widget.floatingActionButton,
+          floatingActionButtonLocation: widget.floatingActionButtonLocation,
+          body: CustomScrollView(
+            controller: _scrollController,
+            physics: const ClampingScrollPhysics(), // Phase 4 overscroll optimization
+            slivers: [
+              if (widget.title != null)
+                SliverAppBar(
+                  pinned: true,
+                  expandedHeight: widget.expandedHeight,
+                  toolbarHeight: widget.toolbarHeight,
+                  actions: widget.actions,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  // Use RepaintBoundary for expensive flexible space
+                  flexibleSpace: RepaintBoundary(
+                    child: CollapsibleAppBarTitle(
+                      title: widget.title!,
+                      scrollController: _scrollController,
+                      expandedHeight: widget.expandedHeight,
+                      toolbarHeight: widget.toolbarHeight,
+                      colorScheme: _colorScheme, // Pass cached theme
+                      textTheme: _textTheme,
+                    ),
+                  ),
+                ),
+              ...widget.slivers.map((sliver) => RepaintBoundary(child: sliver)),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+##### 5.2.2 Animation Framework Safe Enhancement
+**Target**: All animation widgets in `lib/shared/widgets/animations/`
+
+**⚠️ CRITICAL: Preserve Existing Animation Controllers - Do NOT Replace with TweenAnimationBuilder**
+
+```dart
+// ✅ SAFE: FadeIn with Performance Optimizations (Preserve AnimationController)
+class _FadeInState extends State<FadeIn> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Keep existing AnimationController architecture
+    _controller = AnimationUtils.createController(
+      vsync: this,
+      duration: widget.duration,
+      debugLabel: 'FadeIn',
+    );
+
+    _animation = Tween<double>(
+      begin: widget.begin,
+      end: widget.end,
+    ).animate(AnimationUtils.createCurvedAnimation(
+      parent: _controller,
+      curve: widget.curve,
+    ));
+
+    // Phase 5: Add performance tracking without changing behavior
+    PerformanceOptimizations.trackAnimationControllerCreation('FadeIn');
+    
+    // Start animation with performance checks
+    if (AnimationUtils.shouldAnimate() && AnimationUtils.canStartAnimation()) {
+      Future.delayed(widget.delay, () {
+        if (mounted) _controller.forward();
+      });
+    } else {
+      // Skip to end state if animations disabled
+      _controller.value = 1.0;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Early exit for disabled animations (preserve existing pattern)
+    if (!AnimationUtils.shouldAnimate()) {
+      return widget.child;
+    }
+    
+    return AnimationUtils.animatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        // Track animation performance (Phase 5 addition)
+        PerformanceOptimizations.trackAnimationPerformance('FadeIn', 'AnimatedBuilder');
+        
+        return Opacity(
+          opacity: _animation.value,
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+
+// ✅ SAFE: SlideIn with Enhanced Performance (Keep AnimationController)
+class _SlideInState extends State<SlideIn> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    // Preserve existing controller architecture
+    _controller = AnimationUtils.createController(
+      vsync: this,
+      duration: widget.duration,
+      debugLabel: 'SlideIn',
+    );
+
+    // Phase 5: Use MediaQuery alternatives ONLY for sizing, not during animation
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        final renderBox = context.findRenderObject() as RenderBox?;
+        final size = renderBox?.size ?? const Size(100, 100);
+        
+        final offsetDistance = widget.offsetDistance ?? size.width * 0.3;
+        
+        _slideAnimation = Tween<Offset>(
+          begin: _getBeginOffset(offsetDistance),
+          end: Offset.zero,
+        ).animate(AnimationUtils.createCurvedAnimation(
+          parent: _controller,
+          curve: widget.curve,
+        ));
+        
+        if (AnimationUtils.shouldAnimate() && AnimationUtils.canStartAnimation()) {
+          Future.delayed(widget.delay, () {
+            if (mounted) _controller.forward();
+          });
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!AnimationUtils.shouldAnimate()) {
+      return widget.child;
+    }
+    
+    return AnimationUtils.animatedBuilder(
+      animation: _slideAnimation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: _slideAnimation.value,
+          child: child,
+        );
+      },
+      child: widget.child,
+    );
+  }
+}
+```
+
+##### 5.2.3 AppText Safe Performance Enhancement
+**Target**: `lib/shared/widgets/app_text.dart`
+
+```dart
+// ✅ SAFE: AppText with Build-Level Theme Caching (NOT initState caching)
+class AppText extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // ✅ SAFE: Cache theme data at build level - updates with theme changes
+    final theme = Theme.of(context);
+    final textTheme = theme.textTheme;
+    final colorScheme = theme.colorScheme;
+    
+    // Build optimized text style using cached theme data
+    final textStyle = _buildOptimizedTextStyle(
+      textTheme: textTheme,
+      colorScheme: colorScheme,
+    );
+    
+    // ✅ SAFE: RepaintBoundary on static text content
+    return RepaintBoundary(
+      child: Text(
+        text,
+        style: textStyle,
+        textAlign: textAlign,
+        overflow: overflow,
+        maxLines: maxLines,
+        softWrap: softWrap,
+        textDirection: textDirection,
+        locale: locale,
+        // Phase 5: Platform-optimized text rendering (optional feature flag)
+        textScaleFactor: PerformanceOptimizations.usePlatformTextOptimization 
+          ? PlatformService.getOptimalTextScaleFactor() 
+          : null,
+        textWidthBasis: TextWidthBasis.parent,
+        textHeightBehavior: const TextHeightBehavior(
+          applyHeightToFirstAscent: false,
+          applyHeightToLastDescent: false,
+        ),
+      ),
+    );
+  }
+  
+  TextStyle _buildOptimizedTextStyle({
+    required TextTheme textTheme,
+    required ColorScheme colorScheme,
+  }) {
+    // Use cached theme data to build style efficiently
+    // This method receives cached data, so no additional Theme.of() calls
+    return TextStyle(
+      fontSize: fontSize,
+      fontWeight: fontWeight,
+      color: color ?? colorScheme.onSurface,
+      fontFamily: textTheme.bodyLarge?.fontFamily,
+    );
+  }
+}
+```
+
+#### 5.3 Safe Universal List & Scroll Performance
+**Target**: All ListView, SliverList, and scrollable implementations
+
+```dart
+// ✅ SAFE: Universal Optimized List Pattern with Careful RepaintBoundary Usage
+extension OptimizedListExtensions on Widget {
+  Widget withOptimizedScrolling({
+    String? debugLabel,
+    ScrollPhysics? physics,
+  }) {
+    return ScrollConfiguration(
+      behavior: NoOverscrollBehavior(componentName: debugLabel), // Phase 4
+      child: this,
+    );
+  }
+  
+  // ✅ SAFE: RepaintBoundary only for static content
+  Widget withRepaintBoundary({
+    String? keyPrefix,
+    bool isAnimatedContent = false,
+  }) {
+    // Don't apply RepaintBoundary to animated content
+    if (isAnimatedContent) {
+      return this;
+    }
+    
+    return RepaintBoundary(
+      key: keyPrefix != null ? ValueKey('repaint_$keyPrefix') : null,
+      child: this,
+    );
+  }
+}
+
+// ✅ SAFE: Universal SliverList Builder Pattern with Animation Awareness
+class OptimizedSliverList<T> extends StatelessWidget {
+  const OptimizedSliverList({
+    required this.items,
+    required this.itemBuilder,
+    this.separatorBuilder,
+    this.keyBuilder,
+    this.hasAnimatedItems = false, // Important: track if items are animated
+    super.key,
+  });
+
+  final List<T> items;
+  final Widget Function(BuildContext context, T item, int index) itemBuilder;
+  final Widget Function(BuildContext context, int index)? separatorBuilder;
+  final String Function(T item)? keyBuilder;
+  final bool hasAnimatedItems; // Don't apply RepaintBoundary to animated items
+
+  @override
+  Widget build(BuildContext context) {
+    if (separatorBuilder != null) {
+      return SliverList.separated(
+        itemCount: items.length,
+        itemBuilder: (context, index) {
+          final item = items[index];
+          final child = itemBuilder(context, item, index);
+          
+          // ✅ SAFE: Only apply RepaintBoundary to non-animated content
+          if (!hasAnimatedItems) {
+            return RepaintBoundary(
+              key: keyBuilder != null ? ValueKey(keyBuilder!(item)) : ValueKey(index),
+              child: child,
+            );
+          }
+          
+          return child;
+        },
+        separatorBuilder: separatorBuilder!,
+      );
+    }
+    
+    return SliverList.builder(
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        final child = itemBuilder(context, item, index);
+        
+        // ✅ SAFE: Only apply RepaintBoundary to static content
+        if (!hasAnimatedItems) {
+          return RepaintBoundary(
+            key: keyBuilder != null ? ValueKey(keyBuilder!(item)) : ValueKey(index),
+            child: child,
+          );
+        }
+        
+        return child;
+      },
+    );
+  }
+}
+
+// ✅ SAFE: ResponsiveLayoutBuilder usage that doesn't break animations
+class SafeResponsiveWidget extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    // ✅ Use ResponsiveLayoutBuilder for static layouts only
+    return ResponsiveLayoutBuilder(
+      debugLabel: 'SafeResponsiveWidget',
+      builder: (context, constraints, layoutData) {
+        // ✅ SAFE: Use layoutData for non-animated properties
+        return Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: layoutData.contentPadding, // Static layout property
+          ),
+          child: Column(
+            children: [
+              // ❌ AVOID: Don't use layoutData in animated properties
+              // AnimatedContainer(width: layoutData.width * 0.8), // This could cause issues
+              
+              // ✅ SAFE: Use MediaQuery for animated properties
+              AnimatedContainer(
+                width: MediaQuery.of(context).size.width * 0.8, // Stable during animation
+                duration: const Duration(milliseconds: 300),
+                child: content,
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+```
+
+#### 5.4 Performance Monitoring Integration
+**Target**: Comprehensive monitoring across all optimized components
+
+```dart
+// ✅ Enhanced Performance Monitoring for Phase 5
+extension Phase5PerformanceTracking on PerformanceOptimizations {
+  /// Track feature-specific component optimization
+  static void trackFeatureComponentOptimization(
+    String featureName,
+    String componentName,
+    String optimizationType,
+  ) {
+    if (!enablePerformanceMonitoring) return;
+    _performanceTracker.trackFeatureComponentOptimization(
+      featureName,
+      componentName,
+      optimizationType,
+    );
+  }
+  
+  /// Track universal list optimization usage
+  static void trackListOptimization(
+    String componentName,
+    String listType,
+    int itemCount,
+  ) {
+    if (!enablePerformanceMonitoring) return;
+    _performanceTracker.trackListOptimization(
+      componentName,
+      listType,
+      itemCount,
+    );
+  }
+  
+  /// Track RepaintBoundary usage effectiveness
+  static void trackRepaintBoundaryUsage(
+    String componentName,
+    String boundaryType,
+  ) {
+    if (!enablePerformanceMonitoring) return;
+    _performanceTracker.trackRepaintBoundaryUsage(
+      componentName,
+      boundaryType,
+    );
+  }
+}
+```
+
+---
+
+## ⚠️ Phase 5 Risk Mitigation Strategy
+
+### Critical Animation Preservation Rules
+1. **🚫 DO NOT replace AnimationController with TweenAnimationBuilder**
+   - TappableWidget, BottomSheetService, and other interactive components require precise animation control
+   - Animation controllers provide pause, reverse, and status callback functionality that TweenAnimationBuilder cannot match
+
+2. **🚫 DO NOT cache theme data in initState**
+   - Theme caching must happen at build method level to respond to dynamic theme changes
+   - Material You and dark/light mode switches require real-time theme updates
+
+3. **🚫 DO NOT apply RepaintBoundary to animated content**
+   - Coordinated animations (staggered lists, transitions) will break with isolating boundaries
+   - Only apply RepaintBoundary to static content
+
+4. **🚫 DO NOT use ResponsiveLayoutBuilder in animated properties**
+   - Layout constraints changing during animations cause jarring interruptions
+   - Use MediaQuery for animated dimensions, ResponsiveLayoutBuilder for static layout only
+
+### Safe Implementation Guidelines
+
+#### ✅ Safe Optimizations
+- **Theme caching at build method level**: Updates with theme changes
+- **RepaintBoundary on static content**: Improves rendering without breaking animations
+- **Performance tracking additions**: Monitor without changing behavior
+- **Platform detection caching**: One-time detection in initState
+- **Extension methods for patterns**: Additive functionality
+
+#### ⚠️ Careful Implementation Required
+- **ResponsiveLayoutBuilder usage**: Only for static layouts, not animated properties
+- **Platform-adaptive timing**: Make opt-in, not automatic
+- **List optimizations**: Check for animated content before applying RepaintBoundary
+
+#### 🚫 Avoid These Changes
+- **AnimationController replacement**: Breaks interaction patterns
+- **Aggressive theme caching**: Prevents dynamic theme updates
+- **Universal RepaintBoundary**: Isolates coordinated animations
+- **Layout changes during animation**: Causes animation interruptions
+
+### Component Risk Levels
+
+#### 🔴 High Risk (Minimal Changes Only)
+- **TappableWidget**: Core interaction, preserve AnimationController
+- **BottomSheetService**: Already optimized, avoid further changes
+- **Animation framework**: Preserve existing patterns, add tracking only
+
+#### 🟡 Medium Risk (Careful Implementation)
+- **TransactionList**: Test RepaintBoundary with scroll animations
+- **Navigation components**: Verify transition animations work correctly
+- **PageTemplate**: Central component, test thoroughly
+
+#### 🟢 Low Risk (Safe for Optimization)
+- **AppText**: Static content, good RepaintBoundary candidate
+- **Settings/More pages**: Simple lists, safe for optimization
+- **Static layout components**: ResponsiveLayoutBuilder appropriate
 
 ---
 
@@ -502,32 +1179,112 @@ class PerformanceOptimizations {
 ## 🔧 Implementation Details
 
 ### Key Files to Modify
+
+#### Phase 1-4 (Completed)
 ```
 lib/shared/widgets/dialogs/
-├── bottom_sheet_service.dart          # Phase 2 priority
-├── popup_framework.dart               # Phase 3
-└── dialog_service.dart                # Phase 3
+├── bottom_sheet_service.dart          # ✅ Phase 2-4 optimized
+├── popup_framework.dart               # ✅ Phase 1-2 optimized
+└── dialog_service.dart                # ✅ Phase 3 optimized
 
 lib/shared/widgets/animations/
-├── tappable_widget.dart               # Phase 1 priority
-├── fade_in.dart                       # Phase 5
-├── slide_in.dart                      # Phase 5
-└── animation_utils.dart               # Phase 1
+├── tappable_widget.dart               # ✅ Phase 1,3 optimized
+├── fade_in.dart                       # ✅ Ready for Phase 5 enhancement
+├── slide_in.dart                      # ✅ Ready for Phase 5 enhancement
+└── animation_utils.dart               # ✅ Phase 1 optimized
 
 lib/shared/widgets/
-├── page_template.dart                 # Phase 5
-└── app_text.dart                      # Phase 5
+├── page_template.dart                 # ✅ Ready for Phase 5 ultimate optimization
+└── app_text.dart                      # ✅ Ready for Phase 5 enhancement
 
 lib/core/services/
-└── dialog_service.dart                # Phase 3
+└── dialog_service.dart                # ✅ Phase 3 optimized
 ```
 
-### New Utilities to Create
+#### Phase 5 (Universal Application)
+```
+lib/features/home/
+├── presentation/pages/
+│   └── home_page.dart                 # Theme caching, ResponsiveLayoutBuilder
+└── widgets/
+    ├── account_card.dart              # ✅ Already optimized (Phase 1)
+    └── home_page_username.dart        # Theme caching, platform optimization
+
+lib/features/transactions/
+├── presentation/pages/
+│   └── transactions_page.dart         # ResponsiveLayoutBuilder, RepaintBoundary
+└── widgets/
+    ├── transaction_list.dart          # SliverList optimization, RepaintBoundary
+    ├── month_selector.dart            # ✅ Already optimized (Phase 2)
+    ├── transaction_summary.dart       # Theme caching, Material elevation
+    └── month_selector_wrapper.dart    # ResponsiveLayoutBuilder integration
+
+lib/features/budgets/
+├── presentation/pages/
+│   └── budgets_page.dart              # ResponsiveLayoutBuilder, optimized lists
+└── widgets/
+    ├── budget_tile.dart               # ✅ Already optimized (Phase 1)
+    ├── budget_timeline.dart           # Theme caching, ResponsiveLayoutBuilder
+    ├── budget_progress_bar.dart       # ResponsiveLayoutBuilder, cached calculations
+    ├── daily_allowance_label.dart     # Theme caching, platform optimization
+    └── animated_goo_background.dart   # RepaintBoundary, adaptive performance
+
+lib/features/navigation/
+└── presentation/widgets/
+    ├── adaptive_bottom_navigation.dart # Platform caching, ResponsiveLayoutBuilder
+    ├── main_shell.dart                # Theme caching, layout optimization
+    └── navigation_customization_content.dart # ResponsiveLayoutBuilder
+
+lib/features/settings/
+└── presentation/pages/
+    └── settings_page.dart             # ResponsiveLayoutBuilder, optimized lists
+
+lib/features/more/
+└── presentation/pages/
+    └── more_page.dart                 # ResponsiveLayoutBuilder, optimized lists
+
+lib/shared/widgets/
+├── page_template.dart                 # Ultimate optimization: all phases combined
+├── app_text.dart                      # Theme caching, platform optimization
+├── language_selector.dart             # ResponsiveLayoutBuilder, optimization
+├── collapsible_app_bar_title.dart     # Theme caching, cached calculations
+└── text_input.dart                    # Theme caching, platform optimization
+
+lib/shared/widgets/animations/
+├── fade_in.dart                       # Platform optimization, performance tracking
+├── slide_in.dart                      # ResponsiveLayoutBuilder, platform optimization
+├── scale_in.dart                      # Platform optimization, performance tracking
+├── animated_scale_opacity.dart        # Performance tracking integration
+├── animated_expanded.dart             # Theme caching, platform optimization
+├── animated_count_text.dart           # Theme caching, platform optimization
+├── shake_animation.dart               # Platform optimization integration
+├── slide_fade_transition.dart         # ResponsiveLayoutBuilder integration
+└── scaled_animated_switcher.dart      # Platform optimization, performance tracking
+```
+
+### New Utilities Created & Enhanced
+
+#### Phase 1-4 Utilities (Completed)
 ```
 lib/shared/utils/
-├── performance_cache.dart             # Caching utilities
-├── optimized_scroll_behavior.dart     # Custom scroll physics
-└── render_optimization.dart           # RepaintBoundary helpers
+├── performance_optimization.dart      # ✅ Phases 1-4 tracking, feature flags
+├── snap_size_cache.dart              # ✅ Phase 2 LRU caching for snap calculations
+├── responsive_layout_builder.dart     # ✅ Phase 2 LayoutBuilder alternatives
+└── no_overscroll_behavior.dart       # ✅ Phase 4 overscroll optimization
+```
+
+#### Phase 5 Enhancements & New Utilities
+```
+lib/shared/utils/
+├── performance_optimization.dart      # Enhanced with Phase 5 feature tracking
+├── optimized_list_extensions.dart     # Universal list optimization patterns
+├── repaint_boundary_helpers.dart      # RepaintBoundary automation utilities
+└── platform_adaptive_performance.dart # Platform-specific performance helpers
+
+lib/shared/widgets/optimized/
+├── optimized_sliver_list.dart         # Universal SliverList optimization widget
+├── optimized_page_view.dart           # Performance-optimized PageView
+└── optimized_custom_scroll_view.dart  # Enhanced CustomScrollView with all optimizations
 ```
 
 ### Monitoring Integration
@@ -547,38 +1304,133 @@ class PerformanceTracker {
 ## ✅ Success Criteria
 
 ### Technical Metrics
-- [ ] Zero frame drops during bottom sheet interactions
-- [ ] 60fps minimum on mid-range devices (OnePlus 7 equivalent)
+- [ ] Zero frame drops during bottom sheet interactions ✅ (Phases 1-4 completed)
+- [ ] 60fps minimum on mid-range devices (OnePlus 7 equivalent) ✅ (Phases 1-4 completed)
 - [ ] 120fps on high-end devices when supported
 - [ ] Memory usage stays within 200MB during complex animations
 - [ ] CPU usage under 30% during normal interactions
 
+### Phase 5 Specific Metrics
+- [ ] All feature presentation components use optimized patterns (ResponsiveLayoutBuilder, theme caching, RepaintBoundary)
+- [ ] Universal list components achieve 60fps with 1000+ items
+- [ ] All animation widgets support platform-adaptive performance
+- [ ] Complete coverage of all 9 feature modules with optimization patterns
+- [ ] All shared widgets implement comprehensive optimization (Phases 1-4 patterns)
+
 ### User Experience Metrics
-- [ ] Time to first frame < 16ms for all dialogs
-- [ ] Bottom sheet snap animations feel natural and responsive
-- [ ] No visible jank during keyboard appearance/dismissal
-- [ ] Smooth scrolling in all list views
+- [ ] Time to first frame < 16ms for all dialogs ✅ (Phases 1-4 completed)
+- [ ] Bottom sheet snap animations feel natural and responsive ✅ (Phases 1-4 completed)
+- [ ] No visible jank during keyboard appearance/dismissal ✅ (Phases 1-4 completed)
+- [ ] Smooth scrolling in all list views (Phase 5 target)
 - [ ] Consistent performance across iOS and Android
 
+### Phase 5 User Experience Metrics
+- [ ] Home page account cards scroll smoothly with animations
+- [ ] Transaction list maintains 60fps with 500+ transactions per month
+- [ ] Budget timeline and progress animations feel responsive
+- [ ] Navigation transitions are buttery smooth across all tabs
+- [ ] Settings and more pages load instantly with smooth interactions
+- [ ] All feature-specific animations adapt to device capabilities
+- [ ] Text rendering is crisp and performant across all font sizes
+
 ### Code Quality Metrics
-- [ ] Zero breaking changes to existing APIs
-- [ ] All optimizations covered by feature flags
+- [ ] Zero breaking changes to existing APIs ✅ (Phases 1-4 completed)
+- [ ] All optimizations covered by feature flags ✅ (Phases 1-4 completed)
 - [ ] Performance benchmarks automated in CI
 - [ ] Documentation updated with new best practices
+
+### Phase 5 Code Quality Metrics
+- [ ] All 32+ presentation layer files implement optimization patterns
+- [ ] Universal optimization patterns documented and reusable
+- [ ] Performance monitoring covers all feature components
+- [ ] Extension methods provide easy optimization application
+- [ ] RepaintBoundary usage is systematic and effective
+- [ ] Platform-adaptive performance is consistent across all components
 
 ---
 
 ## 🎯 Next Steps
 
-1. **Week 1**: Begin Phase 1 implementation with TappableWidget optimization
-2. **Week 2**: Complete layer tree optimizations across all components
-3. **Week 3**: Start BottomSheetService keyboard handling overhaul
-4. **Week 4**: Implement AnimatedPadding + controller patterns
-5. **Week 5**: Remove competing animation layers
-6. **Week 6**: Optimize dialog and popup animations
-7. **Week 7**: Enhance DraggableScrollableSheet physics
-8. **Week 8**: Complete snap optimization and haptic feedback
-9. **Week 9**: Universal application to all UI components
-10. **Week 10**: Final testing, documentation, and rollout
+### Phase 1-4 (✅ Completed)
+1. ✅ **Week 1**: Phase 1 implementation with TappableWidget optimization
+2. ✅ **Week 2**: Layer tree optimizations across all components
+3. ✅ **Week 3**: BottomSheetService keyboard handling overhaul
+4. ✅ **Week 4**: AnimatedPadding + controller patterns implementation
+5. ✅ **Week 5**: Animation layer consolidation and conflict removal
+6. ✅ **Week 6**: Dialog and popup animation optimization
+7. ✅ **Week 7**: DraggableScrollableSheet physics enhancement
+8. ✅ **Week 8**: Snap optimization and haptic feedback completion
+
+### Phase 5 Implementation Plan (Week 9-10)
+
+#### Week 9: Feature Component Optimization
+**Day 1-2: Home & Transaction Features**
+- Optimize `home_page.dart` with ResponsiveLayoutBuilder and theme caching
+- Enhance `transaction_list.dart` with SliverList optimization and RepaintBoundary
+- Apply theme caching to `transaction_summary.dart` and Material elevation patterns
+- Optimize `month_selector_wrapper.dart` with ResponsiveLayoutBuilder integration
+
+**Day 3-4: Budget & Navigation Features**
+- Enhance `animated_goo_background.dart` with RepaintBoundary and adaptive performance
+- Optimize `budget_timeline.dart` and `budget_progress_bar.dart` with cached calculations
+- Apply platform caching to `adaptive_bottom_navigation.dart`
+- Enhance `main_shell.dart` with comprehensive layout optimization
+
+**Day 5: Settings & More Features**
+- Optimize `settings_page.dart` with ResponsiveLayoutBuilder and optimized lists
+- Enhance `more_page.dart` with universal optimization patterns
+- Apply RepaintBoundary and theme caching across remaining components
+
+#### Week 10: Shared Framework & Universal Patterns
+**Day 1-2: Shared Widget Enhancement**
+- Ultimate `page_template.dart` optimization combining all phase patterns
+- Enhance `app_text.dart` with theme caching and platform optimization
+- Optimize `collapsible_app_bar_title.dart` with cached calculations
+- Apply optimization patterns to remaining shared widgets
+
+**Day 3-4: Animation Framework Enhancement**
+- Enhance all animation widgets (`fade_in.dart`, `slide_in.dart`, etc.) with platform optimization
+- Integrate performance tracking across animation framework
+- Apply ResponsiveLayoutBuilder patterns to size-dependent animations
+- Implement adaptive animation performance based on device capabilities
+
+**Day 5: Universal Utilities & Final Integration**
+- Create `optimized_list_extensions.dart` for universal list patterns
+- Implement `repaint_boundary_helpers.dart` for automation
+- Develop `platform_adaptive_performance.dart` utilities
+- Final testing and performance validation across all features
+
+### Implementation Priority Matrix
+
+#### High Priority (Week 9, Days 1-3)
+1. **TransactionList optimization** - Most frequently used component
+2. **HomePage optimization** - App entry point performance
+3. **AdaptiveBottomNavigation** - Core navigation performance
+4. **AnimatedGooBackground** - Most expensive animation component
+
+#### Medium Priority (Week 9, Days 4-5)
+1. **BudgetTimeline & ProgressBar** - Complex calculation components
+2. **SettingsPage & MorePage** - List-heavy components
+3. **NavigationCustomization** - Complex UI components
+
+#### Standard Priority (Week 10)
+1. **PageTemplate ultimate optimization** - Framework enhancement
+2. **Animation framework enhancement** - Universal animation improvements
+3. **Universal utilities creation** - Developer experience improvements
+4. **Comprehensive testing & validation** - Quality assurance
+
+### Validation Checkpoints
+
+**End of Week 9 Checkpoint:**
+- [ ] All feature presentation components optimized
+- [ ] Performance benchmarks show improvement across all features
+- [ ] Zero regressions in existing functionality
+- [ ] Memory usage improvements validated
+
+**End of Week 10 Checkpoint:**
+- [ ] All shared widgets implement comprehensive optimization
+- [ ] Universal optimization patterns documented and tested
+- [ ] Performance monitoring covers all components
+- [ ] Final performance validation completed
 
 **Result**: A universally optimized UI framework that maintains our sophisticated APIs while delivering native-level performance across all interactions. 

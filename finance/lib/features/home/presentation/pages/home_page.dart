@@ -6,6 +6,10 @@ import 'package:finance/features/transactions/domain/repositories/transaction_re
 import 'package:finance/features/currencies/domain/repositories/currency_repository.dart';
 import 'package:finance/shared/extensions/account_currency_extension.dart';
 import '../../widgets/account_card.dart';
+// Phase 5 imports
+import '../../../../shared/utils/responsive_layout_builder.dart';
+import '../../../../shared/utils/performance_optimization.dart';
+import '../../../../core/services/platform_service.dart';
 
 /// Lightweight view-model object for account display data
 class AccountTileData {
@@ -39,8 +43,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late ScrollController _scrollController;
+  
+  // Phase 5: Cache theme data and platform info for performance (Phase 1 pattern)
+  late ColorScheme _colorScheme;
+  late TextTheme _textTheme;
+  late bool _isIOS;
+  
   int _selectedAccountIndex = 0;
-
   List<AccountTileData> _accountTiles = [];
   bool _isLoading = true;
   String? _errorMessage;
@@ -48,9 +57,17 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    
+    // Phase 5: Cache platform detection (Phase 3 pattern)
+    final platform = PlatformService.getPlatform();
+    _isIOS = platform == PlatformOS.isIOS;
+    
+    // Phase 5: Platform-optimized animation controller (Phase 3 pattern)
     _animationController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2000),
+      duration: _isIOS 
+        ? const Duration(milliseconds: 2000)
+        : const Duration(milliseconds: 1800),
     );
     _scrollController = ScrollController();
     _scrollController.addListener(() {
@@ -63,6 +80,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     _loadAccounts();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Phase 5: Cache theme data once (Phase 1 pattern)
+    final theme = Theme.of(context);
+    _colorScheme = theme.colorScheme;
+    _textTheme = theme.textTheme;
   }
 
   @override
@@ -133,33 +159,50 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return PageTemplate(
-      slivers: [
-        SliverPadding(
-          padding: const EdgeInsets.symmetric(horizontal: 26),
-          sliver: SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ConstrainedBox(
-                  constraints: const BoxConstraints(minHeight: 100),
-                  child: Container(
-                    alignment: AlignmentDirectional.bottomStart,
-                    padding: const EdgeInsetsDirectional.only(
-                        start: 9, bottom: 17, end: 9),
-                  ),
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization(
+      'HomePage', 
+      'ResponsiveLayoutBuilder+ThemeCaching+PlatformOptimization'
+    );
+
+    // Phase 5: Use ResponsiveLayoutBuilder for size-dependent layout (Phase 2 pattern)
+    return ResponsiveLayoutBuilder(
+      debugLabel: 'HomePage',
+      builder: (context, constraints, layoutData) {
+        return PageTemplate(
+          slivers: _buildOptimizedSlivers(layoutData),
+        );
+      },
+    );
+  }
+
+  /// Phase 5: Build optimized slivers with layout data
+  List<Widget> _buildOptimizedSlivers(ResponsiveLayoutData layoutData) {
+    return [
+      SliverPadding(
+        padding: EdgeInsets.symmetric(horizontal: layoutData.isCompact ? 16 : 26),
+        sliver: SliverToBoxAdapter(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 100),
+                child: Container(
+                  alignment: AlignmentDirectional.bottomStart,
+                  padding: const EdgeInsetsDirectional.only(
+                      start: 9, bottom: 17, end: 9),
                 ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 125,
-                  child: _buildAccountsSection(),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                height: layoutData.isCompact ? 110 : 125,
+                child: _buildAccountsSection(),
+              ),
+            ],
           ),
         ),
-      ],
-    );
+      ),
+    ];
   }
 
   Widget _buildAccountsSection() {
@@ -176,15 +219,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           children: [
             Icon(
               Icons.error_outline,
-              color: Colors.grey[600],
+              color: _colorScheme.error,
               size: 32,
             ),
             const SizedBox(height: 8),
             Text(
               'Failed to load accounts',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 14,
+              style: _textTheme.bodyMedium?.copyWith(
+                color: _colorScheme.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 8),
