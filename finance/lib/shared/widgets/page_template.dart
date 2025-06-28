@@ -20,6 +20,7 @@ class PageTemplate extends StatefulWidget {
     required this.slivers,
     this.actions,
     this.floatingActionButton,
+    this.floatingActionButtonLocation,
     this.backgroundColor,
     this.showBackButton = true,
     this.onBackPressed,
@@ -34,6 +35,7 @@ class PageTemplate extends StatefulWidget {
   final List<Widget> slivers;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
+  final FloatingActionButtonLocation? floatingActionButtonLocation;
   final Color? backgroundColor;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
@@ -66,6 +68,7 @@ class _PageTemplateState extends State<PageTemplate> {
     return Scaffold(
       backgroundColor: widget.backgroundColor ?? surfaceColor,
       floatingActionButton: widget.floatingActionButton,
+      floatingActionButtonLocation: widget.floatingActionButtonLocation,
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [

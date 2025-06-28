@@ -72,6 +72,8 @@
     "overspent_of": "vượt quá ${amount}",
     "left_of": "còn lại của ${amount}",
     "today": "Hôm nay",
+    "expense_budget": "Chi tiêu",
+    "savings_budget": "Tiết kiệm",
 
     "form": {
       "create_new_budget": "Tạo Ngân Sách Mới",

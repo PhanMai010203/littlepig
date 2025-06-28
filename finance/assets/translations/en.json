@@ -72,6 +72,8 @@
     "overspent_of": "overspent of ${amount}",
     "left_of": "left of ${amount}",
     "today": "Today",
+    "expense_budget": "Expense Budget",
+    "savings_budget": "Savings Budget",
 
     "form": {
       "create_new_budget": "Create New Budget",
