@@ -133,9 +133,8 @@ class BudgetTile extends StatelessWidget {
       right: 12,
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
+        child: GestureDetector(
           onTap: () => _showHistorySnackBar(context),
-          borderRadius: BorderRadius.circular(8),
           child: Container(
             width: 32,
             height: 32,

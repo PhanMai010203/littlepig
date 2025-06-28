@@ -212,7 +212,7 @@ class OpenContainerCard extends StatelessWidget {
             shape: shape ?? _getDefaultShape(context),
             color: backgroundColor ?? Theme.of(context).colorScheme.surface,
             elevation: elevation,
-            child: InkWell(
+            child: GestureDetector(
               onTap: openContainer,
               child: Padding(
                 padding: padding,

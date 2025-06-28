@@ -262,50 +262,32 @@ class _TappableWidgetState extends State<TappableWidget>
       }
     }
 
-    // Phase 3: Use platform-optimized interaction widgets
+    // Use GestureDetector for all platforms - no splash/ripple effects
     Widget gestureChild = child;
     if (widget.onTap != null ||
         widget.onLongPress != null ||
         widget.onDoubleTap != null) {
       
-      if (_isAndroid) {
-        // Use InkWell with InkSparkle for optimal Android performance
-        PerformanceOptimizations.trackPlatformOptimization(
-          'TappableWidget', 
-          'Android', 
-          'InkWell with InkSparkle'
-        );
-        gestureChild = Material(
-          type: MaterialType.transparency,
-          child: InkWell(
-            onTap: widget.onTap != null ? _handleTap : null,
-            onLongPress: widget.onLongPress != null ? _handleLongPress : null,
-            onDoubleTap: widget.onDoubleTap != null ? _handleDoubleTap : null,
-            splashFactory: InkSparkle.splashFactory, // More efficient splash
-            splashColor: widget.splashColor,
-            highlightColor: widget.highlightColor,
-            borderRadius: widget.borderRadius,
-            enableFeedback: widget.enableFeedback,
-            child: child,
-          ),
-        );
-      } else {
-        // Use GestureDetector for other platforms
-        gestureChild = GestureDetector(
-          onTapDown: widget.animationType != TapAnimationType.none
-              ? _handleTapDown
-              : null,
-          onTapUp:
-              widget.animationType != TapAnimationType.none ? _handleTapUp : null,
-          onTapCancel: widget.animationType != TapAnimationType.none
-              ? _handleTapCancel
-              : null,
-          onTap: widget.onTap != null ? _handleTap : null,
-          onLongPress: widget.onLongPress != null ? _handleLongPress : null,
-          onDoubleTap: widget.onDoubleTap != null ? _handleDoubleTap : null,
-          child: child,
-        );
-      }
+      // Use GestureDetector for all platforms (no splash effects)
+      PerformanceOptimizations.trackPlatformOptimization(
+        'TappableWidget', 
+        'All Platforms', 
+        'GestureDetector without splash'
+      );
+      gestureChild = GestureDetector(
+        onTapDown: widget.animationType != TapAnimationType.none
+            ? _handleTapDown
+            : null,
+        onTapUp:
+            widget.animationType != TapAnimationType.none ? _handleTapUp : null,
+        onTapCancel: widget.animationType != TapAnimationType.none
+            ? _handleTapCancel
+            : null,
+        onTap: widget.onTap != null ? _handleTap : null,
+        onLongPress: widget.onLongPress != null ? _handleLongPress : null,
+        onDoubleTap: widget.onDoubleTap != null ? _handleDoubleTap : null,
+        child: child,
+      );
     }
 
     // Phase 3: Use cached platform detection for web/desktop

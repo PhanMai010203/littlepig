@@ -56,6 +56,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
 
@@ -66,6 +67,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
 
@@ -76,8 +78,17 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
+
+      // Icon button theme
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          splashFactory: NoSplash.splashFactory,
+        ),
+      ),
+
       // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
@@ -86,6 +97,12 @@ class AppTheme {
         unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         elevation: 8,
       ),
+
+      // Disable all splash/ripple effects globally
+      splashFactory: NoSplash.splashFactory,
+      
+      // Disable Material ink effects
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
 
     // Add custom colors extension
@@ -149,6 +166,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
 
@@ -159,6 +177,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
 
@@ -169,6 +188,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          splashFactory: NoSplash.splashFactory,
+        ),
+      ),
+
+      // Icon button theme
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          splashFactory: NoSplash.splashFactory,
         ),
       ),
 
@@ -180,6 +207,12 @@ class AppTheme {
         unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         elevation: 8,
       ),
+
+      // Disable all splash/ripple effects globally
+      splashFactory: NoSplash.splashFactory,
+      
+      // Disable Material ink effects
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
     );
 
     // Add custom colors extension
