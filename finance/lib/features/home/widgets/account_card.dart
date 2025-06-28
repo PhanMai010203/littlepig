@@ -95,7 +95,9 @@ class AccountCard extends StatelessWidget {
 
                             // If animations are disabled or marquee explicitly disabled (e.g., in tests), avoid using Marquee to prevent pending timers.
                             if (!enableMarquee || !TickerMode.of(context)) {
-                              return Text(title, style: style, overflow: TextOverflow.ellipsis);
+                              return Text(title,
+                                  style: style,
+                                  overflow: TextOverflow.ellipsis);
                             } else {
                               if (textPainter.didExceedMaxLines) {
                                 return Marquee(
@@ -130,7 +132,8 @@ class AccountCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 Text(
                   amount,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                      fontSize: 14, fontWeight: FontWeight.bold),
                   softWrap: false,
                   overflow: TextOverflow.visible,
                 ),
@@ -146,6 +149,7 @@ class AccountCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
     );
   }
 }
