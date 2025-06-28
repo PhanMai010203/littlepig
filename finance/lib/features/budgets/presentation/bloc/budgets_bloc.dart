@@ -42,32 +42,25 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
 
   double _calculateDailyAllowance(Budget budget, double spentAmount) {
     final remainingAmount = budget.amount - spentAmount;
-
     if (remainingAmount <= 0) {
       return 0.0;
     }
 
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final endDate = DateTime(budget.endDate.year, budget.endDate.month, budget.endDate.day);
 
-    // If the budget has expired (now is after or at the end date), there's no allowance left.
-    if (now.isAfter(budget.endDate) || now.isAtSameMomentAs(budget.endDate)) {
+    // If the budget has expired (end date is before today), there's no allowance.
+    if (today.isAfter(endDate)) {
       return 0.0;
     }
 
-    // Re-use the same remaining-days calculation that the UI relies on so both
-    // the text ("for X more days") and the allowance value stay in sync.
-    // Budget extension returns the number of *full* remaining days. If the
-    // budget has already expired there are zero days left.
-    int daysLeft = budget.endDate.difference(now).inDays;
-    if (daysLeft < 0) {
-      daysLeft = 0;
-    }
+    // Calculate the number of days left, including today.
+    final int daysLeft = endDate.difference(today).inDays + 1;
 
-    // Guard against division by zero – when the budget still has money left
-    // but is on its very last day we want the user to be allowed to spend the
-    // whole remainder today.
+    // This should not happen with the check above, but as a safeguard:
     if (daysLeft <= 0) {
-      daysLeft = 1;
+      return 0.0;
     }
 
     return remainingAmount / daysLeft;
