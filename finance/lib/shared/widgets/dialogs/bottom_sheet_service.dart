@@ -3,6 +3,7 @@ import '../animations/slide_in.dart';
 import '../animations/fade_in.dart';
 import '../animations/animation_utils.dart';
 import '../../../core/settings/app_settings.dart';
+import '../../../core/services/platform_service.dart';
 
 /// BottomSheetService - Phase 3.3 Implementation
 ///
@@ -53,17 +54,37 @@ class BottomSheetService {
     // Scrolling
     bool expandToFillViewport = false,
     ScrollController? scrollController,
+    // Smart snapping (from budget app)
+    bool popupWithKeyboard = false,
+    bool fullSnap = false,
+    bool resizeForKeyboard = true,
+    // Theme context preservation (from budget app)
+    bool useParentContextForTheme = true,
     // Callbacks
     VoidCallback? onOpened,
     VoidCallback? onClosed,
     void Function(double)? onSizeChanged,
   }) {
     final theme = Theme.of(context);
-    final mediaQuery = MediaQuery.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Calculate effective sizes
-    final effectiveSnapSizes = snapSizes ?? _getDefaultSnapSizes();
+    // Minimize keyboard when opening bottom sheet (budget app logic)
+    if (!popupWithKeyboard) {
+      minimizeKeyboard(context);
+    }
+
+    // Theme context preservation (from budget app logic)
+    BuildContext? themeContext = useParentContextForTheme && 
+        PlatformService.isContextValidForTheme(context)
+      ? context
+      : null;
+
+    // Calculate effective sizes with smart snapping
+    final effectiveSnapSizes = snapSizes ?? _getDefaultSnapSizes(
+      context: context,
+      popupWithKeyboard: popupWithKeyboard,
+      fullSnap: fullSnap,
+    );
     final effectiveInitialSize = initialSize ?? effectiveSnapSizes.first;
     final effectiveMinSize = minSize ?? effectiveSnapSizes.first;
     final effectiveMaxSize = maxSize ?? effectiveSnapSizes.last;
@@ -141,6 +162,9 @@ class BottomSheetService {
         surfaceTintColor: surfaceTintColor,
         elevation: elevation,
         shape: shape,
+        themeContext: themeContext,
+        resizeForKeyboard: resizeForKeyboard,
+        popupWithKeyboard: popupWithKeyboard,
         onOpened: onOpened,
         onClosed: onClosed,
         onSizeChanged: onSizeChanged,
@@ -158,6 +182,9 @@ class BottomSheetService {
         surfaceTintColor: surfaceTintColor,
         elevation: elevation,
         shape: shape,
+        themeContext: themeContext,
+        resizeForKeyboard: resizeForKeyboard,
+        popupWithKeyboard: popupWithKeyboard,
         onOpened: onOpened,
         onClosed: onClosed,
       );
@@ -295,10 +322,39 @@ class BottomSheetService {
     );
   }
 
-  /// Get default snap sizes based on screen height
-  static List<double> _getDefaultSnapSizes() {
-    // Standard snap points: 25%, 50%, 90% of screen height
-    return [0.25, 0.5, 0.9];
+  /// Get default snap sizes based on screen height and keyboard state
+  static List<double> _getDefaultSnapSizes({
+    BuildContext? context,
+    bool popupWithKeyboard = false,
+    bool fullSnap = false,
+  }) {
+    // If no context provided, return standard sizes
+    if (context == null) {
+      return [0.25, 0.5, 0.9];
+    }
+
+    final mediaQuery = MediaQuery.of(context);
+    final size = mediaQuery.size;
+    final isFullScreen = PlatformService.getIsFullScreen(context);
+    
+    // Calculate device aspect ratio
+    final deviceAspectRatio = size.height / size.width;
+    
+    // Smart snapping based on budget app logic
+    if (popupWithKeyboard == false && 
+        fullSnap == false && 
+        isFullScreen == false && 
+        deviceAspectRatio > 2) {
+      // Standard two-point snapping for tall devices
+      return [0.6, 1.0];
+    } else {
+      // Near-full screen snapping for:
+      // - Keyboards present
+      // - Full snap requested
+      // - Full screen devices
+      // - Landscape orientation
+      return [0.95, 1.0];
+    }
   }
 
   /// Build the main bottom sheet content
@@ -384,7 +440,7 @@ class BottomSheetService {
         width: 32.0,
         height: 4.0,
         decoration: BoxDecoration(
-          color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(2.0),
         ),
       ),
@@ -536,6 +592,9 @@ class BottomSheetService {
     Color? surfaceTintColor,
     double? elevation,
     ShapeBorder? shape,
+    BuildContext? themeContext,
+    bool resizeForKeyboard = true,
+    bool popupWithKeyboard = false,
     VoidCallback? onOpened,
     VoidCallback? onClosed,
     void Function(double)? onSizeChanged,
@@ -554,6 +613,22 @@ class BottomSheetService {
       builder: (context) {
         onOpened?.call();
 
+        // Check for default theme data and reset context if needed
+        BuildContext? effectiveThemeContext = themeContext;
+        if (_isDefaultThemeData(effectiveThemeContext)) {
+          effectiveThemeContext = null;
+        }
+
+        // Fix over-scroll stretch when keyboard pops up quickly (budget app logic)
+        if (popupWithKeyboard && resizeForKeyboard) {
+          Future.delayed(const Duration(milliseconds: 100), () {
+            // This helps prevent over-scroll issues when keyboard appears
+            if (onSizeChanged != null) {
+              onSizeChanged(initialSize);
+            }
+          });
+        }
+
         return DraggableScrollableSheet(
           initialChildSize: initialSize,
           minChildSize: minSize,
@@ -561,14 +636,14 @@ class BottomSheetService {
           snap: true,
           snapSizes: snapSizes,
           builder: (context, scrollController) {
-            return Container(
+            Widget sheetContainer = Container(
               decoration: BoxDecoration(
                 color: backgroundColor ?? colorScheme.surface,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(16.0)),
                 boxShadow: [
                   BoxShadow(
-                    color: colorScheme.shadow.withOpacity(0.1),
+                    color: colorScheme.shadow.withValues(alpha: 0.1),
                     blurRadius: elevation ?? 8.0,
                     offset: const Offset(0, -2),
                   ),
@@ -576,6 +651,19 @@ class BottomSheetService {
               ),
               child: content,
             );
+
+            // Apply theme context if available
+            if (effectiveThemeContext != null) {
+              return Material(
+                type: MaterialType.transparency,
+                child: Theme(
+                  data: Theme.of(effectiveThemeContext),
+                  child: sheetContainer,
+                ),
+              );
+            }
+
+            return sheetContainer;
           },
         );
       },
@@ -597,6 +685,9 @@ class BottomSheetService {
     Color? surfaceTintColor,
     double? elevation,
     ShapeBorder? shape,
+    BuildContext? themeContext,
+    bool resizeForKeyboard = true,
+    bool popupWithKeyboard = false,
     VoidCallback? onOpened,
     VoidCallback? onClosed,
   }) {
@@ -617,6 +708,24 @@ class BottomSheetService {
           ),
       builder: (context) {
         onOpened?.call();
+
+        // Check for default theme data and reset context if needed
+        BuildContext? effectiveThemeContext = themeContext;
+        if (_isDefaultThemeData(effectiveThemeContext)) {
+          effectiveThemeContext = null;
+        }
+
+        // Apply theme context if available
+        if (effectiveThemeContext != null) {
+          return Material(
+            type: MaterialType.transparency,
+            child: Theme(
+              data: Theme.of(effectiveThemeContext),
+              child: content,
+            ),
+          );
+        }
+
         return content;
       },
     ).then((result) {
@@ -642,6 +751,33 @@ class BottomSheetService {
       default:
         return BottomSheetAnimationType.slideUp;
     }
+  }
+
+  /// Check if theme context has default theme data (budget app logic)
+  static bool _isDefaultThemeData(BuildContext? context) {
+    try {
+      if (context == null) return true;
+      
+      final theme = Theme.of(context);
+      final defaultTheme = ThemeData();
+      
+      return theme.primaryColor == defaultTheme.primaryColor &&
+          theme.cardColor == defaultTheme.cardColor &&
+          theme.colorScheme.surface == defaultTheme.colorScheme.surface;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  /// Minimize keyboard before showing bottom sheet (budget app logic)
+  static void minimizeKeyboard(BuildContext context) {
+    FocusNode? currentFocus = WidgetsBinding.instance.focusManager.primaryFocus;
+    currentFocus?.unfocus();
+  }
+
+  /// Get width constraint for bottom sheet based on platform
+  static double getBottomSheetWidth(BuildContext context) {
+    return PlatformService.getWidthConstraint(context);
   }
 }
 
