@@ -207,3 +207,72 @@ Icon(Icons.add).tappable(
 - **Android**: Uses the specified `animationType` (scale, opacity, both, or none)
 - **Web/Desktop**: Adds right-click support that triggers `onLongPress` if defined
 - **All platforms**: Respects performance settings and reduces motion preferences 
+
+---
+
+### Advanced TextInput Features
+
+#### Auto-Focus Restoration
+```dart
+// Wrap your app at the root to automatically restore focus when returning
+ResumeTextFieldFocus(
+  child: MaterialApp.router(
+    routerConfig: appRouter,
+  ),
+)
+```
+
+#### Styling Options
+```dart
+TextInput(
+  style: TextInputStyle.underline,
+  handleOnTapOutside: true,
+  textCapitalization: TextCapitalization.sentences,
+  prefix: "€",
+  suffix: "/mo",
+)
+```
+
+#### Keyboard Management Helpers
+```dart
+minimizeKeyboard(context); // Globally dismisses the keyboard safely
+```
+
+---
+
+### TappableTextEntry – Inline Editing Made Easy
+
+`TappableTextEntry` lets you show a piece of text that becomes editable when tapped. It now integrates `AnimatedSizeSwitcher` by default for buttery-smooth size changes.
+
+| **Parameter** | **Description** |
+|---------------|-----------------|
+| `enableAnimatedSwitcher` | Toggle the size/opacity transition |
+| `customTitleBuilder` | Provide your own builder while keeping placeholder logic |
+| `showPlaceHolderWhenTextEquals` | Treat a specific value as "empty" and show the placeholder |
+| `addTappableBackground` | Adds a subtle, theme-aware background behind the text |
+| `autoSizeText` | Enables dynamic font sizing via `AppText` |
+
+#### Basic Usage
+```dart
+TappableTextEntry(
+  title: myTitle,
+  placeholder: "Tap to enter…",
+  onTap: _openEditor,
+)
+```
+
+#### With Custom Title Builder
+```dart
+TappableTextEntry(
+  title: myTitle,
+  placeholder: "Category",
+  enableAnimatedSwitcher: true,
+  customTitleBuilder: (titleBuilder) => Row(
+    children: [
+      Icon(Icons.category_outlined),
+      const SizedBox(width: 8),
+      titleBuilder(myTitle),
+    ],
+  ),
+  onTap: _pickCategory,
+) 

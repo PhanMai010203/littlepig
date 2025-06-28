@@ -135,6 +135,40 @@ AnimatedCount(
 
 The widget lives in `lib/shared/widgets/animations/animated_count_text.dart` and internally uses `TweenAnimationBuilder`, automatically respecting reduce-motion settings (since duration will be `Duration.zero` when animations are disabled).
 
+### AnimatedSizeSwitcher
+
+`AnimatedSizeSwitcher` makes content replacement feel silky-smooth by combining `AnimatedSize` with an `AnimatedSwitcher` fade. It automatically disables itself when the user has reduced-motion enabled or when the global animation level is set to `none`.
+
+```dart
+AnimatedSizeSwitcher(
+  enabled: true,
+  duration: Duration(milliseconds: 300),
+  curve: Curves.easeInOut,
+  child: MyWidget(key: ValueKey(contentId)),
+)
+```
+
+Tip: You can quickly enable it on any widget via the `.animatedSizeSwitcher()` extension:
+```dart
+someWidget.animatedSizeSwitcher();
+```
+
+### Platform-Specific Animations
+
+The animation framework now automatically adapts tap feedback based on the current platform:
+
+```dart
+TappableWidget(
+  child: myContent,
+  onTap: _handleTap,
+);
+// • iOS → uses FadedButton with subtle opacity fade (0.5 pressed opacity)
+// • Android → uses scale / opacity ripple as per Material 3 guidelines
+// • Desktop/Web → keeps animations lightweight and adds right-click support
+```
+
+This logic lives in `lib/shared/widgets/animations/tappable_widget.dart` and leverages `PlatformService` to decide which implementation to use.
+
 ---
 
 ## 🔄 Enhanced Page Transitions *(Recently Added)*

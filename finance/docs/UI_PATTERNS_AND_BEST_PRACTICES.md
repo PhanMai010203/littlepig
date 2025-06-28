@@ -126,4 +126,46 @@ class DebugOverlay extends StatelessWidget {
     );
   }
 }
+```
+
+### Text Input Best Practices
+
+#### Focus Management
+Always wrap the root of your app (or any subtree that needs automatic focus restoration) with `ResumeTextFieldFocus`:
+
+```dart
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ResumeTextFieldFocus(
+      child: MaterialApp.router(
+        routerConfig: appRouter,
+      ),
+    );
+  }
+}
+```
+
+#### Dismissing the Keyboard Gracefully
+Use the helper `minimizeKeyboard(context)` to dismiss the keyboard without breaking the current focus chain:
+
+```dart
+ElevatedButton(
+  onPressed: () {
+    minimizeKeyboard(context);
+  },
+  child: const Text('Save'),
+);
+```
+
+#### Platform-Specific Interactions
+`TappableWidget` automatically chooses the best feedback for the current platform. Whenever possible use the `.tappable()` extension instead of wrapping `GestureDetector` manually:
+
+```dart
+Container(
+  padding: const EdgeInsets.all(16),
+  child: const Icon(Icons.settings),
+).tappable(
+  onTap: _openSettings,
+);
 ``` 
