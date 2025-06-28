@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../core/services/platform_service.dart';
 import '../../utils/snap_size_cache.dart';
 import '../../utils/responsive_layout_builder.dart';
 import '../../utils/performance_optimization.dart';
+import '../../utils/no_overscroll_behavior.dart';
 
 /// BottomSheetService - Phase 3.3 Implementation
 ///
@@ -592,46 +594,59 @@ class BottomSheetService {
           });
         }
 
-        // Optimized DraggableScrollableSheet (Phase 2: No ValueListenableBuilder)
-        return DraggableScrollableSheet(
-          initialChildSize: initialSize,
-          minChildSize: minSize,
-          maxChildSize: maxSize,
-          snap: true,
-          snapSizes: snapSizes,
-          builder: (context, scrollController) {
-            // Use AnimatedPadding for keyboard handling instead of rebuilding entire sheet
-            Widget sheetContainer = Material(
-              type: MaterialType.card,
-              color: backgroundColor ?? colorScheme.surface,
-              elevation: elevation ?? 8.0,
-              shadowColor: colorScheme.shadow,
-              shape: const RoundedRectangleBorder(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
-              ),
-              child: resizeForKeyboard && !popupWithKeyboard
-                  ? MediaQueryAlternatives.keyboardPadding(
-                      child: content,
-                      animated: true,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeOutQuart,
-                    )
-                  : content,
-            );
-
-            // Apply theme context if available
-            if (effectiveThemeContext != null) {
-              return Material(
-                type: MaterialType.transparency,
-                child: Theme(
-                  data: Theme.of(effectiveThemeContext),
-                  child: sheetContainer,
-                ),
-              );
-            }
-
-            return sheetContainer;
+        // Phase 4: Enhanced DraggableScrollableSheet with custom snap physics
+        return NotificationListener<DraggableScrollableNotification>(
+          onNotification: (notification) {
+            _handleSnapNotification(notification, snapSizes);
+            return false; // Allow other listeners to receive the notification
           },
+          child: DraggableScrollableSheet(
+            initialChildSize: initialSize,
+            minChildSize: minSize,
+            maxChildSize: maxSize,
+            snap: true,
+            snapSizes: snapSizes,
+            builder: (context, scrollController) {
+              // Use AnimatedPadding for keyboard handling instead of rebuilding entire sheet
+              Widget sheetContainer = Material(
+                type: MaterialType.card,
+                color: backgroundColor ?? colorScheme.surface,
+                elevation: elevation ?? 8.0,
+                shadowColor: colorScheme.shadow,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+                ),
+                child: resizeForKeyboard && !popupWithKeyboard
+                    ? MediaQueryAlternatives.keyboardPadding(
+                        child: content,
+                        animated: true,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeOutQuart,
+                      )
+                    : content,
+              );
+
+              // Phase 4: Apply NoOverscrollBehavior to prevent rubber-band jank
+              if (PerformanceOptimizations.useOverscrollOptimization) {
+                sheetContainer = sheetContainer.withNoOverscroll(
+                  componentName: 'BottomSheetService',
+                );
+              }
+
+              // Apply theme context if available
+              if (effectiveThemeContext != null) {
+                return Material(
+                  type: MaterialType.transparency,
+                  child: Theme(
+                    data: Theme.of(effectiveThemeContext),
+                    child: sheetContainer,
+                  ),
+                );
+              }
+
+              return sheetContainer;
+            },
+          ),
         );
       },
     ).then((result) {
@@ -694,6 +709,13 @@ class BottomSheetService {
               )
             : content;
 
+        // Phase 4: Apply NoOverscrollBehavior to prevent rubber-band jank
+        if (PerformanceOptimizations.useOverscrollOptimization) {
+          wrappedContent = wrappedContent.withNoOverscroll(
+            componentName: 'BottomSheetService',
+          );
+        }
+
         // Apply theme context if available
         if (effectiveThemeContext != null) {
           return Material(
@@ -740,6 +762,66 @@ class BottomSheetService {
   /// Get width constraint for bottom sheet based on platform
   static double getBottomSheetWidth(BuildContext context) {
     return PlatformService.getWidthConstraint(context);
+  }
+
+  /// Phase 4: Handle snap notifications for custom physics and haptic feedback
+  static void _handleSnapNotification(
+    DraggableScrollableNotification notification,
+    List<double> snapSizes,
+  ) {
+    if (!PerformanceOptimizations.useCustomSnapPhysics) return;
+
+    // Track snap physics usage
+    PerformanceOptimizations.trackSnapPhysics(
+      'BottomSheetService',
+      'NotificationListener',
+    );
+
+    // Detect snap completion - when sheet settles at a snap size
+    final currentExtent = notification.extent;
+    
+    // Check if we're at or very close to a snap size
+    const snapTolerance = 0.02; // 2% tolerance for snap detection
+    
+    for (final snapSize in snapSizes) {
+      final isAtSnapSize = (currentExtent - snapSize).abs() < snapTolerance;
+      
+      if (isAtSnapSize) {
+        _triggerSnapFeedback(currentExtent);
+        
+        // Track snap completion
+        PerformanceOptimizations.trackSnapCompletion(
+          'BottomSheetService',
+          currentExtent,
+          PlatformService.getPlatform() == PlatformOS.isIOS, // Haptic feedback only on iOS
+        );
+        break; // Only trigger once per snap
+      }
+    }
+  }
+
+  /// Phase 4: Trigger haptic feedback for snap completion
+  static void _triggerSnapFeedback(double snapPosition) {
+    // Only provide haptic feedback on iOS for natural feel
+    if (PlatformService.getPlatform() == PlatformOS.isIOS) {
+      // Use different haptic intensity based on snap position
+      if (snapPosition >= 0.9) {
+        // Strong feedback for full expansion
+        HapticFeedback.heavyImpact();
+      } else if (snapPosition <= 0.3) {
+        // Light feedback for minimal expansion
+        HapticFeedback.lightImpact();
+      } else {
+        // Medium feedback for mid-range snaps
+        HapticFeedback.mediumImpact();
+      }
+      
+      // Track haptic optimization
+      PerformanceOptimizations.trackHapticOptimization(
+        'BottomSheetService',
+        true,
+      );
+    }
   }
 
   /// Phase 2: Removed _keyboardVisibilityNotifier - now using AnimatedPadding approach

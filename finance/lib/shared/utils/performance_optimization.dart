@@ -341,6 +341,48 @@ class PerformanceTracker {
     }
   }
   
+  /// Phase 3: Track animation consolidation
+  static void trackAnimationConsolidation(String component) {
+    if (kDebugMode) {
+      _animationConsolidations[component] = (_animationConsolidations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 3: Track platform optimization
+  static void trackPlatformOptimization(String component) {
+    if (kDebugMode) {
+      _platformOptimizations[component] = (_platformOptimizations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 4: Track snap physics optimization
+  static void trackSnapPhysicsOptimization(String component) {
+    if (kDebugMode) {
+      _snapPhysicsOptimizations[component] = (_snapPhysicsOptimizations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 4: Track overscroll optimization
+  static void trackOverscrollOptimizationMetric(String component) {
+    if (kDebugMode) {
+      _overscrollOptimizations[component] = (_overscrollOptimizations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 4: Track physics optimization
+  static void trackPhysicsOptimizationMetric(String component) {
+    if (kDebugMode) {
+      _physicsOptimizations[component] = (_physicsOptimizations[component] ?? 0) + 1;
+    }
+  }
+  
+  /// Phase 4: Track snap completion
+  static void trackSnapCompletionMetric(String component) {
+    if (kDebugMode) {
+      _snapCompletions[component] = (_snapCompletions[component] ?? 0) + 1;
+    }
+  }
+  
   /// Print comprehensive performance summary
   static void printSummary() {
     if (kDebugMode && PerformanceOptimizations.enablePerformanceMonitoring) {
@@ -354,6 +396,14 @@ class PerformanceTracker {
       debugPrint('📊 Snap cache hits: ${_snapCacheHits.values.fold(0, (a, b) => a + b)}');
       debugPrint('📱 MediaQuery optimizations: ${_mediaQueryOptimizations.length} components');
       debugPrint('🔄 Rebuild optimizations: ${_rebuildOptimizations.length} components');
+      debugPrint('--- Phase 3 (Animation Consolidation) ---');
+      debugPrint('🎭 Animation consolidations: ${_animationConsolidations.length} components');
+      debugPrint('🔧 Platform optimizations: ${_platformOptimizations.length} components');
+      debugPrint('--- Phase 4 (Physics & Snap) ---');
+      debugPrint('🎯 Snap physics optimizations: ${_snapPhysicsOptimizations.length} components');
+      debugPrint('📜 Overscroll optimizations: ${_overscrollOptimizations.length} components');
+      debugPrint('⚙️ Physics optimizations: ${_physicsOptimizations.length} components');
+      debugPrint('🎪 Snap completions: ${_snapCompletions.values.fold(0, (a, b) => a + b)}');
       debugPrint('');
     }
   }
