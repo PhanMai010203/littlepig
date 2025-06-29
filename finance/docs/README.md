@@ -155,6 +155,7 @@ This project leverages a set of robust and well-supported libraries to ensure a 
 **Transactions – Basics**  
 - `getAllTransactions()` – Fetch all transactions.  
 - `getTransactions(page, limit)` – **🆕 Phase 1.2:** Fetch a paginated list of transactions.  
+- `getTransactionsByMonth(year, month, page, limit)` – **🆕 Phase 2:** Fetch a paginated list for a **specific month** (server-side filter, month-specific cache).  
 - `getTransactionsByAccount(accountId)` – Filter by account.  
 - `getTransactionsByCategory(categoryId)` – Filter by category.  
 - `getTransactionsByDateRange(from, to)` – Filter by date range.  
