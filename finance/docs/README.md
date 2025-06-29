@@ -144,6 +144,7 @@ This project leverages a set of robust and well-supported libraries to ensure a 
 | [Transactions – States & Actions](TRANSACTIONS_STATES_AND_ACTIONS.md) | Lifecycle states (`pending`, `scheduled`, etc.) & context-aware actions. |
 | [Transactions – Integration](TRANSACTIONS_INTEGRATION.md) | Validation, error handling & best-practice integration. |
 | [Budget Tracking](BUDGET_TRACKING_SYSTEM.md) | Create, filter & monitor budgets with real-time streams. **UI refreshed – `BudgetsPage` refactored for cleaner state handling & helper-based layout (June 2025).** |
+| **[Homepage Shared Components](plans/homepage_shared_components/)** | **Clean Architecture patterns for homepage feature integration: [Budget Refactor](plans/homepage_shared_components/budget_refactor.md) \| [Transaction Refactor](plans/homepage_shared_components/transaction_refactor.md)** |
 | [Category Management](CATEGORIES_GUIDE.md) | Classify transactions with default and custom categories. |
 | [Account Management](ACCOUNTS_GUIDE.md) | Create accounts, set balances & currency handling. |
 
@@ -322,6 +323,7 @@ This section is a cookbook for common development scenarios. Instead of just poi
 | **...format a value into a specific currency?** | 1. **Service:** Use the `CurrencyService` facade for all conversions and formatting ([Currency Management](CURRENCY_MANAGEMENT_SYSTEM.md)).<br/>2. **UI:** Use the `formatAmount()` helper for a quick, consistent format.<br/>3. **Offline:** Trust the service to handle offline/cached rates gracefully. |
 | **...find a generated Drift file?** | Generated code lives next to its source. Look for `.g.dart` files. For database code, check `core/database/app_database.g.dart` ([File Structure Guide](FILE_STRUCTURE.md)). |
 | **...run a widget test with all providers?** | Use the `pumpApp(widget)` test helper to wrap your widget in `MaterialApp` and all necessary providers ([UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md)). |
+| **...add a feature summary to the homepage?** | 1. **Data Model:** Create lightweight `FeatureCardData` class for display data.<br/>2. **Service:** Create `FeatureDisplayService` for formatting and filtering logic.<br/>3. **Widget:** Build simplified `FeatureSummaryCard` without BLoC dependencies.<br/>4. **Integration:** Follow the established patterns in [Homepage Shared Components](plans/homepage_shared_components/). |
 
 ---
 

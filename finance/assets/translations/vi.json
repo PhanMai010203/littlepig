@@ -24,7 +24,9 @@
     "savings": "Tiết kiệm",
     "recent_transactions": "Giao dịch gần đây",
     "this_month": "Tháng này",
-    "view_all": "Xem tất cả"
+    "view_all": "Xem tất cả",
+    "view_all_transactions": "Xem tất cả giao dịch",
+    "no_transactions_this_month": "Không có giao dịch trong tháng này"
   },
 
   "transactions": {

@@ -24,7 +24,9 @@
     "savings": "Savings",
     "recent_transactions": "Recent Transactions",
     "this_month": "This Month",
-    "view_all": "View All"
+    "view_all": "View All",
+    "view_all_transactions": "View all transactions",
+    "no_transactions_this_month": "No transactions this month"
   },
 
   "transactions": {
@@ -56,10 +58,6 @@
     "create_budget": "Create Budget",
     "budget_name": "Budget Name",
     "budget_amount": "Budget Amount",
-    "period": "Period",
-    "monthly": "Monthly",
-    "weekly": "Weekly",
-    "daily": "Daily",
     "spent": "Spent",
     "remaining": "Remaining",
     "exceeded": "Exceeded",

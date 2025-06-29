@@ -64,10 +64,14 @@ import '../../features/transactions/data/repositories/attachment_repository_impl
     as _i13;
 import '../../features/transactions/data/repositories/transaction_repository_impl.dart'
     as _i443;
+import '../../features/transactions/data/services/transaction_display_service_impl.dart'
+    as _i533;
 import '../../features/transactions/domain/repositories/attachment_repository.dart'
     as _i664;
 import '../../features/transactions/domain/repositories/transaction_repository.dart'
     as _i421;
+import '../../features/transactions/domain/services/transaction_display_service.dart'
+    as _i888;
 import '../../features/transactions/presentation/bloc/transactions_bloc.dart'
     as _i439;
 import '../../services/currency_service.dart' as _i351;
@@ -123,6 +127,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i70.BudgetDisplayServiceImpl());
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
+    gh.lazySingleton<_i888.TransactionDisplayService>(
+        () => _i533.TransactionDisplayServiceImpl());
     gh.lazySingleton<_i665.DatabaseService>(
       () => registerModule.databaseService,
       registerFor: {

@@ -121,20 +121,28 @@ lib/features/
 │   ├── domain/                       # Business logic layer
 │   │   ├── entities/
 │   │   │   ├── transaction.dart     # Transaction entity/model
-│   │   │   └── attachment.dart      # Attachment entity with Google Drive integration
+│   │   │   ├── attachment.dart      # Attachment entity with Google Drive integration
+│   │   │   └── transaction_card_data.dart # Lightweight display data model for homepage
 │   │   ├── repositories/
 │   │   │   ├── transaction_repository.dart # Transaction repository interface
 │   │   │   └── attachment_repository.dart # Attachment repository interface
+│   │   ├── services/
+│   │   │   └── transaction_display_service.dart # Transaction display service interface
 │   │   └── usecases/                # Business use cases
 │   │       ├── get_transactions.dart # Transaction retrieval use cases
 │   │       └── manage_transactions.dart # Transaction management use cases
 │   ├── data/                        # Data access layer
-│   │   └── repositories/
-│   │       ├── transaction_repository_impl.dart # Transaction repository implementation
-│   │       └── attachment_repository_impl.dart # Attachment repository implementation
+│   │   ├── repositories/
+│   │   │   ├── transaction_repository_impl.dart # Transaction repository implementation
+│   │   │   └── attachment_repository_impl.dart # Attachment repository implementation
+│   │   └── services/
+│   │       └── transaction_display_service_impl.dart # Transaction display service implementation
 │   └── presentation/                # UI layer
 │       ├── pages/
 │       │   └── transactions_page.dart # Transaction list/management page
+│       ├── widgets/
+│       │   ├── transaction_list.dart # Complex transaction list (existing)
+│       │   └── transaction_summary_card.dart # Simplified homepage card
 │       └── bloc/                    # State management
 │           ├── transactions_event.dart # Transaction events
 │           └── transactions_state.dart # Transaction states

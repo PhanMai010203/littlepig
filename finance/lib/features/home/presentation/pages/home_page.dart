@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
 import 'package:finance/shared/widgets/page_template.dart';
 import 'package:finance/shared/widgets/selector_widget.dart';
 import 'package:finance/shared/widgets/app_text.dart';
@@ -10,18 +11,26 @@ import 'package:finance/features/currencies/domain/repositories/currency_reposit
 import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
 import 'package:finance/features/budgets/domain/entities/budget.dart';
 import 'package:finance/features/budgets/domain/services/budget_display_service.dart';
+import 'package:finance/features/transactions/domain/entities/transaction_card_data.dart';
+import 'package:finance/features/transactions/domain/services/transaction_display_service.dart';
+import 'package:finance/features/categories/domain/repositories/category_repository.dart';
+import 'package:finance/features/categories/domain/entities/category.dart';
 import 'package:finance/shared/extensions/account_currency_extension.dart';
 import '../../widgets/account_card.dart';
 import '../../../budgets/presentation/widgets/budget_tile.dart';
 import '../../../budgets/presentation/widgets/budget_summary_card.dart'
     show AddBudgetCard;
+import '../../../transactions/presentation/widgets/transaction_summary_card.dart';
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
 import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../core/services/platform_service.dart';
+import '../../../../shared/widgets/animations/tappable_widget.dart';
+import 'package:finance/features/transactions/presentation/widgets/transaction_list.dart';
+import 'package:finance/features/transactions/domain/entities/transaction.dart';
+import 'package:finance/features/categories/domain/entities/category.dart';
 
-/// Enum for transaction filter options
-enum TransactionFilter { all, expense, income }
+// TransactionFilter enum is now imported from transaction_display_service.dart
 
 /// Lightweight view-model object for account display data
 class AccountTileData {
@@ -42,6 +51,8 @@ class HomePage extends StatefulWidget {
   final CurrencyRepository currencyRepository;
   final BudgetRepository budgetRepository;
   final BudgetDisplayService budgetDisplayService;
+  final TransactionDisplayService transactionDisplayService;
+  final CategoryRepository categoryRepository;
 
   const HomePage({
     super.key,
@@ -50,6 +61,8 @@ class HomePage extends StatefulWidget {
     required this.currencyRepository,
     required this.budgetRepository,
     required this.budgetDisplayService,
+    required this.transactionDisplayService,
+    required this.categoryRepository,
   });
 
   @override
@@ -68,10 +81,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   int _selectedAccountIndex = 0;
   List<AccountTileData> _accountTiles = [];
   List<Budget> _budgets = [];
+  List<TransactionCardData> _transactionCards = [];
   bool _isLoading = true;
   bool _isBudgetsLoading = true;
+  bool _isTransactionsLoading = true;
   String? _errorMessage;
   String? _budgetsErrorMessage;
+  String? _transactionsErrorMessage;
   TransactionFilter _selectedTransactionFilter = TransactionFilter.all;
 
   @override
@@ -101,6 +117,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     _loadAccounts();
     _loadBudgets();
+    _loadTransactions();
   }
 
   @override
@@ -200,6 +217,107 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  /// Loads transactions and prepares them for display
+  Future<void> _loadTransactions() async {
+    try {
+      // 1. Load all transactions
+      final transactions = await widget.transactionRepository.getAllTransactions();
+      
+      // 2. Load all categories
+      final categories = await widget.categoryRepository.getAllCategories();
+      final categoryMap = <int, Category>{};
+      for (final category in categories) {
+        if (category.id != null) {
+          categoryMap[category.id!] = category;
+        }
+      }
+      
+      // 3. Filter to current month
+      final currentMonthTransactions = widget.transactionDisplayService
+          .filterCurrentMonthTransactions(transactions);
+      
+      // 4. Apply type filter
+      final filteredTransactions = widget.transactionDisplayService
+          .filterTransactionsByType(currentMonthTransactions, _selectedTransactionFilter);
+      
+      // 5. Prepare display data
+      final transactionCards = await widget.transactionDisplayService
+          .prepareTransactionCardsData(filteredTransactions, categoryMap, 
+              context: mounted ? context : null);
+      
+      if (mounted) {
+        setState(() {
+          _transactionCards = transactionCards;
+          _isTransactionsLoading = false;
+          _transactionsErrorMessage = null;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isTransactionsLoading = false;
+        _transactionsErrorMessage = 'Failed to load transactions: ${e.toString()}';
+      });
+
+      // Show error feedback to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading transactions: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Applies the current transaction filter without reloading from repository
+  Future<void> _applyTransactionFilter() async {
+    if (_isTransactionsLoading) return;
+    
+    try {
+      // 1. Load all transactions (consider caching this in the future)
+      final transactions = await widget.transactionRepository.getAllTransactions();
+      
+      // 2. Load categories (consider caching this in the future)
+      final categories = await widget.categoryRepository.getAllCategories();
+      final categoryMap = <int, Category>{};
+      for (final category in categories) {
+        if (category.id != null) {
+          categoryMap[category.id!] = category;
+        }
+      }
+      
+      // 3. Filter to current month
+      final currentMonthTransactions = widget.transactionDisplayService
+          .filterCurrentMonthTransactions(transactions);
+      
+      // 4. Apply type filter
+      final filteredTransactions = widget.transactionDisplayService
+          .filterTransactionsByType(currentMonthTransactions, _selectedTransactionFilter);
+      
+      // 5. Prepare display data
+      final transactionCards = await widget.transactionDisplayService
+          .prepareTransactionCardsData(filteredTransactions, categoryMap, 
+              context: mounted ? context : null);
+      
+      if (mounted) {
+        setState(() {
+          _transactionCards = transactionCards;
+        });
+      }
+    } catch (e) {
+      // Handle error silently for filter changes
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error filtering transactions: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   /// Single handler for account selection
   void _onSelectAccount(int index) {
     setState(() {
@@ -212,7 +330,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _selectedTransactionFilter = filter;
     });
-    // TODO: Implement actual filter logic in future iterations
+    _applyTransactionFilter();
   }
 
   @override
@@ -226,18 +344,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       debugLabel: 'HomePage',
       builder: (context, constraints, layoutData) {
         return PageTemplate(
-          slivers: _buildOptimizedSlivers(layoutData),
+          slivers: _buildSlivers(layoutData),
         );
       },
     );
   }
 
-  /// Phase 5: Build optimized slivers with layout data
-  List<Widget> _buildOptimizedSlivers(ResponsiveLayoutData layoutData) {
+  List<Widget> _buildSlivers(ResponsiveLayoutData layoutData) {
+    final horizontalPadding =
+        EdgeInsets.symmetric(horizontal: layoutData.isCompact ? 16 : 26);
+
     return [
       SliverPadding(
-        padding:
-            EdgeInsets.symmetric(horizontal: layoutData.isCompact ? 16 : 26),
+        padding: horizontalPadding,
         sliver: SliverToBoxAdapter(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,9 +381,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               const SizedBox(height: 12),
               _buildTransactionFilterSection(),
+              const SizedBox(height: 0),
             ],
           ),
         ),
+      ),
+      SliverPadding(
+        padding: horizontalPadding,
+        sliver: _buildTransactionsSection(),
       ),
     ];
   }
@@ -450,6 +574,109 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTransactionsSection() {
+    if (_isTransactionsLoading) {
+      return const SliverToBoxAdapter(
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    if (_transactionsErrorMessage != null) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.error_outline,
+                color: _colorScheme.error,
+                size: 32,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Failed to load transactions',
+                style: _textTheme.bodyMedium?.copyWith(
+                  color: _colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: _loadTransactions,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_transactionCards.isEmpty) {
+      return SliverToBoxAdapter(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.receipt_long_outlined,
+                color: _colorScheme.onSurfaceVariant,
+                size: 32,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'home.no_transactions_this_month'.tr(),
+                style: _textTheme.bodyMedium?.copyWith(
+                  color: _colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () {
+                  // TODO: Navigate to add transaction page
+                },
+                child: Text('transactions.add_transaction'.tr()),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Extract transactions and categories from TransactionCardData
+    final List<Transaction> transactions =
+        _transactionCards.map((e) => e.transaction).toList();
+    final Map<int, Category> categories = {
+      for (final card in _transactionCards)
+        if (card.category != null) card.category!.id!: card.category!
+    };
+
+    // Limit the number of transactions shown on the homepage (e.g., 5)
+    final List<Transaction> limitedTransactions = transactions.take(5).toList();
+
+    return SliverMainAxisGroup(
+      slivers: [
+        TransactionList(
+          transactions: limitedTransactions,
+          categories: categories,
+          selectedMonth: DateTime.now(),
+        ),
+        SliverToBoxAdapter(
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () {
+                context.go('/transactions');
+              },
+              icon: const Icon(Icons.arrow_forward),
+              label: Text('home.view_all_transactions'.tr()),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

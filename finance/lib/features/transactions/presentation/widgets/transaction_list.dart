@@ -263,7 +263,7 @@ class TransactionTile extends StatelessWidget {
 
     // Phase 5: Use Material elevation instead of Container (Phase 1 pattern)
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 4),
       child: Material(
         type: MaterialType.card,
         elevation: 2.0,
