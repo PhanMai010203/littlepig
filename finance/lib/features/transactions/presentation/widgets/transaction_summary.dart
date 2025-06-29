@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transactions_state.dart';
 // Phase 5 imports
 import '../../../../shared/utils/performance_optimization.dart';
+import '../../../../core/theme/app_colors.dart';
 
 /// Widget that displays transaction summary (income, expenses, net) for a selected month
 class TransactionSummary extends StatelessWidget {
@@ -41,25 +43,42 @@ class TransactionSummary extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Material(
-          type: MaterialType.card,
-          elevation: 2.0,
-          shadowColor: colorScheme.shadow,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildSummaryItem(
-                    Icons.arrow_downward, 'Expense', summaryData.expenses, colorScheme.error),
-                _buildSummaryItem(
-                    Icons.arrow_upward, 'Income', summaryData.income, colorScheme.primary),
-                _buildSummaryItem(Icons.swap_horiz, 'Net', summaryData.net,
-                    summaryData.net >= 0 ? colorScheme.primary : colorScheme.error),
-              ],
-            ),
+      child: Material(
+        type: MaterialType.card,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: getColor(context, 'border'),
+            width: 1,
+          ),
+        ),
+        color: getColor(context, 'surface'),
+        shadowColor: colorScheme.shadow,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSummaryItem(
+                context: context,
+                svgAsset: 'assets/icons/arrow_down.svg',
+                amount: summaryData.expenses,
+                colorName: 'error',
+              ),
+              _buildSummaryItem(
+                context: context,
+                svgAsset: 'assets/icons/arrow_up.svg',
+                amount: summaryData.income,
+                colorName: 'success',
+              ),
+              _buildSummaryItem(
+                context: context,
+                text: '=',
+                amount: summaryData.net,
+                colorName: summaryData.net >= 0 ? 'success' : 'error',
+              ),
+            ],
           ),
         ),
       ),
@@ -77,28 +96,6 @@ class TransactionSummary extends StatelessWidget {
     final net = income + expenses;
     
     return _SummaryData(income: income, expenses: expenses, net: net);
-  }
-
-  Widget _buildSummaryItem(
-      IconData icon, String label, double amount, Color color) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(width: 4),
-            AppText(label, fontSize: 14),
-          ],
-        ),
-        const SizedBox(height: 4),
-        AppText(
-          NumberFormat.currency(symbol: '\$').format(amount.abs()),
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          colorName: color == Colors.red ? 'error' : 'success',
-        ),
-      ],
-    );
   }
 }
 
@@ -136,25 +133,42 @@ class PaginatedTransactionSummary extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        child: Material(
-          type: MaterialType.card,
-          elevation: 2.0,
-          shadowColor: colorScheme.shadow,
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildSummaryItem(
-                    Icons.arrow_downward, 'Expense', summaryData.expenses, colorScheme.error),
-                _buildSummaryItem(
-                    Icons.arrow_upward, 'Income', summaryData.income, colorScheme.primary),
-                _buildSummaryItem(Icons.swap_horiz, 'Net', summaryData.net,
-                    summaryData.net >= 0 ? colorScheme.primary : colorScheme.error),
-              ],
-            ),
+      child: Material(
+        type: MaterialType.card,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: getColor(context, 'border'),
+            width: 1,
+          ),
+        ),
+        color: theme.colorScheme.surfaceContainer,
+        shadowColor: colorScheme.shadow,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildSummaryItem(
+                context: context,
+                svgAsset: 'assets/icons/arrow_down.svg',
+                amount: summaryData.expenses,
+                colorName: 'error',
+              ),
+              _buildSummaryItem(
+                context: context,
+                svgAsset: 'assets/icons/arrow_up.svg',
+                amount: summaryData.income,
+                colorName: 'success',
+              ),
+              _buildSummaryItem(
+                context: context,
+                text: '=',
+                amount: summaryData.net,
+                colorName: summaryData.net >= 0 ? 'success' : 'error',
+              ),
+            ],
           ),
         ),
       ),
@@ -173,28 +187,52 @@ class PaginatedTransactionSummary extends StatelessWidget {
     
     return _SummaryData(income: income, expenses: expenses, net: net);
   }
+}
 
-  Widget _buildSummaryItem(
-      IconData icon, String label, double amount, Color color) {
-    return Column(
-      children: [
-        Row(
-          children: [
-            Icon(icon, color: color, size: 16),
-            const SizedBox(width: 4),
-            AppText(label, fontSize: 14),
-          ],
-        ),
-        const SizedBox(height: 4),
-        AppText(
-          NumberFormat.currency(symbol: '\$').format(amount.abs()),
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          colorName: color == Colors.red ? 'error' : 'success',
-        ),
-      ],
+Widget _buildSummaryItem({
+  required BuildContext context,
+  required double amount,
+  required String colorName,
+  String? svgAsset,
+  String? text,
+}) {
+  final color = getColor(context, colorName);
+
+  if (text == '=') {
+    // For net, combine the '=' and the amount.
+    return AppText(
+      '= ${NumberFormat.currency(symbol: '\$').format(amount)}',
+      fontSize: 12,
+      fontWeight: FontWeight.bold,
+      colorName: colorName,
     );
   }
+
+  Widget iconWidget;
+  if (svgAsset != null) {
+    iconWidget = SvgPicture.asset(
+      svgAsset,
+      colorFilter: ColorFilter.mode(color, BlendMode.srcIn),
+      width: 15,
+      height: 15,
+    );
+  } else {
+    iconWidget = const SizedBox.shrink();
+  }
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      iconWidget,
+      const SizedBox(width: 0),
+      AppText(
+        NumberFormat.currency(symbol: '\$').format(amount.abs()),
+        fontSize: 12,
+        fontWeight: FontWeight.bold,
+        colorName: colorName,
+      ),
+    ],
+  );
 }
 
 // TransactionListItem types are imported from ../bloc/transactions_state.dart

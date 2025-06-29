@@ -59,6 +59,13 @@ class AccountCard extends StatelessWidget {
             strokeAlign: BorderSide.strokeAlignInside,
           ),
           borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 18,
+              offset: const Offset(0, 0),
+            ),
+          ],
         ),
         child: Material(
           type: MaterialType.card,

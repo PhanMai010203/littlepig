@@ -267,7 +267,7 @@ class TransactionTile extends StatelessWidget {
       child: Material(
         type: MaterialType.card,
         elevation: 2.0,
-        shadowColor: colorScheme.shadow,
+        shadowColor: Colors.transparent,
         child: TappableWidget(
           onTap: () {
             // TODO: Navigate to transaction details
