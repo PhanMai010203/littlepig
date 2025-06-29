@@ -90,6 +90,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   String? _transactionsErrorMessage;
   TransactionFilter _selectedTransactionFilter = TransactionFilter.all;
 
+  // Cache for current month transactions to avoid re-filtering on filter changes
+  List<Transaction>? _cachedCurrentMonthTransactions;
+  Map<int, Category>? _cachedCategoryMap;
+
   @override
   void initState() {
     super.initState();
@@ -219,22 +223,56 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Loads transactions and prepares them for display
   Future<void> _loadTransactions() async {
+    setState(() {
+      _isTransactionsLoading = true;
+      _transactionsErrorMessage = null;
+    });
+    
+    // Clear cache for fresh data load
+    _cachedCurrentMonthTransactions = null;
+    _cachedCategoryMap = null;
+    
+    await _loadAndFilterTransactions();
+  }
+
+  /// Applies the current transaction filter without reloading from repository
+  Future<void> _applyTransactionFilter() async {
+    if (_isTransactionsLoading) return;
+    
+    await _loadAndFilterTransactions();
+  }
+
+  /// Shared method to load and filter transactions with current filter settings
+  Future<void> _loadAndFilterTransactions() async {
     try {
-      // 1. Load all transactions
-      final transactions = await widget.transactionRepository.getAllTransactions();
-      
-      // 2. Load all categories
-      final categories = await widget.categoryRepository.getAllCategories();
-      final categoryMap = <int, Category>{};
-      for (final category in categories) {
-        if (category.id != null) {
-          categoryMap[category.id!] = category;
+      List<Transaction> currentMonthTransactions;
+      Map<int, Category> categoryMap;
+
+      // Use cached data if available, otherwise load fresh data
+      if (_cachedCurrentMonthTransactions != null && _cachedCategoryMap != null) {
+        currentMonthTransactions = _cachedCurrentMonthTransactions!;
+        categoryMap = _cachedCategoryMap!;
+      } else {
+        // 1. Load all transactions
+        final transactions = await widget.transactionRepository.getAllTransactions();
+        
+        // 2. Load all categories
+        final categories = await widget.categoryRepository.getAllCategories();
+        categoryMap = <int, Category>{};
+        for (final category in categories) {
+          if (category.id != null) {
+            categoryMap[category.id!] = category;
+          }
         }
+        
+        // 3. Filter to current month
+        currentMonthTransactions = widget.transactionDisplayService
+            .filterCurrentMonthTransactions(transactions);
+        
+        // Cache the results
+        _cachedCurrentMonthTransactions = currentMonthTransactions;
+        _cachedCategoryMap = categoryMap;
       }
-      
-      // 3. Filter to current month
-      final currentMonthTransactions = widget.transactionDisplayService
-          .filterCurrentMonthTransactions(transactions);
       
       // 4. Apply type filter
       final filteredTransactions = widget.transactionDisplayService
@@ -253,64 +291,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         });
       }
     } catch (e) {
-      setState(() {
-        _isTransactionsLoading = false;
-        _transactionsErrorMessage = 'Failed to load transactions: ${e.toString()}';
-      });
-
-      // Show error feedback to user
       if (mounted) {
+        setState(() {
+          _isTransactionsLoading = false;
+          _transactionsErrorMessage = 'Failed to load transactions: ${e.toString()}';
+        });
+
+        // Show error feedback to user
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error loading transactions: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  /// Applies the current transaction filter without reloading from repository
-  Future<void> _applyTransactionFilter() async {
-    if (_isTransactionsLoading) return;
-    
-    try {
-      // 1. Load all transactions (consider caching this in the future)
-      final transactions = await widget.transactionRepository.getAllTransactions();
-      
-      // 2. Load categories (consider caching this in the future)
-      final categories = await widget.categoryRepository.getAllCategories();
-      final categoryMap = <int, Category>{};
-      for (final category in categories) {
-        if (category.id != null) {
-          categoryMap[category.id!] = category;
-        }
-      }
-      
-      // 3. Filter to current month
-      final currentMonthTransactions = widget.transactionDisplayService
-          .filterCurrentMonthTransactions(transactions);
-      
-      // 4. Apply type filter
-      final filteredTransactions = widget.transactionDisplayService
-          .filterTransactionsByType(currentMonthTransactions, _selectedTransactionFilter);
-      
-      // 5. Prepare display data
-      final transactionCards = await widget.transactionDisplayService
-          .prepareTransactionCardsData(filteredTransactions, categoryMap, 
-              context: mounted ? context : null);
-      
-      if (mounted) {
-        setState(() {
-          _transactionCards = transactionCards;
-        });
-      }
-    } catch (e) {
-      // Handle error silently for filter changes
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error filtering transactions: ${e.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
@@ -654,13 +644,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         if (card.category != null) card.category!.id!: card.category!
     };
 
-    // Limit the number of transactions shown on the homepage (e.g., 5)
-    final List<Transaction> limitedTransactions = transactions.take(5).toList();
-
     return SliverMainAxisGroup(
       slivers: [
         TransactionList(
-          transactions: limitedTransactions,
+          transactions: transactions,
           categories: categories,
           selectedMonth: DateTime.now(),
         ),
