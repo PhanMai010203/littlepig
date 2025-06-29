@@ -61,8 +61,9 @@ class BudgetDisplayServiceImpl implements BudgetDisplayService {
       if (colourValue != null) {
         return HexColor(colourValue);
       }
-    } catch (_) {
-      // Ignore if field not present
+    } on Exception catch (e) {
+      // Log the error for debugging purposes.
+      debugPrint('Error parsing budget color: $e');
     }
     final palette = getSelectableColors();
     return palette[budget.name.hashCode.abs() % palette.length];

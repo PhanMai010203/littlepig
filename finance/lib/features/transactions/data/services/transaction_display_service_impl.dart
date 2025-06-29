@@ -161,7 +161,7 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
     } else {
       // This fallback still uses NumberFormat directly, so handle sign manually
       final sign = showSign ? (transaction.isIncome ? '+' : '') : '';
-      formattedNumber = '$sign${NumberFormat.currency(symbol: '\\\$').format(amount.abs())}';
+      formattedNumber = '$sign${NumberFormat.currency(symbol: '\$').format(amount.abs())}';
     }
 
     // The sign is now handled by CurrencyFormatter.formatAmount when currency is not null.

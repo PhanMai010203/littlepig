@@ -16,6 +16,7 @@ import 'transactions_state.dart';
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final TransactionRepository _transactionRepository;
   final CategoriesBloc _categoriesBloc;
+  late final StreamSubscription _categoriesSubscription;
 
   static const int _pageSize = 25;
   Map<int, Category> _categories = {};
@@ -29,7 +30,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     _categories = _categoriesBloc.state.categories;
 
     // Subscribe to CategoriesBloc stream to update categories reactively
-    _categoriesBloc.stream.listen((state) {
+    _categoriesSubscription = _categoriesBloc.stream.listen((state) {
       if (state.hasCategories) {
         _categories = state.categories;
         // If we are in a loaded state, emit a new state to rebuild with categories
@@ -55,6 +56,12 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     on<ChangeSelectedMonth>(_onChangeSelectedMonth);
     on<FetchNextTransactionPage>(_onFetchNextTransactionPage);
     on<RefreshPaginatedTransactions>(_onRefreshPaginatedTransactions);
+  }
+
+  @override
+  Future<void> close() {
+    _categoriesSubscription.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadAllTransactions(
