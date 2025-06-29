@@ -169,6 +169,7 @@ This is a foundational wrapper widget that provides customizable tap feedback wi
 -   🖥️ **Desktop/Web**: Includes right-click support and appropriate mouse cursors
 -   ⚡ **Performance**: Respects animation settings and device capabilities
 -   📱 **Haptic**: Platform-appropriate haptic feedback (heavy impact on iOS long press)
+-   ✅ **Safety**: Automatically disables the button when no `onTap`, `onLongPress`, or `onDoubleTap` callbacks are provided, preventing unintended interactions on iOS.
 
 **Example 1: Using the `TappableWidget` wrapper**
 

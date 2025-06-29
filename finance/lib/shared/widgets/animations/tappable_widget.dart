@@ -183,13 +183,17 @@ class _TappableWidgetState extends State<TappableWidget>
         'iOS', 
         'FadedButton'
       );
+      // Disable the button when no interaction callbacks are provided
+      final bool _isDisabled =
+          widget.onTap == null && widget.onLongPress == null && widget.onDoubleTap == null;
+
       return FadedButton(
         onTap: widget.onTap != null ? _handleTap : null,
         onLongPress: widget.onLongPress != null ? _handleLongPress : null,
         pressedOpacity: _getIOSPressedOpacity(),
         borderRadius: widget.borderRadius,
         hapticFeedback: widget.hapticFeedback,
-        disabled: false,
+        disabled: _isDisabled,
         child: widget.child,
       );
     }

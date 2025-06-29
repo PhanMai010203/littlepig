@@ -64,8 +64,14 @@ class _BudgetProgressBarState extends State<BudgetProgressBar>
         return _ProgressData(spent, ghost);
       },
       builder: (context, data) {
-        final pctMain = (data.spent / widget.budget.amount).clamp(0.0, 1.0);
-        final pctGhost = (data.ghost / widget.budget.amount).clamp(0.0, 1.0);
+        // Guard against division by zero when budget amount is 0
+        final amount = widget.budget.amount;
+        final pctMain = amount <= 0
+            ? 0.0
+            : (data.spent / amount).clamp(0.0, 1.0);
+        final pctGhost = amount <= 0
+            ? 0.0
+            : (data.ghost / amount).clamp(0.0, 1.0);
         final overspent = data.spent > widget.budget.amount;
 
         String percentageText;
