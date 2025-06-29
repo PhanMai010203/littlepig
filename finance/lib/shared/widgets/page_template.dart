@@ -18,6 +18,7 @@ class PageTemplate extends StatefulWidget {
   const PageTemplate({
     this.title,
     required this.slivers,
+    this.scrollController,
     this.actions,
     this.floatingActionButton,
     this.floatingActionButtonLocation,
@@ -33,6 +34,7 @@ class PageTemplate extends StatefulWidget {
 
   final String? title;
   final List<Widget> slivers;
+  final ScrollController? scrollController;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
   final FloatingActionButtonLocation? floatingActionButtonLocation;
@@ -49,11 +51,22 @@ class PageTemplate extends StatefulWidget {
 }
 
 class _PageTemplateState extends State<PageTemplate> {
-  final ScrollController _scrollController = ScrollController();
+  late final ScrollController _scrollController;
+  bool _isExternalController = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isExternalController = widget.scrollController != null;
+    _scrollController = widget.scrollController ?? ScrollController();
+  }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    // Only dispose the controller if it was created internally
+    if (!_isExternalController) {
+      _scrollController.dispose();
+    }
     super.dispose();
   }
 

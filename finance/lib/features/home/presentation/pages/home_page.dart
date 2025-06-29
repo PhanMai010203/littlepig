@@ -16,6 +16,7 @@ import 'package:finance/features/transactions/domain/services/transaction_displa
 import 'package:finance/features/categories/domain/repositories/category_repository.dart';
 import 'package:finance/features/categories/domain/entities/category.dart';
 import 'package:finance/shared/extensions/account_currency_extension.dart';
+import '../../widgets/home_page_username.dart';
 import '../../widgets/account_card.dart';
 import '../../../budgets/presentation/widgets/budget_tile.dart';
 import '../../../budgets/presentation/widgets/budget_summary_card.dart'
@@ -74,7 +75,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  late AnimationController _animationController;
   late ScrollController _scrollController;
 
   // Phase 5: Cache theme data and platform info for performance (Phase 1 pattern)
@@ -107,21 +107,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     _isIOS = platform == PlatformOS.isIOS;
 
     // Phase 5: Platform-optimized animation controller (Phase 3 pattern)
-    _animationController = AnimationController(
-      vsync: this,
-      duration: _isIOS
-          ? const Duration(milliseconds: 2000)
-          : const Duration(milliseconds: 1800),
-    );
     _scrollController = ScrollController();
-    _scrollController.addListener(() {
-      double percent = _scrollController.offset / 200;
-      if (percent <= 1) {
-        double offset = _scrollController.offset;
-        if (percent >= 1) offset = 0;
-        _animationController.value = 1 - offset / 200;
-      }
-    });
 
     _loadAccounts();
     _loadBudgets();
@@ -139,7 +125,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _animationController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -339,6 +324,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       builder: (context, constraints, layoutData) {
         return PageTemplate(
           slivers: _buildSlivers(layoutData),
+          scrollController: _scrollController,
         );
       },
     );
@@ -363,6 +349,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       start: 9, bottom: 17, end: 9),
                 ),
               ),
+              HomePageUsername(scrollController: _scrollController),
               const SizedBox(height: 24),
               SizedBox(
                 height: layoutData.isCompact ? 110 : 125,
