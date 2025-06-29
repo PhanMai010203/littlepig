@@ -248,4 +248,43 @@ Container(
 ).tappable(
   onTap: _openSettings,
 );
-``` 
+```
+
+---
+
+### CategoryBloc Singleton Pattern _(NEW)_
+
+The **CategoryBloc** is an **eager singleton** created at app start-up.  It replaces on-demand repository calls so that *all* category-dependent UI can rely on an in-memory cache that is always warm.
+
+| Characteristic | Value |
+| --- | --- |
+| Registration | `@singleton` via **Injectable** |
+| Lifetime | Entire app session (DI container) |
+| First load | Immediately in constructor (`add(LoadCategories())`) |
+| Cache TTL | 30 minutes – see `isExpired` extension |
+| Invalidation | CRUD events update or purge cache before emitting a new state |
+
+#### Access Pattern
+
+```dart
+final categories = context.read<CategoriesBloc>().state.categories;
+```
+
+*Do **NOT** trigger a repository fetch in UI – rely on the bloc's cache.*
+
+#### Integration Guidelines
+
+1. **Provider order matters** – `CategoriesBloc` **must** appear *before* any bloc that depends on categories (e.g. `TransactionsBloc`).
+2. When you add a new feature that needs categories:
+   * Inject `CategoriesBloc` instead of `CategoryRepository`.
+   * Handle empty categories by showing a loading/skeleton UI – this should be rare because the singleton is created at launch.
+3. For category CRUD pages/screens, dispatch the appropriate event (`CreateCategory`, `UpdateCategory`, `DeleteCategory`) so that the singleton stays in sync.
+4. Avoid direct state mutation; always go through bloc events.
+
+#### Performance Rationale
+
+• Saves ~400–500 ms during navigation to `TransactionsPage` (categories already in memory).  
+• Reduces duplicate API calls across pages.  
+• Centralises cache logic and TTL checks in one place.
+
+--- 
