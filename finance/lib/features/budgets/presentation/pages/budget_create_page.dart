@@ -1,7 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' hide TextInput;
-import 'package:intl/intl.dart';
 import '../../../../shared/widgets/dialogs/bottom_sheet_service.dart';
 import '../../../../shared/widgets/text_input.dart';
 import '../../../../shared/widgets/selector_widget.dart';
@@ -9,7 +7,6 @@ import '../../../../shared/widgets/selector_widget.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
-import '../../../../shared/widgets/animations/animation_utils.dart';
 import '../../domain/entities/budget.dart';
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/tappable_text_entry.dart';
@@ -33,7 +30,6 @@ class BudgetCreatePage extends StatefulWidget {
 }
 
 class _BudgetCreatePageState extends State<BudgetCreatePage> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
   final _scrollController = ScrollController();
@@ -41,8 +37,6 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
   BudgetPeriod _selectedPeriod = BudgetPeriod.monthly;
   DateTime _startDate = DateTime.now();
   BudgetType _budgetType = BudgetType.expense;
-  bool _excludeDebtCredit = true;
-  bool _isSubmitting = false;
 
   @override
   void initState() {

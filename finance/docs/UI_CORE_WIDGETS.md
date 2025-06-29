@@ -201,6 +201,144 @@ Icon(Icons.add).tappable(
 );
 ```
 
+---
+
+### `SelectorWidget`
+
+A flexible, reusable selector widget that supports multiple options with smooth animations and customizable styling. This widget follows the project's animation framework and replaces the old binary toggle patterns with a more versatile solution.
+
+-   **Widget Location**: `lib/shared/widgets/selector_widget.dart`
+
+**Key Features:**
+
+-   🎯 **Multi-Option Support:** Handle 2 or more selectable options
+-   🎨 **Customizable Styling:** Colors, icons, borders, and animations
+-   ⚡ **Performance Optimized:** Uses `TappableWidget` and `AnimationUtils` 
+-   📱 **Haptic Feedback:** Platform-appropriate feedback patterns
+-   🏗️ **Type-Safe:** Generic support for enums and custom types
+-   🔄 **Smooth Animations:** Consistent with project animation standards
+
+**Basic Usage:**
+
+```dart
+import 'package:finance/shared/widgets/selector_widget.dart';
+
+// Simple enum-based selector
+enum Priority { low, medium, high }
+
+SelectorWidget<Priority>(
+  selectedValue: currentPriority,
+  options: [
+    SelectorOption(
+      value: Priority.low,
+      label: 'Low',
+      iconPath: 'assets/icons/low.svg',
+      activeIconColor: Colors.green,
+    ),
+    SelectorOption(
+      value: Priority.medium, 
+      label: 'Medium',
+      iconPath: 'assets/icons/medium.svg',
+      activeIconColor: Colors.orange,
+    ),
+    SelectorOption(
+      value: Priority.high,
+      label: 'High', 
+      iconPath: 'assets/icons/high.svg',
+      activeIconColor: Colors.red,
+    ),
+  ],
+  onSelectionChanged: (priority) {
+    setState(() => currentPriority = priority);
+  },
+),
+```
+
+**Advanced Usage with Custom Styling:**
+
+```dart
+SelectorWidget<String>(
+  selectedValue: selectedCategory,
+  options: categories.map((cat) => SelectorOption(
+    value: cat.id,
+    label: cat.name,
+    iconPath: cat.iconPath,
+    activeIconColor: cat.color,
+    activeTextColor: getColor(context, "textPrimary"),
+    activeBackgroundColor: cat.color,
+  )).toList(),
+  onSelectionChanged: _handleCategoryChange,
+  height: 56,
+  borderRadius: BorderRadius.circular(16),
+  animationDuration: Duration(milliseconds: 250),
+  hapticFeedback: true,
+),
+```
+
+**Enum Extension Helper:**
+
+For easy conversion of enums to selector options:
+
+```dart
+// Convert enum values to selector options
+List<SelectorOption<MyEnum>> options = MyEnum.values.toSelectorOptions(
+  labelBuilder: (value) => value.name.tr(), // Use translations
+  iconPathBuilder: (value) => 'assets/icons/${value.name}.svg',
+  activeIconColorBuilder: (value) => _getColorForEnum(value),
+);
+```
+
+**Replacement Pattern:**
+
+This widget replaces binary toggles and can handle any number of options:
+
+```dart
+// ❌ Old binary toggle pattern  
+SmoothToggleSwitch(
+  isExpenseBudget: isExpense,
+  leftLabel: "Expense",
+  rightLabel: "Savings", 
+  onToggle: (isExpense) => setState(() => _isExpense = isExpense),
+)
+
+// ✅ New flexible selector pattern
+SelectorWidget<BudgetType>(
+  selectedValue: budgetType,
+  options: BudgetType.values.toSelectorOptions(
+    labelBuilder: (type) => "budgets.${type.name}_budget".tr(),
+    iconPathBuilder: (type) => 'assets/icons/${type.name}.svg',
+  ),
+  onSelectionChanged: (type) => setState(() => budgetType = type),
+);
+```
+
+**Real-World Example (Home Page Transaction Filter):**
+
+```dart
+// From home_page.dart - Transaction filter implementation
+enum TransactionFilter { all, expense, income }
+
+SelectorWidget<TransactionFilter>(
+  selectedValue: _selectedTransactionFilter,
+  options: TransactionFilter.values.toSelectorOptions(
+    labelBuilder: (filter) {
+      switch (filter) {
+        case TransactionFilter.all:
+          return 'transactions.filter_all'.tr();
+        case TransactionFilter.expense:
+          return 'transactions.filter_expense'.tr();
+        case TransactionFilter.income:
+          return 'transactions.filter_income'.tr();
+      }
+    },
+  ),
+  onSelectionChanged: _onTransactionFilterChanged,
+  height: 44,
+  borderRadius: BorderRadius.circular(12),
+  animationDuration: const Duration(milliseconds: 250),
+),
+```
+
 **Platform-Specific Behavior:**
 
 - **iOS**: Automatically uses fade animation with `pressedOpacity: 0.5`

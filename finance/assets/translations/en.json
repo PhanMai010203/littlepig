@@ -45,7 +45,10 @@
     "no_transactions": "No transactions found",
     "transaction_added": "Transaction added successfully",
     "transaction_updated": "Transaction updated successfully",
-    "transaction_deleted": "Transaction deleted successfully"
+    "transaction_deleted": "Transaction deleted successfully",
+    "filter_all": "All",
+    "filter_expense": "Expense",
+    "filter_income": "Income"
   },
 
   "budgets": {

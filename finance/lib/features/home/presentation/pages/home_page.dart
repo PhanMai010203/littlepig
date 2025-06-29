@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:finance/shared/widgets/page_template.dart';
+import 'package:finance/shared/widgets/selector_widget.dart';
+import 'package:finance/shared/widgets/app_text.dart';
 import 'package:finance/features/accounts/domain/repositories/account_repository.dart';
 import 'package:finance/features/accounts/domain/entities/account.dart';
 import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
@@ -10,11 +13,15 @@ import 'package:finance/features/budgets/domain/services/budget_display_service.
 import 'package:finance/shared/extensions/account_currency_extension.dart';
 import '../../widgets/account_card.dart';
 import '../../../budgets/presentation/widgets/budget_tile.dart';
-import '../../../budgets/presentation/widgets/budget_summary_card.dart' show AddBudgetCard;
+import '../../../budgets/presentation/widgets/budget_summary_card.dart'
+    show AddBudgetCard;
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
 import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../core/services/platform_service.dart';
+
+/// Enum for transaction filter options
+enum TransactionFilter { all, expense, income }
 
 /// Lightweight view-model object for account display data
 class AccountTileData {
@@ -52,12 +59,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late ScrollController _scrollController;
-  
+
   // Phase 5: Cache theme data and platform info for performance (Phase 1 pattern)
   late ColorScheme _colorScheme;
   late TextTheme _textTheme;
   late bool _isIOS;
-  
+
   int _selectedAccountIndex = 0;
   List<AccountTileData> _accountTiles = [];
   List<Budget> _budgets = [];
@@ -65,21 +72,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   bool _isBudgetsLoading = true;
   String? _errorMessage;
   String? _budgetsErrorMessage;
+  TransactionFilter _selectedTransactionFilter = TransactionFilter.all;
 
   @override
   void initState() {
     super.initState();
-    
+
     // Phase 5: Cache platform detection (Phase 3 pattern)
     final platform = PlatformService.getPlatform();
     _isIOS = platform == PlatformOS.isIOS;
-    
+
     // Phase 5: Platform-optimized animation controller (Phase 3 pattern)
     _animationController = AnimationController(
       vsync: this,
-      duration: _isIOS 
-        ? const Duration(milliseconds: 2000)
-        : const Duration(milliseconds: 1800),
+      duration: _isIOS
+          ? const Duration(milliseconds: 2000)
+          : const Duration(milliseconds: 1800),
     );
     _scrollController = ScrollController();
     _scrollController.addListener(() {
@@ -122,8 +130,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
       for (final account in accounts) {
         // Get transaction count for this account
-        final transactions =
-            await widget.transactionRepository.getTransactionsByAccount(account.id!);
+        final transactions = await widget.transactionRepository
+            .getTransactionsByAccount(account.id!);
         final transactionCount = transactions.length;
 
         // Format balance using AccountCurrencyExtension
@@ -199,13 +207,19 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
   }
 
+  /// Handler for transaction filter selection
+  void _onTransactionFilterChanged(TransactionFilter filter) {
+    setState(() {
+      _selectedTransactionFilter = filter;
+    });
+    // TODO: Implement actual filter logic in future iterations
+  }
+
   @override
   Widget build(BuildContext context) {
     // Phase 5: Track component optimization
-    PerformanceOptimizations.trackRenderingOptimization(
-      'HomePage', 
-      'ResponsiveLayoutBuilder+ThemeCaching+PlatformOptimization'
-    );
+    PerformanceOptimizations.trackRenderingOptimization('HomePage',
+        'ResponsiveLayoutBuilder+ThemeCaching+PlatformOptimization');
 
     // Phase 5: Use ResponsiveLayoutBuilder for size-dependent layout (Phase 2 pattern)
     return ResponsiveLayoutBuilder(
@@ -222,7 +236,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   List<Widget> _buildOptimizedSlivers(ResponsiveLayoutData layoutData) {
     return [
       SliverPadding(
-        padding: EdgeInsets.symmetric(horizontal: layoutData.isCompact ? 16 : 26),
+        padding:
+            EdgeInsets.symmetric(horizontal: layoutData.isCompact ? 16 : 26),
         sliver: SliverToBoxAdapter(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,11 +260,40 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 height: 160, // Match the height of BudgetTile
                 child: _buildBudgetsSection(),
               ),
+              const SizedBox(height: 12),
+              _buildTransactionFilterSection(),
             ],
           ),
         ),
       ),
     ];
+  }
+
+  Widget _buildTransactionFilterSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SelectorWidget<TransactionFilter>(
+          selectedValue: _selectedTransactionFilter,
+          options: TransactionFilter.values.toSelectorOptions(
+            labelBuilder: (filter) {
+              switch (filter) {
+                case TransactionFilter.all:
+                  return 'transactions.filter_all'.tr();
+                case TransactionFilter.expense:
+                  return 'transactions.filter_expense'.tr();
+                case TransactionFilter.income:
+                  return 'transactions.filter_income'.tr();
+              }
+            },
+          ),
+          onSelectionChanged: _onTransactionFilterChanged,
+          height: 44,
+          borderRadius: BorderRadius.circular(12),
+          animationDuration: const Duration(milliseconds: 250),
+        ),
+      ],
+    );
   }
 
   Widget _buildAccountsSection() {
@@ -409,5 +453,3 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 }
-
-

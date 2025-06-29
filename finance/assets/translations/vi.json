@@ -45,7 +45,10 @@
     "no_transactions": "Không tìm thấy giao dịch",
     "transaction_added": "Đã thêm giao dịch thành công",
     "transaction_updated": "Đã cập nhật giao dịch thành công",
-    "transaction_deleted": "Đã xóa giao dịch thành công"
+    "transaction_deleted": "Đã xóa giao dịch thành công",
+    "filter_all": "Tất cả",
+    "filter_expense": "Chi tiêu",
+    "filter_income": "Thu nhập"
   },
 
   "budgets": {
