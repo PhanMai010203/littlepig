@@ -25,6 +25,24 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     this._transactionRepository,
     this._categoriesBloc,
   ) : super(TransactionsInitial()) {
+    // Initialize categories with the current state of CategoriesBloc
+    _categories = _categoriesBloc.state.categories;
+
+    // Subscribe to CategoriesBloc stream to update categories reactively
+    _categoriesBloc.stream.listen((state) {
+      if (state.hasCategories) {
+        _categories = state.categories;
+        // If we are in a loaded state, emit a new state to rebuild with categories
+        if (this.state is TransactionsLoaded) {
+          final current = this.state as TransactionsLoaded;
+          emit(current.copyWith(categories: _categories));
+        } else if (this.state is TransactionsPaginated) {
+          final current = this.state as TransactionsPaginated;
+          emit(current.copyWith(categories: _categories));
+        }
+      }
+    });
+
     on<LoadAllTransactions>(_onLoadAllTransactions);
     on<LoadTransactionsByAccount>(_onLoadTransactionsByAccount);
     on<LoadTransactionsByCategory>(_onLoadTransactionsByCategory);
@@ -122,8 +140,13 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       LoadTransactionsWithCategories event,
       Emitter<TransactionsState> emit) async {
     try {
-      // Get categories from CategoryBloc - they're already loaded and cached
-      _categories = _categoriesBloc.state.categories;
+      // Categories are now reactively updated via stream subscription, no need to wait.
+      // if (!_categoriesBloc.state.hasCategories) {
+      //   await _categoriesBloc.stream.firstWhere((state) => state.hasCategories);
+      // }
+
+      // _categories is already updated by the stream listener or initialized.
+      // _categories = _categoriesBloc.state.categories;
 
       // Phase 3: Emit skeleton loading state with context preserved
       emit(TransactionsLoadingWithSkeleton(

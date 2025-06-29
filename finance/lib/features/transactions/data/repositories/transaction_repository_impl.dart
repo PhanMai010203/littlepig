@@ -68,7 +68,7 @@ class TransactionRepositoryImpl
       () async {
         // Create month start and end boundaries for precise filtering
         final monthStart = DateTime(year, month, 1);
-        final monthEnd = DateTime(year, month + 1, 1).subtract(const Duration(days: 1, hours: 23, minutes: 59, seconds: 59));
+        final monthEnd = DateTime(year, month + 1, 1).subtract(const Duration(microseconds: 1));
         
         final query = _database.select(_database.transactionsTable)
           ..where((t) => t.date.isBetweenValues(monthStart, monthEnd))

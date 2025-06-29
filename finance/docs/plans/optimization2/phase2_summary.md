@@ -13,7 +13,7 @@ Successfully implemented Phase 2 of the TransactionsPage optimization plan, achi
 ### ✅ 2. Month-Optimized Database Queries  
 **File**: `lib/features/transactions/data/repositories/transaction_repository_impl.dart`
 - **Added**: `getTransactionsByMonth()` implementation with:
-  - Precise month boundary filtering using `DateTime(year, month, 1)` to `DateTime(year, month + 1, 1).subtract(...)`
+  - Precise month boundary filtering using `DateTime(year, month, 1)` to `DateTime(year, month + 1, 1).subtract(Duration(microseconds: 1))` (corrected to last microsecond of the month)
   - SQL-level filtering with `isBetweenValues()` query constraint
   - Proper pagination with `limit()` and `offset`
   - Date-descending ordering for newest-first display
@@ -26,6 +26,7 @@ Successfully implemented Phase 2 of the TransactionsPage optimization plan, achi
 - **Eliminated**: Client-side month filtering logic (lines 228-232 removed)
 - **Removed**: `_consecutiveEmptyFetches` counter - no longer needed with precise month querying
 - **Simplified**: Pagination logic - database returns exactly what's needed
+- **Fixed**: Race condition in category loading by ensuring `TransactionsBloc` reactively subscribes to `CategoriesBloc`'s state changes for categories.
 
 ## Technical Details
 
@@ -45,6 +46,10 @@ final monthTransactions = await getTransactionsByMonth(
 );
 ```
 
+### Transaction Formatting
+- **Before**: Hardcoded currency symbol ('\$') and manual sign handling for expense amounts.
+- **After**: Utilizes `CurrencyFormatter.formatAmount()` with `forceSign: true` to correctly display multi-currency symbols and proper `+`/`-` signs based on income/expense, ensuring locale-aware formatting.
+
 ### Cache Key Strategy
 - **Generic**: `getTransactions_page_0_limit_25`
 - **Month-Specific**: `getTransactionsByMonth_2024_12_page_0_limit_25`
@@ -52,7 +57,7 @@ final monthTransactions = await getTransactionsByMonth(
 
 ### Month Boundary Handling
 - **Start**: `DateTime(year, month, 1)` - First millisecond of the month
-- **End**: `DateTime(year, month + 1, 1).subtract(Duration(days: 1, hours: 23, minutes: 59, seconds: 59))` - Last millisecond of the month
+- **End**: `DateTime(year, month + 1, 1).subtract(Duration(microseconds: 1))` - Last micro-second of the month (avoids off-by-one-day errors)
 - **Edge Cases**: Handles leap years, different month lengths, and timezone consistency
 
 ## Performance Improvements Achieved
@@ -88,13 +93,15 @@ final monthTransactions = await getTransactionsByMonth(
 - **Clear separation**: Database handles filtering, BLoC handles state management
 - **Reduced complexity**: Fewer conditional branches in pagination logic
 - **Better caching**: Month-specific keys improve cache debugging and monitoring
+- **Enhanced Currency Formatting**: Centralized and locale-aware transaction amount display.
+- **Robust Category Loading**: Eliminated race condition for transaction category display.
 
 ## Testing Results
 
 ### ✅ All Tests Passing
 - **Transaction Repository Tests**: All existing tests continue to pass
-- **BLoC State Tests**: Month selection and pagination tests verified
-- **Integration Tests**: Full UI flow testing completed successfully
+- **BLoC State Tests**: Month selection and pagination tests verified, category loading tests added/verified.
+- **Integration Tests**: Full UI flow testing completed successfully with correct transaction formatting.
 
 ### ✅ Static Analysis Clean
 - **Flutter Analyze**: No new warnings or errors introduced
@@ -108,11 +115,16 @@ final monthTransactions = await getTransactionsByMonth(
 
 2. **`lib/features/transactions/data/repositories/transaction_repository_impl.dart`** 
    - Implemented month-optimized database query with caching
+   - **Confirmed**: Month end boundary calculation is correct (`.subtract(Duration(microseconds: 1))`).
 
 3. **`lib/features/transactions/presentation/bloc/transactions_bloc.dart`**
    - Replaced client-side filtering with server-side month queries
    - Removed unnecessary consecutive fetch tracking
    - Simplified pagination logic
+   - **Modified**: Subscribed to `CategoriesBloc` stream for reactive category loading.
+
+4. **`lib/features/transactions/data/services/transaction_display_service_impl.dart`**
+   - **Modified**: `formatTransactionAmount` to use `CurrencyFormatter` for multi-currency and proper sign display.
 
 ## Expected User Experience Impact
 
@@ -120,6 +132,8 @@ final monthTransactions = await getTransactionsByMonth(
 - **Month Navigation**: Near-instantaneous switching between months
 - **Scroll Performance**: Smoother pagination with relevant data only
 - **Memory Usage**: Reduced app memory footprint during transaction browsing
+- **Accurate Transaction Display**: Correct currency symbols and signs for all transactions, improving financial clarity.
+- **Consistent Category Display**: Transactions consistently display category names, icons, and colors.
 
 ### 📱 Battery Life Improvement  
 - **Reduced CPU**: No client-side filtering on every page load

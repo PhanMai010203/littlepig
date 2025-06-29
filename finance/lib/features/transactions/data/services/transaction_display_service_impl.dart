@@ -6,6 +6,11 @@ import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_card_data.dart';
 import '../../domain/services/transaction_display_service.dart';
 import '../../../categories/domain/entities/category.dart';
+import '../../../accounts/domain/repositories/account_repository.dart';
+import '../../../currencies/domain/repositories/currency_repository.dart';
+import '../../../../shared/utils/currency_formatter.dart';
+import '../../../accounts/domain/entities/account.dart';
+import '../../../currencies/domain/entities/currency.dart';
 
 /// Implementation of the transaction display service
 /// 
@@ -14,6 +19,14 @@ import '../../../categories/domain/entities/category.dart';
 @LazySingleton(as: TransactionDisplayService)
 class TransactionDisplayServiceImpl implements TransactionDisplayService {
   
+  TransactionDisplayServiceImpl(
+    this._accountRepository,
+    this._currencyRepository,
+  );
+
+  final AccountRepository _accountRepository;
+  final CurrencyRepository _currencyRepository;
+
   @override
   Future<List<TransactionCardData>> prepareTransactionCardsData(
     List<Transaction> transactions,
@@ -22,19 +35,47 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
   }) async {
     final List<TransactionCardData> cardData = [];
     
+    // Prefetch accounts to avoid repeated DB hits
+    final accounts = await _accountRepository.getAllAccounts();
+    final Map<int, Account> accountById = {
+      for (final acc in accounts) if (acc.id != null) acc.id!: acc,
+    };
+
+    // Gather distinct currency codes used by these accounts
+    final Set<String> currencyCodes = {
+      for (final acc in accounts) acc.currency.toUpperCase(),
+    };
+
+    // Prefetch currency entities
+    final Map<String, Currency> currencyCache = {};
+    for (final code in currencyCodes) {
+      final currency = await _currencyRepository.getCurrencyByCode(code);
+      if (currency != null) {
+        currencyCache[code] = currency;
+      }
+    }
+
     for (final transaction in transactions) {
       final category = categories[transaction.categoryId];
       final isIncome = transaction.isIncome;
-      
+
+      // Find currency for this transaction via its account
+      final account = accountById[transaction.accountId];
+      final currencyCode = account?.currency.toUpperCase() ?? 'USD';
+      final currency = currencyCache[currencyCode];
+
       // Pre-calculate all display values
-      final formattedAmount = formatTransactionAmount(transaction);
+      final formattedAmount = _formatTransactionAmount(
+        transaction,
+        currency: currency,
+      );
       final formattedDate = formatTransactionDate(transaction);
       final amountColor = calculateAmountColor(transaction, context: context);
       final categoryColor = getCategoryColor(category, isIncome, context: context);
       final categoryIcon = getCategoryIcon(category, isIncome);
       final hasNote = transaction.note != null && transaction.note!.isNotEmpty;
       final displayNote = hasNote ? _truncateNote(transaction.note!) : null;
-      
+
       cardData.add(TransactionCardData(
         transaction: transaction,
         category: category,
@@ -93,9 +134,39 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
 
   @override
   String formatTransactionAmount(Transaction transaction, {bool showSign = true}) {
-    final amount = transaction.amount.abs(); // Always show positive number
-    final sign = showSign ? (transaction.isIncome ? '+' : '') : '';
-    return '$sign${NumberFormat.currency(symbol: '\$').format(amount)}';
+    // Deprecated: Kept for backward compatibility. This method now delegates
+    // to `_formatTransactionAmount` with a null currency fallback.
+    return _formatTransactionAmount(transaction, showSign: showSign);
+  }
+
+  /// New internal formatter that supports multi-currency and proper +/- signs.
+  String _formatTransactionAmount(
+    Transaction transaction, {
+    Currency? currency,
+    bool showSign = true,
+  }) {
+    final amount = transaction.amount;
+
+    // Use provided currency entity when available, otherwise fallback to simple
+    // currency formatter with the account's currency code or '$'.
+    String formattedNumber;
+    if (currency != null) {
+      formattedNumber = CurrencyFormatter.formatAmount(
+        amount: amount,
+        currency: currency,
+        showSymbol: true,
+        showCode: false,
+        forceSign: showSign,
+      );
+    } else {
+      // This fallback still uses NumberFormat directly, so handle sign manually
+      final sign = showSign ? (transaction.isIncome ? '+' : '') : '';
+      formattedNumber = '$sign${NumberFormat.currency(symbol: '\\\$').format(amount.abs())}';
+    }
+
+    // The sign is now handled by CurrencyFormatter.formatAmount when currency is not null.
+    // For the fallback case, it's handled manually above.
+    return formattedNumber;
   }
 
   @override
