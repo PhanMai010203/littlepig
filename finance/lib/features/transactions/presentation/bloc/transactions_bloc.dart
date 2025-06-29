@@ -121,10 +121,15 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   Future<void> _onLoadTransactionsWithCategories(
       LoadTransactionsWithCategories event,
       Emitter<TransactionsState> emit) async {
-    emit(TransactionsLoading());
     try {
       // Get categories from CategoryBloc - they're already loaded and cached
       _categories = _categoriesBloc.state.categories;
+
+      // Phase 3: Emit skeleton loading state with context preserved
+      emit(TransactionsLoadingWithSkeleton(
+        categories: _categories,
+        selectedMonth: _selectedMonth,
+      ));
 
       // Initialize pagination with empty state
       final initialPagingState = PagingState<int, TransactionListItem>();

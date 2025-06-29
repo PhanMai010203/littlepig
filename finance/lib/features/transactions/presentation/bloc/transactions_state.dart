@@ -14,6 +14,19 @@ class TransactionsInitial extends TransactionsState {}
 
 class TransactionsLoading extends TransactionsState {}
 
+class TransactionsLoadingWithSkeleton extends TransactionsState {
+  final Map<int, Category> categories;
+  final DateTime selectedMonth;
+
+  const TransactionsLoadingWithSkeleton({
+    required this.categories,
+    required this.selectedMonth,
+  });
+
+  @override
+  List<Object?> get props => [categories, selectedMonth];
+}
+
 class TransactionsPaginated extends TransactionsState {
   final PagingState<int, TransactionListItem> pagingState;
   final Map<int, Category> categories;

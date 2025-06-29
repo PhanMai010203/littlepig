@@ -10,6 +10,7 @@ import '../bloc/transactions_state.dart';
 import '../widgets/month_selector_wrapper.dart';
 import '../widgets/transaction_summary.dart';
 import '../widgets/transaction_list.dart';
+import '../widgets/transaction_loading_skeleton.dart';
 
 class TransactionsPage extends StatefulWidget {
   const TransactionsPage({super.key});
@@ -67,7 +68,8 @@ class _TransactionsView extends StatelessWidget {
         child: const Icon(Icons.add),
       ),
       slivers: [
-        BlocConsumer<TransactionsBloc, TransactionsState>(
+        // Phase 3: Use BlocListener only for error states and snackbar notifications
+        BlocListener<TransactionsBloc, TransactionsState>(
           listener: (context, state) {
             if (state is TransactionsError) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -75,93 +77,116 @@ class _TransactionsView extends StatelessWidget {
               );
             }
           },
-          builder: (context, state) {
-            if (state is TransactionsLoading) {
-              return const SliverToBoxAdapter(
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-              );
-            }
-
-            if (state is TransactionsError) {
-              return SliverToBoxAdapter(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32.0),
-                    child: Column(
-                      children: [
-                        Icon(Icons.error,
-                            size: 64,
-                            color: Theme.of(context).colorScheme.error),
-                        const SizedBox(height: 16),
-                        AppText(state.message, colorName: 'error'),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => context
-                              .read<TransactionsBloc>()
-                              .add(RefreshTransactions()),
-                          child: const AppText('Retry'),
-                        ),
-                      ],
+          child: BlocSelector<TransactionsBloc, TransactionsState, Widget>(
+            selector: (state) {
+              // Phase 3: Selective state rebuilds - return specific UI based on state
+              if (state is TransactionsLoading) {
+                return const SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(32.0),
+                      child: CircularProgressIndicator(),
                     ),
                   ),
-                ),
-              );
-            }
+                );
+              }
 
-            if (state is TransactionsPaginated) {
-              return SliverMainAxisGroup(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: MonthSelectorWrapper(
-                      selectedMonth: state.selectedMonth,
+              // Phase 3: New skeleton loading state with preserved context
+              if (state is TransactionsLoadingWithSkeleton) {
+                return SliverMainAxisGroup(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: MonthSelectorWrapper(
+                        selectedMonth: state.selectedMonth,
+                      ),
+                    ),
+                    const SliverToBoxAdapter(
+                      child: TransactionLoadingSkeleton(
+                        itemCount: 6,
+                        showMonthSelector: false, // Month selector already shown above
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              if (state is TransactionsError) {
+                return SliverToBoxAdapter(
+                  child: Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        children: [
+                          Icon(Icons.error,
+                              size: 64,
+                              color: Theme.of(context).colorScheme.error),
+                          const SizedBox(height: 16),
+                          AppText(state.message, colorName: 'error'),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => context
+                                .read<TransactionsBloc>()
+                                .add(RefreshTransactions()),
+                            child: const AppText('Retry'),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: PaginatedTransactionSummary(
+                );
+              }
+
+              if (state is TransactionsPaginated) {
+                return SliverMainAxisGroup(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: MonthSelectorWrapper(
+                        selectedMonth: state.selectedMonth,
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: PaginatedTransactionSummary(
+                        pagingState: state.pagingState,
+                        selectedMonth: state.selectedMonth,
+                      ),
+                    ),
+                    PaginatedTransactionList(
                       pagingState: state.pagingState,
+                      categories: state.categories,
                       selectedMonth: state.selectedMonth,
                     ),
-                  ),
-                  PaginatedTransactionList(
-                    pagingState: state.pagingState,
-                    categories: state.categories,
-                    selectedMonth: state.selectedMonth,
-                  ),
-                ],
-              );
-            }
+                  ],
+                );
+              }
 
-            if (state is TransactionsLoaded) {
-              return SliverMainAxisGroup(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: MonthSelectorWrapper(
-                      selectedMonth: state.selectedMonth,
+              if (state is TransactionsLoaded) {
+                return SliverMainAxisGroup(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: MonthSelectorWrapper(
+                        selectedMonth: state.selectedMonth,
+                      ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: TransactionSummary(
+                    SliverToBoxAdapter(
+                      child: TransactionSummary(
+                        transactions: state.transactions,
+                        selectedMonth: state.selectedMonth,
+                      ),
+                    ),
+                    TransactionList(
                       transactions: state.transactions,
+                      categories: state.categories,
                       selectedMonth: state.selectedMonth,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                     ),
-                  ),
-                  TransactionList(
-                    transactions: state.transactions,
-                    categories: state.categories,
-                    selectedMonth: state.selectedMonth,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-                  ),
-                ],
-              );
-            }
+                  ],
+                );
+              }
 
-            return const SliverToBoxAdapter(child: SizedBox.shrink());
-          },
+              return const SliverToBoxAdapter(child: SizedBox.shrink());
+            },
+            builder: (context, widget) => widget,
+          ),
         ),
       ],
     );
