@@ -24,10 +24,10 @@ class AnimatedGooBackground extends StatelessWidget {
       'RepaintBoundary+AdaptivePerformance+ThemeCaching'
     );
     
-    // Phase 5: Optimized color with modern API
+    // Phase 5: Optimized color with theme-appropriate alpha values for proper contrast
     final optimizedColor = brightness == Brightness.light
-        ? baseColor.withValues(alpha: 0.20)
-        : baseColor.withValues(alpha: 0.20);
+        ? baseColor.withValues(alpha: 0.20) // Light theme: lower alpha for better contrast
+        : baseColor.withValues(alpha: 0.35); // Dark theme: higher alpha for visibility
 
     // Phase 5: Use RepaintBoundary for expensive animation (Phase 4 pattern)
     return RepaintBoundary(

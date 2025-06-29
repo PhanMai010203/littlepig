@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'app_colors.dart';
 import 'app_text_theme.dart';
 import '../settings/app_settings.dart';
@@ -7,6 +8,15 @@ import 'material_you.dart';
 
 /// Main theme configuration class
 class AppTheme {
+  /// Get platform-appropriate splash factory
+  /// Keeps Material splash effects on Android, removes them on iOS
+  static InteractiveInkFeatureFactory get _platformSplashFactory {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return NoSplash.splashFactory;
+    }
+    return InkRipple.splashFactory; // Material Design default
+  }
+
   /// Create light theme
   static ThemeData light({Color? accentColor}) {
     final accent = accentColor ?? MaterialYouManager.getAccentColor();
@@ -56,7 +66,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -67,7 +77,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -78,14 +88,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
       // Icon button theme
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -98,11 +108,11 @@ class AppTheme {
         elevation: 8,
       ),
 
-      // Disable all splash/ripple effects globally
-      splashFactory: NoSplash.splashFactory,
+      // Platform-aware splash effects: disabled on iOS, enabled on Android
+      splashFactory: _platformSplashFactory,
       
-      // Disable Material ink effects
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      // Keep Material ink effects for better touch feedback
+      materialTapTargetSize: MaterialTapTargetSize.padded,
     );
 
     // Add custom colors extension
@@ -166,7 +176,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -177,7 +187,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -188,14 +198,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
       // Icon button theme
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -208,11 +218,11 @@ class AppTheme {
         elevation: 8,
       ),
 
-      // Disable all splash/ripple effects globally
-      splashFactory: NoSplash.splashFactory,
+      // Platform-aware splash effects: disabled on iOS, enabled on Android
+      splashFactory: _platformSplashFactory,
       
-      // Disable Material ink effects
-      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      // Keep Material ink effects for better touch feedback
+      materialTapTargetSize: MaterialTapTargetSize.padded,
     );
 
     // Add custom colors extension

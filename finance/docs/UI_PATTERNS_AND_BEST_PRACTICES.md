@@ -35,6 +35,55 @@ class MyFeaturePage extends StatelessWidget {
 }
 ```
 
+### Platform-Aware Theming
+
+#### Material Design Touch Feedback
+The app uses platform-aware splash effects to provide appropriate user feedback:
+
+- **Android**: Full Material Design ripple effects for familiar touch feedback
+- **iOS**: No splash effects to match iOS design language expectations
+
+This is automatically handled by the app theme, but when creating custom components, use this pattern:
+
+```dart
+import 'package:flutter/foundation.dart';
+
+// Get platform-appropriate splash factory
+InteractiveInkFeatureFactory get _platformSplashFactory {
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    return NoSplash.splashFactory;
+  }
+  return InkRipple.splashFactory; // Material Design default
+}
+
+// Use in custom button components
+Material(
+  child: InkWell(
+    splashFactory: _platformSplashFactory,
+    onTap: onPressed,
+    child: child,
+  ),
+)
+```
+
+#### Theme Contrast Best Practices
+When creating components with opacity/transparency that work across light and dark themes:
+
+```dart
+// ✅ Good: Different alpha values for proper contrast
+final optimizedColor = brightness == Brightness.light
+    ? baseColor.withValues(alpha: 0.20) // Light theme: lower alpha
+    : baseColor.withValues(alpha: 0.35); // Dark theme: higher alpha
+
+// ❌ Bad: Same alpha value for both themes
+final poorColor = baseColor.withValues(alpha: 0.20); // Lacks contrast in dark theme
+```
+
+**Rationale:**
+- Light themes need lower alpha values for visual contrast against bright backgrounds
+- Dark themes need higher alpha values for visibility against dark backgrounds
+- Different blend modes may also be needed (`BlendMode.multiply` vs `BlendMode.screen`)
+
 ### Error Handling
 
 ```dart

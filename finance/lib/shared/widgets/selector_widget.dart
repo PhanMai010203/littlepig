@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../core/theme/app_colors.dart';
 import 'app_text.dart';
@@ -148,6 +149,11 @@ class _SelectorWidgetState<T> extends State<SelectorWidget<T>>
 
   @override
   Widget build(BuildContext context) {
+    // Platform-aware splash factory - consistent with app theme
+    final splashFactory = defaultTargetPlatform == TargetPlatform.iOS
+        ? NoSplash.splashFactory
+        : InkRipple.splashFactory;
+
     return Container(
       height: widget.height,
       padding: _getPadding(),
@@ -170,7 +176,7 @@ class _SelectorWidgetState<T> extends State<SelectorWidget<T>>
             color: _getIndicatorColor().withOpacity(0.15),
             borderRadius: BorderRadius.circular(8),
           ),
-          splashFactory: NoSplash.splashFactory,
+          splashFactory: splashFactory,
           overlayColor: WidgetStateProperty.all(Colors.transparent),
           labelPadding: EdgeInsets.zero,
           onTap: _handleOptionTap,
