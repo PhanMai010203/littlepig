@@ -12,7 +12,8 @@
       "Bash(flutter packages pub run build_runner build:*)",
       "Bash(flutter packages pub run:*)",
       "Bash(flutter build:*)",
-      "Bash(dart analyze:*)"
+      "Bash(dart analyze:*)",
+      "Bash(dart:*)"
     ],
     "deny": []
   }
