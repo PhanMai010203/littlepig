@@ -13,7 +13,7 @@ void minimizeKeyboard(BuildContext context) {
   FocusNode? currentFocus = WidgetsBinding.instance.focusManager.primaryFocus;
   currentFocus?.unfocus();
   Future.delayed(const Duration(milliseconds: 10), () {
-    // shouldAutoRefocus = false;
+    _shouldAutoRefocus = false; // Reset flag when user explicitly dismisses keyboard
   });
 }
 
