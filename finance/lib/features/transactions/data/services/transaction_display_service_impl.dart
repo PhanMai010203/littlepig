@@ -148,7 +148,7 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
     final amount = transaction.amount;
 
     // Use provided currency entity when available, otherwise fallback to simple
-    // currency formatter with the account's currency code or '$'.
+    // currency formatter with the account\'s currency code or '$'.
     String formattedNumber;
     if (currency != null) {
       formattedNumber = CurrencyFormatter.formatAmount(
@@ -160,12 +160,61 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
       );
     } else {
       // This fallback still uses NumberFormat directly, so handle sign manually
-      final sign = showSign ? (transaction.isIncome ? '+' : '') : '';
-      formattedNumber = '$sign${NumberFormat.currency(symbol: '\$').format(amount.abs())}';
+      final sign = showSign ? (transaction.isIncome ? '+' : '-') : '';
+      formattedNumber = '$sign${NumberFormat.currency(symbol: '\
     }
 
     // The sign is now handled by CurrencyFormatter.formatAmount when currency is not null.
-    // For the fallback case, it's handled manually above.
+    // For the fallback case, it\'s handled manually above.
+    return formattedNumber;
+  }
+
+  @override
+  String formatTransactionDate(Transaction transaction, {String? format}) {
+    final formatter = DateFormat(format ?? 'MMM d');
+    return formatter.format(transaction.date);
+  }
+
+  @override
+  String getCategoryIcon(Category? category, bool isIncome) {
+    if (category != null) {
+      return category.icon;
+    }
+    
+    // Fallback icons for missing categories
+    return isIncome ? '💰' : '💸';
+  }
+
+  @override
+  Color getCategoryColor(
+    Category? category,
+    bool isIncome, {
+    BuildContext? context,
+  }) {
+    if (category != null) {
+      return category.color.withValues(alpha: 0.15);
+    }
+    
+    // Fallback colors for missing categories
+    if (isIncome) {
+      return Colors.green.withValues(alpha: 0.1);
+    } else {
+      return Colors.red.withValues(alpha: 0.1);
+    }
+  }
+
+  /// Helper method to truncate notes for display
+  String _truncateNote(String note, {int maxLength = 50}) {
+    if (note.length <= maxLength) {
+      return note;
+    }
+    return '${note.substring(0, maxLength)}...';
+  }
+}).format(amount.abs())}';
+    }
+
+    // The sign is now handled by CurrencyFormatter.formatAmount when currency is not null.
+    // For the fallback case, it\'s handled manually above.
     return formattedNumber;
   }
 
