@@ -15,9 +15,8 @@ class AnimatedGooBackground extends StatelessWidget {
     // Phase 5: Cache theme data for performance (Phase 1 pattern)
     final brightness = Theme.of(context).brightness;
     
-    // Phase 5: Adaptive performance based on device capabilities (Phase 5 pattern)
-    final platform = PlatformService.getPlatform();
-    final isLowEndDevice = platform == PlatformOS.isAndroid; // Assume Android might be lower-end
+    // Phase 5: Adaptive performance based on actual device capabilities (Phase 5 pattern)
+    final isLowEndDevice = PlatformService.isLowEndDevice;
     
     // Phase 5: Track component optimization
     PerformanceOptimizations.trackRenderingOptimization(

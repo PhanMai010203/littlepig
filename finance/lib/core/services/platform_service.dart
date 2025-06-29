@@ -299,4 +299,24 @@ class PlatformService {
     
     return MouseCursor.defer; // Mobile doesn't need custom cursors
   }
+
+  /// Check if the current device should be considered low-end for performance optimization
+  /// Uses heuristic-based detection considering platform performance characteristics
+  static bool get isLowEndDevice {
+    // Web is generally considered lower performance for complex animations
+    if (isWeb) return true;
+    
+    // Desktop platforms are generally high-performance
+    if (isDesktop) return false;
+    
+    // For mobile platforms, use platform-agnostic heuristics
+    // This is a simplified approach - in a real implementation, you might check:
+    // - Available RAM using device_info_plus
+    // - CPU cores or performance class
+    // - Display density and size
+    
+    // For now, we'll use a conservative approach that doesn't discriminate by platform
+    // This can be enhanced with actual device performance metrics if needed
+    return false; // Assume devices are capable unless proven otherwise
+  }
 }

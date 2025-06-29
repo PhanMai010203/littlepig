@@ -78,10 +78,8 @@ class _ResumeTextFieldFocusState extends State<ResumeTextFieldFocus>
 
   @override
   Widget build(BuildContext context) {
-    // Only apply focus restoration on Android where keyboard is usually dismissed
-    if (PlatformService.getPlatform() == PlatformOS.isAndroid) {
-      return widget.child;
-    }
+    // Focus restoration logic is handled by the lifecycle observer
+    // No platform-specific UI differences needed
     return widget.child;
   }
 }
