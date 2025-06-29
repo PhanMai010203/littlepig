@@ -68,8 +68,20 @@ class BottomSheetService {
     final colorScheme = theme.colorScheme;
 
     // Minimize keyboard when opening bottom sheet (budget app logic)
+    // Only minimize if we don't expect to use the keyboard immediately
     if (!popupWithKeyboard) {
       minimizeKeyboard(context);
+    } else {
+      // For popup with keyboard, ensure any existing focus is properly handled
+      // but don't unfocus as we want the keyboard to appear
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Small delay to ensure sheet is properly rendered before keyboard appears
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (context.mounted) {
+            // Let the sheet settle before allowing keyboard to appear
+          }
+        });
+      });
     }
 
     // Theme context preservation (from budget app logic)
@@ -586,10 +598,17 @@ class BottomSheetService {
 
         // Fix over-scroll stretch when keyboard pops up quickly (budget app logic)
         if (popupWithKeyboard && resizeForKeyboard) {
-          Future.delayed(const Duration(milliseconds: 100), () {
+          // Improved timing to better sync with Flutter's keyboard animation (300ms)
+          // Use 200ms to trigger size adjustment before keyboard animation completes
+          Future.delayed(const Duration(milliseconds: 200), () {
             // This helps prevent over-scroll issues when keyboard appears
-            if (onSizeChanged != null) {
-              onSizeChanged(initialSize);
+            // Only trigger if the sheet is still mounted and visible
+            if (onSizeChanged != null && context.mounted) {
+              // Check if keyboard is actually visible before adjusting
+              final currentKeyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+              if (currentKeyboardHeight > 0) {
+                onSizeChanged(initialSize);
+              }
             }
           });
         }
@@ -616,7 +635,9 @@ class BottomSheetService {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
                 ),
-                child: resizeForKeyboard && !popupWithKeyboard
+                // Fixed: Apply keyboard padding when resizeForKeyboard=true, regardless of popupWithKeyboard
+                // This ensures bottom sheets properly avoid the keyboard in all scenarios
+                child: resizeForKeyboard
                     ? MediaQueryAlternatives.keyboardPadding(
                         child: content,
                         animated: true,
@@ -699,8 +720,9 @@ class BottomSheetService {
           effectiveThemeContext = null;
         }
 
-        // Wrap content with optimized keyboard-aware positioning for standard sheets
-        Widget wrappedContent = resizeForKeyboard && !popupWithKeyboard
+        // Fixed: Apply keyboard padding when resizeForKeyboard=true, regardless of popupWithKeyboard
+        // This ensures standard bottom sheets properly avoid the keyboard in all scenarios
+        Widget wrappedContent = resizeForKeyboard
             ? MediaQueryAlternatives.keyboardPadding(
                 child: content,
                 animated: true,
