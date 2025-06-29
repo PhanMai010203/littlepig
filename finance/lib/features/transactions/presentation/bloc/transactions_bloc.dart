@@ -20,7 +20,6 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   static const int _pageSize = 25;
   Map<int, Category> _categories = {};
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
-  int _consecutiveEmptyFetches = 0;
 
   TransactionsBloc(
     this._transactionRepository,
@@ -185,7 +184,6 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   void _onChangeSelectedMonth(
       ChangeSelectedMonth event, Emitter<TransactionsState> emit) {
     _selectedMonth = event.selectedMonth;
-    _consecutiveEmptyFetches = 0;
 
     if (state is TransactionsPaginated) {
       final currentState = state as TransactionsPaginated;
@@ -219,29 +217,16 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
         ),
       ));
 
-      // Fetch transactions for the page
-      final newTransactions = await _transactionRepository.getTransactions(
+      // 🆕 Phase 2: Fetch transactions by month directly from database
+      final filteredTransactions = await _transactionRepository.getTransactionsByMonth(
+        year: _selectedMonth.year,
+        month: _selectedMonth.month,
         page: nextPageKey,
         limit: _pageSize,
       );
 
-      // Filter transactions by selected month
-      final filteredTransactions = newTransactions.where((t) {
-        return t.date.year == _selectedMonth.year &&
-            t.date.month == _selectedMonth.month;
-      }).toList();
-
-      if (filteredTransactions.isEmpty && newTransactions.isNotEmpty) {
-        _consecutiveEmptyFetches++;
-      } else {
-        _consecutiveEmptyFetches = 0;
-      }
-
-      final isLastPage =
-          newTransactions.length < _pageSize || _consecutiveEmptyFetches > 5;
-      if (isLastPage) {
-        _consecutiveEmptyFetches = 0;
-      }
+      // No client-side filtering needed - database handles month filtering
+      final isLastPage = filteredTransactions.length < _pageSize;
 
       // Group transactions
       final existingItems =
@@ -311,12 +296,8 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
         final headerIndex = existingItems!
             .indexWhere((item) => item is DateHeaderItem && item.date == date);
         if (headerIndex != -1) {
-          final oldHeader = existingItems[headerIndex] as DateHeaderItem;
-          final newTotal = oldHeader.totalAmount + totalAmount;
-          // This is tricky because PagingState is immutable.
-          // A better approach is to not have header in item list but build it in UI.
-          // For now, let's stick to the logic that may produce multiple headers for same date if pages are small.
-          // The logic to avoid double headers is already there: `if (date != lastTransactionDate)`
+          // Header already exists for this date - skip adding duplicate header
+          // This is handled by the `if (date != lastTransactionDate)` check above
         }
       }
       newItems.addAll(transactionsOnDate.map((t) => TransactionItem(t)));
