@@ -19,6 +19,7 @@ import 'features/budgets/domain/repositories/budget_repository.dart';
 import 'features/budgets/domain/services/budget_display_service.dart';
 import 'features/currencies/domain/repositories/currency_repository.dart';
 import 'features/budgets/presentation/bloc/budgets_bloc.dart';
+import 'features/categories/presentation/bloc/categories_bloc.dart';
 import 'features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 import 'features/transactions/presentation/bloc/transactions_bloc.dart';
@@ -99,6 +100,7 @@ void main() async {
             settingsBloc: getIt<SettingsBloc>(),
             transactionsBloc: getIt<TransactionsBloc>(),
             budgetsBloc: getIt<BudgetsBloc>(),
+            categoriesBloc: getIt<CategoriesBloc>(),
           ),
         ),
       ),

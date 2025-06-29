@@ -5,7 +5,8 @@ import 'package:injectable/injectable.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 import '../../domain/repositories/transaction_repository.dart';
-import '../../../categories/domain/repositories/category_repository.dart';
+import '../../../categories/presentation/bloc/categories_bloc.dart';
+import '../../../categories/presentation/bloc/categories_state.dart';
 import '../../domain/entities/transaction.dart';
 import '../../../categories/domain/entities/category.dart';
 import 'transactions_event.dart';
@@ -14,7 +15,7 @@ import 'transactions_state.dart';
 @injectable
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final TransactionRepository _transactionRepository;
-  final CategoryRepository _categoryRepository;
+  final CategoriesBloc _categoriesBloc;
 
   static const int _pageSize = 25;
   Map<int, Category> _categories = {};
@@ -23,7 +24,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
 
   TransactionsBloc(
     this._transactionRepository,
-    this._categoryRepository,
+    this._categoriesBloc,
   ) : super(TransactionsInitial()) {
     on<LoadAllTransactions>(_onLoadAllTransactions);
     on<LoadTransactionsByAccount>(_onLoadTransactionsByAccount);
@@ -123,9 +124,8 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       Emitter<TransactionsState> emit) async {
     emit(TransactionsLoading());
     try {
-      // Load categories first
-      final categories = await _categoryRepository.getAllCategories();
-      _categories = {for (var c in categories) c.id!: c};
+      // Get categories from CategoryBloc - they're already loaded and cached
+      _categories = _categoriesBloc.state.categories;
 
       // Initialize pagination with empty state
       final initialPagingState = PagingState<int, TransactionListItem>();

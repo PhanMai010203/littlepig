@@ -10,6 +10,7 @@ import '../features/currencies/domain/repositories/currency_repository.dart';
 import '../core/theme/app_theme.dart';
 import '../core/settings/app_settings.dart';
 import '../features/budgets/presentation/bloc/budgets_bloc.dart';
+import '../features/categories/presentation/bloc/categories_bloc.dart';
 import '../features/navigation/presentation/bloc/navigation_bloc.dart';
 import '../features/settings/presentation/bloc/settings_bloc.dart';
 import '../features/transactions/presentation/bloc/transactions_bloc.dart';
@@ -27,6 +28,7 @@ class MainAppProvider extends StatelessWidget {
   final SettingsBloc settingsBloc;
   final TransactionsBloc transactionsBloc;
   final BudgetsBloc budgetsBloc;
+  final CategoriesBloc categoriesBloc;
 
   const MainAppProvider({
     super.key,
@@ -39,6 +41,7 @@ class MainAppProvider extends StatelessWidget {
     required this.settingsBloc,
     required this.transactionsBloc,
     required this.budgetsBloc,
+    required this.categoriesBloc,
   });
 
   @override
@@ -53,6 +56,7 @@ class MainAppProvider extends StatelessWidget {
       settingsBloc: settingsBloc,
       transactionsBloc: transactionsBloc,
       budgetsBloc: budgetsBloc,
+      categoriesBloc: categoriesBloc,
     );
   }
 }
@@ -68,6 +72,7 @@ class MainApp extends StatefulWidget {
   final SettingsBloc settingsBloc;
   final TransactionsBloc transactionsBloc;
   final BudgetsBloc budgetsBloc;
+  final CategoriesBloc categoriesBloc;
 
   const MainApp({
     super.key,
@@ -80,6 +85,7 @@ class MainApp extends StatefulWidget {
     required this.settingsBloc,
     required this.transactionsBloc,
     required this.budgetsBloc,
+    required this.categoriesBloc,
   });
 
   @override
@@ -124,6 +130,9 @@ class _MainAppState extends State<MainApp> {
       ],
       child: MultiBlocProvider(
         providers: [
+          BlocProvider.value(
+            value: widget.categoriesBloc,
+          ),
           BlocProvider.value(
             value: widget.navigationBloc,
           ),
