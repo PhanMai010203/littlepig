@@ -48,6 +48,16 @@ FadeIn(child: MyWidget())
    - Small interactive elements
    - State changes within a page
 
+### Recently Fixed Issues (vNext)
+
+| Issue | Symptoms | Resolution |
+|-------|----------|------------|
+| **Budget tile color fallback picks wrong color / silent error** | Invalid hex string in optional `colour` field crashed or silently defaulted to palette color. | `_pickColor()` now logs invalid hex values and safely falls back to palette without swallowing other errors. |
+| **SelectorWidget crashes when `selectedValue` not in options** | `TabController` throws exception (`initialIndex` -1) during build/update. | `_getSelectedIndex()` now defaults to **0** when no match is found and `didUpdateWidget` checks range before animating. |
+| **CollapsibleAppBarTitle division-by-zero** | Runtime error when `expandedHeight == toolbarHeight`. | Added safe denominator (`1`) fallback when the delta height is `0`. |
+
+> These fixes are available starting **commit: _vNext (June 2025)_**. Make sure you've pulled the latest changes before troubleshooting similar crashes.
+
 ---
 
 ## 🧪 Testing UI Components
