@@ -228,4 +228,6 @@ print('Updated: ${transaction.updatedAt}');
 print('Category ID: ${transaction.categoryId}');
 print('Account ID: ${transaction.accountId}');
 print('Sync ID: ${transaction.syncId}');
+
+// For currency formatting, see the Currency Management guide.
 ``` 

@@ -73,9 +73,16 @@ final compact = await currencyService.formatAmount(
   compact: true,
 );
 
-// Force sign: +$1,234.56
+// Force sign for income: +$1,234.56
 final withSign = await currencyService.formatAmount(
   amount: 1234.56,
+  currencyCode: 'USD',
+  forceSign: true,
+);
+
+// Force sign for expense: -$1,234.56
+final withSignExpense = await currencyService.formatAmount(
+  amount: -1234.56,
   currencyCode: 'USD',
   forceSign: true,
 );
