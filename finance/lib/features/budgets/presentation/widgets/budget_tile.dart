@@ -59,11 +59,19 @@ class BudgetTile extends StatelessWidget {
       child: Container(
         height: 160,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
-        child: Material(
-          type: MaterialType.card,
+        decoration: BoxDecoration(
           color: getColor(context, "surfaceContainer"),
-          elevation: 4.0,
-          shadowColor: getColor(context, "shadowLight"),
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: getColor(context, "shadowBox").withValues(alpha: 0.15),
+              blurRadius: 30,
+              offset: const Offset(0, 0),
+            ),
+          ],
+        ),
+        child: Material(
+          type: MaterialType.transparency,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(18),
           ),

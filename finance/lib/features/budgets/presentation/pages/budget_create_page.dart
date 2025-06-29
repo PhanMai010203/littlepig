@@ -1,10 +1,10 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' hide TextInput;
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import '../../../../shared/widgets/dialogs/bottom_sheet_service.dart';
 import '../../../../shared/widgets/text_input.dart';
+import '../../../../shared/widgets/selector_widget.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_text.dart';
@@ -14,177 +14,13 @@ import '../../domain/entities/budget.dart';
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/tappable_text_entry.dart';
 
-/// Smooth toggle switch widget following project's animation framework
-class SmoothToggleSwitch extends StatefulWidget {
-  final bool isExpenseBudget;
-  final ValueChanged<bool> onToggle;
-  final String leftLabel;
-  final String rightLabel;
+/// Enum for budget types to make the selector more type-safe
+enum BudgetType {
+  expense,
+  savings;
 
-  const SmoothToggleSwitch({
-    super.key,
-    required this.isExpenseBudget,
-    required this.onToggle,
-    required this.leftLabel,
-    required this.rightLabel,
-  });
-
-  @override
-  State<SmoothToggleSwitch> createState() => _SmoothToggleSwitchState();
-}
-
-class _SmoothToggleSwitchState extends State<SmoothToggleSwitch>
-    with SingleTickerProviderStateMixin {
-  late TabController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TabController(
-      length: 2,
-      vsync: this,
-      initialIndex: widget.isExpenseBudget ? 0 : 1,
-      animationDuration:
-          AnimationUtils.getDuration(const Duration(milliseconds: 300)),
-    );
-  }
-
-  @override
-  void didUpdateWidget(SmoothToggleSwitch oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.isExpenseBudget != widget.isExpenseBudget) {
-      _controller.animateTo(widget.isExpenseBudget ? 0 : 1);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final bool isExpense = widget.isExpenseBudget;
-    final Color indicatorColor = isExpense 
-        ? getColor(context, "primary") 
-        : getColor(context, "success");
-
-    return Container(
-      height: 48,
-      decoration: BoxDecoration(
-        color: getColor(context, "surfaceContainer"),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: getColor(context, "border"),
-          width: 1,
-        ),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(11),
-        child: TabBar(
-          controller: _controller,
-          dividerColor: Colors.transparent,
-          indicatorColor: Colors.transparent,
-          indicatorSize: TabBarIndicatorSize.tab,
-          indicator: BoxDecoration(
-            color: indicatorColor.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          splashFactory: NoSplash.splashFactory,
-          overlayColor: WidgetStateProperty.all(Colors.transparent),
-          labelPadding: EdgeInsets.zero,
-          onTap: (index) {
-            final isExpense = index == 0;
-            if (widget.isExpenseBudget != isExpense) {
-              widget.onToggle(isExpense);
-
-              // Add haptic feedback using project's patterns
-              if (AnimationUtils.shouldAnimate()) {
-                HapticFeedback.lightImpact();
-              }
-            }
-          },
-          tabs: [
-            _buildTab(
-              label: widget.leftLabel,
-              isSelected: isExpense,
-              iconPath: 'assets/icons/arrow_down.svg',
-              activeTextColor: getColor(context, "textSecondary"),
-              activeIconColor: getColor(context, "error"),
-            ),
-            _buildTab(
-              label: widget.rightLabel,
-              isSelected: !isExpense,
-              iconPath: 'assets/icons/arrow_up.svg',
-              activeTextColor: getColor(context, "textSecondary"),
-              activeIconColor: getColor(context, "success"),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTab({
-    required String label,
-    required bool isSelected,
-    required String iconPath,
-    required Color activeTextColor,
-    required Color activeIconColor,
-  }) {
-    final Color textColor = isSelected 
-        ? activeTextColor
-        : getColor(context, "textLight");
-    
-    final Color iconColor = isSelected
-        ? activeIconColor
-        : getColor(context, "textLight");
-
-    return TappableWidget(
-      animationType: TapAnimationType.scale,
-      scaleFactor: 0.98,
-      duration: AnimationUtils.getDuration(const Duration(milliseconds: 150)),
-      child: Container(
-        height: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimationUtils.animatedContainer(
-              duration: const Duration(milliseconds: 200),
-              curve: AnimationUtils.getCurve(Curves.easeOut),
-              child: SvgPicture.asset(
-                iconPath,
-                width: 16,
-                height: 16,
-                colorFilter: ColorFilter.mode(
-                  iconColor,
-                  BlendMode.srcIn,
-                ),
-              ),
-            ),
-            const SizedBox(width: 6),
-            Flexible(
-              child: AnimationUtils.animatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: AnimationUtils.getCurve(Curves.easeOut),
-                child: AppText(
-                  label,
-                  fontSize: 14,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                  textColor: textColor,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  bool get isExpense => this == BudgetType.expense;
+  bool get isSavings => this == BudgetType.savings;
 }
 
 /// Full-screen page for creating a new budget
@@ -204,8 +40,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
 
   BudgetPeriod _selectedPeriod = BudgetPeriod.monthly;
   DateTime _startDate = DateTime.now();
-  bool _isExpenseBudget =
-      true; // true for Expense Budget, false for Savings Budget
+  BudgetType _budgetType = BudgetType.expense;
   bool _excludeDebtCredit = true;
   bool _isSubmitting = false;
 
@@ -433,16 +268,32 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
           sliver: SliverList(
             delegate: SliverChildListDelegate(
               [
-                // Budget Type Toggle Switch
+                // Budget Type Selector
                 Container(
                   margin: const EdgeInsets.only(bottom: 32),
-                  child: SmoothToggleSwitch(
-                    isExpenseBudget: _isExpenseBudget,
-                    leftLabel: "budgets.expense_budget".tr(),
-                    rightLabel: "budgets.savings_budget".tr(),
-                    onToggle: (isExpense) {
+                  child: SelectorWidget<BudgetType>(
+                    selectedValue: _budgetType,
+                    options: [
+                      SelectorOption<BudgetType>(
+                        value: BudgetType.expense,
+                        label: "budgets.expense_budget".tr(),
+                        iconPath: 'assets/icons/arrow_down.svg',
+                        activeIconColor: getColor(context, "error"),
+                        activeTextColor: getColor(context, "textSecondary"),
+                        activeBackgroundColor: getColor(context, "primary"),
+                      ),
+                      SelectorOption<BudgetType>(
+                        value: BudgetType.savings,
+                        label: "budgets.savings_budget".tr(),
+                        iconPath: 'assets/icons/arrow_up.svg',
+                        activeIconColor: getColor(context, "success"),
+                        activeTextColor: getColor(context, "textSecondary"),
+                        activeBackgroundColor: getColor(context, "success"),
+                      ),
+                    ],
+                    onSelectionChanged: (budgetType) {
                       setState(() {
-                        _isExpenseBudget = isExpense;
+                        _budgetType = budgetType;
                       });
                     },
                   ),

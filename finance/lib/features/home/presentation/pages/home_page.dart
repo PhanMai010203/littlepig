@@ -4,8 +4,13 @@ import 'package:finance/features/accounts/domain/repositories/account_repository
 import 'package:finance/features/accounts/domain/entities/account.dart';
 import 'package:finance/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:finance/features/currencies/domain/repositories/currency_repository.dart';
+import 'package:finance/features/budgets/domain/repositories/budget_repository.dart';
+import 'package:finance/features/budgets/domain/entities/budget.dart';
+import 'package:finance/features/budgets/domain/services/budget_display_service.dart';
 import 'package:finance/shared/extensions/account_currency_extension.dart';
 import '../../widgets/account_card.dart';
+import '../../../budgets/presentation/widgets/budget_tile.dart';
+import '../../../budgets/presentation/widgets/budget_summary_card.dart' show AddBudgetCard;
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
 import '../../../../shared/utils/performance_optimization.dart';
@@ -28,12 +33,16 @@ class HomePage extends StatefulWidget {
   final AccountRepository accountRepository;
   final TransactionRepository transactionRepository;
   final CurrencyRepository currencyRepository;
+  final BudgetRepository budgetRepository;
+  final BudgetDisplayService budgetDisplayService;
 
   const HomePage({
     super.key,
     required this.accountRepository,
     required this.transactionRepository,
     required this.currencyRepository,
+    required this.budgetRepository,
+    required this.budgetDisplayService,
   });
 
   @override
@@ -51,8 +60,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   
   int _selectedAccountIndex = 0;
   List<AccountTileData> _accountTiles = [];
+  List<Budget> _budgets = [];
   bool _isLoading = true;
+  bool _isBudgetsLoading = true;
   String? _errorMessage;
+  String? _budgetsErrorMessage;
 
   @override
   void initState() {
@@ -80,6 +92,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     _loadAccounts();
+    _loadBudgets();
   }
 
   @override
@@ -150,6 +163,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  /// Loads budgets as Budget entities for use with original BudgetTile
+  Future<void> _loadBudgets() async {
+    try {
+      // Retrieve active budgets as Budget entities
+      final budgets = await widget.budgetRepository.getActiveBudgets();
+
+      setState(() {
+        _budgets = budgets;
+        _isBudgetsLoading = false;
+        _budgetsErrorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isBudgetsLoading = false;
+        _budgetsErrorMessage = 'Failed to load budgets: ${e.toString()}';
+      });
+
+      // Show error feedback to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading budgets: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   /// Single handler for account selection
   void _onSelectAccount(int index) {
     setState(() {
@@ -197,6 +239,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               SizedBox(
                 height: layoutData.isCompact ? 110 : 125,
                 child: _buildAccountsSection(),
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                height: 160, // Match the height of BudgetTile
+                child: _buildBudgetsSection(),
               ),
             ],
           ),
@@ -266,6 +313,95 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           AddAccountCard(
             onTap: () {
               // TODO: Navigate to add account page
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBudgetsSection() {
+    if (_isBudgetsLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (_budgetsErrorMessage != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: _colorScheme.error,
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Failed to load budgets',
+              style: _textTheme.bodyMedium?.copyWith(
+                color: _colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: _loadBudgets,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (_budgets.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.pie_chart_outline,
+              color: _colorScheme.onSurfaceVariant,
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'No budgets yet',
+              style: _textTheme.bodyMedium?.copyWith(
+                color: _colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextButton(
+              onPressed: () {
+                // TODO: Navigate to add budget page
+              },
+              child: const Text('Create Budget'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
+      child: Row(
+        children: [
+          // Original BudgetTile widgets with fixed width for horizontal scrolling
+          ..._budgets.map((budget) {
+            return SizedBox(
+              width: 280, // Fixed width for horizontal scrolling
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: BudgetTile(budget: budget),
+              ),
+            );
+          }),
+          // AddBudgetCard at the end
+          AddBudgetCard(
+            onTap: () {
+              // TODO: Navigate to add budget page
             },
           ),
         ],

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../features/accounts/domain/repositories/account_repository.dart';
+import '../../features/budgets/domain/repositories/budget_repository.dart';
+import '../../features/budgets/domain/services/budget_display_service.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
 import '../../features/currencies/domain/repositories/currency_repository.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -40,6 +42,8 @@ class AppRouter {
                 accountRepository: context.read<AccountRepository>(),
                 transactionRepository: context.read<TransactionRepository>(),
                 currencyRepository: context.read<CurrencyRepository>(),
+                budgetRepository: context.read<BudgetRepository>(),
+                budgetDisplayService: context.read<BudgetDisplayService>(),
               ),
               name: state.name,
               key: state.pageKey,

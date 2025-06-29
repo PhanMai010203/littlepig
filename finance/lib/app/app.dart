@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 
 import '../features/accounts/domain/repositories/account_repository.dart';
+import '../features/budgets/domain/repositories/budget_repository.dart';
+import '../features/budgets/domain/services/budget_display_service.dart';
 import '../features/transactions/domain/repositories/transaction_repository.dart';
 import '../features/currencies/domain/repositories/currency_repository.dart';
 import '../core/theme/app_theme.dart';
@@ -19,6 +21,8 @@ class MainAppProvider extends StatelessWidget {
   final AccountRepository accountRepository;
   final TransactionRepository transactionRepository;
   final CurrencyRepository currencyRepository;
+  final BudgetRepository budgetRepository;
+  final BudgetDisplayService budgetDisplayService;
   final NavigationBloc navigationBloc;
   final SettingsBloc settingsBloc;
   final TransactionsBloc transactionsBloc;
@@ -29,6 +33,8 @@ class MainAppProvider extends StatelessWidget {
     required this.accountRepository,
     required this.transactionRepository,
     required this.currencyRepository,
+    required this.budgetRepository,
+    required this.budgetDisplayService,
     required this.navigationBloc,
     required this.settingsBloc,
     required this.transactionsBloc,
@@ -41,6 +47,8 @@ class MainAppProvider extends StatelessWidget {
       accountRepository: accountRepository,
       transactionRepository: transactionRepository,
       currencyRepository: currencyRepository,
+      budgetRepository: budgetRepository,
+      budgetDisplayService: budgetDisplayService,
       navigationBloc: navigationBloc,
       settingsBloc: settingsBloc,
       transactionsBloc: transactionsBloc,
@@ -54,6 +62,8 @@ class MainApp extends StatefulWidget {
   final AccountRepository accountRepository;
   final TransactionRepository transactionRepository;
   final CurrencyRepository currencyRepository;
+  final BudgetRepository budgetRepository;
+  final BudgetDisplayService budgetDisplayService;
   final NavigationBloc navigationBloc;
   final SettingsBloc settingsBloc;
   final TransactionsBloc transactionsBloc;
@@ -64,6 +74,8 @@ class MainApp extends StatefulWidget {
     required this.accountRepository,
     required this.transactionRepository,
     required this.currencyRepository,
+    required this.budgetRepository,
+    required this.budgetDisplayService,
     required this.navigationBloc,
     required this.settingsBloc,
     required this.transactionsBloc,
@@ -102,6 +114,12 @@ class _MainAppState extends State<MainApp> {
         ),
         RepositoryProvider<CurrencyRepository>.value(
           value: widget.currencyRepository,
+        ),
+        RepositoryProvider<BudgetRepository>.value(
+          value: widget.budgetRepository,
+        ),
+        RepositoryProvider<BudgetDisplayService>.value(
+          value: widget.budgetDisplayService,
         ),
       ],
       child: MultiBlocProvider(
