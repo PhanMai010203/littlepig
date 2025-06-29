@@ -129,8 +129,6 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i70.BudgetDisplayServiceImpl());
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
-    gh.lazySingleton<_i888.TransactionDisplayService>(
-        () => _i533.TransactionDisplayServiceImpl());
     gh.lazySingleton<_i665.DatabaseService>(
       () => registerModule.databaseService,
       registerFor: {
@@ -219,6 +217,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
         ));
+    gh.lazySingleton<_i888.TransactionDisplayService>(
+        () => _i533.TransactionDisplayServiceImpl(
+              gh<_i706.AccountRepository>(),
+              gh<_i1056.CurrencyRepository>(),
+            ));
     gh.singleton<_i78.CategoriesBloc>(
         () => _i78.CategoriesBloc(gh<_i266.CategoryRepository>()));
     gh.factory<_i439.TransactionsBloc>(() => _i439.TransactionsBloc(
