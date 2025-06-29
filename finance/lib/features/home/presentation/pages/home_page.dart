@@ -376,10 +376,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           ),
         ),
       ),
-      SliverPadding(
-        padding: horizontalPadding,
-        sliver: _buildTransactionsSection(),
-      ),
+      _buildTransactionsSection(EdgeInsets.symmetric(horizontal: layoutData.isCompact ? 16 : 26)),
     ];
   }
 
@@ -567,7 +564,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildTransactionsSection() {
+  Widget _buildTransactionsSection(EdgeInsetsGeometry horizontalPadding) {
     if (_isTransactionsLoading) {
       return const SliverToBoxAdapter(
         child: Center(
@@ -650,6 +647,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           transactions: transactions,
           categories: categories,
           selectedMonth: DateTime.now(),
+          contentPadding: horizontalPadding,
         ),
         SliverToBoxAdapter(
           child: Align(

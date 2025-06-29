@@ -23,11 +23,13 @@ class TransactionList extends StatelessWidget {
     required this.transactions,
     required this.categories,
     required this.selectedMonth,
+    this.contentPadding,
   });
 
   final List<Transaction> transactions;
   final Map<int, Category> categories;
   final DateTime selectedMonth;
+  final EdgeInsetsGeometry? contentPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -66,13 +68,16 @@ class TransactionList extends StatelessWidget {
         final date = sortedKeys[index];
         final transactionsOnDate = groupedTransactions[date]!;
         
-        return RepaintBoundary(
-          key: ValueKey('transaction_group_${date.millisecondsSinceEpoch}'),
-          child: _TransactionGroupWidget(
-            date: date,
-            transactions: transactionsOnDate,
-            categories: categories,
-            colorScheme: colorScheme, // Pass cached theme
+        return Padding(
+          padding: contentPadding ?? EdgeInsets.zero,
+          child: RepaintBoundary(
+            key: ValueKey('transaction_group_${date.millisecondsSinceEpoch}'),
+            child: _TransactionGroupWidget(
+              date: date,
+              transactions: transactionsOnDate,
+              categories: categories,
+              colorScheme: colorScheme, // Pass cached theme
+            ),
           ),
         );
       },
@@ -114,7 +119,7 @@ class _TransactionGroupWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16.0, top: 16.0, bottom: 8.0),
+          padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
           child: AppText(
             DateFormat.yMMMMd().format(date),
             fontWeight: FontWeight.bold,
@@ -155,9 +160,12 @@ class PaginatedTransactionList extends StatelessWidget {
             return _buildDateHeader(item);
           }
           if (item is TransactionItem) {
-            return TransactionTile(
-              transaction: item.transaction,
-              category: categories[item.transaction.categoryId],
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: TransactionTile(
+                transaction: item.transaction,
+                category: categories[item.transaction.categoryId],
+              ),
             );
           }
           return const SizedBox.shrink();
@@ -273,89 +281,90 @@ class TransactionTile extends StatelessWidget {
             // TODO: Navigate to transaction details
           },
           child: ListTile(
-        leading: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Category circle
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: category?.color.withOpacity(0.15) ??
-                  (isIncome
-                      ? Colors.green.withOpacity(0.1)
-                      : Colors.red.withOpacity(0.1)),
-              child: category != null
-                  ? Text(category!.icon, style: const TextStyle(fontSize: 24))
-                  : Icon(
-                      // Fallback if category is none
-                      isIncome ? Icons.arrow_upward : Icons.arrow_downward,
-                      color: isIncome ? Colors.green : Colors.red,
-                      size: 18,
-                    ),
-            ),
-            const SizedBox(width: 5),
-            // Special button
-            CircleAvatar(
-              radius: 20,
-              child: IconButton(
-                icon: const Icon(Icons.more_horiz),
-                onPressed: () {
-                  // TODO: Handle button press
-                },
-              ),
-            ),
-          ],
-        ),
-        // Text (title and note)
-        title: AppText(transaction.title),
-        // Amount
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Transaction note button
-            if (transaction.note != null && transaction.note!.isNotEmpty) ...[
-              Builder(builder: (context) {
-                return GestureDetector(
-                  onTap: () {
-                    final RenderBox renderBox =
-                        context.findRenderObject() as RenderBox;
-                    final position = renderBox.localToGlobal(Offset.zero);
-                    final size = renderBox.size;
-                    _showNotePopup(context, transaction.note!, position, size);
-                  },
-                  child: SvgPicture.asset(
-                    'assets/icons/icon_note.svg',
-                    width: 20,
-                    height: 20,
-                    colorFilter: ColorFilter.mode(
-                      Theme.of(context).colorScheme.primary,
-                      BlendMode.srcIn,
-                    ),
+            contentPadding: EdgeInsets.zero,
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Category circle
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: category?.color.withOpacity(0.15) ??
+                      (isIncome
+                          ? Colors.green.withOpacity(0.1)
+                          : Colors.red.withOpacity(0.1)),
+                  child: category != null
+                      ? Text(category!.icon, style: const TextStyle(fontSize: 24))
+                      : Icon(
+                          // Fallback if category is none
+                          isIncome ? Icons.arrow_upward : Icons.arrow_downward,
+                          color: isIncome ? Colors.green : Colors.red,
+                          size: 18,
+                        ),
+                ),
+                const SizedBox(width: 5),
+                // Special button
+                CircleAvatar(
+                  radius: 20,
+                  child: IconButton(
+                    icon: const Icon(Icons.more_horiz),
+                    onPressed: () {
+                      // TODO: Handle button press
+                    },
                   ),
-                );
-              }),
-              const SizedBox(width: 4),
-            ],
-            SvgPicture.asset(
-              isIncome
-                  ? 'assets/icons/arrow_up.svg'
-                  : 'assets/icons/arrow_down.svg',
-              width: 14,
-              height: 14,
-              colorFilter: ColorFilter.mode(
-                isIncome ? Colors.green : Colors.red,
-                BlendMode.srcIn,
-              ),
+                ),
+              ],
             ),
-            const SizedBox(width: 4),
-            AppText(
-              '${isIncome ? '+' : ''}${NumberFormat.currency(symbol: '\$').format(amount)}',
-              fontWeight: FontWeight.bold,
-              colorName: isIncome ? 'success' : 'error',
+            // Text (title and note)
+            title: AppText(transaction.title),
+            // Amount
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Transaction note button
+                if (transaction.note != null && transaction.note!.isNotEmpty) ...[
+                  Builder(builder: (context) {
+                    return GestureDetector(
+                      onTap: () {
+                        final RenderBox renderBox =
+                            context.findRenderObject() as RenderBox;
+                        final position = renderBox.localToGlobal(Offset.zero);
+                        final size = renderBox.size;
+                        _showNotePopup(context, transaction.note!, position, size);
+                      },
+                      child: SvgPicture.asset(
+                        'assets/icons/icon_note.svg',
+                        width: 20,
+                        height: 20,
+                        colorFilter: ColorFilter.mode(
+                          Theme.of(context).colorScheme.primary,
+                          BlendMode.srcIn,
+                        ),
+                      ),
+                    );
+                  }),
+                  const SizedBox(width: 4),
+                ],
+                SvgPicture.asset(
+                  isIncome
+                      ? 'assets/icons/arrow_up.svg'
+                      : 'assets/icons/arrow_down.svg',
+                  width: 14,
+                  height: 14,
+                  colorFilter: ColorFilter.mode(
+                    isIncome ? Colors.green : Colors.red,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                AppText(
+                  '${isIncome ? '+' : ''}${NumberFormat.currency(symbol: '\$').format(amount)}',
+                  fontWeight: FontWeight.bold,
+                  colorName: isIncome ? 'success' : 'error',
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-        ),
-      ),
       ),
     );
   }
