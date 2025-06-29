@@ -64,7 +64,7 @@ class BudgetTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: getColor(context, "shadowBox").withValues(alpha: 0.15),
+              color: Colors.black.withValues(alpha: 0.15),
               blurRadius: 30,
               offset: const Offset(0, 0),
             ),
