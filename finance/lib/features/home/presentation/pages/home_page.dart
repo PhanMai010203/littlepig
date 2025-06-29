@@ -29,6 +29,10 @@ import '../../../../shared/widgets/animations/tappable_widget.dart';
 import 'package:finance/features/transactions/presentation/widgets/transaction_list.dart';
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
 import 'package:finance/features/categories/domain/entities/category.dart';
+import '../../../../app/router/app_routes.dart';
+import '../../../../core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../navigation/presentation/bloc/navigation_bloc.dart';
 
 // TransactionFilter enum is now imported from transaction_display_service.dart
 
@@ -654,7 +658,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: () {
-                context.go('/transactions');
+                final navBloc = context.read<NavigationBloc>();
+                final navState = navBloc.state;
+                final index = navState.navigationItems.indexWhere(
+                  (item) => item.routePath == AppRoutes.transactions,
+                );
+
+                if (index != -1) {
+                  navBloc.add(NavigationEvent.navigationIndexChanged(index));
+                  context.go(AppRoutes.transactions);
+                }
               },
               icon: const Icon(Icons.arrow_forward),
               label: Text('home.view_all_transactions'.tr()),
