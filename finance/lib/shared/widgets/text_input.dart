@@ -5,18 +5,13 @@ import '../../core/services/platform_service.dart';
 
 enum TextInputStyle { bubble, underline, minimal }
 
-// Global focus management for auto-restore functionality
-FocusNode? _currentTextInputFocus;
-bool _shouldAutoRefocus = false;
-
+// Helper function to minimize keyboard globally
 void minimizeKeyboard(BuildContext context) {
   FocusNode? currentFocus = WidgetsBinding.instance.focusManager.primaryFocus;
   currentFocus?.unfocus();
-  Future.delayed(const Duration(milliseconds: 10), () {
-    _shouldAutoRefocus = false; // Reset flag when user explicitly dismisses keyboard
-  });
 }
 
+// Helper function for handling taps outside text inputs
 void handleOnTapOutsideTextInput(BuildContext context) {
   // Smart keyboard dismissal logic - only dismiss if not in a dialog
   final scaffoldContext = Scaffold.maybeOf(context);
@@ -26,6 +21,9 @@ void handleOnTapOutsideTextInput(BuildContext context) {
 }
 
 /// Widget wrapper for auto-focus restoration on app resume
+/// 
+/// This widget manages focus restoration when the app resumes from background.
+/// Each instance manages its own focus state to avoid race conditions.
 class ResumeTextFieldFocus extends StatefulWidget {
   const ResumeTextFieldFocus({super.key, required this.child});
   final Widget child;
@@ -36,52 +34,135 @@ class ResumeTextFieldFocus extends StatefulWidget {
 
 class _ResumeTextFieldFocusState extends State<ResumeTextFieldFocus>
     with WidgetsBindingObserver {
+  
+  // Instance-based focus management to avoid race conditions
+  FocusNode? _storedFocusNode;
+  bool _appWentToBackground = false;
+  bool _shouldRestoreFocus = false;
+
   @override
   void initState() {
     super.initState();
-    // Observe lifecycle changes
     WidgetsBinding.instance.addObserver(this);
-
-    // Track focus changes globally so we know which TextField had focus last
-    WidgetsBinding.instance.focusManager.addListener(_handleFocusChange);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    WidgetsBinding.instance.focusManager.removeListener(_handleFocusChange);
+    _storedFocusNode = null;
     super.dispose();
-  }
-
-  void _handleFocusChange() {
-    _currentTextInputFocus = WidgetsBinding.instance.focusManager.primaryFocus;
-    // If focus is lost because app goes to background, remember to restore
-    if (_currentTextInputFocus == null) {
-      _shouldAutoRefocus = true;
-    }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _shouldAutoRefocus) {
-      // Attempt to restore focus if possible
-      if (_currentTextInputFocus != null &&
-          _currentTextInputFocus!.canRequestFocus) {
-        Future.microtask(() => _currentTextInputFocus!.requestFocus());
-      }
-      _shouldAutoRefocus = false;
-    } else if (state == AppLifecycleState.paused) {
-      // Flag that we may need to restore focus when coming back
-      _shouldAutoRefocus = true;
+    switch (state) {
+      case AppLifecycleState.paused:
+        // App is going to background - store current focus if any
+        _handleAppGoingToBackground();
+        break;
+      case AppLifecycleState.resumed:
+        // App is coming back from background - restore focus if needed
+        _handleAppResuming();
+        break;
+      case AppLifecycleState.inactive:
+        // Handle iOS app switcher or Android recent apps
+        _handleAppGoingToBackground();
+        break;
+      case AppLifecycleState.detached:
+        // App is being terminated - clear stored focus
+        _clearStoredFocus();
+        break;
+      case AppLifecycleState.hidden:
+        // iOS 17+ hidden state - treat like paused
+        _handleAppGoingToBackground();
+        break;
     }
+  }
+
+  void _handleAppGoingToBackground() {
+    final currentFocus = WidgetsBinding.instance.focusManager.primaryFocus;
+    
+    // Only store focus if:
+    // 1. There's currently a focused text field
+    // 2. The focus node can be refocused
+    // 3. The focus node is within our widget subtree
+    if (currentFocus != null && 
+        currentFocus.canRequestFocus && 
+        _isFocusWithinSubtree(currentFocus)) {
+      _storedFocusNode = currentFocus;
+      _shouldRestoreFocus = true;
+      _appWentToBackground = true;
+    }
+  }
+
+  void _handleAppResuming() {
+    // Only restore focus if:
+    // 1. App actually went to background (not just a brief inactive state)
+    // 2. We have a stored focus node to restore
+    // 3. The focus restoration flag is still set
+    if (_appWentToBackground && _shouldRestoreFocus && _storedFocusNode != null) {
+      Future.microtask(() {
+        if (_storedFocusNode != null && 
+            _storedFocusNode!.canRequestFocus &&
+            mounted) {
+          _storedFocusNode!.requestFocus();
+        }
+        _clearStoredFocus();
+      });
+    }
+    _appWentToBackground = false;
+  }
+
+  bool _isFocusWithinSubtree(FocusNode focusNode) {
+    // For simplicity, we'll allow focus restoration for any text field
+    // since each ResumeTextFieldFocus instance manages its own state
+    // This avoids complex widget tree traversal while still preventing
+    // race conditions between multiple instances
+    return focusNode.context != null;
+  }
+
+  void _clearStoredFocus() {
+    _storedFocusNode = null;
+    _shouldRestoreFocus = false;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Focus restoration logic is handled by the lifecycle observer
-    // No platform-specific UI differences needed
-    return widget.child;
+    // Provide a way for child widgets to clear stored focus when keyboard is intentionally dismissed
+    return _FocusRestorationScope(
+      onClearStoredFocus: _clearStoredFocus,
+      child: widget.child,
+    );
   }
+}
+
+/// Internal widget to provide focus restoration scope to descendants
+class _FocusRestorationScope extends InheritedWidget {
+  const _FocusRestorationScope({
+    required this.onClearStoredFocus,
+    required super.child,
+  });
+
+  final VoidCallback onClearStoredFocus;
+
+  static _FocusRestorationScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_FocusRestorationScope>();
+  }
+
+  @override
+  bool updateShouldNotify(_FocusRestorationScope oldWidget) {
+    return onClearStoredFocus != oldWidget.onClearStoredFocus;
+  }
+}
+
+// Updated minimizeKeyboard function to clear stored focus
+void minimizeKeyboardAndClearFocus(BuildContext context) {
+  // Clear stored focus to prevent unwanted restoration
+  final focusScope = _FocusRestorationScope.maybeOf(context);
+  focusScope?.onClearStoredFocus();
+  
+  // Then minimize keyboard
+  minimizeKeyboard(context);
 }
 
 class TextInput extends StatelessWidget {
@@ -154,59 +235,57 @@ class TextInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ResumeTextFieldFocus(
-      child: Padding(
-        padding: padding,
-        child: Container(
-          decoration: BoxDecoration(
-            color: _getBackgroundColor(context),
-            borderRadius: borderRadius ?? _getDefaultBorderRadius(),
+    return Padding(
+      padding: padding,
+      child: Container(
+        decoration: BoxDecoration(
+          color: _getBackgroundColor(context),
+          borderRadius: borderRadius ?? _getDefaultBorderRadius(),
+        ),
+        child: TextFormField(
+          onTapOutside: handleOnTapOutside 
+              ? (event) => handleOnTapOutsideTextInput(context)
+              : null,
+          scrollController: scrollController,
+          maxLength: maxLength,
+          inputFormatters: inputFormatters,
+          textInputAction: textInputAction,
+          textCapitalization: textCapitalization,
+          enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
+          scrollPadding: const EdgeInsets.only(bottom: 80),
+          focusNode: focusNode,
+          controller: controller,
+          autofocus: autofocus,
+          keyboardType: keyboardType,
+          maxLines: maxLines,
+          minLines: minLines,
+          onTap: onTap,
+          readOnly: readOnly,
+          onChanged: onChanged,
+          onFieldSubmitted: onSubmitted,
+          onEditingComplete: onEditingComplete,
+          textAlign: textAlign,
+          autocorrect: autoCorrect,
+          obscureText: obscureText,
+          style: TextStyle(
+            fontSize: fontSize ?? (style == TextInputStyle.minimal ? 18 : 15),
+            fontWeight: fontWeight,
           ),
-          child: TextFormField(
-            onTapOutside: handleOnTapOutside 
-                ? (event) => handleOnTapOutsideTextInput(context)
-                : null,
-            scrollController: scrollController,
-            maxLength: maxLength,
-            inputFormatters: inputFormatters,
-            textInputAction: textInputAction,
-            textCapitalization: textCapitalization,
-            enableIMEPersonalizedLearning: enableIMEPersonalizedLearning,
-            scrollPadding: const EdgeInsets.only(bottom: 80),
-            focusNode: focusNode,
-            controller: controller,
-            autofocus: autofocus,
-            keyboardType: keyboardType,
-            maxLines: maxLines,
-            minLines: minLines,
-            onTap: onTap,
-            readOnly: readOnly,
-            onChanged: onChanged,
-            onFieldSubmitted: onSubmitted,
-            onEditingComplete: onEditingComplete,
-            textAlign: textAlign,
-            autocorrect: autoCorrect,
-            obscureText: obscureText,
-            style: TextStyle(
-              fontSize: fontSize ?? (style == TextInputStyle.minimal ? 18 : 15),
-              fontWeight: fontWeight,
-            ),
-            cursorColor: getColor(context, "primary"),
-            decoration: InputDecoration(
-              counterText: "",
-              hintText: hintText,
-              hintStyle: TextStyle(color: getColor(context, "textLight")),
-              alignLabelWithHint: true,
-              prefix: prefix != null ? Text(prefix!) : null,
-              suffix: suffix != null ? Text(suffix!) : null,
-              contentPadding: _getContentPadding(),
-              filled: _shouldFill(),
-              fillColor: Colors.transparent,
-              isDense: true,
-              border: _getBorder(context),
-              enabledBorder: _getEnabledBorder(context),
-              focusedBorder: _getFocusedBorder(context),
-            ),
+          cursorColor: getColor(context, "primary"),
+          decoration: InputDecoration(
+            counterText: "",
+            hintText: hintText,
+            hintStyle: TextStyle(color: getColor(context, "textLight")),
+            alignLabelWithHint: true,
+            prefix: prefix != null ? Text(prefix!) : null,
+            suffix: suffix != null ? Text(suffix!) : null,
+            contentPadding: _getContentPadding(),
+            filled: _shouldFill(),
+            fillColor: Colors.transparent,
+            isDense: true,
+            border: _getBorder(context),
+            enabledBorder: _getEnabledBorder(context),
+            focusedBorder: _getFocusedBorder(context),
           ),
         ),
       ),

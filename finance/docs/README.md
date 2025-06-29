@@ -262,6 +262,7 @@ stateDiagram-v2
 | [UI Animation Framework](UI_ANIMATION_FRAMEWORK.md) | Guide to the app's animation system. **Note: The framework is being migrated from custom widgets to `flutter_animate`.** |
 | [UI Dialogs & Pop-ups](UI_DIALOGS_AND_POPUPS.md) | Dialog, bottom-sheet & modal frameworks. |
 | [UI Patterns & Best Practices](UI_PATTERNS_AND_BEST_PRACTICES.md) | State management with BLoC, error/loading patterns & lifecycle management. |
+| [TextInput & Focus Management](UI_TEXT_INPUT_FOCUS_MANAGEMENT.md) | **🆕 Comprehensive guide to TextInput widget and fixed focus management system.** |
 | [UI Testing & Troubleshooting](UI_TESTING_AND_TROUBLESHOOTING.md) | Widget testing setup, troubleshooting common UI issues & performance tips. |
 | [Language & Internationalization](LANGUAGE.md) | Comprehensive guide to Easy Localization, locale-aware formatting & adding new languages. |
 

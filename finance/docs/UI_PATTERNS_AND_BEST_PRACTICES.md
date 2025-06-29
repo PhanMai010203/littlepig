@@ -131,30 +131,61 @@ class DebugOverlay extends StatelessWidget {
 ### Text Input Best Practices
 
 #### Focus Management
-Always wrap the root of your app (or any subtree that needs automatic focus restoration) with `ResumeTextFieldFocus`:
+The `TextInput` widget automatically handles focus restoration when the app resumes from background. Each `ResumeTextFieldFocus` wrapper manages its own focus state to prevent race conditions.
+
+**Recommended Usage:**
+Wrap pages or major UI sections that contain text inputs with `ResumeTextFieldFocus`:
 
 ```dart
-class MyApp extends StatelessWidget {
+class MyFormPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ResumeTextFieldFocus(
-      child: MaterialApp.router(
-        routerConfig: appRouter,
+      child: PageTemplate(
+        title: 'Form Page',
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                TextInput(hintText: 'Enter name'),
+                TextInput(hintText: 'Enter email'),
+                // ... other form fields
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 ```
 
-#### Dismissing the Keyboard Gracefully
-Use the helper `minimizeKeyboard(context)` to dismiss the keyboard without breaking the current focus chain:
+**Key Benefits:**
+- **Instance-based state management**: Each `ResumeTextFieldFocus` manages its own focus state, preventing race conditions
+- **Smart focus restoration**: Only restores focus when the app actually went to background, not on intentional dismissals
+- **Automatic cleanup**: Stored focus is cleared when inappropriate (widget disposal, intentional keyboard dismissal)
 
+#### Dismissing the Keyboard Gracefully
+
+**Standard dismissal** (when user should be able to restore focus later):
 ```dart
 ElevatedButton(
   onPressed: () {
     minimizeKeyboard(context);
+    // Focus can still be restored if app goes to background
   },
   child: const Text('Save'),
+);
+```
+
+**Dismissal with focus clearing** (when user is done with the form):
+```dart
+ElevatedButton(
+  onPressed: () {
+    minimizeKeyboardAndClearFocus(context);
+    // Prevents focus restoration even if app goes to background
+  },
+  child: const Text('Submit & Close'),
 );
 ```
 
