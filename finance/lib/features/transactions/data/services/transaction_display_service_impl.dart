@@ -13,12 +13,11 @@ import '../../../accounts/domain/entities/account.dart';
 import '../../../currencies/domain/entities/currency.dart';
 
 /// Implementation of the transaction display service
-/// 
+///
 /// This class contains all the business logic for preparing transaction
 /// data for display, following Clean Architecture principles.
 @LazySingleton(as: TransactionDisplayService)
 class TransactionDisplayServiceImpl implements TransactionDisplayService {
-  
   TransactionDisplayServiceImpl(
     this._accountRepository,
     this._currencyRepository,
@@ -34,11 +33,12 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
     BuildContext? context,
   }) async {
     final List<TransactionCardData> cardData = [];
-    
+
     // Prefetch accounts to avoid repeated DB hits
     final accounts = await _accountRepository.getAllAccounts();
     final Map<int, Account> accountById = {
-      for (final acc in accounts) if (acc.id != null) acc.id!: acc,
+      for (final acc in accounts)
+        if (acc.id != null) acc.id!: acc,
     };
 
     // Gather distinct currency codes used by these accounts
@@ -71,7 +71,8 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
       );
       final formattedDate = formatTransactionDate(transaction);
       final amountColor = calculateAmountColor(transaction, context: context);
-      final categoryColor = getCategoryColor(category, isIncome, context: context);
+      final categoryColor =
+          getCategoryColor(category, isIncome, context: context);
       final categoryIcon = getCategoryIcon(category, isIncome);
       final hasNote = transaction.note != null && transaction.note!.isNotEmpty;
       final displayNote = hasNote ? _truncateNote(transaction.note!) : null;
@@ -89,7 +90,7 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
         displayNote: displayNote,
       ));
     }
-    
+
     return cardData;
   }
 
@@ -101,10 +102,11 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
     final now = currentDate ?? DateTime.now();
     final currentMonth = DateTime(now.year, now.month);
     final nextMonth = DateTime(now.year, now.month + 1);
-    
+
     return transactions.where((transaction) {
-      return transaction.date.isAfter(currentMonth.subtract(const Duration(days: 1))) &&
-             transaction.date.isBefore(nextMonth);
+      return transaction.date
+              .isAfter(currentMonth.subtract(const Duration(days: 1))) &&
+          transaction.date.isBefore(nextMonth);
     }).toList();
   }
 
@@ -133,7 +135,8 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
   }
 
   @override
-  String formatTransactionAmount(Transaction transaction, {bool showSign = true}) {
+  String formatTransactionAmount(Transaction transaction,
+      {bool showSign = true}) {
     // Deprecated: Kept for backward compatibility. This method now delegates
     // to `_formatTransactionAmount` with a null currency fallback.
     return _formatTransactionAmount(transaction, showSign: showSign);
@@ -161,11 +164,17 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
     } else {
       // This fallback still uses NumberFormat directly, so handle sign manually
       final sign = showSign ? (transaction.isIncome ? '+' : '-') : '';
-      formattedNumber = '$sign${NumberFormat.currency(symbol: '\
+      // Fallback: use a default USD currency symbol when no specific currency
+      // entity is available. This avoids relying on a Transaction.account
+      // object that no longer exists in the data model.
+      final defaultSymbol =
+          NumberFormat.simpleCurrency(name: 'USD').currencySymbol;
+      formattedNumber =
+          '$sign${NumberFormat.currency(symbol: defaultSymbol, decimalDigits: 2).format(amount.abs())}';
     }
 
     // The sign is now handled by CurrencyFormatter.formatAmount when currency is not null.
-    // For the fallback case, it\'s handled manually above.
+    // For the fallback case, it's handled manually above.
     return formattedNumber;
   }
 
@@ -180,7 +189,7 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
     if (category != null) {
       return category.icon;
     }
-    
+
     // Fallback icons for missing categories
     return isIncome ? '💰' : '💸';
   }
@@ -194,56 +203,7 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
     if (category != null) {
       return category.color.withValues(alpha: 0.15);
     }
-    
-    // Fallback colors for missing categories
-    if (isIncome) {
-      return Colors.green.withValues(alpha: 0.1);
-    } else {
-      return Colors.red.withValues(alpha: 0.1);
-    }
-  }
 
-  /// Helper method to truncate notes for display
-  String _truncateNote(String note, {int maxLength = 50}) {
-    if (note.length <= maxLength) {
-      return note;
-    }
-    return '${note.substring(0, maxLength)}...';
-  }
-}).format(amount.abs())}';
-    }
-
-    // The sign is now handled by CurrencyFormatter.formatAmount when currency is not null.
-    // For the fallback case, it\'s handled manually above.
-    return formattedNumber;
-  }
-
-  @override
-  String formatTransactionDate(Transaction transaction, {String? format}) {
-    final formatter = DateFormat(format ?? 'MMM d');
-    return formatter.format(transaction.date);
-  }
-
-  @override
-  String getCategoryIcon(Category? category, bool isIncome) {
-    if (category != null) {
-      return category.icon;
-    }
-    
-    // Fallback icons for missing categories
-    return isIncome ? '💰' : '💸';
-  }
-
-  @override
-  Color getCategoryColor(
-    Category? category,
-    bool isIncome, {
-    BuildContext? context,
-  }) {
-    if (category != null) {
-      return category.color.withValues(alpha: 0.15);
-    }
-    
     // Fallback colors for missing categories
     if (isIncome) {
       return Colors.green.withValues(alpha: 0.1);

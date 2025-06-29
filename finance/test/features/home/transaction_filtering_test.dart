@@ -2,6 +2,91 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:finance/features/transactions/data/services/transaction_display_service_impl.dart';
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
 import 'package:finance/features/transactions/domain/services/transaction_display_service.dart';
+import 'package:finance/features/accounts/domain/repositories/account_repository.dart';
+import 'package:finance/features/currencies/domain/repositories/currency_repository.dart';
+import 'package:finance/features/accounts/domain/entities/account.dart';
+import 'package:finance/features/currencies/domain/entities/currency.dart';
+import 'package:finance/features/currencies/domain/entities/exchange_rate.dart';
+
+// ---------------------------------------------------------------------------
+// Fake repository implementations for testing purposes
+// ---------------------------------------------------------------------------
+
+class _FakeAccountRepository implements AccountRepository {
+  @override
+  Future<List<Account>> getAllAccounts() async => [];
+
+  @override
+  Future<Account?> getAccountById(int id) async => throw UnimplementedError();
+
+  @override
+  Future<Account?> getAccountBySyncId(String syncId) async => throw UnimplementedError();
+
+  @override
+  Future<Account?> getDefaultAccount() async => throw UnimplementedError();
+
+  @override
+  Future<Account> createAccount(Account account) async => throw UnimplementedError();
+
+  @override
+  Future<Account> updateAccount(Account account) async => throw UnimplementedError();
+
+  @override
+  Future<void> deleteAccount(int id) async => throw UnimplementedError();
+
+  @override
+  Future<void> deleteAllAccounts() async => throw UnimplementedError();
+
+  @override
+  Future<void> updateBalance(int accountId, double amount) async => throw UnimplementedError();
+
+  @override
+  Future<List<Account>> getUnsyncedAccounts() async => throw UnimplementedError();
+
+  @override
+  Future<void> markAsSynced(String syncId, DateTime syncTime) async => throw UnimplementedError();
+
+  @override
+  Future<void> insertOrUpdateFromSync(Account account) async => throw UnimplementedError();
+}
+
+class _FakeCurrencyRepository implements CurrencyRepository {
+  @override
+  Future<List<Currency>> getAllCurrencies() async => throw UnimplementedError();
+
+  @override
+  Future<Currency?> getCurrencyByCode(String code) async => null;
+
+  @override
+  Future<List<Currency>> getPopularCurrencies() async => throw UnimplementedError();
+
+  @override
+  Future<List<Currency>> searchCurrencies(String query) async => throw UnimplementedError();
+
+  @override
+  Future<Map<String, ExchangeRate>> getExchangeRates() async => throw UnimplementedError();
+
+  @override
+  Future<ExchangeRate?> getExchangeRate(String fromCurrency, String toCurrency) async => throw UnimplementedError();
+
+  @override
+  Future<void> setCustomExchangeRate(String fromCurrency, String toCurrency, double rate) async => throw UnimplementedError();
+
+  @override
+  Future<void> removeCustomExchangeRate(String fromCurrency, String toCurrency) async => throw UnimplementedError();
+
+  @override
+  Future<List<ExchangeRate>> getCustomExchangeRates() async => throw UnimplementedError();
+
+  @override
+  Future<bool> refreshExchangeRates() async => throw UnimplementedError();
+
+  @override
+  Future<double> convertAmount({required double amount, required String fromCurrency, required String toCurrency}) async => throw UnimplementedError();
+
+  @override
+  Future<DateTime?> getLastExchangeRateUpdate() async => throw UnimplementedError();
+}
 
 void main() {
   group('Transaction Filtering Tests', () {
@@ -9,7 +94,10 @@ void main() {
     late List<Transaction> testTransactions;
 
     setUp(() {
-      service = TransactionDisplayServiceImpl();
+      service = TransactionDisplayServiceImpl(
+        _FakeAccountRepository(),
+        _FakeCurrencyRepository(),
+      );
       
       // Create test transactions with current month dates
       final now = DateTime.now();
