@@ -44,8 +44,6 @@ import '../../features/categories/data/repositories/category_repository_impl.dar
     as _i894;
 import '../../features/categories/domain/repositories/category_repository.dart'
     as _i266;
-import '../../features/categories/presentation/bloc/categories_bloc.dart'
-    as _i78;
 import '../../features/currencies/data/datasources/currency_local_data_source.dart'
     as _i222;
 import '../../features/currencies/data/datasources/exchange_rate_local_data_source.dart'
@@ -129,6 +127,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i70.BudgetDisplayServiceImpl());
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
+    gh.lazySingleton<_i888.TransactionDisplayService>(
+        () => _i533.TransactionDisplayServiceImpl());
     gh.lazySingleton<_i665.DatabaseService>(
       () => registerModule.databaseService,
       registerFor: {
@@ -217,16 +217,9 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
         ));
-    gh.lazySingleton<_i888.TransactionDisplayService>(
-        () => _i533.TransactionDisplayServiceImpl(
-              gh<_i706.AccountRepository>(),
-              gh<_i1056.CurrencyRepository>(),
-            ));
-    gh.singleton<_i78.CategoriesBloc>(
-        () => _i78.CategoriesBloc(gh<_i266.CategoryRepository>()));
     gh.factory<_i439.TransactionsBloc>(() => _i439.TransactionsBloc(
           gh<_i421.TransactionRepository>(),
-          gh<_i78.CategoriesBloc>(),
+          gh<_i266.CategoryRepository>(),
         ));
     gh.lazySingleton<_i375.BudgetFilterService>(
         () => _i30.BudgetFilterServiceImpl(

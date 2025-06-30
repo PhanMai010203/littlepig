@@ -82,41 +82,6 @@ class BudgetRepositoryImpl implements BudgetRepository {
 The constructor parameter `AppDatabase` will be injected automatically as long
 as `AppDatabase` is also registered (it is, via `RegisterModule`).
 
-### 3-b. CategoryBloc – Eager Singleton Example _(NEW)_
-
-`CategoriesBloc` is the canonical example of an **eager singleton** in the app.  It must be fully initialised before any feature that depends on categories interacts with the DI container.
-
-```dart
-@singleton
-class CategoriesBloc extends Bloc<CategoriesEvent, CategoriesState> {
-  CategoriesBloc(this._categoryRepository) : super(const CategoriesState.initial()) {
-    // eager load
-    add(const CategoriesEvent.loadCategories());
-  }
-}
-```
-
-Why eager?
-
-* **Immediate availability** – `TransactionsBloc` uses the in-memory categories map during its own constructor.
-* **Cache warming** – categories are fetched once, shared across the app, and refreshed via CRUD events.
-* **Performance** – eliminates ~500 ms wait time on first navigation to `TransactionsPage`.
-
-### How to Provide It in UI
-
-```dart
-MultiBlocProvider(
-  providers: [
-    BlocProvider.value(value: getIt<CategoriesBloc>()), // first!
-    // …other blocs
-  ],
-  child: MyApp(),
-);
-```
-
-### Testing Tip
-If your test uses `configureDependenciesWithReset('test')`, the bloc will be registered automatically.  To avoid network calls in unit tests, consider providing a mock `CategoryRepository` in the test environment.
-
 ---
 
 ## 4. Registering 3rd-Party Types – `RegisterModule`

@@ -92,32 +92,6 @@ getTransactionsByAccount_accountId=42
 ```
 so identical queries within the TTL reuse the result.
 
-### 3.3 Month-Specific Cache Keys (Phase 2)
-Phase 2 introduced **server-side month filtering** for `TransactionsPage` via the `getTransactionsByMonth()` repository method.  To keep this fast and memory-efficient we generate cache keys that include **year, month, page and limit** so each month has an independent cache namespace.
-
-```dart
-return cacheRead(
-  'getTransactionsByMonth',
-  () => _fetchByMonth(year, month, page, limit),
-  params: {
-    'year': year,
-    'month': month,
-    'page': page,
-    'limit': limit,
-  },
-  ttl: const Duration(minutes: 3), // Short-lived – transactions change frequently
-);
-```
-This produces deterministic keys such as:
-```
-getTransactionsByMonth_year=2025_month=03_page=0_limit=25
-```
-**Why include page & limit?** Each page is cached separately, and different `limit`s (rare, but possible) will not collide.
-
-> **TTL Recommendation** – 3 minutes strikes a balance between fresh data (in case the user adds/edits a transaction) and performance.  Adjust if your analytics indicate a different optimal window.
-
-**Invalidation** – Any create/update/delete on the `transactions` table calls `invalidateEntityCache('transaction')`, which clears all `getTransactions*` keys, including month-specific ones.  No additional invalidation logic is required.
-
 ---
 
 ## 4. Cache Invalidation

@@ -60,12 +60,10 @@ class CollapsibleAppBarTitle extends StatelessWidget {
     return AnimatedBuilder(
       animation: scrollController,
       builder: (context, child) {
-        final double heightDelta = (expandedHeight - toolbarHeight).abs();
-        // Prevent division-by-zero when expandedHeight == toolbarHeight.
-        final safeDelta = heightDelta == 0 ? 1 : heightDelta;
-
+        // Calculate opacity based on scroll position
         final appBarOpacity = scrollController.hasClients
-            ? (scrollController.offset / safeDelta).clamp(0.0, 1.0)
+            ? (scrollController.offset / (expandedHeight - toolbarHeight))
+                .clamp(0.0, 1.0)
             : 0.0;
 
         return Stack(

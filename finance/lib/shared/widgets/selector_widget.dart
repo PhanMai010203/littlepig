@@ -96,9 +96,7 @@ class _SelectorWidgetState<T> extends State<SelectorWidget<T>>
     final newIndex = _getSelectedIndex();
     if (_selectedIndex != newIndex) {
       _selectedIndex = newIndex;
-      if (_selectedIndex >= 0 && _selectedIndex < _controller.length) {
-        _controller.animateTo(_selectedIndex);
-      }
+      _controller.animateTo(_selectedIndex);
     }
   }
 
@@ -109,10 +107,9 @@ class _SelectorWidgetState<T> extends State<SelectorWidget<T>>
   }
 
   int _getSelectedIndex() {
-    final index = widget.options.indexWhere(
+    return widget.options.indexWhere(
       (option) => option.value == widget.selectedValue,
     );
-    return index == -1 ? 0 : index;
   }
 
   Color _getBackgroundColor() {

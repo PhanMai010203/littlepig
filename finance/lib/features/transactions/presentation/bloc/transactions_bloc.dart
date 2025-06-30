@@ -5,8 +5,7 @@ import 'package:injectable/injectable.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 
 import '../../domain/repositories/transaction_repository.dart';
-import '../../../categories/presentation/bloc/categories_bloc.dart';
-import '../../../categories/presentation/bloc/categories_state.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import '../../domain/entities/transaction.dart';
 import '../../../categories/domain/entities/category.dart';
 import 'transactions_event.dart';
@@ -15,35 +14,17 @@ import 'transactions_state.dart';
 @injectable
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final TransactionRepository _transactionRepository;
-  final CategoriesBloc _categoriesBloc;
-  late final StreamSubscription _categoriesSubscription;
+  final CategoryRepository _categoryRepository;
 
   static const int _pageSize = 25;
   Map<int, Category> _categories = {};
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
+  int _consecutiveEmptyFetches = 0;
 
   TransactionsBloc(
     this._transactionRepository,
-    this._categoriesBloc,
+    this._categoryRepository,
   ) : super(TransactionsInitial()) {
-    // Initialize categories with the current state of CategoriesBloc
-    _categories = _categoriesBloc.state.categories;
-
-    // Subscribe to CategoriesBloc stream to update categories reactively
-    _categoriesSubscription = _categoriesBloc.stream.listen((state) {
-      if (state.hasCategories) {
-        _categories = state.categories;
-        // If we are in a loaded state, emit a new state to rebuild with categories
-        if (this.state is TransactionsLoaded) {
-          final current = this.state as TransactionsLoaded;
-          emit(current.copyWith(categories: _categories));
-        } else if (this.state is TransactionsPaginated) {
-          final current = this.state as TransactionsPaginated;
-          emit(current.copyWith(categories: _categories));
-        }
-      }
-    });
-
     on<LoadAllTransactions>(_onLoadAllTransactions);
     on<LoadTransactionsByAccount>(_onLoadTransactionsByAccount);
     on<LoadTransactionsByCategory>(_onLoadTransactionsByCategory);
@@ -56,12 +37,6 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     on<ChangeSelectedMonth>(_onChangeSelectedMonth);
     on<FetchNextTransactionPage>(_onFetchNextTransactionPage);
     on<RefreshPaginatedTransactions>(_onRefreshPaginatedTransactions);
-  }
-
-  @override
-  Future<void> close() {
-    _categoriesSubscription.cancel();
-    return super.close();
   }
 
   Future<void> _onLoadAllTransactions(
@@ -146,20 +121,11 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   Future<void> _onLoadTransactionsWithCategories(
       LoadTransactionsWithCategories event,
       Emitter<TransactionsState> emit) async {
+    emit(TransactionsLoading());
     try {
-      // Categories are now reactively updated via stream subscription, no need to wait.
-      // if (!_categoriesBloc.state.hasCategories) {
-      //   await _categoriesBloc.stream.firstWhere((state) => state.hasCategories);
-      // }
-
-      // _categories is already updated by the stream listener or initialized.
-      // _categories = _categoriesBloc.state.categories;
-
-      // Phase 3: Emit skeleton loading state with context preserved
-      emit(TransactionsLoadingWithSkeleton(
-        categories: _categories,
-        selectedMonth: _selectedMonth,
-      ));
+      // Load categories first
+      final categories = await _categoryRepository.getAllCategories();
+      _categories = {for (var c in categories) c.id!: c};
 
       // Initialize pagination with empty state
       final initialPagingState = PagingState<int, TransactionListItem>();
@@ -219,6 +185,7 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   void _onChangeSelectedMonth(
       ChangeSelectedMonth event, Emitter<TransactionsState> emit) {
     _selectedMonth = event.selectedMonth;
+    _consecutiveEmptyFetches = 0;
 
     if (state is TransactionsPaginated) {
       final currentState = state as TransactionsPaginated;
@@ -252,16 +219,29 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
         ),
       ));
 
-      // 🆕 Phase 2: Fetch transactions by month directly from database
-      final filteredTransactions = await _transactionRepository.getTransactionsByMonth(
-        year: _selectedMonth.year,
-        month: _selectedMonth.month,
+      // Fetch transactions for the page
+      final newTransactions = await _transactionRepository.getTransactions(
         page: nextPageKey,
         limit: _pageSize,
       );
 
-      // No client-side filtering needed - database handles month filtering
-      final isLastPage = filteredTransactions.length < _pageSize;
+      // Filter transactions by selected month
+      final filteredTransactions = newTransactions.where((t) {
+        return t.date.year == _selectedMonth.year &&
+            t.date.month == _selectedMonth.month;
+      }).toList();
+
+      if (filteredTransactions.isEmpty && newTransactions.isNotEmpty) {
+        _consecutiveEmptyFetches++;
+      } else {
+        _consecutiveEmptyFetches = 0;
+      }
+
+      final isLastPage =
+          newTransactions.length < _pageSize || _consecutiveEmptyFetches > 5;
+      if (isLastPage) {
+        _consecutiveEmptyFetches = 0;
+      }
 
       // Group transactions
       final existingItems =
@@ -331,8 +311,12 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
         final headerIndex = existingItems!
             .indexWhere((item) => item is DateHeaderItem && item.date == date);
         if (headerIndex != -1) {
-          // Header already exists for this date - skip adding duplicate header
-          // This is handled by the `if (date != lastTransactionDate)` check above
+          final oldHeader = existingItems[headerIndex] as DateHeaderItem;
+          final newTotal = oldHeader.totalAmount + totalAmount;
+          // This is tricky because PagingState is immutable.
+          // A better approach is to not have header in item list but build it in UI.
+          // For now, let's stick to the logic that may produce multiple headers for same date if pages are small.
+          // The logic to avoid double headers is already there: `if (date != lastTransactionDate)`
         }
       }
       newItems.addAll(transactionsOnDate.map((t) => TransactionItem(t)));

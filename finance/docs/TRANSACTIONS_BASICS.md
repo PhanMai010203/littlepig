@@ -49,28 +49,6 @@ final dateRangeTransactions = await transactionRepository.getTransactionsByDateR
 );
 ```
 
-### Get Transactions by Month (Paginated & Cached)
-```dart
-// Fetch March 2025 transactions – page 0 (first 25 items)
-final marchTransactions = await transactionRepository.getTransactionsByMonth(
-  year: 2025,
-  month: 3,   // 1 = January … 12 = December
-  page: 0,    // Zero-based page index
-  limit: 25,  // Page size
-);
-
-// Fetch the next page
-final moreMarch = await transactionRepository.getTransactionsByMonth(
-  year: 2025,
-  month: 3,
-  page: 1,
-  limit: 25,
-);
-```
-The method performs **server-side filtering** at the SQL level and returns only the rows that fall within the given month boundary. Results are automatically cached for **3 minutes** using month-specific cache keys (e.g. `getTransactionsByMonth_2025_03_page_0_limit_25`).
-
-> **Tip:** Always start with `page = 0`; stop paging when the returned list length is less than `limit`.
-
 ### Get Specific Transaction
 ```dart
 // Get transaction by ID
@@ -228,6 +206,4 @@ print('Updated: ${transaction.updatedAt}');
 print('Category ID: ${transaction.categoryId}');
 print('Account ID: ${transaction.accountId}');
 print('Sync ID: ${transaction.syncId}');
-
-// For currency formatting, see the Currency Management guide.
 ``` 

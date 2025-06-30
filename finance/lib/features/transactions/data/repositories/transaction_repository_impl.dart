@@ -55,36 +55,6 @@ class TransactionRepositoryImpl
   }
 
   @override
-  Future<List<Transaction>> getTransactionsByMonth({
-    required int year,
-    required int month,
-    required int page,
-    required int limit,
-  }) async {
-    final offset = page * limit;
-
-    return cacheRead(
-      'getTransactionsByMonth',
-      () async {
-        // Create month start and end boundaries for precise filtering
-        final monthStart = DateTime(year, month, 1);
-        final monthEnd = DateTime(year, month + 1, 1).subtract(const Duration(microseconds: 1));
-        
-        final query = _database.select(_database.transactionsTable)
-          ..where((t) => t.date.isBetweenValues(monthStart, monthEnd))
-          ..orderBy([
-            (t) => OrderingTerm.desc(t.date)
-          ]) // Order by date descending (newest first)
-          ..limit(limit, offset: offset);
-        final results = await query.get();
-        return results.map(_mapTransactionData).toList();
-      },
-      params: {'year': year, 'month': month, 'page': page, 'limit': limit},
-      ttl: const Duration(minutes: 3), // Cache for 3 minutes with month-specific key
-    );
-  }
-
-  @override
   Future<List<Transaction>> getTransactionsByAccount(int accountId) async {
     return cacheRead(
       'getTransactionsByAccount',

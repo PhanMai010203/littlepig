@@ -9,14 +9,6 @@ abstract class TransactionRepository {
     required int limit,
   });
 
-  // 🆕 Phase 2: Month-optimized transaction loading
-  Future<List<Transaction>> getTransactionsByMonth({
-    required int year,
-    required int month,
-    required int page,
-    required int limit,
-  });
-
   Future<List<Transaction>> getTransactionsByAccount(int accountId);
   Future<List<Transaction>> getTransactionsByCategory(int categoryId);
   Future<List<Transaction>> getTransactionsByDateRange(

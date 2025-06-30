@@ -55,26 +55,15 @@ class BudgetDisplayServiceImpl implements BudgetDisplayService {
 
   Color _pickBudgetColor(Budget budget) {
     // Attempt to derive color from budget.colour if available via reflection
-    String? colourValue;
     try {
-      // Some back-end responses include a `colour` property that isn't part of the
-      // core `Budget` model. Access it dynamically but guard against missing field.
-      colourValue = (budget as dynamic).colour as String?;
-    } on NoSuchMethodError {
-      // `colour` field simply not present – fall back to palette below.
-    }
-
-    if (colourValue != null && colourValue.isNotEmpty) {
-      try {
+      final colourField = budget as dynamic;
+      final colourValue = colourField.colour as String?;
+      if (colourValue != null) {
         return HexColor(colourValue);
-      } catch (e) {
-        // The string exists but is not a valid hex colour. Log and continue.
-        debugPrint(
-          'BudgetDisplayService: Invalid hex colour "$colourValue" for budget "${budget.name}" – $e',
-        );
       }
+    } catch (_) {
+      // Ignore if field not present
     }
-
     final palette = getSelectableColors();
     return palette[budget.name.hashCode.abs() % palette.length];
   }

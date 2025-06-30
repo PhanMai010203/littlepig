@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:flutter/foundation.dart';
 
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -23,32 +22,16 @@ class BudgetTile extends StatelessWidget {
   final Budget budget;
 
   Color _pickColor(BuildContext context) {
-    // Attempt to derive a color from an optional `colour` field.
-    // 1. Access the field **safely** via `dynamic` so missing fields don't crash the app.
-    // 2. Convert the hex string to a `Color` _only_ if it parses correctly.
-    // 3. Log formatting errors for easier debugging instead of silently swallowing them.
-
-    String? colourValue;
+    // Attempt to derive color from budget.colour if available via reflection
     try {
-      // Some back-end responses include a `colour` property that isn't part of the
-      // core `Budget` model. Access it dynamically but guard against missing field.
-      colourValue = (budget as dynamic).colour as String?;
-    } on NoSuchMethodError {
-      // `colour` field simply not present – fall back to palette below.
-    }
-
-    if (colourValue != null && colourValue.isNotEmpty) {
-      try {
+      final colourField = budget as dynamic;
+      final colourValue = colourField.colour as String?;
+      if (colourValue != null) {
         return HexColor(colourValue);
-      } catch (e) {
-        // The string exists but is not a valid hex colour. Log and continue.
-        debugPrint(
-          'BudgetTile: Invalid hex colour "$colourValue" for budget "${budget.name}" – $e',
-        );
       }
+    } catch (_) {
+      // Ignore if field not present
     }
-
-    // Fallback: use a deterministic colour from the shared palette.
     final palette = getSelectableColors();
     return palette[budget.name.hashCode.abs() % palette.length];
   }
