@@ -1330,6 +1330,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  sliding_sheet:
+    dependency: "direct main"
+    description:
+      path: "packages/sliding_sheet-0.5.2-modified"
+      relative: true
+    source: path
+    version: "0.5.2"
   sliver_tools:
     dependency: transitive
     description:

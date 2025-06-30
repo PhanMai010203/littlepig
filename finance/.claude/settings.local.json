@@ -17,7 +17,8 @@
       "Bash(flutter run:*)",
       "Bash(mkdir:*)",
       "Bash(jq:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(flutter pub:*)"
     ],
     "deny": []
   }
