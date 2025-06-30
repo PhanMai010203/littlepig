@@ -16,6 +16,7 @@ import 'features/accounts/domain/repositories/account_repository.dart';
 import 'features/categories/domain/repositories/category_repository.dart';
 import 'features/transactions/domain/repositories/transaction_repository.dart';
 import 'features/budgets/domain/repositories/budget_repository.dart';
+import 'features/budgets/domain/services/budget_display_service.dart';
 import 'features/currencies/domain/repositories/currency_repository.dart';
 import 'features/budgets/presentation/bloc/budgets_bloc.dart';
 import 'features/navigation/presentation/bloc/navigation_bloc.dart';
@@ -92,6 +93,8 @@ void main() async {
             accountRepository: getIt<AccountRepository>(),
             transactionRepository: getIt<TransactionRepository>(),
             currencyRepository: getIt<CurrencyRepository>(),
+            budgetRepository: getIt<BudgetRepository>(),
+            budgetDisplayService: getIt<BudgetDisplayService>(),
             navigationBloc: getIt<NavigationBloc>(),
             settingsBloc: getIt<SettingsBloc>(),
             transactionsBloc: getIt<TransactionsBloc>(),

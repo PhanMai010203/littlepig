@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../shared/widgets/animations/animated_scale_opacity.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
+import '../../../../shared/utils/responsive_layout_builder.dart';
 
 class MonthSelector extends StatefulWidget {
   const MonthSelector({
@@ -128,7 +129,7 @@ class _MonthSelectorState extends State<MonthSelector> {
 
     if (selectedIndex == -1) return;
 
-    final screenWidth = MediaQuery.of(context).size.width;
+    final screenWidth = CachedMediaQueryData.get(context, cacheKey: 'month_selector').size.width;
     const itemWidth = 80.0;
     final targetOffset =
         (selectedIndex * itemWidth) - (screenWidth / 2) + (itemWidth / 2);

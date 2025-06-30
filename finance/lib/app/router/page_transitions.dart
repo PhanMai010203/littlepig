@@ -146,6 +146,134 @@ class AppPageTransitions {
     );
   }
 
+  /// Modal slide transition - ideal for fullscreen dialogs and bottom sheets
+  /// Features: subtle slide from bottom with staggered fade effect
+  static Page<T> modalSlideTransitionPage<T extends Object?>({
+    required Widget child,
+    String? name,
+    Object? arguments,
+    LocalKey? key,
+    bool fullscreenDialog = true,
+  }) {
+    return CustomTransitionPage<T>(
+      key: key,
+      child: child,
+      name: name,
+      arguments: arguments,
+      fullscreenDialog: fullscreenDialog,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final slideAnimation = Tween<Offset>(
+          begin: const Offset(0.0, 0.3),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: AnimationUtils.getCurve(Curves.easeOutCubic),
+        ));
+
+        final fadeAnimation = CurvedAnimation(
+          parent: animation,
+          curve: const Interval(0.0, 0.7),
+        );
+
+        return SlideTransition(
+          position: slideAnimation,
+          child: FadeTransition(
+            opacity: fadeAnimation,
+            child: child,
+          ),
+        );
+      },
+      transitionDuration: AnimationUtils.getDuration(
+        const Duration(milliseconds: 300),
+      ),
+      reverseTransitionDuration: AnimationUtils.getDuration(
+        const Duration(milliseconds: 125),
+      ),
+    );
+  }
+
+  /// Subtle slide transition - gentle slide with fade for elegant page changes
+  /// Features: small slide offset (5% of screen) with fade
+  static Page<T> subtleSlideTransitionPage<T extends Object?>({
+    required Widget child,
+    String? name,
+    Object? arguments,
+    LocalKey? key,
+    SlideDirection direction = SlideDirection.fromBottom,
+    double slideOffset = 0.05,
+  }) {
+    return CustomTransitionPage<T>(
+      key: key,
+      child: child,
+      name: name,
+      arguments: arguments,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final slideAnimation = Tween<Offset>(
+          begin: _getSubtleSlideOffset(direction, slideOffset),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: AnimationUtils.getCurve(Curves.easeOut),
+        ));
+
+        return SlideTransition(
+          position: slideAnimation,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+      transitionDuration: AnimationUtils.getDuration(
+        const Duration(milliseconds: 250),
+      ),
+      reverseTransitionDuration: AnimationUtils.getDuration(
+        const Duration(milliseconds: 200),
+      ),
+    );
+  }
+
+  /// Horizontal slide transition - optimized for tab-like navigation
+  /// Features: smooth horizontal slide with fade, reduced distance for fluid feel
+  static Page<T> horizontalSlideTransitionPage<T extends Object?>({
+    required Widget child,
+    String? name,
+    Object? arguments,
+    LocalKey? key,
+    bool fromRight = true,
+    double slideDistance = 0.3,
+  }) {
+    return CustomTransitionPage<T>(
+      key: key,
+      child: child,
+      name: name,
+      arguments: arguments,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final slideAnimation = Tween<Offset>(
+          begin: Offset(fromRight ? slideDistance : -slideDistance, 0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: AnimationUtils.getCurve(Curves.easeOutCubic),
+        ));
+
+        return SlideTransition(
+          position: slideAnimation,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        );
+      },
+      transitionDuration: AnimationUtils.getDuration(
+        const Duration(milliseconds: 275),
+      ),
+      reverseTransitionDuration: AnimationUtils.getDuration(
+        const Duration(milliseconds: 200),
+      ),
+    );
+  }
+
   /// No transition page (for shell routes and performance)
   static Page<T> noTransitionPage<T extends Object?>({
     required Widget child,
@@ -227,6 +355,20 @@ class AppPageTransitions {
         return const Offset(0.0, 1.0);
     }
   }
+
+  /// Get subtle slide offset based on direction and offset amount
+  static Offset _getSubtleSlideOffset(SlideDirection direction, double offset) {
+    switch (direction) {
+      case SlideDirection.fromLeft:
+        return Offset(-offset, 0.0);
+      case SlideDirection.fromRight:
+        return Offset(offset, 0.0);
+      case SlideDirection.fromTop:
+        return Offset(0.0, -offset);
+      case SlideDirection.fromBottom:
+        return Offset(0.0, offset);
+    }
+  }
 }
 
 /// Slide direction for page transitions
@@ -282,6 +424,58 @@ extension PageTransitionExtension on Widget {
       arguments: arguments,
       key: key,
       alignment: alignment,
+    );
+  }
+
+  /// Wrap this widget in a modal slide transition page
+  Page<T> modalSlideTransition<T extends Object?>({
+    String? name,
+    Object? arguments,
+    LocalKey? key,
+    bool fullscreenDialog = true,
+  }) {
+    return AppPageTransitions.modalSlideTransitionPage<T>(
+      child: this,
+      name: name,
+      arguments: arguments,
+      key: key,
+      fullscreenDialog: fullscreenDialog,
+    );
+  }
+
+  /// Wrap this widget in a subtle slide transition page
+  Page<T> subtleSlideTransition<T extends Object?>({
+    String? name,
+    Object? arguments,
+    LocalKey? key,
+    SlideDirection direction = SlideDirection.fromBottom,
+    double slideOffset = 0.05,
+  }) {
+    return AppPageTransitions.subtleSlideTransitionPage<T>(
+      child: this,
+      name: name,
+      arguments: arguments,
+      key: key,
+      direction: direction,
+      slideOffset: slideOffset,
+    );
+  }
+
+  /// Wrap this widget in a horizontal slide transition page
+  Page<T> horizontalSlideTransition<T extends Object?>({
+    String? name,
+    Object? arguments,
+    LocalKey? key,
+    bool fromRight = true,
+    double slideDistance = 0.3,
+  }) {
+    return AppPageTransitions.horizontalSlideTransitionPage<T>(
+      child: this,
+      name: name,
+      arguments: arguments,
+      key: key,
+      fromRight: fromRight,
+      slideDistance: slideDistance,
     );
   }
 

@@ -35,6 +35,55 @@ class MyFeaturePage extends StatelessWidget {
 }
 ```
 
+### Platform-Aware Theming
+
+#### Material Design Touch Feedback
+The app uses platform-aware splash effects to provide appropriate user feedback:
+
+- **Android**: Full Material Design ripple effects for familiar touch feedback
+- **iOS**: No splash effects to match iOS design language expectations
+
+This is automatically handled by the app theme, but when creating custom components, use this pattern:
+
+```dart
+import 'package:flutter/foundation.dart';
+
+// Get platform-appropriate splash factory
+InteractiveInkFeatureFactory get _platformSplashFactory {
+  if (defaultTargetPlatform == TargetPlatform.iOS) {
+    return NoSplash.splashFactory;
+  }
+  return InkRipple.splashFactory; // Material Design default
+}
+
+// Use in custom button components
+Material(
+  child: InkWell(
+    splashFactory: _platformSplashFactory,
+    onTap: onPressed,
+    child: child,
+  ),
+)
+```
+
+#### Theme Contrast Best Practices
+When creating components with opacity/transparency that work across light and dark themes:
+
+```dart
+// ✅ Good: Different alpha values for proper contrast
+final optimizedColor = brightness == Brightness.light
+    ? baseColor.withValues(alpha: 0.20) // Light theme: lower alpha
+    : baseColor.withValues(alpha: 0.35); // Dark theme: higher alpha
+
+// ❌ Bad: Same alpha value for both themes
+final poorColor = baseColor.withValues(alpha: 0.20); // Lacks contrast in dark theme
+```
+
+**Rationale:**
+- Light themes need lower alpha values for visual contrast against bright backgrounds
+- Dark themes need higher alpha values for visibility against dark backgrounds
+- Different blend modes may also be needed (`BlendMode.multiply` vs `BlendMode.screen`)
+
 ### Error Handling
 
 ```dart
@@ -126,4 +175,77 @@ class DebugOverlay extends StatelessWidget {
     );
   }
 }
+```
+
+### Text Input Best Practices
+
+#### Focus Management
+The `TextInput` widget automatically handles focus restoration when the app resumes from background. Each `ResumeTextFieldFocus` wrapper manages its own focus state to prevent race conditions.
+
+**Recommended Usage:**
+Wrap pages or major UI sections that contain text inputs with `ResumeTextFieldFocus`:
+
+```dart
+class MyFormPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ResumeTextFieldFocus(
+      child: PageTemplate(
+        title: 'Form Page',
+        slivers: [
+          SliverToBoxAdapter(
+            child: Column(
+              children: [
+                TextInput(hintText: 'Enter name'),
+                TextInput(hintText: 'Enter email'),
+                // ... other form fields
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+**Key Benefits:**
+- **Instance-based state management**: Each `ResumeTextFieldFocus` manages its own focus state, preventing race conditions
+- **Smart focus restoration**: Only restores focus when the app actually went to background, not on intentional dismissals
+- **Automatic cleanup**: Stored focus is cleared when inappropriate (widget disposal, intentional keyboard dismissal)
+
+#### Dismissing the Keyboard Gracefully
+
+**Standard dismissal** (when user should be able to restore focus later):
+```dart
+ElevatedButton(
+  onPressed: () {
+    minimizeKeyboard(context);
+    // Focus can still be restored if app goes to background
+  },
+  child: const Text('Save'),
+);
+```
+
+**Dismissal with focus clearing** (when user is done with the form):
+```dart
+ElevatedButton(
+  onPressed: () {
+    minimizeKeyboardAndClearFocus(context);
+    // Prevents focus restoration even if app goes to background
+  },
+  child: const Text('Submit & Close'),
+);
+```
+
+#### Platform-Specific Interactions
+`TappableWidget` automatically chooses the best feedback for the current platform. Whenever possible use the `.tappable()` extension instead of wrapping `GestureDetector` manually:
+
+```dart
+Container(
+  padding: const EdgeInsets.all(16),
+  child: const Icon(Icons.settings),
+).tappable(
+  onTap: _openSettings,
+);
 ``` 

@@ -109,4 +109,41 @@ void _showOptionsSheet(BuildContext context) {
     }
   });
 }
-``` 
+```
+
+### Snapping Bottom Sheets (Sliding Sheet-like)
+
+```dart
+BottomSheetService.showCustomBottomSheet(
+  context,
+  myContent,
+  snapSizes: [0.3, 0.6, 0.9],
+  initialSize: 0.3,
+  resizeForKeyboard: true,
+  fullSnap: false,
+  title: "Transaction Details",
+);
+```
+
+Key points:
+1. Pass multiple `snapSizes` to enable smart snapping via `DraggableScrollableSheet`.
+2. `resizeForKeyboard` automatically shifts the sheet when the soft-keyboard appears.
+3. When `fullSnap` is `true`, the sheet will always end in the fully-expanded state.
+4. Theme context preservation is handled automatically when `useParentContextForTheme` (default) is `true`.
+
+### Keyboard-Aware Sheets
+
+The service automatically detects keyboard appearance and tweaks snap points to avoid awkward over-scroll.
+
+```dart
+// Compact snaps when keyboard is hidden – larger when it appears
+BottomSheetService.showCustomBottomSheet(
+  context,
+  child,
+  popupWithKeyboard: false,
+);
+```
+
+### Theme Context Preservation
+
+If the calling widget is using an overridden `Theme`, set `useParentContextForTheme: true` (default) so the sheet inherits the same colors and typography. 

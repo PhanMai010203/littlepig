@@ -154,6 +154,7 @@ class _TransactionsView extends StatelessWidget {
                     transactions: state.transactions,
                     categories: state.categories,
                     selectedMonth: state.selectedMonth,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
                 ],
               );

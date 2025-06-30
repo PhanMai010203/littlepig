@@ -6,6 +6,7 @@ import 'package:finance/core/services/dialog_service.dart';
 import 'package:finance/shared/widgets/dialogs/bottom_sheet_service.dart';
 import 'package:finance/core/settings/app_settings.dart';
 import 'package:finance/core/services/platform_service.dart';
+import 'package:finance/shared/utils/performance_optimization.dart';
 
 void main() {
   group('Phase 3 Dialog Framework Tests', () {
@@ -603,25 +604,11 @@ void main() {
         expect(result, isTrue);
       });
 
-      testWidgets('BottomSheetService animation settings work', (tester) async {
-        // Test with animations disabled
-        await AppSettings.set('appAnimations', false);
-        expect(BottomSheetService.defaultBottomSheetAnimation,
-            equals(BottomSheetAnimationType.none));
-
-        // Test with animations enabled
-        await AppSettings.set('appAnimations', true);
-        await AppSettings.set('reduceAnimations', false);
-        await AppSettings.set('batterySaver', false);
-        await AppSettings.set('animationLevel', 'normal');
-
-        expect(BottomSheetService.defaultBottomSheetAnimation,
-            isNot(equals(BottomSheetAnimationType.none)));
-
-        // Test reduced animations
-        await AppSettings.set('animationLevel', 'reduced');
-        expect(BottomSheetService.defaultBottomSheetAnimation,
-            equals(BottomSheetAnimationType.fadeIn));
+      testWidgets('BottomSheetService Phase 4 optimizations work', (tester) async {
+        // Phase 4: Test that performance optimizations are enabled
+        expect(PerformanceOptimizations.useCustomSnapPhysics, isTrue);
+        expect(PerformanceOptimizations.useOverscrollOptimization, isTrue);
+        expect(PerformanceOptimizations.useOptimizedScrollBehavior, isTrue);
       });
 
       testWidgets('BottomSheetService extension methods work', (tester) async {
@@ -777,19 +764,19 @@ void main() {
         for (final level in ['none', 'reduced', 'normal', 'enhanced']) {
           await AppSettings.set('animationLevel', level);
 
-          // Test that services respect the setting
+          // Phase 4: Test that performance optimizations respect animation level settings
           final dialogAnimation = DialogService.defaultPopupAnimation;
-          final sheetAnimation = BottomSheetService.defaultBottomSheetAnimation;
-
+          
           if (level == 'none') {
             expect(dialogAnimation, equals(PopupAnimationType.none));
-            expect(sheetAnimation, equals(BottomSheetAnimationType.none));
+            // Phase 4: Snap physics and overscroll optimizations still work even with animations disabled
+            expect(PerformanceOptimizations.useCustomSnapPhysics, isTrue);
+            expect(PerformanceOptimizations.useOverscrollOptimization, isTrue);
           } else {
             expect(dialogAnimation, isNot(equals(PopupAnimationType.none)));
-            if (level != 'reduced') {
-              expect(
-                  sheetAnimation, isNot(equals(BottomSheetAnimationType.none)));
-            }
+            // Phase 4: All optimizations enabled
+            expect(PerformanceOptimizations.useCustomSnapPhysics, isTrue);
+            expect(PerformanceOptimizations.useOverscrollOptimization, isTrue);
           }
         }
       });

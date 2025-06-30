@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 // Phase 5 imports
 import 'animations/fade_in.dart';
 import 'animations/animation_utils.dart';
+import 'collapsible_app_bar_title.dart';
 
 const double _kDefaultExpandedHeight = 120.0;
 const double _kDefaultToolbarHeight = 60.0;
@@ -17,8 +18,10 @@ class PageTemplate extends StatefulWidget {
   const PageTemplate({
     this.title,
     required this.slivers,
+    this.scrollController,
     this.actions,
     this.floatingActionButton,
+    this.floatingActionButtonLocation,
     this.backgroundColor,
     this.showBackButton = true,
     this.onBackPressed,
@@ -31,8 +34,10 @@ class PageTemplate extends StatefulWidget {
 
   final String? title;
   final List<Widget> slivers;
+  final ScrollController? scrollController;
   final List<Widget>? actions;
   final Widget? floatingActionButton;
+  final FloatingActionButtonLocation? floatingActionButtonLocation;
   final Color? backgroundColor;
   final bool showBackButton;
   final VoidCallback? onBackPressed;
@@ -46,11 +51,22 @@ class PageTemplate extends StatefulWidget {
 }
 
 class _PageTemplateState extends State<PageTemplate> {
-  final ScrollController _scrollController = ScrollController();
+  late final ScrollController _scrollController;
+  bool _isExternalController = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isExternalController = widget.scrollController != null;
+    _scrollController = widget.scrollController ?? ScrollController();
+  }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    // Only dispose the controller if it was created internally
+    if (!_isExternalController) {
+      _scrollController.dispose();
+    }
     super.dispose();
   }
 
@@ -65,66 +81,48 @@ class _PageTemplateState extends State<PageTemplate> {
     return Scaffold(
       backgroundColor: widget.backgroundColor ?? surfaceColor,
       floatingActionButton: widget.floatingActionButton,
-      body: FadeIn(
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            if (widget.title != null)
-              AnimatedBuilder(
-                animation: _scrollController,
-                builder: (context, child) {
-                  final appBarOpacity = _scrollController.hasClients
-                      ? (_scrollController.offset /
-                              (widget.expandedHeight - widget.toolbarHeight))
-                          .clamp(0.0, 1.0)
-                      : 0.0;
+      floatingActionButtonLocation: widget.floatingActionButtonLocation,
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          if (widget.title != null)
+            AnimatedBuilder(
+              animation: _scrollController,
+              builder: (context, child) {
+                final appBarOpacity = _scrollController.hasClients
+                    ? (_scrollController.offset /
+                            (widget.expandedHeight - widget.toolbarHeight))
+                        .clamp(0.0, 1.0)
+                    : 0.0;
 
-                  return SliverAppBar(
-                    pinned: true,
+                return SliverAppBar(
+                  pinned: true,
+                  expandedHeight: widget.expandedHeight,
+                  toolbarHeight: widget.toolbarHeight,
+                  actions: widget.actions,
+                  backgroundColor: Colors.transparent,
+                  elevation: 0,
+                  scrolledUnderElevation: appBarOpacity > 0.95 ? 1 : 0,
+                  leading: widget.showBackButton && Navigator.canPop(context)
+                      ? IconButton(
+                          icon: const Icon(Icons.arrow_back),
+                          onPressed: widget.onBackPressed ??
+                              () => Navigator.pop(context),
+                        )
+                      : null,
+                  flexibleSpace: CollapsibleAppBarTitle(
+                    title: widget.title!, // safe to use ! because of the check
+                    scrollController: _scrollController,
                     expandedHeight: widget.expandedHeight,
                     toolbarHeight: widget.toolbarHeight,
-                    actions: widget.actions,
-                    backgroundColor: Colors.transparent,
-                    elevation: 0,
-                    scrolledUnderElevation: appBarOpacity > 0.95 ? 1 : 0,
-                    leading: widget.showBackButton && Navigator.canPop(context)
-                        ? IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed: widget.onBackPressed ??
-                                () => Navigator.pop(context),
-                          )
-                        : null,
-                    flexibleSpace: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        // Background that fades in/out with scroll
-                        Container(
-                            color: primaryColor
-                                .withAlpha((255 * appBarOpacity).toInt())),
-                        // Title & collapse handling
-                        FlexibleSpaceBar(
-                          titlePadding: const EdgeInsets.symmetric(
-                            horizontal: 16.0,
-                            vertical: 8.0,
-                          ),
-                          centerTitle: false,
-                          title: Text(
-                            widget.title!, // safe to use ! because of the check
-                            style: widget.titleTextStyle ??
-                                theme.textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: onSurfaceColor,
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-            ...widget.slivers,
-          ],
-        ),
+                    titleTextStyle: widget.titleTextStyle,
+                    backgroundColor: primaryColor,
+                  ),
+                );
+              },
+            ),
+          ...widget.slivers,
+        ],
       ),
     );
   }

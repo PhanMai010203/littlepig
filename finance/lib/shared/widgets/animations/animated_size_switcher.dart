@@ -7,6 +7,7 @@ class AnimatedSizeSwitcher extends StatefulWidget {
   const AnimatedSizeSwitcher({
     required this.child,
     this.duration = const Duration(milliseconds: 300),
+    this.enabled = true,
     this.curve = Curves.easeInOut,
     this.reverseCurve,
     this.alignment = Alignment.center,
@@ -20,6 +21,7 @@ class AnimatedSizeSwitcher extends StatefulWidget {
   final Curve? reverseCurve;
   final Alignment alignment;
   final Clip clipBehavior;
+  final bool enabled;
 
   @override
   State<AnimatedSizeSwitcher> createState() => _AnimatedSizeSwitcherState();
@@ -60,7 +62,7 @@ class _AnimatedSizeSwitcherState extends State<AnimatedSizeSwitcher>
   @override
   Widget build(BuildContext context) {
     // Skip animation wrapper if animations are disabled
-    if (!AnimationUtils.shouldAnimate()) {
+    if (!widget.enabled || !AnimationUtils.shouldAnimate()) {
       return widget.child;
     }
 
@@ -105,6 +107,7 @@ extension AnimatedSizeSwitcherExtension on Widget {
     Curve? reverseCurve,
     Alignment alignment = Alignment.center,
     Clip clipBehavior = Clip.hardEdge,
+    bool enabled = true,
   }) {
     return AnimatedSizeSwitcher(
       duration: duration,
@@ -112,6 +115,7 @@ extension AnimatedSizeSwitcherExtension on Widget {
       reverseCurve: reverseCurve,
       alignment: alignment,
       clipBehavior: clipBehavior,
+      enabled: enabled,
       child: this,
     );
   }

@@ -151,6 +151,14 @@ final manualBudget = Budget(
 context.read<BudgetsBloc>().add(CreateBudget(manualBudget));
 ```
 
+**Example: Navigating to the Create Budget Page**
+To open the dedicated page for creating a new budget, use `GoRouter`:
+
+```dart
+// In your widget, likely on a button press
+context.push(AppRoutes.budgetCreate);
+```
+
 ### 3.4 BudgetsBloc - Business Logic
 The `BudgetsBloc` is the central coordinator. Its key responsibilities include:
 -   Responding to UI events (`BudgetsEvent`).

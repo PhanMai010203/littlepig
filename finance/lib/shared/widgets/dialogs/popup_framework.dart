@@ -4,6 +4,8 @@ import '../animations/fade_in.dart';
 import '../animations/scale_in.dart';
 import '../animations/slide_in.dart';
 import '../animations/animation_utils.dart';
+import '../../utils/responsive_layout_builder.dart';
+import '../../utils/performance_optimization.dart';
 
 /// PopupFramework Widget - Phase 3.1 Implementation
 ///
@@ -245,7 +247,7 @@ class PopupFramework extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(top: isMobile ? 8.0 : 6.0),
               child: customSubtitleWidget ??
-                  _buildSubtitle(context, textTheme, isIOS),
+                  _buildSubtitle(context, textTheme, colorScheme, isIOS),
             ),
         ],
       ),
@@ -343,12 +345,12 @@ class PopupFramework extends StatelessWidget {
     }
   }
 
-  Widget _buildSubtitle(BuildContext context, TextTheme textTheme, bool isIOS) {
+  Widget _buildSubtitle(BuildContext context, TextTheme textTheme, ColorScheme colorScheme, bool isIOS) {
     return Text(
       subtitle!,
       style: subtitleTextStyle ??
           textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            color: colorScheme.onSurfaceVariant,
           ),
       textAlign: isIOS ? TextAlign.center : TextAlign.start,
     );
@@ -414,7 +416,14 @@ class PopupFramework extends StatelessWidget {
   }
 
   BoxConstraints _getDefaultConstraints(BuildContext context, bool isMobile) {
-    final screenSize = MediaQuery.of(context).size;
+    // Phase 2 optimization: Use cached MediaQuery data instead of direct lookup
+    final mediaQuery = CachedMediaQueryData.get(context, cacheKey: 'popup_constraints');
+    final screenSize = mediaQuery.size;
+
+    // Track MediaQuery optimization usage
+    if (PerformanceOptimizations.useMediaQueryCaching) {
+      PerformanceOptimizations.trackMediaQueryOptimization('PopupFramework', 'CachedMediaQueryData');
+    }
 
     if (isMobile) {
       return BoxConstraints(
