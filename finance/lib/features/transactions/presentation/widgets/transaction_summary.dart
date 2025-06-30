@@ -7,7 +7,6 @@ import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transactions_state.dart';
 // Phase 5 imports
-import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Widget that displays transaction summary (income, expenses, net) for a selected month
@@ -27,11 +26,7 @@ class TransactionSummary extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Phase 5: Track component optimization
-    PerformanceOptimizations.trackRenderingOptimization(
-      'TransactionSummary', 
-      'Material+ThemeCaching+CalculationCaching'
-    );
+    // Phase 5: Component optimization tracking removed
 
     final selectedMonthTransactions = transactions.where((t) {
       return t.date.year == selectedMonth.year &&

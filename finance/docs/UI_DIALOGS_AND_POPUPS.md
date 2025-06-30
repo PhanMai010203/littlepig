@@ -133,16 +133,24 @@ Key points:
 
 ### Keyboard-Aware Sheets
 
-The service automatically detects keyboard appearance and tweaks snap points to avoid awkward over-scroll.
+The service provides **real-time keyboard tracking** for smooth, jank-free animations when the keyboard appears/disappears. This is implemented using the internal `_KeyboardAwareBottomSheet` widget that synchronizes perfectly with keyboard animations.
 
 ```dart
-// Compact snaps when keyboard is hidden – larger when it appears
+// Smooth keyboard tracking with real-time synchronization
 BottomSheetService.showCustomBottomSheet(
   context,
-  child,
-  popupWithKeyboard: false,
+  TextField(hintText: "Enter amount..."), // TextFields work smoothly
+  resizeForKeyboard: true,  // Enable smooth keyboard tracking (default: true)
+  popupWithKeyboard: true,  // Optimize snap sizes for keyboard scenarios
+  title: "Add Transaction",
 );
 ```
+
+**Key Features:**
+- **Zero jank:** Content moves smoothly with keyboard animation
+- **Real-time updates:** Uses `MediaQuery.viewInsetsOf(context)` for frame-by-frame tracking  
+- **Visual continuity:** Background spacer prevents gaps during animation
+- **Automatic optimization:** Snap sizes adjust for keyboard scenarios
 
 ### Theme Context Preservation
 

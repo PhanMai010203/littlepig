@@ -1,26 +1,13 @@
-/// Phase 5: Universal List Optimization Extensions
+/// Simplified List Optimization Extensions
 /// 
-/// Provides convenient extension methods for applying Phase 1-4 optimization
-/// patterns to any scrollable widget.
+/// Basic extension methods for performance optimization
 library;
 
 import 'package:flutter/material.dart';
-import 'no_overscroll_behavior.dart';
 
 /// Universal optimization extensions for any widget
 extension OptimizedListExtensions on Widget {
-  /// Apply Phase 4 overscroll optimization
-  Widget withOptimizedScrolling({
-    String? debugLabel,
-    ScrollPhysics? physics,
-  }) {
-    return ScrollConfiguration(
-      behavior: NoOverscrollBehavior(componentName: debugLabel),
-      child: this,
-    );
-  }
-  
-  /// Apply Phase 4 RepaintBoundary for performance isolation
+  /// Apply RepaintBoundary for performance isolation
   Widget withRepaintBoundary({
     String? keyPrefix,
     bool isAnimatedContent = false,
@@ -36,9 +23,9 @@ extension OptimizedListExtensions on Widget {
     );
   }
   
-  /// Apply Phase 4 overscroll optimization (alias for convenience)
+  /// Simplified method - just returns the widget (no-op for now)
   Widget withNoOverscroll() {
-    return withOptimizedScrolling();
+    return this;
   }
 }
 

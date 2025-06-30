@@ -5,7 +5,6 @@ import '../animations/scale_in.dart';
 import '../animations/slide_in.dart';
 import '../animations/animation_utils.dart';
 import '../../utils/responsive_layout_builder.dart';
-import '../../utils/performance_optimization.dart';
 
 /// PopupFramework Widget - Phase 3.1 Implementation
 ///
@@ -420,10 +419,7 @@ class PopupFramework extends StatelessWidget {
     final mediaQuery = CachedMediaQueryData.get(context, cacheKey: 'popup_constraints');
     final screenSize = mediaQuery.size;
 
-    // Track MediaQuery optimization usage
-    if (PerformanceOptimizations.useMediaQueryCaching) {
-      PerformanceOptimizations.trackMediaQueryOptimization('PopupFramework', 'CachedMediaQueryData');
-    }
+    // MediaQuery optimization tracking removed
 
     if (isMobile) {
       return BoxConstraints(

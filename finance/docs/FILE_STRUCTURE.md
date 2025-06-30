@@ -270,10 +270,8 @@ lib/shared/
 │   └── account_currency_extension.dart # Account to currency helpers and formatters
 └── utils/                           # Shared utilities
     ├── currency_formatter.dart       # Currency formatting with locale support
-    ├── performance_optimization.dart # Phase 1, 2, 3 & 4 - Performance monitoring and optimization utilities with physics tracking
-    ├── snap_size_cache.dart          # Phase 2 - Smart LRU cache for bottom sheet snap size calculations
     ├── responsive_layout_builder.dart # Phase 2 - MediaQuery optimization framework with LayoutBuilder patterns
-    └── no_overscroll_behavior.dart   # Phase 4 - Custom scroll behavior to eliminate overscroll jank
+    └── optimized_list_extensions.dart # Simplified list optimization extensions
 ```
 **Summary**: Shared components and utilities that can be used across multiple features, including a comprehensive animation and dialog framework, reusable widgets, and common utilities.
 
