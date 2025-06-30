@@ -535,10 +535,9 @@ class BottomSheetService {
     Widget content,
     EdgeInsets? keyboardPadding,
   ) {
-    return AnimatedContainer(
+    // Simplified: Use Flutter's native keyboard handling instead of custom animations
+    return Padding(
       padding: keyboardPadding ?? MediaQuery.of(context).viewInsets,
-      duration: const Duration(milliseconds: 300), // Match native keyboard timing
-      curve: Curves.easeOutQuart, // More natural keyboard response
       child: content,
     );
   }
@@ -596,22 +595,7 @@ class BottomSheetService {
           effectiveThemeContext = null;
         }
 
-        // Fix over-scroll stretch when keyboard pops up quickly (budget app logic)
-        if (popupWithKeyboard && resizeForKeyboard) {
-          // Improved timing to better sync with Flutter's keyboard animation (300ms)
-          // Use 200ms to trigger size adjustment before keyboard animation completes
-          Future.delayed(const Duration(milliseconds: 200), () {
-            // This helps prevent over-scroll issues when keyboard appears
-            // Only trigger if the sheet is still mounted and visible
-            if (onSizeChanged != null && context.mounted) {
-              // Check if keyboard is actually visible before adjusting
-              final currentKeyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-              if (currentKeyboardHeight > 0) {
-                onSizeChanged(initialSize);
-              }
-            }
-          });
-        }
+        // Removed complex keyboard timing logic - let Flutter handle keyboard animations natively
 
         // Phase 4: Enhanced DraggableScrollableSheet with custom snap physics
         return NotificationListener<DraggableScrollableNotification>(
@@ -635,14 +619,11 @@ class BottomSheetService {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
                 ),
-                // Fixed: Apply keyboard padding when resizeForKeyboard=true, regardless of popupWithKeyboard
-                // This ensures bottom sheets properly avoid the keyboard in all scenarios
+                // Simplified: Use native keyboard avoidance instead of custom animations
                 child: resizeForKeyboard
-                    ? MediaQueryAlternatives.keyboardPadding(
+                    ? Padding(
+                        padding: MediaQuery.of(context).viewInsets,
                         child: content,
-                        animated: true,
-                        duration: const Duration(milliseconds: 300),
-                        curve: Curves.easeOutQuart,
                       )
                     : content,
               );
@@ -720,14 +701,11 @@ class BottomSheetService {
           effectiveThemeContext = null;
         }
 
-        // Fixed: Apply keyboard padding when resizeForKeyboard=true, regardless of popupWithKeyboard
-        // This ensures standard bottom sheets properly avoid the keyboard in all scenarios
+        // Simplified: Use native keyboard avoidance instead of custom animations
         Widget wrappedContent = resizeForKeyboard
-            ? MediaQueryAlternatives.keyboardPadding(
+            ? Padding(
+                padding: MediaQuery.of(context).viewInsets,
                 child: content,
-                animated: true,
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeOutQuart,
               )
             : content;
 
