@@ -1,5 +1,8 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/budget.dart';
+import '../../domain/entities/budget_enums.dart';
+import '../../../accounts/domain/entities/account.dart';
+import '../../../categories/domain/entities/category.dart';
 
 abstract class BudgetsEvent extends Equatable {
   const BudgetsEvent();
@@ -86,4 +89,39 @@ class ExportMultipleBudgets extends BudgetsEvent {
   const ExportMultipleBudgets(this.budgets);
   @override
   List<Object?> get props => [budgets];
+}
+
+// Budget Creation Events
+class BudgetTrackingTypeChanged extends BudgetsEvent {
+  final BudgetTrackingType trackingType;
+  const BudgetTrackingTypeChanged(this.trackingType);
+  @override
+  List<Object?> get props => [trackingType];
+}
+
+class LoadAccountsForBudget extends BudgetsEvent {}
+
+class LoadCategoriesForBudget extends BudgetsEvent {}
+
+class BudgetAccountsSelected extends BudgetsEvent {
+  final List<Account> selectedAccounts;
+  final bool isAllSelected;
+  const BudgetAccountsSelected(this.selectedAccounts, this.isAllSelected);
+  @override
+  List<Object?> get props => [selectedAccounts, isAllSelected];
+}
+
+class BudgetIncludeCategoriesSelected extends BudgetsEvent {
+  final List<Category> selectedCategories;
+  final bool isAllSelected;
+  const BudgetIncludeCategoriesSelected(this.selectedCategories, this.isAllSelected);
+  @override
+  List<Object?> get props => [selectedCategories, isAllSelected];
+}
+
+class BudgetExcludeCategoriesSelected extends BudgetsEvent {
+  final List<Category> selectedCategories;
+  const BudgetExcludeCategoriesSelected(this.selectedCategories);
+  @override
+  List<Object?> get props => [selectedCategories];
 }

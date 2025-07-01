@@ -7,6 +7,8 @@ import '../../domain/repositories/budget_repository.dart';
 import '../../domain/services/budget_update_service.dart';
 import '../../domain/services/budget_filter_service.dart';
 import '../../domain/entities/budget.dart';
+import '../../../accounts/domain/repositories/account_repository.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
 import 'budgets_event.dart';
 import 'budgets_state.dart';
 
@@ -15,6 +17,8 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
   final BudgetRepository _budgetRepository;
   final BudgetUpdateService _budgetUpdateService;
   final BudgetFilterService _budgetFilterService;
+  final AccountRepository _accountRepository;
+  final CategoryRepository _categoryRepository;
 
   StreamSubscription<List<Budget>>? _budgetUpdatesSubscription;
   StreamSubscription<Map<int, double>>? _spentAmountsSubscription;
@@ -23,6 +27,8 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
     this._budgetRepository,
     this._budgetUpdateService,
     this._budgetFilterService,
+    this._accountRepository,
+    this._categoryRepository,
   ) : super(BudgetsInitial()) {
     on<LoadAllBudgets>(_onLoadAllBudgets);
     on<LoadBudgetDetails>(_onLoadBudgetDetails);
@@ -38,6 +44,14 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
     on<RecalculateBudget>(_onRecalculateBudget);
     on<ExportBudgetData>(_onExportBudgetData);
     on<ExportMultipleBudgets>(_onExportMultipleBudgets);
+    
+    // Budget Creation Events
+    on<BudgetTrackingTypeChanged>(_onBudgetTrackingTypeChanged);
+    on<LoadAccountsForBudget>(_onLoadAccountsForBudget);
+    on<LoadCategoriesForBudget>(_onLoadCategoriesForBudget);
+    on<BudgetAccountsSelected>(_onBudgetAccountsSelected);
+    on<BudgetIncludeCategoriesSelected>(_onBudgetIncludeCategoriesSelected);
+    on<BudgetExcludeCategoriesSelected>(_onBudgetExcludeCategoriesSelected);
   }
 
   double _calculateDailyAllowance(Budget budget, double spentAmount) {
@@ -304,6 +318,93 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
         emit(currentState.copyWith(
             isExporting: false, exportStatus: 'Export failed: $e'));
       }
+    }
+  }
+
+  // Budget Creation Event Handlers
+  void _onBudgetTrackingTypeChanged(
+      BudgetTrackingTypeChanged event, Emitter<BudgetsState> emit) {
+    if (state is BudgetCreationState) {
+      final currentState = state as BudgetCreationState;
+      emit(currentState.copyWith(trackingType: event.trackingType));
+    } else {
+      emit(BudgetCreationState(trackingType: event.trackingType));
+    }
+  }
+
+  Future<void> _onLoadAccountsForBudget(
+      LoadAccountsForBudget event, Emitter<BudgetsState> emit) async {
+    BudgetCreationState currentState;
+    if (state is BudgetCreationState) {
+      currentState = state as BudgetCreationState;
+    } else {
+      currentState = const BudgetCreationState();
+    }
+
+    emit(currentState.copyWith(isAccountsLoading: true));
+
+    try {
+      final accounts = await _accountRepository.getAllAccounts();
+      emit(currentState.copyWith(
+        availableAccounts: accounts,
+        isAccountsLoading: false,
+      ));
+    } catch (e) {
+      emit(currentState.copyWith(isAccountsLoading: false));
+    }
+  }
+
+  Future<void> _onLoadCategoriesForBudget(
+      LoadCategoriesForBudget event, Emitter<BudgetsState> emit) async {
+    BudgetCreationState currentState;
+    if (state is BudgetCreationState) {
+      currentState = state as BudgetCreationState;
+    } else {
+      currentState = const BudgetCreationState();
+    }
+
+    emit(currentState.copyWith(isCategoriesLoading: true));
+
+    try {
+      final categories = await _categoryRepository.getExpenseCategories();
+      emit(currentState.copyWith(
+        availableCategories: categories,
+        isCategoriesLoading: false,
+      ));
+    } catch (e) {
+      emit(currentState.copyWith(isCategoriesLoading: false));
+    }
+  }
+
+  void _onBudgetAccountsSelected(
+      BudgetAccountsSelected event, Emitter<BudgetsState> emit) {
+    if (state is BudgetCreationState) {
+      final currentState = state as BudgetCreationState;
+      emit(currentState.copyWith(
+        selectedAccounts: event.selectedAccounts,
+        isAllAccountsSelected: event.isAllSelected,
+      ));
+    }
+  }
+
+  void _onBudgetIncludeCategoriesSelected(
+      BudgetIncludeCategoriesSelected event, Emitter<BudgetsState> emit) {
+    if (state is BudgetCreationState) {
+      final currentState = state as BudgetCreationState;
+      emit(currentState.copyWith(
+        includedCategories: event.selectedCategories,
+        isAllCategoriesIncluded: event.isAllSelected,
+      ));
+    }
+  }
+
+  void _onBudgetExcludeCategoriesSelected(
+      BudgetExcludeCategoriesSelected event, Emitter<BudgetsState> emit) {
+    if (state is BudgetCreationState) {
+      final currentState = state as BudgetCreationState;
+      emit(currentState.copyWith(
+        excludedCategories: event.selectedCategories,
+      ));
     }
   }
 

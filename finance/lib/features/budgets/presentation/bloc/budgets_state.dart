@@ -1,6 +1,9 @@
 import 'package:equatable/equatable.dart';
 import '../../domain/entities/budget.dart';
 import '../../domain/entities/budget_history_entry.dart';
+import '../../domain/entities/budget_enums.dart';
+import '../../../accounts/domain/entities/account.dart';
+import '../../../categories/domain/entities/category.dart';
 
 abstract class BudgetsState extends Equatable {
   const BudgetsState();
@@ -126,4 +129,74 @@ class BudgetAuthenticationFailed extends BudgetsState {
 
   @override
   List<Object?> get props => [budgetId, reason];
+}
+
+// Budget Creation States
+class BudgetCreationState extends BudgetsState {
+  final BudgetTrackingType trackingType;
+  final List<Account> availableAccounts;
+  final List<Account> selectedAccounts;
+  final bool isAllAccountsSelected;
+  final List<Category> availableCategories;
+  final List<Category> includedCategories;
+  final bool isAllCategoriesIncluded;
+  final List<Category> excludedCategories;
+  final bool isAccountsLoading;
+  final bool isCategoriesLoading;
+
+  const BudgetCreationState({
+    this.trackingType = BudgetTrackingType.automatic,
+    this.availableAccounts = const [],
+    this.selectedAccounts = const [],
+    this.isAllAccountsSelected = true,
+    this.availableCategories = const [],
+    this.includedCategories = const [],
+    this.isAllCategoriesIncluded = true,
+    this.excludedCategories = const [],
+    this.isAccountsLoading = false,
+    this.isCategoriesLoading = false,
+  });
+
+  BudgetCreationState copyWith({
+    BudgetTrackingType? trackingType,
+    List<Account>? availableAccounts,
+    List<Account>? selectedAccounts,
+    bool? isAllAccountsSelected,
+    List<Category>? availableCategories,
+    List<Category>? includedCategories,
+    bool? isAllCategoriesIncluded,
+    List<Category>? excludedCategories,
+    bool? isAccountsLoading,
+    bool? isCategoriesLoading,
+  }) {
+    return BudgetCreationState(
+      trackingType: trackingType ?? this.trackingType,
+      availableAccounts: availableAccounts ?? this.availableAccounts,
+      selectedAccounts: selectedAccounts ?? this.selectedAccounts,
+      isAllAccountsSelected: isAllAccountsSelected ?? this.isAllAccountsSelected,
+      availableCategories: availableCategories ?? this.availableCategories,
+      includedCategories: includedCategories ?? this.includedCategories,
+      isAllCategoriesIncluded: isAllCategoriesIncluded ?? this.isAllCategoriesIncluded,
+      excludedCategories: excludedCategories ?? this.excludedCategories,
+      isAccountsLoading: isAccountsLoading ?? this.isAccountsLoading,
+      isCategoriesLoading: isCategoriesLoading ?? this.isCategoriesLoading,
+    );
+  }
+
+  bool get shouldShowAccountsSelector => trackingType.isAutomatic;
+  bool get shouldReduceIncludeCategoriesOpacity => excludedCategories.isNotEmpty;
+
+  @override
+  List<Object?> get props => [
+    trackingType,
+    availableAccounts,
+    selectedAccounts,
+    isAllAccountsSelected,
+    availableCategories,
+    includedCategories,
+    isAllCategoriesIncluded,
+    excludedCategories,
+    isAccountsLoading,
+    isCategoriesLoading,
+  ];
 }

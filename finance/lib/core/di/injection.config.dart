@@ -229,11 +229,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i351.CurrencyService>(),
               gh<_i871.BudgetCsvService>(),
             ));
-    gh.factory<_i120.BudgetsBloc>(() => _i120.BudgetsBloc(
-          gh<_i1021.BudgetRepository>(),
-          gh<_i527.BudgetUpdateService>(),
-          gh<_i375.BudgetFilterService>(),
-        ));
     gh.lazySingleton<_i527.BudgetUpdateService>(
       () => _i249.BudgetUpdateServiceImpl(
         gh<_i1021.BudgetRepository>(),
@@ -246,6 +241,13 @@ extension GetItInjectableX on _i174.GetIt {
         _dev,
       },
     );
+    gh.factory<_i120.BudgetsBloc>(() => _i120.BudgetsBloc(
+          gh<_i1021.BudgetRepository>(),
+          gh<_i527.BudgetUpdateService>(),
+          gh<_i375.BudgetFilterService>(),
+          gh<_i706.AccountRepository>(),
+          gh<_i266.CategoryRepository>(),
+        ));
     return this;
   }
 }
