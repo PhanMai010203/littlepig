@@ -42,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -98,6 +98,15 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(
                 budgetsTable, budgetsTable.colour as GeneratedColumn);
             print('✅ Budget Color migration completed successfully!');
+          }
+
+          // ✅ Budget Period Amount Support Migration (v12 → v13)
+          if (from < 13) {
+            print(
+                '📅 Starting Budget Period Amount Support Migration (v12 → v13)...');
+            await m.addColumn(
+                budgetsTable, budgetsTable.periodAmount as GeneratedColumn);
+            print('✅ Budget Period Amount migration completed successfully!');
           }
         },
       );
@@ -238,6 +247,7 @@ class AppDatabase extends _$AppDatabase {
           'spent', NEW.spent,
           'category_id', NEW.category_id,
           'period', NEW.period,
+          'period_amount', NEW.period_amount,
           'start_date', NEW.start_date,
           'end_date', NEW.end_date,
           'is_active', NEW.is_active,

@@ -2086,6 +2086,14 @@ class $BudgetsTableTable extends BudgetsTable
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
       type: DriftSqlType.string,
       requiredDuringInsert: true);
+  static const VerificationMeta _periodAmountMeta =
+      const VerificationMeta('periodAmount');
+  @override
+  late final GeneratedColumn<int> periodAmount = GeneratedColumn<int>(
+      'period_amount', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
   static const VerificationMeta _startDateMeta =
       const VerificationMeta('startDate');
   @override
@@ -2240,6 +2248,7 @@ class $BudgetsTableTable extends BudgetsTable
         spent,
         categoryId,
         period,
+        periodAmount,
         startDate,
         endDate,
         isActive,
@@ -2300,6 +2309,12 @@ class $BudgetsTableTable extends BudgetsTable
           period.isAcceptableOrUnknown(data['period']!, _periodMeta));
     } else if (isInserting) {
       context.missing(_periodMeta);
+    }
+    if (data.containsKey('period_amount')) {
+      context.handle(
+          _periodAmountMeta,
+          periodAmount.isAcceptableOrUnknown(
+              data['period_amount']!, _periodAmountMeta));
     }
     if (data.containsKey('start_date')) {
       context.handle(_startDateMeta,
@@ -2432,6 +2447,8 @@ class $BudgetsTableTable extends BudgetsTable
           .read(DriftSqlType.int, data['${effectivePrefix}category_id']),
       period: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}period'])!,
+      periodAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}period_amount'])!,
       startDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}start_date'])!,
       endDate: attachedDatabase.typeMapping
@@ -2494,6 +2511,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
   final double spent;
   final int? categoryId;
   final String period;
+  final int periodAmount;
   final DateTime startDate;
   final DateTime endDate;
   final bool isActive;
@@ -2520,6 +2538,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       required this.spent,
       this.categoryId,
       required this.period,
+      required this.periodAmount,
       required this.startDate,
       required this.endDate,
       required this.isActive,
@@ -2550,6 +2569,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       map['category_id'] = Variable<int>(categoryId);
     }
     map['period'] = Variable<String>(period);
+    map['period_amount'] = Variable<int>(periodAmount);
     map['start_date'] = Variable<DateTime>(startDate);
     map['end_date'] = Variable<DateTime>(endDate);
     map['is_active'] = Variable<bool>(isActive);
@@ -2604,6 +2624,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           ? const Value.absent()
           : Value(categoryId),
       period: Value(period),
+      periodAmount: Value(periodAmount),
       startDate: Value(startDate),
       endDate: Value(endDate),
       isActive: Value(isActive),
@@ -2653,6 +2674,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       spent: serializer.fromJson<double>(json['spent']),
       categoryId: serializer.fromJson<int?>(json['categoryId']),
       period: serializer.fromJson<String>(json['period']),
+      periodAmount: serializer.fromJson<int>(json['periodAmount']),
       startDate: serializer.fromJson<DateTime>(json['startDate']),
       endDate: serializer.fromJson<DateTime>(json['endDate']),
       isActive: serializer.fromJson<bool>(json['isActive']),
@@ -2692,6 +2714,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       'spent': serializer.toJson<double>(spent),
       'categoryId': serializer.toJson<int?>(categoryId),
       'period': serializer.toJson<String>(period),
+      'periodAmount': serializer.toJson<int>(periodAmount),
       'startDate': serializer.toJson<DateTime>(startDate),
       'endDate': serializer.toJson<DateTime>(endDate),
       'isActive': serializer.toJson<bool>(isActive),
@@ -2727,6 +2750,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           double? spent,
           Value<int?> categoryId = const Value.absent(),
           String? period,
+          int? periodAmount,
           DateTime? startDate,
           DateTime? endDate,
           bool? isActive,
@@ -2753,6 +2777,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
         spent: spent ?? this.spent,
         categoryId: categoryId.present ? categoryId.value : this.categoryId,
         period: period ?? this.period,
+        periodAmount: periodAmount ?? this.periodAmount,
         startDate: startDate ?? this.startDate,
         endDate: endDate ?? this.endDate,
         isActive: isActive ?? this.isActive,
@@ -2798,6 +2823,9 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       categoryId:
           data.categoryId.present ? data.categoryId.value : this.categoryId,
       period: data.period.present ? data.period.value : this.period,
+      periodAmount: data.periodAmount.present
+          ? data.periodAmount.value
+          : this.periodAmount,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       endDate: data.endDate.present ? data.endDate.value : this.endDate,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
@@ -2852,6 +2880,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           ..write('spent: $spent, ')
           ..write('categoryId: $categoryId, ')
           ..write('period: $period, ')
+          ..write('periodAmount: $periodAmount, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('isActive: $isActive, ')
@@ -2887,6 +2916,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
         spent,
         categoryId,
         period,
+        periodAmount,
         startDate,
         endDate,
         isActive,
@@ -2917,6 +2947,7 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           other.spent == this.spent &&
           other.categoryId == this.categoryId &&
           other.period == this.period &&
+          other.periodAmount == this.periodAmount &&
           other.startDate == this.startDate &&
           other.endDate == this.endDate &&
           other.isActive == this.isActive &&
@@ -2949,6 +2980,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
   final Value<double> spent;
   final Value<int?> categoryId;
   final Value<String> period;
+  final Value<int> periodAmount;
   final Value<DateTime> startDate;
   final Value<DateTime> endDate;
   final Value<bool> isActive;
@@ -2975,6 +3007,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     this.spent = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.period = const Value.absent(),
+    this.periodAmount = const Value.absent(),
     this.startDate = const Value.absent(),
     this.endDate = const Value.absent(),
     this.isActive = const Value.absent(),
@@ -3002,6 +3035,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     this.spent = const Value.absent(),
     this.categoryId = const Value.absent(),
     required String period,
+    this.periodAmount = const Value.absent(),
     required DateTime startDate,
     required DateTime endDate,
     this.isActive = const Value.absent(),
@@ -3034,6 +3068,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     Expression<double>? spent,
     Expression<int>? categoryId,
     Expression<String>? period,
+    Expression<int>? periodAmount,
     Expression<DateTime>? startDate,
     Expression<DateTime>? endDate,
     Expression<bool>? isActive,
@@ -3061,6 +3096,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       if (spent != null) 'spent': spent,
       if (categoryId != null) 'category_id': categoryId,
       if (period != null) 'period': period,
+      if (periodAmount != null) 'period_amount': periodAmount,
       if (startDate != null) 'start_date': startDate,
       if (endDate != null) 'end_date': endDate,
       if (isActive != null) 'is_active': isActive,
@@ -3100,6 +3136,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       Value<double>? spent,
       Value<int?>? categoryId,
       Value<String>? period,
+      Value<int>? periodAmount,
       Value<DateTime>? startDate,
       Value<DateTime>? endDate,
       Value<bool>? isActive,
@@ -3126,6 +3163,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       spent: spent ?? this.spent,
       categoryId: categoryId ?? this.categoryId,
       period: period ?? this.period,
+      periodAmount: periodAmount ?? this.periodAmount,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       isActive: isActive ?? this.isActive,
@@ -3176,6 +3214,9 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     }
     if (period.present) {
       map['period'] = Variable<String>(period.value);
+    }
+    if (periodAmount.present) {
+      map['period_amount'] = Variable<int>(periodAmount.value);
     }
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
@@ -3254,6 +3295,7 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
           ..write('spent: $spent, ')
           ..write('categoryId: $categoryId, ')
           ..write('period: $period, ')
+          ..write('periodAmount: $periodAmount, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('isActive: $isActive, ')
@@ -7247,6 +7289,7 @@ typedef $$BudgetsTableTableCreateCompanionBuilder = BudgetsTableCompanion
   Value<double> spent,
   Value<int?> categoryId,
   required String period,
+  Value<int> periodAmount,
   required DateTime startDate,
   required DateTime endDate,
   Value<bool> isActive,
@@ -7275,6 +7318,7 @@ typedef $$BudgetsTableTableUpdateCompanionBuilder = BudgetsTableCompanion
   Value<double> spent,
   Value<int?> categoryId,
   Value<String> period,
+  Value<int> periodAmount,
   Value<DateTime> startDate,
   Value<DateTime> endDate,
   Value<bool> isActive,
@@ -7359,6 +7403,9 @@ class $$BudgetsTableTableFilterComposer
 
   ColumnFilters<String> get period => $composableBuilder(
       column: $table.period, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get periodAmount => $composableBuilder(
+      column: $table.periodAmount, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get startDate => $composableBuilder(
       column: $table.startDate, builder: (column) => ColumnFilters(column));
@@ -7497,6 +7544,10 @@ class $$BudgetsTableTableOrderingComposer
   ColumnOrderings<String> get period => $composableBuilder(
       column: $table.period, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get periodAmount => $composableBuilder(
+      column: $table.periodAmount,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get startDate => $composableBuilder(
       column: $table.startDate, builder: (column) => ColumnOrderings(column));
 
@@ -7610,6 +7661,9 @@ class $$BudgetsTableTableAnnotationComposer
 
   GeneratedColumn<String> get period =>
       $composableBuilder(column: $table.period, builder: (column) => column);
+
+  GeneratedColumn<int> get periodAmount => $composableBuilder(
+      column: $table.periodAmount, builder: (column) => column);
 
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
@@ -7747,6 +7801,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<double> spent = const Value.absent(),
             Value<int?> categoryId = const Value.absent(),
             Value<String> period = const Value.absent(),
+            Value<int> periodAmount = const Value.absent(),
             Value<DateTime> startDate = const Value.absent(),
             Value<DateTime> endDate = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
@@ -7776,6 +7831,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             spent: spent,
             categoryId: categoryId,
             period: period,
+            periodAmount: periodAmount,
             startDate: startDate,
             endDate: endDate,
             isActive: isActive,
@@ -7805,6 +7861,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<double> spent = const Value.absent(),
             Value<int?> categoryId = const Value.absent(),
             required String period,
+            Value<int> periodAmount = const Value.absent(),
             required DateTime startDate,
             required DateTime endDate,
             Value<bool> isActive = const Value.absent(),
@@ -7834,6 +7891,7 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             spent: spent,
             categoryId: categoryId,
             period: period,
+            periodAmount: periodAmount,
             startDate: startDate,
             endDate: endDate,
             isActive: isActive,

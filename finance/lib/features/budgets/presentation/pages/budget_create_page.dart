@@ -327,6 +327,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
       spent: 0.0,
       categoryId: categoryId,
       period: _selectedPeriod,
+      periodAmount: _periodAmount,
       startDate: _startDate,
       endDate: _getEndDate(),
       isActive: true,

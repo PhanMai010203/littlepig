@@ -17,6 +17,8 @@ class BudgetsTable extends Table {
 
   // Budget period: 'monthly', 'weekly', 'daily', 'yearly'
   TextColumn get period => text().withLength(min: 1, max: 20)();
+  // Number of periods (e.g., 2 for "2 months")
+  IntColumn get periodAmount => integer().withDefault(const Constant(1))();
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get endDate => dateTime()();
 
