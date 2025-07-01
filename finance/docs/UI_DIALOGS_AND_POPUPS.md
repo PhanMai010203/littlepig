@@ -68,104 +68,10 @@ if (confirmed == true) {
 
 ### Bottom Sheets
 
-**Choose Your Implementation:**
-
-#### BottomSheetServiceV2 (Recommended - Next Generation)
-High-performance, jank-free implementation using the `sliding_sheet` package:
-
-```dart
-import 'package:finance/shared/widgets/dialogs/bottom_sheet_service_v2.dart';
-
-// Simple bottom sheet with zero animation jank
-void _showBottomSheetV2(BuildContext context) {
-  BottomSheetServiceV2.showSimpleBottomSheet(
-    context,
-    Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AppText("Next-gen Bottom Sheet Content"),
-        // Your content here
-      ],
-    ),
-    title: "Options V2",
-  );
-}
-
-// Options bottom sheet with enhanced performance
-void _showOptionsSheetV2(BuildContext context) {
-  BottomSheetServiceV2.showOptionsBottomSheet<String>(
-    context,
-    title: "Choose an option",
-    options: [
-      BottomSheetOption(
-        title: "Edit",
-        value: "edit",
-        icon: Icons.edit,
-      ),
-      BottomSheetOption(
-        title: "Delete",
-        value: "delete",
-        icon: Icons.delete,
-      ),
-    ],
-  ).then((selectedValue) {
-    if (selectedValue != null) {
-      // Handle selection
-    }
-  });
-}
-
-// Advanced usage with custom builders
-void _showAdvancedSheetV2(BuildContext context) {
-  BottomSheetServiceV2.showCustomBottomSheet(
-    context,
-    const SizedBox(), // Placeholder - custom builder takes over
-    title: "Advanced Sheet",
-    customBuilder: (context, state) {
-      return Column(
-        children: [
-          Text('Progress: ${(state.progress * 100).toInt()}%'),
-          const TextField(decoration: InputDecoration(hintText: 'Advanced input')),
-        ],
-      );
-    },
-    snapSizes: [0.25, 0.5, 0.9],
-    resizeForKeyboard: true,
-  );
-}
-```
-
-#### Extension Methods (V2)
-```dart
-// Using context extension methods for cleaner syntax
-context.showSimpleSheetV2(
-  AppText("Extension method content"),
-  title: "Clean Syntax",
-);
-
-// Options with extension
-final result = await context.showOptionsV2<String>(
-  title: "Pick option",
-  options: [
-    BottomSheetOption(title: "Option 1", value: "1"),
-  ],
-);
-
-// Confirmation with extension
-final confirmed = await context.showBottomSheetConfirmationV2(
-  title: "Confirm Action",
-  message: "Are you sure?",
-  isDangerous: true,
-);
-```
-
-#### Legacy BottomSheetService (Existing)
-Original implementation - still supported but not recommended for new development:
-
 ```dart
 import 'package:finance/shared/widgets/dialogs/bottom_sheet_service.dart';
 
-// Simple bottom sheet (legacy)
+// Simple bottom sheet
 void _showBottomSheet(BuildContext context) {
   BottomSheetService.showSimpleBottomSheet(
     context,
@@ -180,7 +86,7 @@ void _showBottomSheet(BuildContext context) {
   );
 }
 
-// Options bottom sheet (legacy)
+// Options bottom sheet
 void _showOptionsSheet(BuildContext context) {
   BottomSheetService.showOptionsBottomSheet<String>(
     context,
@@ -205,53 +111,9 @@ void _showOptionsSheet(BuildContext context) {
 }
 ```
 
-### Advanced Bottom Sheet Features (V2)
-
-#### Smart Snapping with Zero Jank
-```dart
-// V2: Superior snapping with sliding_sheet package
-BottomSheetServiceV2.showCustomBottomSheet(
-  context,
-  myContent,
-  snapSizes: [0.3, 0.6, 0.9],
-  initialSize: 0.3,
-  resizeForKeyboard: true,
-  fullSnap: false,
-  title: "Transaction Details V2",
-);
-```
-
-**V2 Improvements:**
-1. **Zero animation jank** through optimized gesture handling  
-2. **Built-in keyboard avoidance** without custom widgets
-3. **Smooth snapping behavior** with proper physics
-4. **Platform-aware styling** (iOS vs Android)
-5. **Enhanced performance** with 15% better frame rates
-
-#### Enhanced Keyboard Handling (V2)
-
-V2 provides **advanced keyboard behavior** with smart snap adjustment:
+### Snapping Bottom Sheets (Sliding Sheet-like)
 
 ```dart
-// V2: Advanced keyboard handling with haptic feedback
-BottomSheetServiceV2.showCustomBottomSheet(
-  context,
-  TextField(hintText: "Enter amount..."), // Superior keyboard experience
-  resizeForKeyboard: true,  // Built-in keyboard avoidance (no custom widgets)
-  popupWithKeyboard: true,  // Smart snap optimization for keyboard scenarios  
-  title: "Add Transaction V2",
-);
-```
-
-**V2 Keyboard Features:**
-- **Smart snap adjustment:** Prevents overscroll on keyboard appearance
-- **Haptic feedback:** Light impact on full expansion, selection click on collapse
-- **Real-time response:** <100ms keyboard show-to-resize time
-- **Zero visual glitches:** Seamless integration with keyboard animations
-
-#### Legacy Snapping (Still Available)
-```dart
-// Legacy: Original implementation
 BottomSheetService.showCustomBottomSheet(
   context,
   myContent,
@@ -263,49 +125,33 @@ BottomSheetService.showCustomBottomSheet(
 );
 ```
 
-### Theme Context Preservation
+Key points:
+1. Pass multiple `snapSizes` to enable smart snapping via `DraggableScrollableSheet`.
+2. `resizeForKeyboard` automatically shifts the sheet when the soft-keyboard appears.
+3. When `fullSnap` is `true`, the sheet will always end in the fully-expanded state.
+4. Theme context preservation is handled automatically when `useParentContextForTheme` (default) is `true`.
 
-Both V1 and V2 handle theme context preservation automatically when `useParentContextForTheme: true` (default).
+### Keyboard-Aware Sheets
 
-### Migration Guide: V1 to V2
+The service provides **real-time keyboard tracking** for smooth, jank-free animations when the keyboard appears/disappears. This is implemented using the internal `_KeyboardAwareBottomSheet` widget that synchronizes perfectly with keyboard animations.
 
-**Simple Migration (Drop-in Replacement):**
 ```dart
-// Before (V1)
-BottomSheetService.showSimpleBottomSheet(context, content, title: "Title");
-
-// After (V2) - Same API, better performance
-BottomSheetServiceV2.showSimpleBottomSheet(context, content, title: "Title");
-```
-
-**Extension Method Migration:**
-```dart
-// Before (V1)
-context.showSimpleSheet(content, title: "Title");
-
-// After (V2)
-context.showSimpleSheetV2(content, title: "Title");
-```
-
-**Advanced Features (V2 Only):**
-```dart
-// New V2 capabilities
-BottomSheetServiceV2.showCustomBottomSheet(
+// Smooth keyboard tracking with real-time synchronization
+BottomSheetService.showCustomBottomSheet(
   context,
-  content,
-  title: "Advanced Sheet",
-  customBuilder: (context, state) {
-    return Text('Animation progress: ${state.progress}');
-  },
-  advancedBuilder: (context, controller, state) {
-    // Full control with scroll controller access
-    return CustomScrollView(controller: controller, slivers: [...]);
-  },
+  TextField(hintText: "Enter amount..."), // TextFields work smoothly
+  resizeForKeyboard: true,  // Enable smooth keyboard tracking (default: true)
+  popupWithKeyboard: true,  // Optimize snap sizes for keyboard scenarios
+  title: "Add Transaction",
 );
 ```
 
-**Performance Benefits:**
-- **15% better frame rates** during animations
-- **Zero animation jank** with keyboard interactions  
-- **<100ms response time** for keyboard show/hide
-- **Reduced memory usage** by eliminating custom widgets 
+**Key Features:**
+- **Zero jank:** Content moves smoothly with keyboard animation
+- **Real-time updates:** Uses `MediaQuery.viewInsetsOf(context)` for frame-by-frame tracking  
+- **Visual continuity:** Background spacer prevents gaps during animation
+- **Automatic optimization:** Snap sizes adjust for keyboard scenarios
+
+### Theme Context Preservation
+
+If the calling widget is using an overridden `Theme`, set `useParentContextForTheme: true` (default) so the sheet inherits the same colors and typography. 
