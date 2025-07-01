@@ -122,7 +122,10 @@ class MultiAccountSelector extends StatelessWidget {
     }
 
     return AppText(
-      '${selectedAccounts.length} accounts.accounts_selected'.tr(),
+      'accounts.accounts_selected'.plural(
+        selectedAccounts.length,
+        args: [selectedAccounts.length.toString()],
+      ),
       fontSize: 14,
       textColor: getColor(context, "textSecondary"),
     );
