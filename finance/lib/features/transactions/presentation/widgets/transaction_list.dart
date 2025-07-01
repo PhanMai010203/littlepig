@@ -12,6 +12,8 @@ import '../bloc/transactions_event.dart';
 import '../bloc/transactions_state.dart'; // Import for TransactionListItem types
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
+import '../../../../shared/utils/performance_optimization.dart';
+import '../../../../shared/utils/no_overscroll_behavior.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 
 /// Widget that displays a list of transactions grouped by date
@@ -35,7 +37,11 @@ class TransactionList extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     
-    // Phase 5: Component optimization tracking removed
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization(
+      'TransactionList', 
+      'SliverList+RepaintBoundary+ThemeCaching'
+    );
 
     final selectedMonthTransactions = transactions.where((t) {
       return t.date.year == selectedMonth.year &&

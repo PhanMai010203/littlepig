@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 // Phase 5 imports
+import '../../../shared/utils/performance_optimization.dart';
 import '../../../core/services/platform_service.dart';
 
 class HomePageUsername extends StatelessWidget {
@@ -23,7 +24,11 @@ class HomePageUsername extends StatelessWidget {
     final platform = PlatformService.getPlatform();
     final textScaleFactor = platform == PlatformOS.isIOS ? 1.0 : 0.95;
     
-    // Phase 5: Component optimization tracking removed
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization(
+      'HomePageUsername', 
+      'ThemeCaching+PlatformTextOptimization+AnimationOptimization'
+    );
 
     return AnimatedBuilder(
       animation: scrollController,

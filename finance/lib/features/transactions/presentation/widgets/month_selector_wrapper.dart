@@ -6,6 +6,7 @@ import '../bloc/transactions_bloc.dart';
 import '../bloc/transactions_event.dart';
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
+import '../../../../shared/utils/performance_optimization.dart';
 
 /// Wrapper widget that connects the MonthSelector to the TransactionsBloc
 class MonthSelectorWrapper extends StatelessWidget {
@@ -18,7 +19,11 @@ class MonthSelectorWrapper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Phase 5: Component optimization tracking removed
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization(
+      'MonthSelectorWrapper', 
+      'ResponsiveLayoutBuilder+BlocIntegration'
+    );
 
     // Phase 5: Use ResponsiveLayoutBuilder for consistent responsive patterns (Phase 2)
     return ResponsiveLayoutBuilder(

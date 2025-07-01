@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sa3_liquid/sa3_liquid.dart';
 // Phase 5 imports
+import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../core/services/platform_service.dart';
 
 class AnimatedGooBackground extends StatelessWidget {
@@ -17,7 +18,11 @@ class AnimatedGooBackground extends StatelessWidget {
     // Phase 5: Adaptive performance based on actual device capabilities (Phase 5 pattern)
     final isLowEndDevice = PlatformService.isLowEndDevice;
     
-    // Phase 5: Component optimization tracking removed
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization(
+      'AnimatedGooBackground', 
+      'RepaintBoundary+AdaptivePerformance+ThemeCaching'
+    );
     
     // Phase 5: Optimized color with theme-appropriate alpha values for proper contrast
     final optimizedColor = brightness == Brightness.light

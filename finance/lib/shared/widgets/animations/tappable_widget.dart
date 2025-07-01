@@ -6,6 +6,7 @@ import 'animation_utils.dart';
 import 'faded_button.dart';
 import '../../../core/services/platform_service.dart';
 import '../../../core/services/animation_performance_service.dart';
+import '../../utils/performance_optimization.dart';
 
 /// A widget that provides customizable tap feedback with animations
 /// Phase 6.2 implementation with performance optimization
@@ -68,7 +69,12 @@ class _TappableWidgetState extends State<TappableWidget>
     _isAndroid = platform == PlatformOS.isAndroid;
     _isDesktop = PlatformService.isDesktop;
     
-    // Platform optimization tracking removed
+    // Track platform optimization usage
+    PerformanceOptimizations.trackPlatformOptimization(
+      'TappableWidget', 
+      platform.toString(), 
+      'cached platform detection'
+    );
 
     _controller = AnimationUtils.createController(
       vsync: this,
@@ -172,7 +178,11 @@ class _TappableWidgetState extends State<TappableWidget>
   Widget build(BuildContext context) {
     // Phase 3: Use cached platform detection for better performance
     if (_isIOS) {
-      // Platform optimization tracking removed
+      PerformanceOptimizations.trackPlatformOptimization(
+        'TappableWidget', 
+        'iOS', 
+        'FadedButton'
+      );
       // Disable the button when no interaction callbacks are provided
       final bool _isDisabled =
           widget.onTap == null && widget.onLongPress == null && widget.onDoubleTap == null;
@@ -263,7 +273,11 @@ class _TappableWidgetState extends State<TappableWidget>
         widget.onDoubleTap != null) {
       
       // Use GestureDetector for all platforms (no splash effects)
-      // Platform optimization tracking removed
+      PerformanceOptimizations.trackPlatformOptimization(
+        'TappableWidget', 
+        'All Platforms', 
+        'GestureDetector without splash'
+      );
       gestureChild = GestureDetector(
         onTapDown: widget.animationType != TapAnimationType.none
             ? _handleTapDown

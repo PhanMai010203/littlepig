@@ -24,6 +24,7 @@ import '../../../budgets/presentation/widgets/budget_summary_card.dart'
 import '../../../transactions/presentation/widgets/transaction_summary_card.dart';
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
+import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../core/services/platform_service.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 import 'package:finance/features/transactions/presentation/widgets/transaction_list.dart';
@@ -313,7 +314,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    // Phase 5: Component optimization tracking removed
+    // Phase 5: Track component optimization
+    PerformanceOptimizations.trackRenderingOptimization('HomePage',
+        'ResponsiveLayoutBuilder+ThemeCaching+PlatformOptimization');
 
     // Phase 5: Use ResponsiveLayoutBuilder for size-dependent layout (Phase 2 pattern)
     return ResponsiveLayoutBuilder(
