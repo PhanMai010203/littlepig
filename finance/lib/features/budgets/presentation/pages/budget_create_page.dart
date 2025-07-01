@@ -294,20 +294,18 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
                 ),
 
                 // Name Input
-                Center(
-                  child: TappableTextEntry(
-                    title: _nameController.text,
-                    placeholder: 'Name',
-                    onTap: _selectBudgetName,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w500,
-                    addTappableBackground: false,
-                    internalPadding:
-                        const EdgeInsetsDirectional.fromSTEB(10, 10, 10, 10),
-                  ),
+                TappableTextEntry(
+                  title: _nameController.text,
+                  placeholder: 'Name',
+                  onTap: _selectBudgetName,
+                  fontSize: 30,
+                  fontWeight: FontWeight.w500,
+                  addTappableBackground: false,
+                  internalPadding:
+                      const EdgeInsetsDirectional.fromSTEB(10, 10, 10, 10),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 24),
 
                 // Amount & Period
                 Row(
@@ -375,32 +373,32 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
                 TappableWidget(
                   onTap: _selectStartDate,
                   animationType: TapAnimationType.scale,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppText(
-                        'beginning ',
-                        fontSize: 18,
-                        textColor: getColor(context, "textLight"),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: getColor(context, "border"),
-                              width: 1.5,
-                            ),
-                          ),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          color: getColor(context, "border"),
+                          width: 1.5,
                         ),
-                        child: AppText(
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppText(
+                          'beginning ',
+                          fontSize: 18,
+                          textColor: getColor(context, "textLight"),
+                        ),
+                        AppText(
                           DateFormat('MMMM d').format(_startDate),
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
