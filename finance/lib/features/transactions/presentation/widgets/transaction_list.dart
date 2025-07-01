@@ -260,6 +260,25 @@ class TransactionTile extends StatelessWidget {
   final Transaction transaction;
   final Category? category;
 
+  // ---------------------------------------------------------------------
+  // Static state for managing a single note-popup overlay application-wide
+  // ---------------------------------------------------------------------
+  static OverlayEntry? _noteOverlayEntry;
+  static AnimationController? _noteAnimationController;
+  static VoidCallback? _scrollListener;
+  static ScrollPosition? _scrollPosition;
+
+  /// Dismisses the current popup (if any) with a fade-out animation.
+  static void _dismissCurrentPopup() {
+    if (_noteAnimationController == null) return;
+    // If already reversing, do nothing.
+    if (_noteAnimationController!.status == AnimationStatus.reverse ||
+        _noteAnimationController!.status == AnimationStatus.dismissed) {
+      return;
+    }
+    _noteAnimationController!.reverse();
+  }
+
   @override
   Widget build(BuildContext context) {
     // Phase 5: Cache theme data for performance (Phase 1 pattern)
@@ -371,99 +390,121 @@ class TransactionTile extends StatelessWidget {
 
   void _showNotePopup(
       BuildContext context, String note, Offset position, Size size) {
+    // ------------------------------------------------------------
+    // Enhanced overlay management: single entry + scroll dismissal
+    // ------------------------------------------------------------
+
+    // 1. If there is an existing popup, dismiss it first.
+    _dismissCurrentPopup();
+
+    final overlay = Overlay.of(context);
+    if (overlay == null) return;
+
+    // 2. Calculate popup position (same logic as before)
     final screenSize = MediaQuery.of(context).size;
     const double popupMaxWidth = 250.0;
     const double popupPadding = 16.0;
-    const double verticalOffset = 8.0; // Distance below the SVG
+    const double verticalOffset = 8.0;
 
-    // Calculate initial position right below the tapped SVG
     double left = position.dx + (size.width / 2) - (popupMaxWidth / 2);
     double top = position.dy + size.height + verticalOffset;
 
-    // Prevent clipping off the right edge
     if (left + popupMaxWidth + popupPadding > screenSize.width) {
       left = screenSize.width - popupMaxWidth - popupPadding;
     }
+    if (left < popupPadding) left = popupPadding;
 
-    // Prevent clipping off the left edge
-    if (left < popupPadding) {
-      left = popupPadding;
-    }
-
-    // Prevent clipping off the bottom edge
     if (top + 100 > screenSize.height - popupPadding) {
-      // Estimated popup height
-      top = position.dy - 100 - verticalOffset; // Show above the SVG instead
+      top = position.dy - 100 - verticalOffset;
     }
+    if (top < popupPadding) top = popupPadding;
 
-    // Prevent clipping off the top edge
-    if (top < popupPadding) {
-      top = popupPadding;
-    }
+    // 3. Prepare animation controller (store in static var)
+    final controller = AnimationController(
+      duration: const Duration(milliseconds: 250),
+      reverseDuration: const Duration(milliseconds: 250),
+      vsync: Navigator.of(context),
+    );
 
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: '',
-      barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Stack(
-          children: <Widget>[
-            Positioned(
-              left: left,
-              top: top,
-              child: Material(
-                type: MaterialType.transparency,
-                child: Container(
-                  constraints: const BoxConstraints(
-                    maxWidth: popupMaxWidth,
-                    minWidth: 120.0,
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.15),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                        spreadRadius: 0,
-                      ),
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: AppText(
-                    note,
-                    maxLines: 5,
-                    overflow: TextOverflow.ellipsis,
-                    fontSize: 14,
-                  ),
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => Positioned(
+        left: left,
+        top: top,
+        child: IgnorePointer(
+          ignoring: true,
+          child: FadeTransition(
+            opacity: CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Container(
+                constraints: const BoxConstraints(
+                  maxWidth: popupMaxWidth,
+                  minWidth: 120.0,
+                ),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                      spreadRadius: 0,
+                    ),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 2),
+                      spreadRadius: 0,
+                    ),
+                  ],
+                ),
+                child: AppText(
+                  note,
+                  maxLines: 5,
+                  overflow: TextOverflow.ellipsis,
+                  fontSize: 14,
                 ),
               ),
             ),
-          ],
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        // Create smooth fade in/out animation with easing
-        final fadeAnimation = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeInOut,
-          reverseCurve: Curves.easeInOut,
-        );
-
-        return FadeTransition(
-          opacity: fadeAnimation,
-          child: child,
-        );
-      },
+          ),
+        ),
+      ),
     );
+
+    // 4. Store static refs & insert overlay
+    _noteOverlayEntry = entry;
+    _noteAnimationController = controller;
+    overlay.insert(entry);
+    controller.forward();
+
+    // 5. Attach a scroll listener so scrolling dismisses the popup.
+    _scrollPosition = Scrollable.of(context)?.position;
+    if (_scrollPosition != null) {
+      _scrollListener = () => _dismissCurrentPopup();
+      _scrollPosition!.addListener(_scrollListener!);
+    }
+
+    // 6. Auto-dismiss after 3 seconds
+    Future.delayed(const Duration(seconds: 3), _dismissCurrentPopup);
+
+    // 7. Clean up when animation completes
+    controller.addStatusListener((status) {
+      if (status == AnimationStatus.dismissed) {
+        _noteOverlayEntry?.remove();
+        _noteOverlayEntry = null;
+
+        controller.dispose();
+        _noteAnimationController = null;
+
+        if (_scrollPosition != null && _scrollListener != null) {
+          _scrollPosition!.removeListener(_scrollListener!);
+        }
+        _scrollPosition = null;
+        _scrollListener = null;
+      }
+    });
   }
 }
