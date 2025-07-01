@@ -17,6 +17,7 @@ import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../../features/budgets/presentation/pages/budget_create_page.dart';
+import '../../features/transactions/presentation/pages/transaction_create_page.dart';
 import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
@@ -113,6 +114,26 @@ class AppRouter {
                 getIt<CategoryRepository>(),
               ),
               child: const BudgetCreatePage(),
+            ),
+            name: state.name,
+          );
+        },
+      ),
+
+      // Transaction creation page
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.transactionCreate,
+        name: AppRoutes.transactionCreate,
+        pageBuilder: (context, state) {
+          return AppPageTransitions.platformTransitionPage(
+            key: state.pageKey,
+            child: BlocProvider(
+              create: (_) => BudgetCreationBloc(
+                getIt<AccountRepository>(),
+                getIt<CategoryRepository>(),
+              ),
+              child: const TransactionCreatePage(),
             ),
             name: state.name,
           );

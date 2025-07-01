@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/router/app_routes.dart';
 
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/app_text.dart';
@@ -60,9 +62,7 @@ class _TransactionsView extends StatelessWidget {
       ],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add new transaction')),
-          );
+          context.push(AppRoutes.transactionCreate);
         },
         child: const Icon(Icons.add),
       ),
