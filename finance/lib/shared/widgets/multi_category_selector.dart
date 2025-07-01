@@ -63,7 +63,7 @@ class MultiCategorySelector extends StatelessWidget {
                       title,
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      textColor: getColor(context, "textPrimary"),
+                      textColor: getColor(context, "primary"),
                     ),
                     const SizedBox(height: 4),
                     if (subtitle != null)
@@ -167,130 +167,140 @@ class MultiCategorySelector extends StatelessWidget {
       context,
       StatefulBuilder(
         builder: (context, setState) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // All Categories Option (only for include mode)
-              if (!isExcludeMode) ...[
-                CheckboxListTile(
-                  title: AppText(
-                    'categories.all_categories'.tr(),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  subtitle: tempIsAllSelected
-                      ? AppText(
-                          'categories.all_categories_description'.tr(),
-                          fontSize: 12,
-                          textColor: getColor(context, "textSecondary"),
-                        )
-                      : null,
-                  value: tempIsAllSelected,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      tempIsAllSelected = value ?? false;
-                      if (tempIsAllSelected) {
-                        tempSelectedCategories.clear();
-                      }
-                    });
-                  },
-                  activeColor: getColor(context, "primary"),
-                  controlAffinity: ListTileControlAffinity.leading,
-                ),
-                const Divider(),
-              ],
-              
-              // Individual Category Options
-              ...availableCategories.map((category) {
-                final isSelected = tempSelectedCategories.contains(category);
-                final isEnabled = isExcludeMode || !tempIsAllSelected;
-                
-                return Opacity(
-                  opacity: isEnabled ? 1.0 : 0.5,
-                  child: CheckboxListTile(
-                    title: Row(
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            color: category.color.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Center(
-                            child: Text(
-                              category.icon,
-                              style: const TextStyle(fontSize: 14),
+                        // All Categories Option (only for include mode)
+                        if (!isExcludeMode) ...[
+                          CheckboxListTile(
+                            title: AppText(
+                              'categories.all_categories'.tr(),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
                             ),
+                            subtitle: tempIsAllSelected
+                                ? AppText(
+                                    'categories.all_categories_description'.tr(),
+                                    fontSize: 12,
+                                    textColor: getColor(context, "textSecondary"),
+                                  )
+                                : null,
+                            value: tempIsAllSelected,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                tempIsAllSelected = value ?? false;
+                                if (tempIsAllSelected) {
+                                  tempSelectedCategories.clear();
+                                }
+                              });
+                            },
+                            activeColor: getColor(context, "primary"),
+                            controlAffinity: ListTileControlAffinity.leading,
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: AppText(
-                            category.name,
-                            fontSize: 15,
-                          ),
-                        ),
+                          const Divider(),
+                        ],
+                        // Individual Category Options
+                        ...availableCategories.map((category) {
+                          final isSelected = tempSelectedCategories.contains(category);
+                          final isEnabled = isExcludeMode || !tempIsAllSelected;
+                          return Opacity(
+                            opacity: isEnabled ? 1.0 : 0.5,
+                            child: CheckboxListTile(
+                              title: Row(
+                                children: [
+                                  Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      color: category.color.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        category.icon,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: AppText(
+                                      category.name,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              value: isSelected,
+                              onChanged: isEnabled
+                                  ? (bool? value) {
+                                      setState(() {
+                                        if (value == true) {
+                                          if (!tempSelectedCategories.contains(category)) {
+                                            tempSelectedCategories.add(category);
+                                          }
+                                        } else {
+                                          tempSelectedCategories.remove(category);
+                                        }
+                                      });
+                                    }
+                                  : null,
+                              activeColor: getColor(context, "primary"),
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          );
+                        }),
                       ],
                     ),
-                    value: isSelected,
-                    onChanged: isEnabled
-                        ? (bool? value) {
-                            setState(() {
-                              if (value == true) {
-                                if (!tempSelectedCategories.contains(category)) {
-                                  tempSelectedCategories.add(category);
-                                }
-                              } else {
-                                tempSelectedCategories.remove(category);
-                              }
-                            });
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: AppText(
+                          'actions.cancel'.tr(),
+                          textColor: getColor(context, "textSecondary"),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (!isExcludeMode && tempIsAllSelected) {
+                            onAllSelected();
+                          } else {
+                            onSelectionChanged(tempSelectedCategories);
                           }
-                        : null,
-                    activeColor: getColor(context, "primary"),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                );
-              }),
-              
-              const SizedBox(height: 16),
-              
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: AppText(
-                        'actions.cancel'.tr(),
-                        textColor: getColor(context, "textSecondary"),
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: getColor(context, "primary"),
+                          foregroundColor: getColor(context, "white"),
+                        ),
+                        child: AppText(
+                          'actions.save'.tr(),
+                          textColor: getColor(context, "white"),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (!isExcludeMode && tempIsAllSelected) {
-                          onAllSelected();
-                        } else {
-                          onSelectionChanged(tempSelectedCategories);
-                        }
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: getColor(context, "primary"),
-                        foregroundColor: getColor(context, "white"),
-                      ),
-                      child: AppText(
-                        'actions.save'.tr(),
-                        textColor: getColor(context, "white"),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           );
         },
       ),

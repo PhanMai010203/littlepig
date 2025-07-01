@@ -109,7 +109,18 @@
       "weekly": "Hàng tuần",
       "monthly": "Hàng tháng",
       "yearly": "Hàng năm"
-    }
+    },
+
+    "set_name_action": "Nhập tên",
+    "set_amount_action": "Nhập số tiền",
+    "create_budget_action": "Tạo ngân sách",
+    "enter_budget_amount": "Nhập số tiền ngân sách",
+    "select_period": "Chọn chu kỳ",
+    "manual_budget": "Ngân sách thủ công",
+    "automatic_budget": "Ngân sách tự động",
+    "select_accounts": "Chọn tài khoản",
+    "include_categories": "Danh mục bao gồm",
+    "exclude_categories": "Danh mục loại trừ"
   },
 
   "categories": {
@@ -125,7 +136,14 @@
     "freelance": "Freelance",
     "investment": "Đầu tư",
     "gift": "Quà tặng",
-    "other": "Khác"
+    "other": "Khác",
+    "all_categories": "Tất cả danh mục",
+    "all_categories_description": "Theo dõi tất cả danh mục cùng lúc",
+    "no_categories_selected": "Chưa chọn danh mục nào",
+    "categories_selected": "danh mục đã chọn",
+    "no_categories_excluded": "Chưa loại trừ danh mục nào",
+    "categories_excluded": "danh mục đã loại trừ",
+    "disabled_by_exclude": "Đã bị vô hiệu hóa do chế độ loại trừ"
   },
 
   "settings": {
@@ -259,5 +277,17 @@
     "jpy": "Yên Nhật",
     "cny": "Nhân dân tệ",
     "vnd": "Việt Nam Đồng"
+  },
+
+  "accounts": {
+    "all_accounts": "Tất cả tài khoản",
+    "no_accounts_selected": "Chưa chọn tài khoản nào",
+    "accounts_selected": "tài khoản đã chọn",
+    "all_accounts_description": "Theo dõi tất cả tài khoản cùng lúc"
+  },
+
+  "actions": {
+    "cancel": "Hủy",
+    "save": "Lưu"
   }
 }

@@ -56,7 +56,7 @@ class MultiAccountSelector extends StatelessWidget {
                     title,
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    textColor: getColor(context, "textPrimary"),
+                    textColor: getColor(context, "primary"),
                   ),
                   const SizedBox(height: 4),
                   if (subtitle != null)
@@ -136,127 +136,137 @@ class MultiAccountSelector extends StatelessWidget {
       context,
       StatefulBuilder(
         builder: (context, setState) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // All Accounts Option
-              CheckboxListTile(
-                title: AppText(
-                  'accounts.all_accounts'.tr(),
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                ),
-                subtitle: tempIsAllSelected
-                    ? AppText(
-                        'accounts.all_accounts_description'.tr(),
-                        fontSize: 12,
-                        textColor: getColor(context, "textSecondary"),
-                      )
-                    : null,
-                value: tempIsAllSelected,
-                onChanged: (bool? value) {
-                  setState(() {
-                    tempIsAllSelected = value ?? false;
-                    if (tempIsAllSelected) {
-                      tempSelectedAccounts.clear();
-                    }
-                  });
-                },
-                activeColor: getColor(context, "primary"),
-                controlAffinity: ListTileControlAffinity.leading,
-              ),
-              const Divider(),
-              
-              // Individual Account Options
-              ...availableAccounts.map((account) {
-                final isSelected = tempSelectedAccounts.contains(account);
-                final isEnabled = !tempIsAllSelected;
-                
-                return Opacity(
-                  opacity: isEnabled ? 1.0 : 0.5,
-                  child: CheckboxListTile(
-                    title: Row(
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: account.color,
-                            shape: BoxShape.circle,
+                        // All Accounts Option
+                        CheckboxListTile(
+                          title: AppText(
+                            'accounts.all_accounts'.tr(),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: AppText(
-                            account.name,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ],
-                    ),
-                    subtitle: AppText(
-                      account.currency,
-                      fontSize: 12,
-                      textColor: getColor(context, "textSecondary"),
-                    ),
-                    value: isSelected,
-                    onChanged: isEnabled
-                        ? (bool? value) {
+                          subtitle: tempIsAllSelected
+                              ? AppText(
+                                  'accounts.all_accounts_description'.tr(),
+                                  fontSize: 12,
+                                  textColor: getColor(context, "textSecondary"),
+                                )
+                              : null,
+                          value: tempIsAllSelected,
+                          onChanged: (bool? value) {
                             setState(() {
-                              if (value == true) {
-                                if (!tempSelectedAccounts.contains(account)) {
-                                  tempSelectedAccounts.add(account);
-                                }
-                              } else {
-                                tempSelectedAccounts.remove(account);
+                              tempIsAllSelected = value ?? false;
+                              if (tempIsAllSelected) {
+                                tempSelectedAccounts.clear();
                               }
                             });
+                          },
+                          activeColor: getColor(context, "primary"),
+                          controlAffinity: ListTileControlAffinity.leading,
+                        ),
+                        const Divider(),
+                        // Individual Account Options
+                        ...availableAccounts.map((account) {
+                          final isSelected = tempSelectedAccounts.contains(account);
+                          final isEnabled = !tempIsAllSelected;
+                          return Opacity(
+                            opacity: isEnabled ? 1.0 : 0.5,
+                            child: CheckboxListTile(
+                              title: Row(
+                                children: [
+                                  Container(
+                                    width: 12,
+                                    height: 12,
+                                    decoration: BoxDecoration(
+                                      color: account.color,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: AppText(
+                                      account.name,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              subtitle: AppText(
+                                account.currency,
+                                fontSize: 12,
+                                textColor: getColor(context, "textSecondary"),
+                              ),
+                              value: isSelected,
+                              onChanged: isEnabled
+                                  ? (bool? value) {
+                                      setState(() {
+                                        if (value == true) {
+                                          if (!tempSelectedAccounts.contains(account)) {
+                                            tempSelectedAccounts.add(account);
+                                          }
+                                        } else {
+                                          tempSelectedAccounts.remove(account);
+                                        }
+                                      });
+                                    }
+                                  : null,
+                              activeColor: getColor(context, "primary"),
+                              controlAffinity: ListTileControlAffinity.leading,
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: AppText(
+                          'actions.cancel'.tr(),
+                          textColor: getColor(context, "textSecondary"),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (tempIsAllSelected) {
+                            onAllSelected();
+                          } else {
+                            onSelectionChanged(tempSelectedAccounts);
                           }
-                        : null,
-                    activeColor: getColor(context, "primary"),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                );
-              }),
-              
-              const SizedBox(height: 16),
-              
-              // Action Buttons
-              Row(
-                children: [
-                  Expanded(
-                    child: TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: AppText(
-                        'actions.cancel'.tr(),
-                        textColor: getColor(context, "textSecondary"),
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: getColor(context, "primary"),
+                          foregroundColor: getColor(context, "white"),
+                        ),
+                        child: AppText(
+                          'actions.save'.tr(),
+                          textColor: getColor(context, "white"),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if (tempIsAllSelected) {
-                          onAllSelected();
-                        } else {
-                          onSelectionChanged(tempSelectedAccounts);
-                        }
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: getColor(context, "primary"),
-                        foregroundColor: getColor(context, "white"),
-                      ),
-                      child: AppText(
-                        'actions.save'.tr(),
-                        textColor: getColor(context, "white"),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
+                  ],
+                ),
+              ],
+            ),
           );
         },
       ),

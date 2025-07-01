@@ -105,7 +105,18 @@
       "weekly": "Weekly", 
       "monthly": "Monthly",
       "yearly": "Yearly"
-    }
+    },
+
+    "set_name_action": "Set Name",
+    "set_amount_action": "Set Amount",
+    "create_budget_action": "Create Budget",
+    "enter_budget_amount": "Enter Budget Amount",
+    "select_period": "Select Period",
+    "manual_budget": "Manual Budget",
+    "automatic_budget": "Automatic Budget",
+    "select_accounts": "Select Accounts",
+    "include_categories": "Include Categories",
+    "exclude_categories": "Exclude Categories"
   },
 
   "categories": {
@@ -121,7 +132,14 @@
     "freelance": "Freelance",
     "investment": "Investment",
     "gift": "Gift",
-    "other": "Other"
+    "other": "Other",
+    "all_categories": "All Categories",
+    "all_categories_description": "Track all categories together",
+    "no_categories_selected": "No categories selected",
+    "categories_selected": "categories selected",
+    "no_categories_excluded": "No categories excluded",
+    "categories_excluded": "categories excluded",
+    "disabled_by_exclude": "Disabled by exclude mode"
   },
 
   "settings": {
@@ -255,5 +273,17 @@
     "jpy": "Japanese Yen",
     "cny": "Chinese Yuan",
     "vnd": "Vietnamese Dong"
+  },
+
+  "accounts": {
+    "all_accounts": "All Accounts",
+    "no_accounts_selected": "No accounts selected",
+    "accounts_selected": "accounts selected",
+    "all_accounts_description": "Track all accounts together"
+  },
+
+  "actions": {
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }

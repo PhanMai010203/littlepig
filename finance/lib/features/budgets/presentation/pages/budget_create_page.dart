@@ -254,6 +254,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
   }
 
   VoidCallback? get _progressiveButtonAction {
+    debugPrint('[_progressiveButtonAction] name: \\${_nameController.text}, amount: \\${_amountController.text}');
     if (_nameController.text.isEmpty) {
       return () => _nameFocusNode.requestFocus();
     }
@@ -264,10 +265,12 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
   }
 
   void _submit() {
+    debugPrint('[BudgetCreatePage] _submit called');
     final state = context.read<BudgetsBloc>().state;
     
     // Convert UI state to Budget entity
     final budget = _createBudgetFromUiState(state);
+    debugPrint('[BudgetCreatePage] Created budget: \\${budget.toString()}');
     
     // Submit the budget via BLoC
     context.read<BudgetsBloc>().add(CreateBudget(budget));
