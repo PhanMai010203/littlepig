@@ -29,28 +29,120 @@ class BudgetCreatePage extends StatefulWidget {
   State<BudgetCreatePage> createState() => _BudgetCreatePageState();
 }
 
-class _BudgetCreatePageState extends State<BudgetCreatePage> {
+class _BudgetCreatePageState extends State<BudgetCreatePage>
+    with TickerProviderStateMixin {
   final _nameController = TextEditingController();
   final _amountController = TextEditingController();
+  final _periodAmountController = TextEditingController();
   final _scrollController = ScrollController();
 
+  final _nameFocusNode = FocusNode();
+  final _periodAmountFocusNode = FocusNode();
+
+  late AnimationController _nameAnimationController;
+  late AnimationController _periodAmountAnimationController;
+  late Animation<Color?> _nameBorderColorAnimation;
+  late Animation<Color?> _periodAmountBorderColorAnimation;
+
   BudgetPeriod _selectedPeriod = BudgetPeriod.monthly;
+  int _periodAmount = 1;
   DateTime _startDate = DateTime.now();
   BudgetType _budgetType = BudgetType.expense;
+  late Color _selectedColor;
+
+  final List<Color> _budgetColors = const [
+    Color(0xFF4CAF50), // Green
+    Color(0xFF2196F3), // Blue
+    Color(0xFFFF9800), // Orange
+    Color(0xFFE91E63), // Pink
+    Color(0xFF9C27B0), // Purple
+    Color(0xFF795548), // Brown
+    Color(0xFF009688), // Teal
+    Color(0xFFF44336), // Red
+  ];
 
   @override
   void initState() {
     super.initState();
+    _selectedColor = _budgetColors[0];
     _nameController.addListener(() => setState(() {}));
     _amountController.addListener(() => setState(() {}));
+    _periodAmountController.text = _periodAmount.toString();
+    _periodAmountController.addListener(_onPeriodAmountChanged);
+
+    // Initialize animation controllers
+    _nameAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _periodAmountAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    // Setup focus listeners
+    _nameFocusNode.addListener(_onNameFocusChanged);
+    _periodAmountFocusNode.addListener(_onPeriodAmountFocusChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Initialize color animations after context is available
+    _nameBorderColorAnimation = ColorTween(
+      begin: getColor(context, "border"),
+      end: getColor(context, "primary"),
+    ).animate(CurvedAnimation(
+      parent: _nameAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _periodAmountBorderColorAnimation = ColorTween(
+      begin: getColor(context, "border"),
+      end: getColor(context, "primary"),
+    ).animate(CurvedAnimation(
+      parent: _periodAmountAnimationController,
+      curve: Curves.easeInOut,
+    ));
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _amountController.dispose();
+    _periodAmountController.dispose();
     _scrollController.dispose();
+    _nameFocusNode.dispose();
+    _periodAmountFocusNode.dispose();
+    _nameAnimationController.dispose();
+    _periodAmountAnimationController.dispose();
     super.dispose();
+  }
+
+  void _onNameFocusChanged() {
+    if (_nameFocusNode.hasFocus) {
+      _nameAnimationController.forward();
+    } else {
+      _nameAnimationController.reverse();
+    }
+  }
+
+  void _onPeriodAmountFocusChanged() {
+    if (_periodAmountFocusNode.hasFocus) {
+      _periodAmountAnimationController.forward();
+    } else {
+      _periodAmountAnimationController.reverse();
+    }
+  }
+
+  void _onPeriodAmountChanged() {
+    final amount = int.tryParse(_periodAmountController.text);
+    if (amount != null && amount > 0) {
+      setState(() {
+        _periodAmount = amount;
+      });
+    }
   }
 
   void _selectStartDate() async {
@@ -78,40 +170,6 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
     }
   }
 
-  void _selectBudgetName() {
-    final content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        TextInput(
-          controller: _nameController,
-          hintText: 'budgets.name_placeholder'.tr(),
-          autofocus: true,
-          style: TextInputStyle.underline,
-          handleOnTapOutside: true,
-          textCapitalization: TextCapitalization.words,
-        ),
-        const SizedBox(height: 20),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: getColor(context, "primary"),
-            foregroundColor: getColor(context, "white"),
-          ),
-          onPressed: () => Navigator.pop(context),
-          child: Text('actions.save'.tr()),
-        )
-      ],
-    );
-
-    BottomSheetService.showCustomBottomSheet(
-      context,
-      content,
-      title: 'budgets.enter_budget_name'.tr(),
-      resizeForKeyboard: true,
-      popupWithKeyboard: true, // Allow keyboard with this sheet
-      isScrollControlled: true,
-    );
-  }
-
   void _selectBudgetAmount() {
     final content = Column(
       mainAxisSize: MainAxisSize.min,
@@ -126,7 +184,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
           handleOnTapOutside: true,
           textCapitalization: TextCapitalization.none,
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 0),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
             backgroundColor: getColor(context, "primary"),
@@ -180,7 +238,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
 
   VoidCallback? get _progressiveButtonAction {
     if (_nameController.text.isEmpty) {
-      return _selectBudgetName;
+      return () => _nameFocusNode.requestFocus();
     }
     if (_amountController.text.isEmpty) {
       return _selectBudgetAmount;
@@ -203,34 +261,40 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
     ).format(number);
   }
 
-  String _formatPeriod(BudgetPeriod period) {
-    // In a real app, this would use translations.
+  String _formatPeriod(BudgetPeriod period, int amount) {
+    final String basePeriod;
     switch (period) {
       case BudgetPeriod.daily:
-        return 'day';
+        basePeriod = amount == 1 ? 'day' : 'days';
+        break;
       case BudgetPeriod.weekly:
-        return 'week';
+        basePeriod = amount == 1 ? 'week' : 'weeks';
+        break;
       case BudgetPeriod.monthly:
-        return 'month';
+        basePeriod = amount == 1 ? 'month' : 'months';
+        break;
       case BudgetPeriod.yearly:
-        return 'year';
+        basePeriod = amount == 1 ? 'year' : 'years';
+        break;
     }
+    return basePeriod;
   }
 
   DateTime _getEndDate() {
     final now = _startDate;
     switch (_selectedPeriod) {
       case BudgetPeriod.daily:
-        return now;
+        return now.add(Duration(days: _periodAmount - 1));
       case BudgetPeriod.weekly:
-        return now.add(const Duration(days: 6));
+        return now.add(Duration(days: (_periodAmount * 7) - 1));
       case BudgetPeriod.monthly:
-        // Last day of the month
-        return (now.month < 12)
-            ? DateTime(now.year, now.month + 1, 0)
-            : DateTime(now.year + 1, 1, 0);
+        // Calculate end date for multiple months
+        DateTime endDate =
+            DateTime(now.year, now.month + _periodAmount, now.day);
+        // Adjust to last day of the final month if needed
+        return DateTime(endDate.year, endDate.month, 0);
       case BudgetPeriod.yearly:
-        return DateTime(now.year, 12, 31);
+        return DateTime(now.year + _periodAmount - 1, 12, 31);
     }
   }
 
@@ -264,7 +328,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
               [
                 // Budget Type Selector
                 Container(
-                  margin: const EdgeInsets.only(bottom: 32),
+                  margin: const EdgeInsets.only(bottom: 10),
                   child: SelectorWidget<BudgetType>(
                     selectedValue: _budgetType,
                     options: [
@@ -293,21 +357,55 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
                   ),
                 ),
 
-                // Name Input
+                // Name Input - Direct editing with animated border
                 Center(
-                  child: TappableTextEntry(
-                    title: _nameController.text,
-                    placeholder: 'Name',
-                    onTap: _selectBudgetName,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w500,
-                    addTappableBackground: false,
-                    internalPadding:
-                        const EdgeInsetsDirectional.fromSTEB(10, 10, 10, 10),
+                  child: AnimatedBuilder(
+                    animation: _nameBorderColorAnimation,
+                    builder: (context, child) {
+                      return Container(
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border(
+                            bottom: BorderSide(
+                              color: _nameBorderColorAnimation.value ??
+                                  getColor(context, "border"),
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                        child: IntrinsicWidth(
+                          child: TextField(
+                            controller: _nameController,
+                            focusNode: _nameFocusNode,
+                            textAlign: TextAlign.center,
+                            textCapitalization: TextCapitalization.words,
+                            style: TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w500,
+                              color: getColor(context, "textPrimary"),
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Name',
+                              hintStyle: TextStyle(
+                                fontSize: 30,
+                                fontWeight: FontWeight.w500,
+                                color: getColor(context, "textLight"),
+                              ),
+                              border: InputBorder.none,
+                              contentPadding:
+                                  const EdgeInsetsDirectional.fromSTEB(
+                                      10, 10, 10, 10),
+                              fillColor: Colors.transparent,
+                              filled: true,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
 
-                const SizedBox(height: 12),
+                const SizedBox(height: 0),
 
                 // Amount & Period
                 Row(
@@ -343,6 +441,52 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
                         textColor: getColor(context, "textLight"),
                       ),
                     ),
+                    // Period Amount - Direct editing with animated border
+                    AnimatedBuilder(
+                      animation: _periodAmountBorderColorAnimation,
+                      builder: (context, child) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: Colors.transparent,
+                            border: Border(
+                              bottom: BorderSide(
+                                color:
+                                    _periodAmountBorderColorAnimation.value ??
+                                        getColor(context, "border"),
+                                width: 1.5,
+                              ),
+                            ),
+                          ),
+                          child: IntrinsicWidth(
+                            child: TextField(
+                              controller: _periodAmountController,
+                              focusNode: _periodAmountFocusNode,
+                              textAlign: TextAlign.center,
+                              keyboardType: TextInputType.number,
+                              style: TextStyle(
+                                fontSize: 24,
+                                color: getColor(context, "textLight"),
+                              ),
+                              decoration: InputDecoration(
+                                border: InputBorder.none,
+                                contentPadding: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 4),
+                                fillColor: Colors.transparent,
+                                filled: true,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      child: AppText(
+                        ' ',
+                        fontSize: 24,
+                        textColor: getColor(context, "textLight"),
+                      ),
+                    ),
                     TappableWidget(
                       onTap: _selectBudgetPeriod,
                       animationType: TapAnimationType.scale,
@@ -359,7 +503,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
                         child: Padding(
                           padding: const EdgeInsets.only(bottom: 6.0),
                           child: AppText(
-                            '1 ${_formatPeriod(_selectedPeriod)}',
+                            _formatPeriod(_selectedPeriod, _periodAmount),
                             fontSize: 24,
                             textColor: getColor(context, "textLight"),
                           ),
@@ -369,7 +513,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
                   ],
                 ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 8),
 
                 // Beginning Date
                 TappableWidget(
@@ -411,6 +555,53 @@ class _BudgetCreatePageState extends State<BudgetCreatePage> {
                     'Current Period: ${DateFormat.MMMd().format(_startDate)} - ${DateFormat.MMMd().format(_getEndDate())}',
                     fontSize: 14,
                     textColor: getColor(context, "textLight"),
+                  ),
+                ),
+
+                const SizedBox(height: 22),
+                SizedBox(
+                  height: 48,
+                  child: Center(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      padding: const EdgeInsets.symmetric(horizontal: 0),
+                      itemCount: _budgetColors.length,
+                      itemBuilder: (context, index) {
+                        final color = _budgetColors[index];
+                        final isSelected = color == _selectedColor;
+
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          child: TappableWidget(
+                            onTap: () {
+                              setState(() {
+                                _selectedColor = color;
+                              });
+                            },
+                            animationType: TapAnimationType.scale,
+                            child: Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                color: color,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isSelected
+                                      ? Colors.white
+                                      : Colors.transparent,
+                                  width: 3,
+                                ),
+                              ),
+                              child: isSelected
+                                  ? const Icon(Icons.check,
+                                      color: Colors.white, size: 24)
+                                  : null,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
                 ),
 
