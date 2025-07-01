@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -12,29 +13,16 @@ import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/budget.dart';
 import '../bloc/budgets_bloc.dart';
 import '../bloc/budgets_state.dart';
+import '../bloc/budgets_event.dart';
 import 'animated_goo_background.dart';
 import 'budget_timeline.dart';
 import 'daily_allowance_label.dart';
+import '../../../../shared/widgets/dialogs/note_popup.dart';
 
 class BudgetTile extends StatelessWidget {
   const BudgetTile({super.key, required this.budget});
 
   final Budget budget;
-
-  Color _pickColor(BuildContext context) {
-    // Attempt to derive color from budget.colour if available via reflection
-    try {
-      final colourField = budget as dynamic;
-      final colourValue = colourField.colour as String?;
-      if (colourValue != null) {
-        return HexColor(colourValue);
-      }
-    } catch (_) {
-      // Ignore if field not present
-    }
-    final palette = getSelectableColors();
-    return palette[budget.name.hashCode.abs() % palette.length];
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,18 +32,9 @@ class BudgetTile extends StatelessWidget {
 
     final Color budgetColor = _pickColor(context);
 
-    return TappableWidget(
-      borderRadius: BorderRadius.circular(18),
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              'budgets.details_coming'
-                  .tr(namedArgs: {'name': budget.name}),
-            ),
-          ),
-        );
-      },
+    return GestureDetector(
+      onTap: () => _handleTap(context),
+      onLongPressStart: (details) => _handleLongPressStart(context, details),
       child: Container(
         height: 160,
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 0),
@@ -170,6 +149,74 @@ class BudgetTile extends StatelessWidget {
         content: Text('History for ${budget.name} coming soon'),
       ),
     );
+  }
+
+  // ────────────────────────────── Interaction Handlers ─────────────────────────────
+
+  void _handleLongPressStart(BuildContext context, LongPressStartDetails details) {
+    // Haptic feedback
+    HapticFeedback.mediumImpact();
+
+    // Show floating "Delete" note popup at fingertip position
+    NotePopup.show(
+      context,
+      'Delete',
+      details.globalPosition,
+      const Size(50, 50), // Approximate finger size
+      textColor: Colors.red,
+      onTap: () => _showDeleteConfirmation(context),
+    );
+  }
+
+  void _handleTap(BuildContext context) {
+    // Default tap behaviour – show stub toast
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'budgets.details_coming'.tr(namedArgs: {'name': budget.name}),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showDeleteConfirmation(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: AppText('Delete Budget'),
+            content: AppText(
+              'Are you sure you want to delete "${budget.name}"? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: AppText('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: AppText(
+                  'Delete',
+                  textColor: Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirmed && budget.id != null) {
+      debugPrint('Dispatching DeleteBudget event for ID: ${budget.id!}');
+      context.read<BudgetsBloc>().add(DeleteBudget(budget.id!));
+    }
+  }
+
+  Color _pickColor(BuildContext context) {
+    // Use the budget's color if available, otherwise fall back to hash-based selection
+    if (budget.colour != null && budget.colour!.isNotEmpty) {
+      return HexColor(budget.colour!);
+    }
+    final palette = getSelectableColors();
+    return palette[budget.name.hashCode.abs() % palette.length];
   }
 }
 

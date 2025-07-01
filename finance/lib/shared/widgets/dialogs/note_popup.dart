@@ -20,6 +20,8 @@ class NotePopup {
     Offset position,
     Size size, {
     Duration duration = const Duration(seconds: 3),
+    Color? textColor,
+    VoidCallback? onTap,
   }) {
     _dismissCurrentPopup();
     final overlay = Overlay.of(context);
@@ -55,40 +57,47 @@ class NotePopup {
         left: left,
         top: top,
         child: IgnorePointer(
-          ignoring: true,
-          child: FadeTransition(
-            opacity: CurvedAnimation(parent: controller, curve: Curves.easeInOut),
-            child: Material(
-              type: MaterialType.transparency,
-              child: Container(
-                constraints: const BoxConstraints(
-                  maxWidth: popupMaxWidth,
-                  minWidth: 120.0,
-                ),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Theme.of(context).cardColor,
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                      spreadRadius: 0,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                      spreadRadius: 0,
-                    ),
-                  ],
-                ),
-                child: AppText(
-                  note,
-                  maxLines: 5,
-                  overflow: TextOverflow.ellipsis,
-                  fontSize: 14,
+          ignoring: onTap == null,
+          child: GestureDetector(
+            onTap: onTap != null ? () {
+              onTap();
+              _dismissCurrentPopup();
+            } : null,
+            child: FadeTransition(
+              opacity: CurvedAnimation(parent: controller, curve: Curves.easeInOut),
+              child: Material(
+                type: MaterialType.transparency,
+                child: Container(
+                  constraints: const BoxConstraints(
+                    maxWidth: popupMaxWidth,
+                    minWidth: 120.0,
+                  ),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                        spreadRadius: 0,
+                      ),
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: AppText(
+                    note,
+                    maxLines: 5,
+                    overflow: TextOverflow.ellipsis,
+                    fontSize: 14,
+                    textColor: textColor,
+                  ),
                 ),
               ),
             ),

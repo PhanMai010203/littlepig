@@ -28,6 +28,9 @@ class BudgetsTable extends Table {
   // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   TextColumn get syncId => text().unique()();
 
+  // Budget color as hex string (e.g., "#4CAF50")
+  TextColumn get colour => text().nullable()();
+
   // Advanced filtering fields
   TextColumn get budgetTransactionFilters => text().nullable()(); // JSON string
   BoolColumn get excludeDebtCreditInstallments =>

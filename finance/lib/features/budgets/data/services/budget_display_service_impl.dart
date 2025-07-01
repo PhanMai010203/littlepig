@@ -54,15 +54,9 @@ class BudgetDisplayServiceImpl implements BudgetDisplayService {
   }
 
   Color _pickBudgetColor(Budget budget) {
-    // Attempt to derive color from budget.colour if available via reflection
-    try {
-      final colourField = budget as dynamic;
-      final colourValue = colourField.colour as String?;
-      if (colourValue != null) {
-        return HexColor(colourValue);
-      }
-    } catch (_) {
-      // Ignore if field not present
+    // Use the budget's color if available, otherwise fall back to hash-based selection
+    if (budget.colour != null && budget.colour!.isNotEmpty) {
+      return HexColor(budget.colour!);
     }
     final palette = getSelectableColors();
     return palette[budget.name.hashCode.abs() % palette.length];

@@ -33,6 +33,9 @@ class Budget extends Equatable {
   final DateTime? dateCreatedOriginal;
   final Map<String, dynamic>? budgetTransactionFilters;
 
+  // Budget color as hex string (e.g., "#4CAF50")
+  final String? colour;
+
   const Budget({
     this.id,
     required this.name,
@@ -59,6 +62,7 @@ class Budget extends Equatable {
     this.includeUpcomingTransactionFromBudget = false,
     this.dateCreatedOriginal,
     this.budgetTransactionFilters,
+    this.colour,
   });
 
   Budget copyWith({
@@ -87,6 +91,7 @@ class Budget extends Equatable {
     bool? includeUpcomingTransactionFromBudget,
     DateTime? dateCreatedOriginal,
     Map<String, dynamic>? budgetTransactionFilters,
+    String? colour,
   }) {
     return Budget(
       id: id ?? this.id,
@@ -122,6 +127,7 @@ class Budget extends Equatable {
       dateCreatedOriginal: dateCreatedOriginal ?? this.dateCreatedOriginal,
       budgetTransactionFilters:
           budgetTransactionFilters ?? this.budgetTransactionFilters,
+      colour: colour ?? this.colour,
     );
   }
 
@@ -158,5 +164,6 @@ class Budget extends Equatable {
         includeUpcomingTransactionFromBudget,
         dateCreatedOriginal,
         budgetTransactionFilters,
+        colour,
       ];
 }

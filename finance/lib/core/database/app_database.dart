@@ -42,7 +42,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -89,6 +89,15 @@ class AppDatabase extends _$AppDatabase {
             final migration = Phase3PartialLoansMigration(this);
             await migration.executePhase3Migration();
             print('✅ Phase 3 migration completed successfully!');
+          }
+
+          // ✅ Budget Color Support Migration (v11 → v12)
+          if (from < 12) {
+            print(
+                '🎨 Starting Budget Color Support Migration (v11 → v12)...');
+            await m.addColumn(
+                budgetsTable, budgetsTable.colour as GeneratedColumn);
+            print('✅ Budget Color migration completed successfully!');
           }
         },
       );
@@ -246,6 +255,7 @@ class AppDatabase extends _$AppDatabase {
           'include_transfer_in_out_with_same_currency', NEW.include_transfer_in_out_with_same_currency,
           'include_upcoming_transaction_from_budget', NEW.include_upcoming_transaction_from_budget,
           'date_created_original', NEW.date_created_original,
+          'colour', NEW.colour,
           'sync_id', NEW.sync_id
         ''';
       case 'attachments':

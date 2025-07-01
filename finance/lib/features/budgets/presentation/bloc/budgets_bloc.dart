@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/budget_history_entry.dart';
 import '../../domain/repositories/budget_repository.dart';
@@ -85,6 +86,8 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
     emit(BudgetsLoading());
     try {
       final budgets = await _budgetRepository.getAllBudgets();
+      debugPrint('Budgets loaded count: ${budgets.length}');
+      debugPrint('Budgets loaded: ${budgets.map((b) => b.id).toList()}');
       final spentAmounts = <int, double>{};
       final dailyAllowances = <int, double>{};
 
@@ -180,9 +183,20 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
   Future<void> _onDeleteBudget(
       DeleteBudget event, Emitter<BudgetsState> emit) async {
     try {
+      debugPrint('Attempting to delete budget with ID: ${event.budgetId}');
       await _budgetRepository.deleteBudget(event.budgetId);
+      debugPrint('Budget ${event.budgetId} deleted successfully. Reloading all budgets.');
+      
+      // Ensure the real-time update stream is immediately aware of the deleted
+      // budget. Otherwise, the first emission from BudgetUpdateService after we 
+      // subscribe in [_onStartRealTimeUpdates] could contain an outdated list 
+      // that would overwrite our freshly loaded state and make the deleted budget 
+      // reappear in the UI.
+      await _budgetUpdateService.recalculateAllBudgetSpentAmounts();
+      
       add(LoadAllBudgets());
     } catch (e) {
+      debugPrint('Failed to delete budget ${event.budgetId}: $e');
       emit(BudgetsError('Failed to delete budget: $e'));
     }
   }

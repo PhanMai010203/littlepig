@@ -120,6 +120,7 @@ class BudgetRepositoryImpl
       includeUpcomingTransactionFromBudget:
           Value(budget.includeUpcomingTransactionFromBudget),
       dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+      colour: Value(budget.colour),
     );
 
     final id = await _database.into(_database.budgetsTable).insert(companion);
@@ -171,6 +172,7 @@ class BudgetRepositoryImpl
       includeUpcomingTransactionFromBudget:
           Value(budget.includeUpcomingTransactionFromBudget),
       dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+      colour: Value(budget.colour),
     );
 
     await (_database.update(_database.budgetsTable)
@@ -285,6 +287,7 @@ class BudgetRepositoryImpl
         includeUpcomingTransactionFromBudget:
             Value(budget.includeUpcomingTransactionFromBudget),
         dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+        colour: Value(budget.colour),
       );
       await _database.into(_database.budgetsTable).insert(companion);
     } else {
@@ -324,6 +327,7 @@ class BudgetRepositoryImpl
         includeUpcomingTransactionFromBudget:
             Value(budget.includeUpcomingTransactionFromBudget),
         dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+        colour: Value(budget.colour),
       );
 
       await (_database.update(_database.budgetsTable)
@@ -503,6 +507,7 @@ class BudgetRepositoryImpl
           ? Map<String, dynamic>.from(
               jsonDecode(data.budgetTransactionFilters!))
           : null,
+      colour: data.colour,
     );
   }
 }

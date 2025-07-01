@@ -39,6 +39,8 @@ import '../../features/budgets/domain/services/budget_filter_service.dart'
     as _i375;
 import '../../features/budgets/domain/services/budget_update_service.dart'
     as _i527;
+import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart'
+    as _i408;
 import '../../features/budgets/presentation/bloc/budgets_bloc.dart' as _i120;
 import '../../features/categories/data/repositories/category_repository_impl.dart'
     as _i894;
@@ -201,6 +203,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i894.CategoryRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i520.SyncService>(
         () => registerModule.syncService(gh<_i767.IncrementalSyncService>()));
+    gh.factory<_i408.BudgetCreationBloc>(() => _i408.BudgetCreationBloc(
+          gh<_i706.AccountRepository>(),
+          gh<_i266.CategoryRepository>(),
+        ));
     gh.lazySingleton<_i351.CurrencyService>(() => _i351.CurrencyService(
           gh<_i1056.CurrencyRepository>(),
           gh<_i706.AccountRepository>(),

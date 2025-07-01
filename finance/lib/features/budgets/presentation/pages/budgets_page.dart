@@ -39,7 +39,10 @@ class _BudgetsPageState extends State<BudgetsPage> {
       floatingActionButton: _buildFab(context),
       slivers: [
         BlocBuilder<BudgetsBloc, BudgetsState>(
-          builder: (context, state) => _buildBody(state),
+          builder: (context, state) {
+            debugPrint('BlocBuilder rebuilding with state: ${state.runtimeType}');
+            return _buildBody(state);
+          },
         ),
       ],
     );
@@ -47,6 +50,8 @@ class _BudgetsPageState extends State<BudgetsPage> {
 
   /// Builds the appropriate sliver based on the current [BudgetsState].
   Widget _buildBody(BudgetsState state) {
+    debugPrint('_buildBody called with state: ${state.runtimeType}');
+    
     if (state is BudgetsLoading || state is BudgetsInitial) {
       return _buildLoading();
     }
@@ -56,6 +61,7 @@ class _BudgetsPageState extends State<BudgetsPage> {
     }
 
     if (state is BudgetsLoaded) {
+      debugPrint('BudgetsLoaded: ${state.budgets.length} budgets with IDs: ${state.budgets.map((b) => b.id).toList()}');
       if (state.budgets.isEmpty) return _buildEmpty();
       return _buildBudgetList(state.budgets);
     }
@@ -92,13 +98,22 @@ class _BudgetsPageState extends State<BudgetsPage> {
         child: Center(child: Text('budgets.empty'.tr())),
       );
 
-  Widget _buildBudgetList(List<Budget> budgets) => SliverPadding(
-        padding: const EdgeInsets.all(16),
-        sliver: SliverList.builder(
-          itemCount: budgets.length,
-          itemBuilder: (context, index) => BudgetTile(budget: budgets[index]),
-        ),
-      );
+  Widget _buildBudgetList(List<Budget> budgets) {
+    debugPrint('_buildBudgetList called with ${budgets.length} budgets: ${budgets.map((b) => b.id).toList()}');
+    return SliverPadding(
+      padding: const EdgeInsets.all(16),
+      sliver: SliverList.builder(
+        itemCount: budgets.length,
+        itemBuilder: (context, index) {
+          debugPrint('Building BudgetTile for index $index, budget ID: ${budgets[index].id}');
+          return BudgetTile(
+            key: ValueKey(budgets[index].id),
+            budget: budgets[index],
+          );
+        },
+      ),
+    );
+  }
 
   void _showComingSoonSnackBar(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(

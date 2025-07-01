@@ -332,6 +332,9 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
       // Set budget purpose based on type
       isIncomeBudget: _budgetType.isSavings,
       
+      // Set the user-selected color
+      colour: _colorToHex(_selectedColor),
+      
       // Default filtering options - can be enhanced later
       excludeDebtCreditInstallments: true,
       excludeObjectiveInstallments: false,
@@ -383,6 +386,11 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
         break;
     }
     return basePeriod;
+  }
+
+  /// Convert Color to hex string format expected by the Budget entity
+  String _colorToHex(Color color) {
+    return '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}';
   }
 
   DateTime _getEndDate() {
