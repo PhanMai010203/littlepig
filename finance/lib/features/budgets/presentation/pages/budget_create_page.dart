@@ -15,6 +15,7 @@ import '../../domain/entities/budget_enums.dart';
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/tappable_text_entry.dart';
 import '../bloc/budgets_bloc.dart';
+import '../bloc/budget_creation_bloc.dart';
 import '../bloc/budgets_event.dart';
 import '../bloc/budgets_state.dart';
 
@@ -96,9 +97,9 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
     
     // Initialize budget creation state and load data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BudgetsBloc>().add(BudgetTrackingTypeChanged(_budgetTrackingType));
-      context.read<BudgetsBloc>().add(LoadAccountsForBudget());
-      context.read<BudgetsBloc>().add(LoadCategoriesForBudget());
+      context.read<BudgetCreationBloc>().add(BudgetTrackingTypeChanged(_budgetTrackingType));
+      context.read<BudgetCreationBloc>().add(LoadAccountsForBudget());
+      context.read<BudgetCreationBloc>().add(LoadCategoriesForBudget());
     });
   }
 
@@ -266,7 +267,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
 
   void _submit() {
     debugPrint('[BudgetCreatePage] _submit called');
-    final state = context.read<BudgetsBloc>().state;
+    final state = context.read<BudgetCreationBloc>().state;
     
     // Convert UI state to Budget entity
     final budget = _createBudgetFromUiState(state);
@@ -462,7 +463,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                 ),
 
                 // Budget Tracking Type Selector (Manual vs Automatic)
-                BlocBuilder<BudgetsBloc, BudgetsState>(
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
                   builder: (context, state) {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 16),
@@ -486,7 +487,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                           setState(() {
                             _budgetTrackingType = trackingType;
                           });
-                          context.read<BudgetsBloc>().add(BudgetTrackingTypeChanged(trackingType));
+                          context.read<BudgetCreationBloc>().add(BudgetTrackingTypeChanged(trackingType));
                         },
                       ),
                     );
@@ -494,7 +495,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                 ),
 
                 // Conditional Account Selector (only for automatic budgets)
-                BlocBuilder<BudgetsBloc, BudgetsState>(
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
                   builder: (context, state) {
                     if (_budgetTrackingType.isManual) {
                       return const SizedBox.shrink();
@@ -510,12 +511,12 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                           isAllSelected: state.isAllAccountsSelected,
                           isLoading: state.isAccountsLoading,
                           onAllSelected: () {
-                            context.read<BudgetsBloc>().add(
+                            context.read<BudgetCreationBloc>().add(
                               const BudgetAccountsSelected([], true),
                             );
                           },
                           onSelectionChanged: (selectedAccounts) {
-                            context.read<BudgetsBloc>().add(
+                            context.read<BudgetCreationBloc>().add(
                               BudgetAccountsSelected(selectedAccounts, false),
                             );
                           },
@@ -527,7 +528,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                 ),
 
                 // Include Categories Selector
-                BlocBuilder<BudgetsBloc, BudgetsState>(
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
                   builder: (context, state) {
                     if (state is BudgetCreationState) {
                       return Container(
@@ -540,12 +541,12 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                           isLoading: state.isCategoriesLoading,
                           isOpacityReduced: state.shouldReduceIncludeCategoriesOpacity,
                           onAllSelected: () {
-                            context.read<BudgetsBloc>().add(
+                            context.read<BudgetCreationBloc>().add(
                               const BudgetIncludeCategoriesSelected([], true),
                             );
                           },
                           onSelectionChanged: (selectedCategories) {
-                            context.read<BudgetsBloc>().add(
+                            context.read<BudgetCreationBloc>().add(
                               BudgetIncludeCategoriesSelected(selectedCategories, false),
                             );
                           },
@@ -557,7 +558,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                 ),
 
                 // Exclude Categories Selector
-                BlocBuilder<BudgetsBloc, BudgetsState>(
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
                   builder: (context, state) {
                     if (state is BudgetCreationState) {
                       return Container(
@@ -571,7 +572,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                           isExcludeMode: true,
                           onAllSelected: () {},
                           onSelectionChanged: (selectedCategories) {
-                            context.read<BudgetsBloc>().add(
+                            context.read<BudgetCreationBloc>().add(
                               BudgetExcludeCategoriesSelected(selectedCategories),
                             );
                           },

@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import '../../core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../features/accounts/domain/repositories/account_repository.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
@@ -16,6 +17,7 @@ import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../../features/budgets/presentation/pages/budget_create_page.dart';
+import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
 // Add these imports for demo pages
@@ -105,7 +107,13 @@ class AppRouter {
         pageBuilder: (context, state) {
           return AppPageTransitions.platformTransitionPage(
             key: state.pageKey,
-            child: const BudgetCreatePage(),
+            child: BlocProvider(
+              create: (_) => BudgetCreationBloc(
+                getIt<AccountRepository>(),
+                getIt<CategoryRepository>(),
+              ),
+              child: const BudgetCreatePage(),
+            ),
             name: state.name,
           );
         },
