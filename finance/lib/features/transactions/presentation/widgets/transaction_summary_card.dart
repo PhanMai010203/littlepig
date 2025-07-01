@@ -5,6 +5,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 import '../../domain/entities/transaction_card_data.dart';
+import '../../../../shared/widgets/dialogs/note_popup.dart';
 
 /// Simplified transaction card widget for homepage display
 /// 
@@ -116,7 +117,14 @@ class TransactionSummaryCard extends StatelessWidget {
 
   Widget _buildNoteIcon(BuildContext context) {
     return GestureDetector(
-      onTap: () => _showNotePopup(context),
+      onTap: () {
+        final RenderBox renderBox = context.findRenderObject() as RenderBox;
+        final position = renderBox.localToGlobal(Offset.zero);
+        final size = renderBox.size;
+        if (transactionData.displayNote != null) {
+          NotePopup.show(context, transactionData.displayNote!, position, size);
+        }
+      },
       child: SvgPicture.asset(
         'assets/icons/icon_note.svg',
         width: 16,
@@ -157,79 +165,6 @@ class TransactionSummaryCard extends StatelessWidget {
           fontSize: 14,
         ),
       ],
-    );
-  }
-
-  void _showNotePopup(BuildContext context) {
-    if (transactionData.displayNote == null) return;
-    
-    final screenSize = MediaQuery.of(context).size;
-    const double popupMaxWidth = 250.0;
-    const double popupPadding = 16.0;
-
-    showGeneralDialog(
-      context: context,
-      barrierDismissible: true,
-      barrierLabel: '',
-      barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 300),
-      pageBuilder: (context, animation, secondaryAnimation) {
-        return Stack(
-          children: <Widget>[
-            Positioned(
-              left: popupPadding,
-              right: popupPadding,
-              top: screenSize.height * 0.3,
-              child: Material(
-                type: MaterialType.transparency,
-                child: Container(
-                  constraints: const BoxConstraints(
-                    maxWidth: popupMaxWidth,
-                    minWidth: 120.0,
-                  ),
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                        spreadRadius: 0,
-                      ),
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                        spreadRadius: 0,
-                      ),
-                    ],
-                  ),
-                  child: AppText(
-                    transactionData.displayNote!,
-                    maxLines: 5,
-                    overflow: TextOverflow.ellipsis,
-                    fontSize: 14,
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-      transitionBuilder: (context, animation, secondaryAnimation, child) {
-        final fadeAnimation = CurvedAnimation(
-          parent: animation,
-          curve: Curves.easeInOut,
-          reverseCurve: Curves.easeInOut,
-        );
-
-        return FadeTransition(
-          opacity: fadeAnimation,
-          child: child,
-        );
-      },
     );
   }
 }
