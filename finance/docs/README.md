@@ -80,6 +80,7 @@ graph TD
 | [Database Caching](DATABASE_CACHING_GUIDE.md) | High-speed in-memory cache layer for Drift/SQLite queries. |
 | [Data Sync Engine](DATA_SYNC_GUIDE.md) | Advanced, CRDT-inspired event-sourcing engine for real-time, multi-device sync, conflict resolution, and offline-first operation. |
 | [Currency Management](CURRENCY_MANAGEMENT_SYSTEM.md) | Currency data, formatting, conversion APIs & offline support. |
+| **[Bottom Sheet Revamp Plan](plans/revampbottomsheet/plan.md)** | **🚀 Comprehensive plan to replace current bottom sheet implementation with Cashew's superior, performance-optimized approach.** |
 
 **Data Sync Engine – High-Level Flow**
 ```mermaid
