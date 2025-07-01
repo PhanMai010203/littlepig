@@ -57,7 +57,7 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
   DateTime _startDate = DateTime.now();
   BudgetType _budgetType = BudgetType.expense;
   late Color _selectedColor;
-  
+
   // New state variables for the enhanced selectors
   BudgetTrackingType _budgetTrackingType = BudgetTrackingType.automatic;
 
@@ -94,10 +94,12 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
     // Setup focus listeners
     _nameFocusNode.addListener(_onNameFocusChanged);
     _periodAmountFocusNode.addListener(_onPeriodAmountFocusChanged);
-    
+
     // Initialize budget creation state and load data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BudgetCreationBloc>().add(BudgetTrackingTypeChanged(_budgetTrackingType));
+      context
+          .read<BudgetCreationBloc>()
+          .add(BudgetTrackingTypeChanged(_budgetTrackingType));
       context.read<BudgetCreationBloc>().add(LoadAccountsForBudget());
       context.read<BudgetCreationBloc>().add(LoadCategoriesForBudget());
     });
@@ -255,7 +257,8 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
   }
 
   VoidCallback? get _progressiveButtonAction {
-    debugPrint('[_progressiveButtonAction] name: \\${_nameController.text}, amount: \\${_amountController.text}');
+    debugPrint(
+        '[_progressiveButtonAction] name: \\${_nameController.text}, amount: \\${_amountController.text}');
     if (_nameController.text.isEmpty) {
       return () => _nameFocusNode.requestFocus();
     }
@@ -268,22 +271,22 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
   void _submit() {
     debugPrint('[BudgetCreatePage] _submit called');
     final state = context.read<BudgetCreationBloc>().state;
-    
+
     // Convert UI state to Budget entity
     final budget = _createBudgetFromUiState(state);
     debugPrint('[BudgetCreatePage] Created budget: \\${budget.toString()}');
-    
+
     // Submit the budget via BLoC
     context.read<BudgetsBloc>().add(CreateBudget(budget));
-    
+
     Navigator.pop(context);
   }
-  
+
   Budget _createBudgetFromUiState(BudgetsState state) {
     // Extract current selection state
     List<String>? walletFks;
     int? categoryId;
-    
+
     if (state is BudgetCreationState) {
       // Convert tracking type to walletFks
       if (_budgetTrackingType.isAutomatic) {
@@ -291,17 +294,22 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
           // For "All" accounts, we leave walletFks as null or empty to include all
           // According to the Budget entity docs, null walletFks means manual mode
           // So for "All" automatic mode, we should include all available account IDs
-          walletFks = state.availableAccounts.map((account) => account.id.toString()).toList();
+          walletFks = state.availableAccounts
+              .map((account) => account.id.toString())
+              .toList();
         } else {
-          walletFks = state.selectedAccounts.map((account) => account.id.toString()).toList();
+          walletFks = state.selectedAccounts
+              .map((account) => account.id.toString())
+              .toList();
         }
       } else {
         // Manual mode: walletFks should be null
         walletFks = null;
       }
-      
+
       // Convert category selection
-      if (!state.isAllCategoriesIncluded && state.includedCategories.isNotEmpty) {
+      if (!state.isAllCategoriesIncluded &&
+          state.includedCategories.isNotEmpty) {
         // If specific categories are selected, use the first one as primary category
         // Note: The Budget entity currently only supports one categoryId
         // For multiple categories, this would need to be handled via budgetTransactionFilters
@@ -309,10 +317,10 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
       }
       // For "All" categories, we leave categoryId as null
     }
-    
+
     // Generate unique sync ID
     final syncId = DateTime.now().millisecondsSinceEpoch.toString();
-    
+
     return Budget(
       name: _nameController.text,
       amount: double.tryParse(_amountController.text) ?? 0.0,
@@ -325,37 +333,38 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
       syncId: syncId,
-      
+
       // Set wallet selection based on tracking type
       walletFks: walletFks,
-      
+
       // Set budget purpose based on type
       isIncomeBudget: _budgetType.isSavings,
-      
+
       // Set the user-selected color
       colour: _colorToHex(_selectedColor),
-      
+
       // Default filtering options - can be enhanced later
       excludeDebtCreditInstallments: true,
       excludeObjectiveInstallments: false,
       includeTransferInOutWithSameCurrency: false,
       includeUpcomingTransactionFromBudget: false,
-      
+
       // Additional filtering for exclude categories would go in budgetTransactionFilters
       // This is a more advanced feature that could be implemented later
       budgetTransactionFilters: _buildTransactionFilters(state),
     );
   }
-  
+
   Map<String, dynamic>? _buildTransactionFilters(BudgetsState state) {
     if (state is! BudgetCreationState) return null;
     if (state.excludedCategories.isEmpty) return null;
-    
+
     // Build filter to exclude specific categories
-    // This is a simplified implementation - actual filter structure would depend on 
+    // This is a simplified implementation - actual filter structure would depend on
     // the BudgetFilterService implementation
     return {
-      'excludedCategoryIds': state.excludedCategories.map((cat) => cat.id).toList(),
+      'excludedCategoryIds':
+          state.excludedCategories.map((cat) => cat.id).toList(),
     };
   }
 
@@ -468,127 +477,6 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                       });
                     },
                   ),
-                ),
-
-                // Budget Tracking Type Selector (Manual vs Automatic)
-                BlocBuilder<BudgetCreationBloc, BudgetsState>(
-                  builder: (context, state) {
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: SelectorWidget<BudgetTrackingType>(
-                        selectedValue: _budgetTrackingType,
-                        options: [
-                          SelectorOption<BudgetTrackingType>(
-                            value: BudgetTrackingType.manual,
-                            label: "budgets.manual_budget".tr(),
-                            activeTextColor: getColor(context, "textSecondary"),
-                            activeBackgroundColor: getColor(context, "primary"),
-                          ),
-                          SelectorOption<BudgetTrackingType>(
-                            value: BudgetTrackingType.automatic,
-                            label: "budgets.automatic_budget".tr(),
-                            activeTextColor: getColor(context, "textSecondary"),
-                            activeBackgroundColor: getColor(context, "primary"),
-                          ),
-                        ],
-                        onSelectionChanged: (trackingType) {
-                          setState(() {
-                            _budgetTrackingType = trackingType;
-                          });
-                          context.read<BudgetCreationBloc>().add(BudgetTrackingTypeChanged(trackingType));
-                        },
-                      ),
-                    );
-                  },
-                ),
-
-                // Conditional Account Selector (only for automatic budgets)
-                BlocBuilder<BudgetCreationBloc, BudgetsState>(
-                  builder: (context, state) {
-                    if (_budgetTrackingType.isManual) {
-                      return const SizedBox.shrink();
-                    }
-                    
-                    if (state is BudgetCreationState) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: MultiAccountSelector(
-                          title: "budgets.select_accounts".tr(),
-                          availableAccounts: state.availableAccounts,
-                          selectedAccounts: state.selectedAccounts,
-                          isAllSelected: state.isAllAccountsSelected,
-                          isLoading: state.isAccountsLoading,
-                          onAllSelected: () {
-                            context.read<BudgetCreationBloc>().add(
-                              const BudgetAccountsSelected([], true),
-                            );
-                          },
-                          onSelectionChanged: (selectedAccounts) {
-                            context.read<BudgetCreationBloc>().add(
-                              BudgetAccountsSelected(selectedAccounts, false),
-                            );
-                          },
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-
-                // Include Categories Selector
-                BlocBuilder<BudgetCreationBloc, BudgetsState>(
-                  builder: (context, state) {
-                    if (state is BudgetCreationState) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 16),
-                        child: MultiCategorySelector(
-                          title: "budgets.include_categories".tr(),
-                          availableCategories: state.availableCategories,
-                          selectedCategories: state.includedCategories,
-                          isAllSelected: state.isAllCategoriesIncluded,
-                          isLoading: state.isCategoriesLoading,
-                          isOpacityReduced: state.shouldReduceIncludeCategoriesOpacity,
-                          onAllSelected: () {
-                            context.read<BudgetCreationBloc>().add(
-                              const BudgetIncludeCategoriesSelected([], true),
-                            );
-                          },
-                          onSelectionChanged: (selectedCategories) {
-                            context.read<BudgetCreationBloc>().add(
-                              BudgetIncludeCategoriesSelected(selectedCategories, false),
-                            );
-                          },
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
-                ),
-
-                // Exclude Categories Selector
-                BlocBuilder<BudgetCreationBloc, BudgetsState>(
-                  builder: (context, state) {
-                    if (state is BudgetCreationState) {
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 24),
-                        child: MultiCategorySelector(
-                          title: "budgets.exclude_categories".tr(),
-                          availableCategories: state.availableCategories,
-                          selectedCategories: state.excludedCategories,
-                          isAllSelected: false,
-                          isLoading: state.isCategoriesLoading,
-                          isExcludeMode: true,
-                          onAllSelected: () {},
-                          onSelectionChanged: (selectedCategories) {
-                            context.read<BudgetCreationBloc>().add(
-                              BudgetExcludeCategoriesSelected(selectedCategories),
-                            );
-                          },
-                        ),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
                 ),
 
                 // Name Input - Direct editing with animated border
@@ -837,6 +725,134 @@ class _BudgetCreatePageState extends State<BudgetCreatePage>
                       },
                     ),
                   ),
+                ),
+                const SizedBox(height: 20),
+                // Budget Tracking Type Selector (Manual vs Automatic)
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
+                  builder: (context, state) {
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      child: SelectorWidget<BudgetTrackingType>(
+                        selectedValue: _budgetTrackingType,
+                        options: [
+                          SelectorOption<BudgetTrackingType>(
+                            value: BudgetTrackingType.manual,
+                            label: "budgets.manual_budget".tr(),
+                            activeTextColor: getColor(context, "textSecondary"),
+                            activeBackgroundColor: getColor(context, "primary"),
+                          ),
+                          SelectorOption<BudgetTrackingType>(
+                            value: BudgetTrackingType.automatic,
+                            label: "budgets.automatic_budget".tr(),
+                            activeTextColor: getColor(context, "textSecondary"),
+                            activeBackgroundColor: getColor(context, "primary"),
+                          ),
+                        ],
+                        onSelectionChanged: (trackingType) {
+                          setState(() {
+                            _budgetTrackingType = trackingType;
+                          });
+                          context
+                              .read<BudgetCreationBloc>()
+                              .add(BudgetTrackingTypeChanged(trackingType));
+                        },
+                      ),
+                    );
+                  },
+                ),
+
+                // Conditional Account Selector (only for automatic budgets)
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
+                  builder: (context, state) {
+                    if (_budgetTrackingType.isManual) {
+                      return const SizedBox.shrink();
+                    }
+
+                    if (state is BudgetCreationState) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: MultiAccountSelector(
+                          title: "budgets.select_accounts".tr(),
+                          availableAccounts: state.availableAccounts,
+                          selectedAccounts: state.selectedAccounts,
+                          isAllSelected: state.isAllAccountsSelected,
+                          isLoading: state.isAccountsLoading,
+                          onAllSelected: () {
+                            context.read<BudgetCreationBloc>().add(
+                                  const BudgetAccountsSelected([], true),
+                                );
+                          },
+                          onSelectionChanged: (selectedAccounts) {
+                            context.read<BudgetCreationBloc>().add(
+                                  BudgetAccountsSelected(
+                                      selectedAccounts, false),
+                                );
+                          },
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
+                // Include Categories Selector
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
+                  builder: (context, state) {
+                    if (state is BudgetCreationState) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        child: MultiCategorySelector(
+                          title: "budgets.include_categories".tr(),
+                          availableCategories: state.availableCategories,
+                          selectedCategories: state.includedCategories,
+                          isAllSelected: state.isAllCategoriesIncluded,
+                          isLoading: state.isCategoriesLoading,
+                          isOpacityReduced:
+                              state.shouldReduceIncludeCategoriesOpacity,
+                          onAllSelected: () {
+                            context.read<BudgetCreationBloc>().add(
+                                  const BudgetIncludeCategoriesSelected(
+                                      [], true),
+                                );
+                          },
+                          onSelectionChanged: (selectedCategories) {
+                            context.read<BudgetCreationBloc>().add(
+                                  BudgetIncludeCategoriesSelected(
+                                      selectedCategories, false),
+                                );
+                          },
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                ),
+
+                // Exclude Categories Selector
+                BlocBuilder<BudgetCreationBloc, BudgetsState>(
+                  builder: (context, state) {
+                    if (state is BudgetCreationState) {
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 24),
+                        child: MultiCategorySelector(
+                          title: "budgets.exclude_categories".tr(),
+                          availableCategories: state.availableCategories,
+                          selectedCategories: state.excludedCategories,
+                          isAllSelected: false,
+                          isLoading: state.isCategoriesLoading,
+                          isExcludeMode: true,
+                          onAllSelected: () {},
+                          onSelectionChanged: (selectedCategories) {
+                            context.read<BudgetCreationBloc>().add(
+                                  BudgetExcludeCategoriesSelected(
+                                      selectedCategories),
+                                );
+                          },
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
                 ),
 
                 // Spacer
