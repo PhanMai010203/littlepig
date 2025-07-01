@@ -149,6 +149,18 @@ class BudgetsBloc extends Bloc<BudgetsEvent, BudgetsState> {
       CreateBudget event, Emitter<BudgetsState> emit) async {
     try {
       await _budgetRepository.createBudget(event.budget);
+
+      // Ensure the real-time update stream is immediately aware of the newly
+      // created budget. Otherwise, the first emission from
+      // BudgetUpdateService after we subscribe in [_onStartRealTimeUpdates]
+      // could contain an outdated list that would overwrite our freshly
+      // loaded state and make the new budget disappear from the UI.
+      //
+      // Re-calculating all budget spent amounts will also push an updated
+      // budget list through the service's internal stream, keeping the BLoC
+      // in sync without waiting for an external transaction event.
+      await _budgetUpdateService.recalculateAllBudgetSpentAmounts();
+
       add(LoadAllBudgets());
     } catch (e) {
       emit(BudgetsError('Failed to create budget: $e'));
