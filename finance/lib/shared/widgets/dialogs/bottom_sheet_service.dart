@@ -129,13 +129,15 @@ class BottomSheetService {
     );
 
     // Handle keyboard avoidance
-    if (avoidKeyboard) {
-      sheetContent = _wrapWithKeyboardAvoidance(
-        context,
-        sheetContent,
-        keyboardPadding,
-      );
-    }
+    // We apply keyboard padding **inside** the bottom-sheet builders so that it
+    // reacts to future MediaQuery updates (e.g. when the keyboard is toggled
+    // after the sheet is already visible).  Applying it here would create a
+    // fixed padding which does not update and could duplicate the padding that
+    // the modal-bottom-sheet route itself adds when `isScrollControlled` is
+    // false.
+    //
+    // Therefore we no longer wrap the `sheetContent` here. The builders below
+    // will take care of keyboard avoidance when `resizeForKeyboard` is true.
 
     // Handle scrolling if needed
     if (expandToFillViewport) {
@@ -529,19 +531,6 @@ class BottomSheetService {
   /// DraggableScrollableSheet now handles all animations directly
   /// This eliminates competing animation layers
 
-  /// Wrap content with keyboard avoidance
-  static Widget _wrapWithKeyboardAvoidance(
-    BuildContext context,
-    Widget content,
-    EdgeInsets? keyboardPadding,
-  ) {
-    // Simplified: Use Flutter's native keyboard handling instead of custom animations
-    return Padding(
-      padding: keyboardPadding ?? MediaQuery.of(context).viewInsets,
-      child: content,
-    );
-  }
-
   /// Wrap content with scrolling capability
   static Widget _wrapWithScrolling(
       Widget content, ScrollController? scrollController) {
@@ -610,7 +599,9 @@ class BottomSheetService {
             snap: true,
             snapSizes: snapSizes,
             builder: (context, scrollController) {
-              // Use AnimatedPadding for keyboard handling instead of rebuilding entire sheet
+              // The modal bottom sheet route already handles keyboard insets via
+              // AnimatedPadding. To avoid applying them twice we do NOT wrap the
+              // content with an additional Padding here.
               Widget sheetContainer = Material(
                 type: MaterialType.card,
                 color: backgroundColor ?? colorScheme.surface,
@@ -619,7 +610,11 @@ class BottomSheetService {
                 shape: const RoundedRectangleBorder(
                   borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
                 ),
-                // Simplified: Use native keyboard avoidance instead of custom animations
+                // Apply a dynamic Padding that follows MediaQuery.viewInsets so
+                // the content is always positioned above the keyboard.  This
+                // is necessary because we call `showModalBottomSheet` with
+                // `isScrollControlled: true`, which disables the built-in
+                // AnimatedPadding the framework normally adds.
                 child: resizeForKeyboard
                     ? Padding(
                         padding: MediaQuery.of(context).viewInsets,
@@ -701,13 +696,19 @@ class BottomSheetService {
           effectiveThemeContext = null;
         }
 
-        // Simplified: Use native keyboard avoidance instead of custom animations
-        Widget wrappedContent = resizeForKeyboard
-            ? Padding(
-                padding: MediaQuery.of(context).viewInsets,
-                child: content,
-              )
-            : content;
+        // If `isScrollControlled` is true (which it usually is for our custom
+        // sheets), the framework will NOT add its own AnimatedPadding, so we
+        // need to handle keyboard insets ourselves.  For the non-scroll-
+        // controlled case we leave the padding to the framework to avoid
+        // double insets.
+
+        Widget wrappedContent = content;
+        if (resizeForKeyboard && isScrollControlled) {
+          wrappedContent = Padding(
+            padding: MediaQuery.of(context).viewInsets,
+            child: content,
+          );
+        }
 
         // Phase 4: Apply NoOverscrollBehavior to prevent rubber-band jank
         if (PerformanceOptimizations.useOverscrollOptimization) {
