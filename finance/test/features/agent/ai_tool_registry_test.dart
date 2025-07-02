@@ -3,6 +3,7 @@ import 'package:finance/features/agent/data/services/gemini_ai_service.dart';
 import 'package:finance/features/agent/data/services/ai_tool_registry_service.dart';
 import 'package:finance/features/agent/domain/entities/ai_tool_call.dart';
 import 'package:finance/features/agent/domain/entities/ai_response.dart';
+import 'package:finance/features/agent/domain/entities/chat_message.dart';
 
 void main() {
   group('AI Tool Registry Tests', () {
@@ -408,13 +409,13 @@ void main() {
 }
 
 // Helper function to create test chat messages
-createTestChatMessage(String text, {required bool isFromUser}) {
-  return {
-    'id': 'test-${DateTime.now().millisecondsSinceEpoch}',
-    'text': text,
-    'isFromUser': isFromUser,
-    'timestamp': DateTime.now(),
-    'isTyping': false,
-    'isVoiceMessage': false,
-  };
+ChatMessage createTestChatMessage(String text, {required bool isFromUser}) {
+  return ChatMessage(
+    id: 'test-${DateTime.now().millisecondsSinceEpoch}',
+    text: text,
+    isFromUser: isFromUser,
+    timestamp: DateTime.now(),
+    isTyping: false,
+    isVoiceMessage: false,
+  );
 }
