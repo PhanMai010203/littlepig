@@ -7,6 +7,7 @@ class NavigationItem extends Equatable {
     required this.iconPath,
     required this.routePath,
     this.isDefault = false,
+    this.hasBulge = false,
   });
 
   final String id;
@@ -14,6 +15,7 @@ class NavigationItem extends Equatable {
   final String iconPath;
   final String routePath;
   final bool isDefault;
+  final bool hasBulge;
 
   NavigationItem copyWith({
     String? id,
@@ -21,6 +23,7 @@ class NavigationItem extends Equatable {
     String? iconPath,
     String? routePath,
     bool? isDefault,
+    bool? hasBulge,
   }) {
     return NavigationItem(
       id: id ?? this.id,
@@ -28,11 +31,12 @@ class NavigationItem extends Equatable {
       iconPath: iconPath ?? this.iconPath,
       routePath: routePath ?? this.routePath,
       isDefault: isDefault ?? this.isDefault,
+      hasBulge: hasBulge ?? this.hasBulge,
     );
   }
 
   @override
-  List<Object?> get props => [id, label, iconPath, routePath, isDefault];
+  List<Object?> get props => [id, label, iconPath, routePath, isDefault, hasBulge];
 
   // Default navigation items
   static const NavigationItem home = NavigationItem(
@@ -49,6 +53,15 @@ class NavigationItem extends Equatable {
     iconPath: 'assets/icons/icon_transactions.svg',
     routePath: '/transactions',
     isDefault: true,
+  );
+
+  static const NavigationItem agent = NavigationItem(
+    id: 'agent',
+    label: 'navigation.agent',
+    iconPath: 'assets/icons/sheep.png',
+    routePath: '/agent',
+    isDefault: true,
+    hasBulge: true,
   );
 
   static const NavigationItem budgets = NavigationItem(
@@ -100,6 +113,7 @@ class NavigationItem extends Equatable {
   static const List<NavigationItem> allItems = [
     home,
     transactions,
+    agent,
     budgets,
     more,
     goals,
@@ -108,10 +122,11 @@ class NavigationItem extends Equatable {
     notifications,
   ];
 
-  // Get default navigation items
+  // Get default navigation items (now includes agent in the middle)
   static const List<NavigationItem> defaultItems = [
     home,
     transactions,
+    agent,
     budgets,
     more,
   ];

@@ -88,21 +88,22 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
               builder: (context, constraints) {
                 return Stack(
                   children: [
-                    // Sliding indicator with smooth animation
-                    AnimatedPositioned(
-                      left: _calculateIndicatorPosition(constraints.maxWidth),
-                      top: 8,
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOutCubic,
-                      child: Container(
-                        width: (constraints.maxWidth / widget.items.length) * 0.7,
-                        height: 40.0,
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.primaryContainer,
-                          borderRadius: BorderRadius.circular(12),
+                    // Sliding indicator with smooth animation (only for non-bulge items)
+                    if (!widget.items[widget.currentIndex].hasBulge)
+                      AnimatedPositioned(
+                        left: _calculateIndicatorPosition(constraints.maxWidth),
+                        top: 8,
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOutCubic,
+                        child: Container(
+                          width: (constraints.maxWidth / widget.items.length) * 0.7,
+                          height: 40.0,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                         ),
                       ),
-                    ),
 
                     // Navigation items
                     Row(
@@ -113,7 +114,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
                         final isTapped = index == _tappedIndex;
 
                         return Expanded(
-                          child: _AnimatedNavigationItem(
+                          child: _NavigationItemWrapper(
                             item: item,
                             isSelected: isSelected,
                             isTapped: isTapped,
@@ -133,6 +134,180 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
         ),
       ),
     );
+  }
+}
+
+/// Wrapper that handles both regular and bulge navigation items
+class _NavigationItemWrapper extends StatelessWidget {
+  const _NavigationItemWrapper({
+    required this.item,
+    required this.isSelected,
+    required this.isTapped,
+    required this.onTap,
+    this.onLongPress,
+  });
+
+  final NavigationItem item;
+  final bool isSelected;
+  final bool isTapped;
+  final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    if (item.hasBulge) {
+      return _BulgeNavigationItem(
+        item: item,
+        isSelected: isSelected,
+        isTapped: isTapped,
+        onTap: onTap,
+        onLongPress: onLongPress,
+      );
+    } else {
+      return _AnimatedNavigationItem(
+        item: item,
+        isSelected: isSelected,
+        isTapped: isTapped,
+        onTap: onTap,
+        onLongPress: onLongPress,
+      );
+    }
+  }
+}
+
+/// Special bulge navigation item for AI agent
+class _BulgeNavigationItem extends StatelessWidget {
+  const _BulgeNavigationItem({
+    required this.item,
+    required this.isSelected,
+    required this.isTapped,
+    required this.onTap,
+    this.onLongPress,
+  });
+
+  final NavigationItem item;
+  final bool isSelected;
+  final bool isTapped;
+  final VoidCallback onTap;
+  final VoidCallback? onLongPress;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    return TappableWidget(
+      onTap: onTap,
+      onLongPress: onLongPress,
+      child: Container(
+        color: Colors.transparent,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Bulge effect container
+            Transform.translate(
+              offset: const Offset(0, -16), // Move up by 16 pixels for bulge effect
+              child: Container(
+                width: 64,
+                height: 64,
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? colorScheme.primary 
+                      : colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: _buildBulgeIcon(context, item, isSelected, isTapped),
+              ),
+            ),
+            
+            // Label positioned normally (the bulge is only for the icon)
+            Transform.translate(
+              offset: const Offset(0, -8), // Slight adjustment for visual balance
+              child: AnimatedDefaultTextStyle(
+                duration: const Duration(milliseconds: 200),
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: isSelected
+                              ? colorScheme.primary
+                              : colorScheme.onSurface.withOpacity(0.6),
+                          fontWeight:
+                              isSelected ? FontWeight.w600 : FontWeight.w500,
+                        ) ??
+                    TextStyle(
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurface.withOpacity(0.6),
+                    ),
+                child: Text(
+                  item.label.tr(),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBulgeIcon(BuildContext context, NavigationItem item, bool isSelected, bool isTapped) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
+    Widget iconWidget;
+    
+    if (item.iconPath.endsWith('.png')) {
+      // Handle PNG images
+      iconWidget = Image.asset(
+        item.iconPath,
+        width: 32,
+        height: 32,
+        color: isSelected 
+            ? colorScheme.onPrimary 
+            : colorScheme.onPrimaryContainer,
+        colorBlendMode: BlendMode.srcIn,
+      );
+    } else {
+      // Handle SVG icons
+      iconWidget = SvgPicture.asset(
+        item.iconPath,
+        width: 32,
+        height: 32,
+        colorFilter: ColorFilter.mode(
+          isSelected 
+              ? colorScheme.onPrimary 
+              : colorScheme.onPrimaryContainer,
+          BlendMode.srcIn,
+        ),
+      );
+    }
+
+    Widget iconContainer = Container(
+      padding: const EdgeInsets.all(16),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: iconWidget,
+      ),
+    );
+
+    if (!kDisableAnimations) {
+      iconContainer = iconContainer.animate().scaleXY(
+            begin: isTapped ? 0.85 : 1.0,
+            end: 1.0,
+            duration: const Duration(milliseconds: 150),
+            curve: Curves.easeInOut,
+          );
+    }
+
+    return iconContainer;
   }
 }
 

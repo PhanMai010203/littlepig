@@ -4,6 +4,7 @@
   "navigation": {
     "home": "Home",
     "transactions": "Transactions",
+    "agent": "AI Assistant",
     "budgets": "Budgets",
     "more": "More",
     "customize_title": "Customize Navigation",
@@ -357,5 +358,21 @@
   "actions": {
     "cancel": "Cancel",
     "save": "Save"
+  },
+
+  "agent": {
+    "welcome_title": "Meet your AI Assistant",
+    "welcome_subtitle": "Get personalized insights and smart recommendations for your finances",
+    "features_title": "What I can help you with",
+    "feature_analysis_title": "Smart Analysis",
+    "feature_analysis_subtitle": "Analyze your spending patterns and trends",
+    "feature_insights_title": "Personalized Insights", 
+    "feature_insights_subtitle": "Get tailored advice based on your financial habits",
+    "feature_predictions_title": "Future Predictions",
+    "feature_predictions_subtitle": "Forecast your expenses and plan better",
+    "chat_placeholder_title": "Ready to Chat",
+    "chat_placeholder_subtitle": "Start a conversation to get personalized financial advice and insights",
+    "start_chat": "Start Conversation",
+    "coming_soon": "AI features coming soon!"
   }
 }

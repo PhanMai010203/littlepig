@@ -2,6 +2,7 @@ class AppRoutes {
   // Main navigation routes
   static const String home = '/';
   static const String transactions = '/transactions';
+  static const String agent = '/agent';
   static const String budgets = '/budgets';
   static const String more = '/more';
 

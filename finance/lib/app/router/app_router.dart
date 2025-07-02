@@ -12,6 +12,7 @@ import '../../features/budgets/presentation/pages/budgets_page.dart';
 import '../../features/currencies/domain/repositories/currency_repository.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/more/presentation/pages/more_page.dart';
+import '../../features/agent/presentation/pages/agent_page.dart';
 import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
@@ -66,6 +67,16 @@ class AppRouter {
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
               child: const TransactionsPage(),
+              name: state.name,
+              key: state.pageKey,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.agent,
+            name: AppRoutes.agent,
+            pageBuilder: (context, state) =>
+                AppPageTransitions.noTransitionPage(
+              child: const AgentPage(),
               name: state.name,
               key: state.pageKey,
             ),
