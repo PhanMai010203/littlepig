@@ -141,14 +141,15 @@ class PlatformService {
   }
 
   /// Context-free version of isFullScreen for tappable system
-  /// Note: This requires a cached context or should be used sparingly
+  /// NOTE: This is deprecated and should not be used for UI decisions.
+  /// Use isFullScreen(BuildContext context) instead for accurate detection.
+  /// This getter returns false to prevent incorrect UI behavior.
+  @Deprecated('Use isFullScreen(BuildContext context) for accurate detection')
   static bool get isFullScreen {
-    // For now, return a conservative estimate based on platform
-    // This could be enhanced with a global context provider if needed
-    if (getPlatform() == PlatformOS.isIOS || getPlatform() == PlatformOS.isAndroid) {
-      return true; // Assume modern mobile devices
-    }
-    return false; // Desktop/web default
+    debugPrint('Warning: Using deprecated isFullScreen getter. Use isFullScreen(BuildContext context) instead.');
+    // Return false to prevent incorrect UI behavior based on platform assumptions
+    // The context-aware version provides accurate detection based on actual screen state
+    return false;
   }
 
   /// Check if a context is valid for theme inheritance

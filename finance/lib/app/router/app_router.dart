@@ -15,11 +15,13 @@ import '../../features/more/presentation/pages/more_page.dart';
 import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
+import '../../features/transactions/domain/repositories/attachment_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../../features/budgets/presentation/pages/budget_create_page.dart';
 import '../../features/transactions/presentation/pages/transaction_create_page.dart';
 import '../../features/accounts/presentation/pages/account_create_page.dart';
 import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
+import '../../features/transactions/presentation/bloc/transaction_create_bloc.dart';
 import '../../features/accounts/presentation/bloc/account_create_bloc.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
@@ -131,9 +133,12 @@ class AppRouter {
           return AppPageTransitions.platformTransitionPage(
             key: state.pageKey,
             child: BlocProvider(
-              create: (_) => BudgetCreationBloc(
-                getIt<AccountRepository>(),
+              create: (_) => TransactionCreateBloc(
+                getIt<TransactionRepository>(),
                 getIt<CategoryRepository>(),
+                getIt<AccountRepository>(),
+                getIt<BudgetRepository>(),
+                getIt<AttachmentRepository>(),
               ),
               child: const TransactionCreatePage(),
             ),
