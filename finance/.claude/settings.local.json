@@ -10,7 +10,15 @@
       "Bash(flutter analyze:*)",
       "mcp__context7__resolve-library-id",
       "Bash(flutter packages pub run build_runner build:*)",
-      "Bash(flutter packages pub run:*)"
+      "Bash(flutter packages pub run:*)",
+      "Bash(flutter build:*)",
+      "Bash(dart analyze:*)",
+      "Bash(dart:*)",
+      "Bash(flutter run:*)",
+      "Bash(mkdir:*)",
+      "Bash(jq:*)",
+      "Bash(python3:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }

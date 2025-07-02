@@ -9,6 +9,7 @@ class Budget extends Equatable {
   final double spent;
   final int? categoryId;
   final BudgetPeriod period;
+  final int periodAmount; // Number of periods (e.g., 2 for "2 months")
   final DateTime startDate;
   final DateTime endDate;
   final bool isActive;
@@ -33,6 +34,9 @@ class Budget extends Equatable {
   final DateTime? dateCreatedOriginal;
   final Map<String, dynamic>? budgetTransactionFilters;
 
+  // Budget color as hex string (e.g., "#4CAF50")
+  final String? colour;
+
   const Budget({
     this.id,
     required this.name,
@@ -40,6 +44,7 @@ class Budget extends Equatable {
     required this.spent,
     this.categoryId,
     required this.period,
+    this.periodAmount = 1, // Default to 1 for backward compatibility
     required this.startDate,
     required this.endDate,
     required this.isActive,
@@ -59,6 +64,7 @@ class Budget extends Equatable {
     this.includeUpcomingTransactionFromBudget = false,
     this.dateCreatedOriginal,
     this.budgetTransactionFilters,
+    this.colour,
   });
 
   Budget copyWith({
@@ -68,6 +74,7 @@ class Budget extends Equatable {
     double? spent,
     int? categoryId,
     BudgetPeriod? period,
+    int? periodAmount,
     DateTime? startDate,
     DateTime? endDate,
     bool? isActive,
@@ -87,6 +94,7 @@ class Budget extends Equatable {
     bool? includeUpcomingTransactionFromBudget,
     DateTime? dateCreatedOriginal,
     Map<String, dynamic>? budgetTransactionFilters,
+    String? colour,
   }) {
     return Budget(
       id: id ?? this.id,
@@ -95,6 +103,7 @@ class Budget extends Equatable {
       spent: spent ?? this.spent,
       categoryId: categoryId ?? this.categoryId,
       period: period ?? this.period,
+      periodAmount: periodAmount ?? this.periodAmount,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       isActive: isActive ?? this.isActive,
@@ -122,6 +131,7 @@ class Budget extends Equatable {
       dateCreatedOriginal: dateCreatedOriginal ?? this.dateCreatedOriginal,
       budgetTransactionFilters:
           budgetTransactionFilters ?? this.budgetTransactionFilters,
+      colour: colour ?? this.colour,
     );
   }
 
@@ -139,6 +149,7 @@ class Budget extends Equatable {
         spent,
         categoryId,
         period,
+        periodAmount,
         startDate,
         endDate,
         isActive,
@@ -158,5 +169,6 @@ class Budget extends Equatable {
         includeUpcomingTransactionFromBudget,
         dateCreatedOriginal,
         budgetTransactionFilters,
+        colour,
       ];
 }

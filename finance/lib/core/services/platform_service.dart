@@ -140,6 +140,59 @@ class PlatformService {
     return false;
   }
 
+  /// Context-free version of isFullScreen for tappable system
+  /// NOTE: This is deprecated and should not be used for UI decisions.
+  /// Use isFullScreen(BuildContext context) instead for accurate detection.
+  /// This getter returns false to prevent incorrect UI behavior.
+  @Deprecated('Use isFullScreen(BuildContext context) for accurate detection')
+  static bool get isFullScreen {
+    debugPrint('Warning: Using deprecated isFullScreen getter. Use isFullScreen(BuildContext context) instead.');
+    // Return false to prevent incorrect UI behavior based on platform assumptions
+    // The context-aware version provides accurate detection based on actual screen state
+    return false;
+  }
+
+  /// Check if a context is valid for theme inheritance
+  /// Used by tappable system to determine theme context preservation
+  static bool isContextValidForTheme(BuildContext context) {
+    try {
+      // Attempt to access theme data to validate context
+      Theme.of(context);
+      return true;
+    } catch (e) {
+      debugPrint('Invalid context for theme access: $e');
+      return false;
+    }
+  }
+
+  /// Get appropriate width constraints for tappable elements
+  /// Helps with responsive design across platforms
+  static double getWidthConstraint(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final size = mediaQuery.size;
+
+    switch (getPlatform()) {
+      case PlatformOS.isIOS:
+      case PlatformOS.isAndroid:
+        // Mobile: use full width with padding
+        return size.width - 32.0; // 16px padding on each side
+      
+      case PlatformOS.isWeb:
+        // Web: constrain for better readability
+        return size.width > 768 ? 768.0 : size.width - 32.0;
+      
+      default:
+        // Desktop: use reasonable constraints
+        if (size.width > 1200) {
+          return 800.0; // Max width for desktop
+        } else if (size.width > 768) {
+          return size.width * 0.8; // 80% of screen width
+        } else {
+          return size.width - 32.0; // Mobile-like on small desktop windows
+        }
+    }
+  }
+
   /// Get platform-specific safe padding considerations
   static EdgeInsets getPlatformSafePadding(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
@@ -231,6 +284,40 @@ class PlatformService {
       'prefersCenteredDialogs': prefersCenteredDialogs,
       'platformCurve': platformCurve.toString(),
       'platformAnimationDuration': platformAnimationDuration.inMilliseconds,
+      'isFullScreen': isFullScreen,
     };
+  }
+
+  /// Get platform-specific cursor style for tappable elements
+  static MouseCursor getTappableCursor({bool disabled = false}) {
+    if (disabled) {
+      return SystemMouseCursors.forbidden;
+    }
+    
+    if (isWeb || isDesktop) {
+      return SystemMouseCursors.click;
+    }
+    
+    return MouseCursor.defer; // Mobile doesn't need custom cursors
+  }
+
+  /// Check if the current device should be considered low-end for performance optimization
+  /// Uses heuristic-based detection considering platform performance characteristics
+  static bool get isLowEndDevice {
+    // Web is generally considered lower performance for complex animations
+    if (isWeb) return true;
+    
+    // Desktop platforms are generally high-performance
+    if (isDesktop) return false;
+    
+    // For mobile platforms, use platform-agnostic heuristics
+    // This is a simplified approach - in a real implementation, you might check:
+    // - Available RAM using device_info_plus
+    // - CPU cores or performance class
+    // - Display density and size
+    
+    // For now, we'll use a conservative approach that doesn't discriminate by platform
+    // This can be enhanced with actual device performance metrics if needed
+    return false; // Assume devices are capable unless proven otherwise
   }
 }

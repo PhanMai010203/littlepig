@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/foundation.dart';
 import 'animation_utils.dart';
+import 'faded_button.dart';
 import '../../../core/services/platform_service.dart';
 import '../../../core/services/animation_performance_service.dart';
+import '../../utils/performance_optimization.dart';
 
 /// A widget that provides customizable tap feedback with animations
 /// Phase 6.2 implementation with performance optimization
@@ -49,10 +53,28 @@ class _TappableWidgetState extends State<TappableWidget>
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
+  
+  // Phase 3: Cache platform detection for performance
+  late final bool _isIOS;
+  late final bool _isAndroid;
+  late final bool _isDesktop;
 
   @override
   void initState() {
     super.initState();
+
+    // Phase 3: Cache platform detection once at initialization
+    final platform = PlatformService.getPlatform();
+    _isIOS = platform == PlatformOS.isIOS;
+    _isAndroid = platform == PlatformOS.isAndroid;
+    _isDesktop = PlatformService.isDesktop;
+    
+    // Track platform optimization usage
+    PerformanceOptimizations.trackPlatformOptimization(
+      'TappableWidget', 
+      platform.toString(), 
+      'cached platform detection'
+    );
 
     _controller = AnimationUtils.createController(
       vsync: this,
@@ -154,6 +176,47 @@ class _TappableWidgetState extends State<TappableWidget>
 
   @override
   Widget build(BuildContext context) {
+    // Phase 3: Use cached platform detection for better performance
+    if (_isIOS) {
+      PerformanceOptimizations.trackPlatformOptimization(
+        'TappableWidget', 
+        'iOS', 
+        'FadedButton'
+      );
+      // Disable the button when no interaction callbacks are provided
+      final bool _isDisabled =
+          widget.onTap == null && widget.onLongPress == null && widget.onDoubleTap == null;
+
+      return FadedButton(
+        onTap: widget.onTap != null ? _handleTap : null,
+        onLongPress: widget.onLongPress != null ? _handleLongPress : null,
+        pressedOpacity: _getIOSPressedOpacity(),
+        borderRadius: widget.borderRadius,
+        hapticFeedback: widget.hapticFeedback,
+        disabled: _isDisabled,
+        child: widget.child,
+      );
+    }
+
+    // Use Material implementation for Android and other platforms
+    return _buildMaterialTappable(context);
+  }
+
+  /// Get appropriate pressed opacity for iOS based on animation type
+  double _getIOSPressedOpacity() {
+    switch (widget.animationType) {
+      case TapAnimationType.opacity:
+      case TapAnimationType.both:
+        return 0.7; // Match the opacity animation value
+      case TapAnimationType.scale:
+      case TapAnimationType.none:
+        return 0.5; // Default iOS pressed opacity
+    }
+  }
+
+  /// Build Material Design tappable widget for Android and other platforms
+  /// Phase 3: Enhanced with platform-specific optimizations
+  Widget _buildMaterialTappable(BuildContext context) {
     Widget child = widget.child;
 
     // Apply animation based on type
@@ -203,11 +266,19 @@ class _TappableWidgetState extends State<TappableWidget>
       }
     }
 
-    // Wrap with appropriate gesture detector
+    // Use GestureDetector for all platforms - no splash/ripple effects
+    Widget gestureChild = child;
     if (widget.onTap != null ||
         widget.onLongPress != null ||
         widget.onDoubleTap != null) {
-      return GestureDetector(
+      
+      // Use GestureDetector for all platforms (no splash effects)
+      PerformanceOptimizations.trackPlatformOptimization(
+        'TappableWidget', 
+        'All Platforms', 
+        'GestureDetector without splash'
+      );
+      gestureChild = GestureDetector(
         onTapDown: widget.animationType != TapAnimationType.none
             ? _handleTapDown
             : null,
@@ -223,7 +294,32 @@ class _TappableWidgetState extends State<TappableWidget>
       );
     }
 
-    return child;
+    // Phase 3: Use cached platform detection for web/desktop
+    if (kIsWeb || _isDesktop) {
+      return _addMouseSupport(gestureChild);
+    }
+
+    return gestureChild;
+  }
+
+  /// Add mouse support with right-click handling for web/desktop
+  Widget _addMouseSupport(Widget child) {
+    if (widget.onLongPress == null) {
+      return child;
+    }
+
+    void onPointerDown(PointerDownEvent event) {
+      // Check if right mouse button clicked
+      if (event.kind == PointerDeviceKind.mouse &&
+          event.buttons == kSecondaryMouseButton) {
+        _handleLongPress();
+      }
+    }
+
+    return Listener(
+      onPointerDown: onPointerDown,
+      child: child,
+    );
   }
 }
 

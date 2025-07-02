@@ -61,6 +61,7 @@ AppColors getAppColors({
             // Shadow colors
             "shadow": const Color(0x655A5A5A),
             "shadowLight": const Color(0x2D5A5A5A),
+            "shadowBox": Colors.black.withValues(alpha: 0.1),
 
             // Special purpose colors
             "overlay": Colors.black.withValues(alpha: 0.5),

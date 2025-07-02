@@ -24,12 +24,15 @@
     "savings": "Savings",
     "recent_transactions": "Recent Transactions",
     "this_month": "This Month",
-    "view_all": "View All"
+    "view_all": "View All",
+    "view_all_transactions": "View all transactions",
+    "no_transactions_this_month": "No transactions this month"
   },
 
   "transactions": {
     "title": "Transactions",
     "add_transaction": "Add Transaction",
+    "create_transaction": "Create Transaction",
     "income": "Income",
     "expense": "Expense",
     "amount": "Amount",
@@ -45,7 +48,53 @@
     "no_transactions": "No transactions found",
     "transaction_added": "Transaction added successfully",
     "transaction_updated": "Transaction updated successfully",
-    "transaction_deleted": "Transaction deleted successfully"
+    "transaction_deleted": "Transaction deleted successfully",
+    "creation_failed_generic": "Failed to create transaction: {error}",
+    "filter_all": "All",
+    "filter_expense": "Expense",
+    "filter_income": "Income",
+    "enter_amount": "Enter Amount",
+    "amount_hint": "0.00",
+    "set_title_action": "Set Title",
+    "set_amount_action": "Set Amount",
+    "select_category_action": "Select Category",
+    "select_account_action": "Select Account",
+    "create_transaction_action": "Create Transaction",
+    "title_hint": "Enter transaction title",
+    "date_label": "Date:",
+    "select_category": "Select Category",
+    "select_account": "Select Account",
+    "note_hint": "Add a note (optional)",
+    "advanced_features": "Advanced Features",
+    "state": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "scheduled": "Scheduled"
+    },
+    "special_type": "Special Type",
+    "credit": "Credit",
+    "debt": "Debt",
+    "none": "None",
+    "recurrence": "Recurrence",
+    "recurrence_none": "None",
+    "recurrence_daily": "Daily",
+    "recurrence_weekly": "Weekly",
+    "recurrence_monthly": "Monthly",
+    "recurrence_yearly": "Yearly",
+    "link_to_budgets": "Link to Budgets",
+    "add_budget_link": "Add Budget Link",
+    "attachments": "Attachments",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "select_budget": "Select Budget",
+    "captured_from_camera": "Captured from camera",
+    "photo_captured": "Photo captured: {fileName}",
+    "failed_to_capture_photo": "Failed to capture photo: {error}",
+    "photo_selected": "Photo selected: {fileName}",
+    "failed_to_select_photo": "Failed to select photo: {error}",
+    "photos_selected": "{count} photos selected",
+    "multiple_photos": "Multiple photos",
+    "failed_to_select_photos": "Failed to select photos: {error}"
   },
 
   "budgets": {
@@ -53,10 +102,6 @@
     "create_budget": "Create Budget",
     "budget_name": "Budget Name",
     "budget_amount": "Budget Amount",
-    "period": "Period",
-    "monthly": "Monthly",
-    "weekly": "Weekly",
-    "daily": "Daily",
     "spent": "Spent",
     "remaining": "Remaining",
     "exceeded": "Exceeded",
@@ -64,7 +109,69 @@
     "no_budgets": "No budgets created yet",
     "budget_created": "Budget created successfully",
     "budget_updated": "Budget updated successfully",
-    "budget_deleted": "Budget deleted successfully"
+    "budget_deleted": "Budget deleted successfully",
+    "settings": "Budget settings",
+    "create": "Create new budget",
+    "empty": "No budgets found. Create one!",
+    "details_coming": "Budget details coming soon for {name}",
+    "overspent_of": "overspent of ${amount}",
+    "left_of": "left of ${amount}",
+    "today": "Today",
+    "expense_budget": "Expense Budget",
+    "savings_budget": "Savings Budget",
+    "gift": "Gift",
+    "other": "Other",
+    "default": "Default",
+    "all_categories": "All Categories",
+    "all_categories_description": "Track all categories together",
+    "no_category_selected": "No category selected",
+    "no_categories_selected": "No categories selected",
+    "categories_selected": "categories selected",
+    "no_categories_excluded": "No categories excluded",
+    "categories_excluded": "categories excluded",
+    "disabled_by_exclude": "Disabled by exclude mode",
+
+    "form": {
+      "create_new_budget": "Create New Budget",
+      "create_subtitle": "Set up a new budget to track your spending",
+      "name": "Budget Name",
+      "name_hint": "e.g., Groceries, Entertainment",
+      "name_required": "Budget name is required",
+      "name_too_short": "Budget name must be at least 2 characters",
+      "budget_amount": "Budget Amount",
+      "target_amount": "Target Amount",
+      "amount_required": "Amount is required",
+      "amount_invalid": "Please enter a valid amount greater than 0",
+      "period": "Budget Period",
+      "income_budget": "Income Budget",
+      "expense_budget": "Expense Budget",
+      "income_description": "Track income against a target",
+      "expense_description": "Track spending within a limit",
+      "advanced_options": "Advanced Options",
+      "exclude_debt_credit": "Exclude debt & credit payments",
+      "exclude_debt_credit_description": "Exclude loan payments and credit transactions",
+      "create_budget": "Create Budget",
+      "created_successfully": "Budget '{name}' created successfully!",
+      "creation_failed": "Failed to create budget. Please try again."
+    },
+
+    "period": {
+      "daily": "Daily",
+      "weekly": "Weekly", 
+      "monthly": "Monthly",
+      "yearly": "Yearly"
+    },
+
+    "set_name_action": "Set Name",
+    "set_amount_action": "Set Amount",
+    "create_budget_action": "Create Budget",
+    "enter_budget_amount": "Enter Budget Amount",
+    "select_period": "Select Period",
+    "manual_budget": "Manual Budget",
+    "automatic_budget": "Automatic Budget",
+    "select_accounts": "Select Accounts",
+    "include_categories": "Include Categories",
+    "exclude_categories": "Exclude Categories"
   },
 
   "categories": {
@@ -80,7 +187,15 @@
     "freelance": "Freelance",
     "investment": "Investment",
     "gift": "Gift",
-    "other": "Other"
+    "other": "Other",
+    "all_categories": "All Categories",
+    "all_categories_description": "Track all categories together",
+    "no_category_selected": "No category selected",
+    "no_categories_selected": "No categories selected",
+    "categories_selected": "categories selected",
+    "no_categories_excluded": "No categories excluded",
+    "categories_excluded": "categories excluded",
+    "disabled_by_exclude": "Disabled by exclude mode"
   },
 
   "settings": {
@@ -194,7 +309,9 @@
     "insufficient_funds": "Insufficient funds",
     "file_not_found": "File not found",
     "permission_denied": "Permission denied",
-    "operation_failed": "Operation failed"
+    "operation_failed": "Operation failed",
+    "failed_to_load_data": "Failed to load initial data: {error}",
+    "fill_required_fields": "Please fill in all required fields"
   },
 
   "validation": {
@@ -204,7 +321,11 @@
     "amount_too_small": "Amount must be greater than 0",
     "amount_too_large": "Amount is too large",
     "text_too_short": "Text is too short",
-    "text_too_long": "Text is too long"
+    "text_too_long": "Text is too long",
+    "title_required": "Title is required",
+    "amount_required": "Amount is required",
+    "category_required": "Category is required",
+    "period_length_for_recurrence_required": "Period length is required for recurring transactions"
   },
 
   "currency": {
@@ -214,5 +335,27 @@
     "jpy": "Japanese Yen",
     "cny": "Chinese Yuan",
     "vnd": "Vietnamese Dong"
+  },
+
+  "accounts": {
+    "all_accounts": "All Accounts",
+    "no_accounts_selected": "No accounts selected",
+    "accounts_selected": "accounts selected",
+    "all_accounts_description": "Track all accounts together",
+    "create_account": "Create Account",
+    "account_name_hint": "Account Name",
+    "beginning_balance": "Beginning Balance",
+    "enter_beginning_balance": "Enter Beginning Balance",
+    "currency_label": "Currency:",
+    "select_currency": "Select Currency",
+    "select_currency_action": "Select Currency",
+    "select_color": "Select Color",
+    "set_name_action": "Set Name",
+    "create_account_action": "Create Account"
+  },
+
+  "actions": {
+    "cancel": "Cancel",
+    "save": "Save"
   }
 }

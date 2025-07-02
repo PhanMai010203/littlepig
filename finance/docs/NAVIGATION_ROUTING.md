@@ -55,4 +55,25 @@ To add a new route:
       ),
     ),
     ```
-3. Make sure to import the new page widget. 
+
+3. Make sure to import the new page widget.
+
+## Choosing the Right Transition
+
+**Use Case Guidelines:**
+
+- **`platformTransitionPage`** - Default choice, adapts to platform conventions
+- **`noTransitionPage`** - For shell routes and performance-critical pages
+- **`modalSlideTransitionPage`** - Fullscreen dialogs, settings pages, creation flows
+- **`slideTransitionPage`** - Standard navigation between main app sections
+- **`subtleSlideTransitionPage`** - Gentle transitions for related content
+- **`horizontalSlideTransitionPage`** - Tab-like navigation, category switching
+- **`slideFadeTransitionPage`** - Modal-like presentations that aren't fullscreen
+- **`fadeTransitionPage`** - Web-optimized transitions
+- **`scaleTransitionPage`** - Special emphasis, "zoom in" effects
+
+**Performance Considerations:**
+
+- Use `noTransitionPage` for pages that need instant loading
+- Avoid complex transitions on low-end devices (handled automatically by animation settings)
+- The animation system respects user preferences for reduced motion 

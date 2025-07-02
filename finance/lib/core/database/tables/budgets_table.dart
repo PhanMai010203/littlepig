@@ -17,6 +17,8 @@ class BudgetsTable extends Table {
 
   // Budget period: 'monthly', 'weekly', 'daily', 'yearly'
   TextColumn get period => text().withLength(min: 1, max: 20)();
+  // Number of periods (e.g., 2 for "2 months")
+  IntColumn get periodAmount => integer().withDefault(const Constant(1))();
   DateTimeColumn get startDate => dateTime()();
   DateTimeColumn get endDate => dateTime()();
 
@@ -27,6 +29,9 @@ class BudgetsTable extends Table {
 
   // ✅ PHASE 4: Only essential sync field (event sourcing handles the rest)
   TextColumn get syncId => text().unique()();
+
+  // Budget color as hex string (e.g., "#4CAF50")
+  TextColumn get colour => text().nullable()();
 
   // Advanced filtering fields
   TextColumn get budgetTransactionFilters => text().nullable()(); // JSON string

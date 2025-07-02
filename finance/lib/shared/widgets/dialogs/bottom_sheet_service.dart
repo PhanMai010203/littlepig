@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import '../animations/slide_in.dart';
-import '../animations/fade_in.dart';
-import '../animations/animation_utils.dart';
-import '../../../core/settings/app_settings.dart';
+import 'package:flutter/services.dart';
+import '../../../core/services/platform_service.dart';
+import '../../utils/snap_size_cache.dart';
+import '../../utils/responsive_layout_builder.dart';
+import '../../utils/performance_optimization.dart';
+import '../../utils/no_overscroll_behavior.dart';
 
 /// BottomSheetService - Phase 3.3 Implementation
 ///
@@ -44,26 +46,56 @@ class BottomSheetService {
     IconData? closeButtonIcon,
     VoidCallback? onClosePressed,
     String? semanticLabel,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
-    Duration? animationDuration,
-    Curve? animationCurve,
+    // Phase 3: Animation parameters removed - DraggableScrollableSheet handles animations
     // Keyboard handling
     bool avoidKeyboard = true,
     EdgeInsets? keyboardPadding,
     // Scrolling
     bool expandToFillViewport = false,
     ScrollController? scrollController,
+    // Smart snapping (from budget app)
+    bool popupWithKeyboard = false,
+    bool fullSnap = false,
+    bool resizeForKeyboard = true,
+    // Theme context preservation (from budget app)
+    bool useParentContextForTheme = true,
     // Callbacks
     VoidCallback? onOpened,
     VoidCallback? onClosed,
     void Function(double)? onSizeChanged,
   }) {
     final theme = Theme.of(context);
-    final mediaQuery = MediaQuery.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Calculate effective sizes
-    final effectiveSnapSizes = snapSizes ?? _getDefaultSnapSizes();
+    // Minimize keyboard when opening bottom sheet (budget app logic)
+    // Only minimize if we don't expect to use the keyboard immediately
+    if (!popupWithKeyboard) {
+      minimizeKeyboard(context);
+    } else {
+      // For popup with keyboard, ensure any existing focus is properly handled
+      // but don't unfocus as we want the keyboard to appear
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Small delay to ensure sheet is properly rendered before keyboard appears
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (context.mounted) {
+            // Let the sheet settle before allowing keyboard to appear
+          }
+        });
+      });
+    }
+
+    // Theme context preservation (from budget app logic)
+    BuildContext? themeContext = useParentContextForTheme && 
+        PlatformService.isContextValidForTheme(context)
+      ? context
+      : null;
+
+    // Calculate effective sizes with smart snapping and caching
+    final effectiveSnapSizes = snapSizes ?? _getOptimizedSnapSizes(
+      context: context,
+      popupWithKeyboard: popupWithKeyboard,
+      fullSnap: fullSnap,
+    );
     final effectiveInitialSize = initialSize ?? effectiveSnapSizes.first;
     final effectiveMinSize = minSize ?? effectiveSnapSizes.first;
     final effectiveMaxSize = maxSize ?? effectiveSnapSizes.last;
@@ -84,25 +116,28 @@ class BottomSheetService {
       colorScheme: colorScheme,
     );
 
-    // Apply animation if enabled
-    if (AnimationUtils.shouldAnimate() &&
-        animationType != BottomSheetAnimationType.none) {
-      sheetContent = _applyBottomSheetAnimation(
-        sheetContent,
-        animationType,
-        animationDuration,
-        animationCurve,
-      );
-    }
+    // Phase 3: Remove competing animation layers
+    // Let DraggableScrollableSheet handle all animations
+    // No additional animation wrappers to prevent conflicts
+    PerformanceOptimizations.trackAnimationLayerConsolidation(
+      'BottomSheetService', 
+      'DraggableScrollableSheet single owner'
+    );
+    PerformanceOptimizations.trackAnimationOwnership(
+      'BottomSheetService', 
+      true // Single animation owner
+    );
 
     // Handle keyboard avoidance
-    if (avoidKeyboard) {
-      sheetContent = _wrapWithKeyboardAvoidance(
-        context,
-        sheetContent,
-        keyboardPadding,
-      );
-    }
+    // We apply keyboard padding **inside** the bottom-sheet builders so that it
+    // reacts to future MediaQuery updates (e.g. when the keyboard is toggled
+    // after the sheet is already visible).  Applying it here would create a
+    // fixed padding which does not update and could duplicate the padding that
+    // the modal-bottom-sheet route itself adds when `isScrollControlled` is
+    // false.
+    //
+    // Therefore we no longer wrap the `sheetContent` here. The builders below
+    // will take care of keyboard avoidance when `resizeForKeyboard` is true.
 
     // Handle scrolling if needed
     if (expandToFillViewport) {
@@ -141,9 +176,14 @@ class BottomSheetService {
         surfaceTintColor: surfaceTintColor,
         elevation: elevation,
         shape: shape,
+        themeContext: themeContext,
+        resizeForKeyboard: resizeForKeyboard,
+        popupWithKeyboard: popupWithKeyboard,
         onOpened: onOpened,
         onClosed: onClosed,
         onSizeChanged: onSizeChanged,
+        cachedTheme: theme,
+        cachedColorScheme: colorScheme,
       );
     } else {
       // Use standard modal bottom sheet
@@ -158,8 +198,13 @@ class BottomSheetService {
         surfaceTintColor: surfaceTintColor,
         elevation: elevation,
         shape: shape,
+        themeContext: themeContext,
+        resizeForKeyboard: resizeForKeyboard,
+        popupWithKeyboard: popupWithKeyboard,
         onOpened: onOpened,
         onClosed: onClosed,
+        cachedTheme: theme,
+        cachedColorScheme: colorScheme,
       );
     }
   }
@@ -172,7 +217,7 @@ class BottomSheetService {
     bool showCloseButton = false,
     bool isDismissible = true,
     bool enableDrag = true,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     return showCustomBottomSheet<T>(
       context,
@@ -181,7 +226,6 @@ class BottomSheetService {
       showCloseButton: showCloseButton,
       isDismissible: isDismissible,
       enableDrag: enableDrag,
-      animationType: animationType,
     );
   }
 
@@ -194,7 +238,7 @@ class BottomSheetService {
     bool showCloseButton = true,
     bool isDismissible = true,
     bool enableDrag = true,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     return showCustomBottomSheet<T>(
       context,
@@ -218,7 +262,6 @@ class BottomSheetService {
       showCloseButton: showCloseButton,
       isDismissible: isDismissible,
       enableDrag: enableDrag,
-      animationType: animationType,
     );
   }
 
@@ -232,7 +275,7 @@ class BottomSheetService {
     IconData? icon,
     Color? confirmColor,
     bool isDangerous = false,
-    BottomSheetAnimationType animationType = BottomSheetAnimationType.slideUp,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -291,14 +334,34 @@ class BottomSheetService {
       title: title,
       isDismissible: true,
       enableDrag: true,
-      animationType: animationType,
     );
   }
 
-  /// Get default snap sizes based on screen height
-  static List<double> _getDefaultSnapSizes() {
-    // Standard snap points: 25%, 50%, 90% of screen height
-    return [0.25, 0.5, 0.9];
+  /// Get optimized snap sizes with caching (Phase 2 optimization)
+  static List<double> _getOptimizedSnapSizes({
+    BuildContext? context,
+    bool popupWithKeyboard = false,
+    bool fullSnap = false,
+  }) {
+    // If no context provided, return standard sizes
+    if (context == null) {
+      return [0.25, 0.5, 0.9];
+    }
+
+    // Use cached MediaQuery data to avoid repeated lookups
+    final mediaQuery = CachedMediaQueryData.get(context, cacheKey: 'bottom_sheet_sizing');
+    final size = mediaQuery.size;
+    final isFullScreen = PlatformService.getIsFullScreen(context);
+    final isKeyboardVisible = mediaQuery.viewInsets.bottom > 0;
+    
+    // Use SnapSizeCache for performance optimization
+    return SnapSizeCache.getSnapSizes(
+      screenSize: size,
+      isKeyboardVisible: isKeyboardVisible,
+      fullSnap: fullSnap,
+      popupWithKeyboard: popupWithKeyboard,
+      isFullScreen: isFullScreen,
+    );
   }
 
   /// Build the main bottom sheet content
@@ -384,7 +447,7 @@ class BottomSheetService {
         width: 32.0,
         height: 4.0,
         decoration: BoxDecoration(
-          color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+          color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
           borderRadius: BorderRadius.circular(2.0),
         ),
       ),
@@ -464,53 +527,9 @@ class BottomSheetService {
     );
   }
 
-  /// Apply animation to bottom sheet content
-  static Widget _applyBottomSheetAnimation(
-    Widget content,
-    BottomSheetAnimationType animationType,
-    Duration? animationDuration,
-    Curve? animationCurve,
-  ) {
-    final duration = animationDuration ??
-        AnimationUtils.getDuration(const Duration(milliseconds: 300));
-    final curve =
-        animationCurve ?? AnimationUtils.getCurve(Curves.easeOutCubic);
-
-    switch (animationType) {
-      case BottomSheetAnimationType.slideUp:
-        return SlideIn(
-          direction: SlideDirection.up,
-          distance: 1.0,
-          duration: duration,
-          curve: curve,
-          child: content,
-        );
-
-      case BottomSheetAnimationType.fadeIn:
-        return FadeIn(
-          duration: duration,
-          curve: curve,
-          child: content,
-        );
-
-      case BottomSheetAnimationType.none:
-        return content;
-    }
-  }
-
-  /// Wrap content with keyboard avoidance
-  static Widget _wrapWithKeyboardAvoidance(
-    BuildContext context,
-    Widget content,
-    EdgeInsets? keyboardPadding,
-  ) {
-    return AnimatedPadding(
-      padding: keyboardPadding ?? MediaQuery.of(context).viewInsets,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOutCubic,
-      child: content,
-    );
-  }
+  /// Phase 3: Removed _applyBottomSheetAnimation method
+  /// DraggableScrollableSheet now handles all animations directly
+  /// This eliminates competing animation layers
 
   /// Wrap content with scrolling capability
   static Widget _wrapWithScrolling(
@@ -536,12 +555,17 @@ class BottomSheetService {
     Color? surfaceTintColor,
     double? elevation,
     ShapeBorder? shape,
+    BuildContext? themeContext,
+    bool resizeForKeyboard = true,
+    bool popupWithKeyboard = false,
     VoidCallback? onOpened,
     VoidCallback? onClosed,
     void Function(double)? onSizeChanged,
+    ThemeData? cachedTheme,
+    ColorScheme? cachedColorScheme,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final theme = cachedTheme ?? Theme.of(context);
+    final colorScheme = cachedColorScheme ?? theme.colorScheme;
 
     return showModalBottomSheet<T>(
       context: context,
@@ -554,29 +578,72 @@ class BottomSheetService {
       builder: (context) {
         onOpened?.call();
 
-        return DraggableScrollableSheet(
-          initialChildSize: initialSize,
-          minChildSize: minSize,
-          maxChildSize: maxSize,
-          snap: true,
-          snapSizes: snapSizes,
-          builder: (context, scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: backgroundColor ?? colorScheme.surface,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16.0)),
-                boxShadow: [
-                  BoxShadow(
-                    color: colorScheme.shadow.withOpacity(0.1),
-                    blurRadius: elevation ?? 8.0,
-                    offset: const Offset(0, -2),
-                  ),
-                ],
-              ),
-              child: content,
-            );
+        // Check for default theme data and reset context if needed
+        BuildContext? effectiveThemeContext = themeContext;
+        if (_isDefaultThemeData(effectiveThemeContext)) {
+          effectiveThemeContext = null;
+        }
+
+        // Removed complex keyboard timing logic - let Flutter handle keyboard animations natively
+
+        // Phase 4: Enhanced DraggableScrollableSheet with custom snap physics
+        return NotificationListener<DraggableScrollableNotification>(
+          onNotification: (notification) {
+            _handleSnapNotification(notification, snapSizes);
+            return false; // Allow other listeners to receive the notification
           },
+          child: DraggableScrollableSheet(
+            initialChildSize: initialSize,
+            minChildSize: minSize,
+            maxChildSize: maxSize,
+            snap: true,
+            snapSizes: snapSizes,
+            builder: (context, scrollController) {
+              // The modal bottom sheet route already handles keyboard insets via
+              // AnimatedPadding. To avoid applying them twice we do NOT wrap the
+              // content with an additional Padding here.
+              Widget sheetContainer = Material(
+                type: MaterialType.card,
+                color: backgroundColor ?? colorScheme.surface,
+                elevation: elevation ?? 8.0,
+                shadowColor: colorScheme.shadow,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.0)),
+                ),
+                // Apply a dynamic Padding that follows MediaQuery.viewInsets so
+                // the content is always positioned above the keyboard.  This
+                // is necessary because we call `showModalBottomSheet` with
+                // `isScrollControlled: true`, which disables the built-in
+                // AnimatedPadding the framework normally adds.
+                child: resizeForKeyboard
+                    ? Padding(
+                        padding: MediaQuery.of(context).viewInsets,
+                        child: content,
+                      )
+                    : content,
+              );
+
+              // Phase 4: Apply NoOverscrollBehavior to prevent rubber-band jank
+              if (PerformanceOptimizations.useOverscrollOptimization) {
+                sheetContainer = sheetContainer.withNoOverscroll(
+                  componentName: 'BottomSheetService',
+                );
+              }
+
+              // Apply theme context if available
+              if (effectiveThemeContext != null) {
+                return Material(
+                  type: MaterialType.transparency,
+                  child: Theme(
+                    data: Theme.of(effectiveThemeContext),
+                    child: sheetContainer,
+                  ),
+                );
+              }
+
+              return sheetContainer;
+            },
+          ),
         );
       },
     ).then((result) {
@@ -597,11 +664,16 @@ class BottomSheetService {
     Color? surfaceTintColor,
     double? elevation,
     ShapeBorder? shape,
+    BuildContext? themeContext,
+    bool resizeForKeyboard = true,
+    bool popupWithKeyboard = false,
     VoidCallback? onOpened,
     VoidCallback? onClosed,
+    ThemeData? cachedTheme,
+    ColorScheme? cachedColorScheme,
   }) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
+    final theme = cachedTheme ?? Theme.of(context);
+    final colorScheme = cachedColorScheme ?? theme.colorScheme;
 
     return showModalBottomSheet<T>(
       context: context,
@@ -617,7 +689,46 @@ class BottomSheetService {
           ),
       builder: (context) {
         onOpened?.call();
-        return content;
+
+        // Check for default theme data and reset context if needed
+        BuildContext? effectiveThemeContext = themeContext;
+        if (_isDefaultThemeData(effectiveThemeContext)) {
+          effectiveThemeContext = null;
+        }
+
+        // If `isScrollControlled` is true (which it usually is for our custom
+        // sheets), the framework will NOT add its own AnimatedPadding, so we
+        // need to handle keyboard insets ourselves.  For the non-scroll-
+        // controlled case we leave the padding to the framework to avoid
+        // double insets.
+
+        Widget wrappedContent = content;
+        if (resizeForKeyboard && isScrollControlled) {
+          wrappedContent = Padding(
+            padding: MediaQuery.of(context).viewInsets,
+            child: content,
+          );
+        }
+
+        // Phase 4: Apply NoOverscrollBehavior to prevent rubber-band jank
+        if (PerformanceOptimizations.useOverscrollOptimization) {
+          wrappedContent = wrappedContent.withNoOverscroll(
+            componentName: 'BottomSheetService',
+          );
+        }
+
+        // Apply theme context if available
+        if (effectiveThemeContext != null) {
+          return Material(
+            type: MaterialType.transparency,
+            child: Theme(
+              data: Theme.of(effectiveThemeContext),
+              child: wrappedContent,
+            ),
+          );
+        }
+
+        return wrappedContent;
       },
     ).then((result) {
       onClosed?.call();
@@ -625,31 +736,97 @@ class BottomSheetService {
     });
   }
 
-  /// Get the default bottom sheet animation type based on platform and settings
-  static BottomSheetAnimationType get defaultBottomSheetAnimation {
-    if (!AppSettings.appAnimations ||
-        AppSettings.reduceAnimations ||
-        AppSettings.batterySaver ||
-        AppSettings.animationLevel == 'none') {
-      return BottomSheetAnimationType.none;
-    }
+  /// Phase 3: Removed defaultBottomSheetAnimation - animations handled by DraggableScrollableSheet
 
-    switch (AppSettings.animationLevel) {
-      case 'reduced':
-        return BottomSheetAnimationType.fadeIn;
-      case 'enhanced':
-      case 'normal':
-      default:
-        return BottomSheetAnimationType.slideUp;
+  /// Check if theme context has default theme data (budget app logic)
+  static bool _isDefaultThemeData(BuildContext? context) {
+    try {
+      if (context == null) return true;
+      
+      final theme = Theme.of(context);
+      final defaultTheme = ThemeData();
+      
+      return theme.primaryColor == defaultTheme.primaryColor &&
+          theme.cardColor == defaultTheme.cardColor &&
+          theme.colorScheme.surface == defaultTheme.colorScheme.surface;
+    } catch (e) {
+      return true;
     }
   }
-}
 
-/// Animation types for bottom sheet entrance
-enum BottomSheetAnimationType {
-  slideUp,
-  fadeIn,
-  none,
+  /// Minimize keyboard before showing bottom sheet (budget app logic)
+  static void minimizeKeyboard(BuildContext context) {
+    FocusNode? currentFocus = WidgetsBinding.instance.focusManager.primaryFocus;
+    currentFocus?.unfocus();
+  }
+
+  /// Get width constraint for bottom sheet based on platform
+  static double getBottomSheetWidth(BuildContext context) {
+    return PlatformService.getWidthConstraint(context);
+  }
+
+  /// Phase 4: Handle snap notifications for custom physics and haptic feedback
+  static void _handleSnapNotification(
+    DraggableScrollableNotification notification,
+    List<double> snapSizes,
+  ) {
+    if (!PerformanceOptimizations.useCustomSnapPhysics) return;
+
+    // Track snap physics usage
+    PerformanceOptimizations.trackSnapPhysics(
+      'BottomSheetService',
+      'NotificationListener',
+    );
+
+    // Detect snap completion - when sheet settles at a snap size
+    final currentExtent = notification.extent;
+    
+    // Check if we're at or very close to a snap size
+    const snapTolerance = 0.02; // 2% tolerance for snap detection
+    
+    for (final snapSize in snapSizes) {
+      final isAtSnapSize = (currentExtent - snapSize).abs() < snapTolerance;
+      
+      if (isAtSnapSize) {
+        _triggerSnapFeedback(currentExtent);
+        
+        // Track snap completion
+        PerformanceOptimizations.trackSnapCompletion(
+          'BottomSheetService',
+          currentExtent,
+          PlatformService.getPlatform() == PlatformOS.isIOS, // Haptic feedback only on iOS
+        );
+        break; // Only trigger once per snap
+      }
+    }
+  }
+
+  /// Phase 4: Trigger haptic feedback for snap completion
+  static void _triggerSnapFeedback(double snapPosition) {
+    // Only provide haptic feedback on iOS for natural feel
+    if (PlatformService.getPlatform() == PlatformOS.isIOS) {
+      // Use different haptic intensity based on snap position
+      if (snapPosition >= 0.9) {
+        // Strong feedback for full expansion
+        HapticFeedback.heavyImpact();
+      } else if (snapPosition <= 0.3) {
+        // Light feedback for minimal expansion
+        HapticFeedback.lightImpact();
+      } else {
+        // Medium feedback for mid-range snaps
+        HapticFeedback.mediumImpact();
+      }
+      
+      // Track haptic optimization
+      PerformanceOptimizations.trackHapticOptimization(
+        'BottomSheetService',
+        true,
+      );
+    }
+  }
+
+  /// Phase 2: Removed _keyboardVisibilityNotifier - now using AnimatedPadding approach
+  /// Phase 3: Removed BottomSheetAnimationType enum - animations handled by DraggableScrollableSheet
 }
 
 /// Represents an option in a bottom sheet menu
@@ -695,7 +872,7 @@ extension BottomSheetServiceExtension on BuildContext {
     bool enableDrag = true,
     bool showDragHandle = true,
     bool showCloseButton = false,
-    BottomSheetAnimationType? animationType,
+    // Phase 3: Animation handled by DraggableScrollableSheet
   }) {
     return BottomSheetService.showCustomBottomSheet<T>(
       this,
@@ -708,8 +885,6 @@ extension BottomSheetServiceExtension on BuildContext {
       enableDrag: enableDrag,
       showDragHandle: showDragHandle,
       showCloseButton: showCloseButton,
-      animationType:
-          animationType ?? BottomSheetService.defaultBottomSheetAnimation,
     );
   }
 

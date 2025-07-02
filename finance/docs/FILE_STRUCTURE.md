@@ -121,20 +121,28 @@ lib/features/
 │   ├── domain/                       # Business logic layer
 │   │   ├── entities/
 │   │   │   ├── transaction.dart     # Transaction entity/model
-│   │   │   └── attachment.dart      # Attachment entity with Google Drive integration
+│   │   │   ├── attachment.dart      # Attachment entity with Google Drive integration
+│   │   │   └── transaction_card_data.dart # Lightweight display data model for homepage
 │   │   ├── repositories/
 │   │   │   ├── transaction_repository.dart # Transaction repository interface
 │   │   │   └── attachment_repository.dart # Attachment repository interface
+│   │   ├── services/
+│   │   │   └── transaction_display_service.dart # Transaction display service interface
 │   │   └── usecases/                # Business use cases
 │   │       ├── get_transactions.dart # Transaction retrieval use cases
 │   │       └── manage_transactions.dart # Transaction management use cases
 │   ├── data/                        # Data access layer
-│   │   └── repositories/
-│   │       ├── transaction_repository_impl.dart # Transaction repository implementation
-│   │       └── attachment_repository_impl.dart # Attachment repository implementation
+│   │   ├── repositories/
+│   │   │   ├── transaction_repository_impl.dart # Transaction repository implementation
+│   │   │   └── attachment_repository_impl.dart # Attachment repository implementation
+│   │   └── services/
+│   │       └── transaction_display_service_impl.dart # Transaction display service implementation
 │   └── presentation/                # UI layer
 │       ├── pages/
 │       │   └── transactions_page.dart # Transaction list/management page
+│       ├── widgets/
+│       │   ├── transaction_list.dart # Complex transaction list (existing)
+│       │   └── transaction_summary_card.dart # Simplified homepage card
 │       └── bloc/                    # State management
 │           ├── transactions_event.dart # Transaction events
 │           └── transactions_state.dart # Transaction states
@@ -150,6 +158,12 @@ lib/features/
 │   └── presentation/                # UI layer
 │       └── pages/
 │           └── budgets_page.dart    # Budget management page
+│       └── widgets/
+│           ├── animated_goo_background.dart # Gooey animated background
+│           ├── budget_progress_bar.dart     # Budget progress bar
+│           ├── budget_tile.dart             # Budget list item
+│           ├── budget_timeline.dart         # Timeline visualization for budget
+│           └── daily_allowance_label.dart   # Daily spending allowance
 ├── accounts/                        # Account management feature
 │   ├── domain/                      # Business logic layer
 │   │   ├── entities/
@@ -250,11 +264,16 @@ lib/shared/
 │   │   └── open_container_navigation.dart # Material 3 OpenContainer navigation components
 │   ├── app_text.dart                # Custom text widgets with theming
 │   ├── page_template.dart           # Common page layout template (Enhanced in Phase 5 with FadeIn and AnimatedSwitcher)
+│   ├── collapsible_app_bar_title.dart # Reusable scrolling app bar title with fade animation
 │   └── language_selector.dart       # Language selection widget
 ├── extensions/                      # Reusable extension methods
 │   └── account_currency_extension.dart # Account to currency helpers and formatters
 └── utils/                           # Shared utilities
-    └── currency_formatter.dart       # Currency formatting with locale support
+    ├── currency_formatter.dart       # Currency formatting with locale support
+    ├── performance_optimization.dart # Phase 1, 2, 3 & 4 - Performance monitoring and optimization utilities with physics tracking
+    ├── snap_size_cache.dart          # Phase 2 - Smart LRU cache for bottom sheet snap size calculations
+    ├── responsive_layout_builder.dart # Phase 2 - MediaQuery optimization framework with LayoutBuilder patterns
+    └── no_overscroll_behavior.dart   # Phase 4 - Custom scroll behavior to eliminate overscroll jank
 ```
 **Summary**: Shared components and utilities that can be used across multiple features, including a comprehensive animation and dialog framework, reusable widgets, and common utilities.
 
@@ -265,7 +284,7 @@ lib/shared/
 test/performance/
   └── phase_2_performance_test.dart   # Database cache performance benchmarks (Phase 2)
 ```
-**Summary**: Contains automated Stopwatch-based benchmarks to verify Phase 2 database optimization impact – ensuring cache retrieval is at least 2× faster than uncached database-like operations.
+**Summary**: Contains automated Stopwatch-based benchmarks to verify Phase 2 database optimization impact – ensuring cache retrieval is at least 2× faster than uncached database-like operations. Phase 2 also includes UI performance optimizations with keyboard handling and rebuild elimination.
 
 ## 🎨 Key Architecture Patterns
 
@@ -346,17 +365,18 @@ test/performance/
 - ✅ **Animation Framework**: Phase 1-6 - Complete animation and dialog framework with performance optimization.
 
 ### 🎬 Animation Framework (All Phases Complete)
-- **Platform Detection**: Comprehensive platform and device capability detection
+- **Platform Detection**: Comprehensive platform and device capability detection with **Phase 3 cached optimization**
 - **Animation Settings**: Enhanced user preferences with granular animation controls  
 - **Animation Utilities**: Core framework with settings-aware animation wrappers
 - **Entry Animations**: FadeIn, ScaleIn, SlideIn, BouncingWidget, BreathingWidget
 - **Transition Animations**: AnimatedExpanded, AnimatedSizeSwitcher, ScaledAnimatedSwitcher, SlideFadeTransition
-- **Interactive Animations**: TappableWidget, ShakeAnimation, AnimatedScaleOpacity
-- **Dialog Framework**: PopupFramework, DialogService, BottomSheetService with animation integration
+- **Interactive Animations**: TappableWidget with **Phase 3 platform caching and InkSparkle optimization**, ShakeAnimation, AnimatedScaleOpacity
+- **Dialog Framework**: PopupFramework, DialogService, BottomSheetService with **Phase 3 animation layer consolidation**
 - **Page Transitions**: Platform-aware slide, fade, scale, and slide-fade transitions with Material 3 OpenContainer support
 - **Navigation Enhancement**: Seamless container transitions for card-to-page and list-to-page navigation
 - **Phase 5 Integration**: Enhanced navigation with PopupFramework dialogs, animated PageTemplate, and comprehensive TappableWidget integration
 - **Performance Optimization**: Battery saver, real-time performance monitoring, and reduced motion support with zero overhead when disabled
-- **Platform Adaptation**: iOS, Android, web, and desktop-specific behaviors
+- **Platform Adaptation**: iOS, Android, web, and desktop-specific behaviors with **Phase 3 cached platform detection**
+- **Phase 3 Consolidation**: Single animation ownership, eliminated competing layers, 15-25% animation overhead reduction
 
 This architecture provides a scalable, maintainable foundation for a comprehensive personal finance management application with advanced file management, multi-currency capabilities, and a sophisticated animation framework. 

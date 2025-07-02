@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:go_router/go_router.dart';
+import '../../../../app/router/app_routes.dart';
 
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/app_text.dart';
@@ -22,9 +24,16 @@ class _TransactionsPageState extends State<TransactionsPage> {
   @override
   void initState() {
     super.initState();
+    debugPrint('🔄 TransactionsPage initState - Loading transactions with categories');
     // The BlocProvider is now in app.dart, so we just use the bloc.
     // We initiate the first event load here.
     context.read<TransactionsBloc>().add(LoadTransactionsWithCategories());
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    debugPrint('🔄 TransactionsPage didChangeDependencies - Checking if refresh needed');
   }
 
   @override
@@ -60,9 +69,7 @@ class _TransactionsView extends StatelessWidget {
       ],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Add new transaction')),
-          );
+          context.push(AppRoutes.transactionCreate);
         },
         child: const Icon(Icons.add),
       ),
@@ -114,6 +121,25 @@ class _TransactionsView extends StatelessWidget {
             }
 
             if (state is TransactionsPaginated) {
+              debugPrint('📊 Transactions loaded (Paginated) for ${state.selectedMonth != null ? DateFormat('MMMM yyyy').format(state.selectedMonth!) : 'All time'}');
+              debugPrint('🗓️ Selected month filter: ${DateFormat('yyyy-MM').format(state.selectedMonth)}');
+              final allItems = state.pagingState.pages?.expand((page) => page).toList() ?? [];
+              final transactionItems = allItems.whereType<TransactionItem>().toList();
+              debugPrint('📄 Total transaction items loaded: ${transactionItems.length}');
+              debugPrint('📄 Total items (including headers): ${allItems.length}');
+              debugPrint('🔢 Has more pages: ${state.pagingState.hasNextPage}');
+              if (transactionItems.isNotEmpty) {
+                debugPrint('💰 Recent transaction details:');
+                for (int i = 0; i < transactionItems.length && i < 5; i++) {
+                  final transaction = transactionItems[i].transaction;
+                  debugPrint('  ${i + 1}. ${transaction.title} - \$${transaction.amount} (${DateFormat('MMM dd').format(transaction.date)})');
+                }
+                if (transactionItems.length > 5) {
+                  debugPrint('  ... and ${transactionItems.length - 5} more transactions');
+                }
+              } else {
+                debugPrint('📭 No transaction items found');
+              }
               return SliverMainAxisGroup(
                 slivers: [
                   SliverToBoxAdapter(
@@ -137,6 +163,18 @@ class _TransactionsView extends StatelessWidget {
             }
 
             if (state is TransactionsLoaded) {
+              debugPrint('📊 Transactions loaded for ${state.selectedMonth != null ? DateFormat('MMMM yyyy').format(state.selectedMonth!) : 'All time'}');
+              debugPrint('🗓️ Selected month filter: ${DateFormat('yyyy-MM').format(state.selectedMonth)}');
+              debugPrint('📄 Total transactions: ${state.transactions.length}');
+              if (state.transactions.isNotEmpty) {
+                debugPrint('💰 Transaction details:');
+                for (int i = 0; i < state.transactions.length; i++) {
+                  final transaction = state.transactions[i];
+                  debugPrint('  ${i + 1}. ${transaction.title} - \$${transaction.amount} (${transaction.date})');
+                }
+              } else {
+                debugPrint('📭 No transactions found for the selected period');
+              }
               return SliverMainAxisGroup(
                 slivers: [
                   SliverToBoxAdapter(
@@ -154,6 +192,7 @@ class _TransactionsView extends StatelessWidget {
                     transactions: state.transactions,
                     categories: state.categories,
                     selectedMonth: state.selectedMonth,
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16),
                   ),
                 ],
               );

@@ -91,6 +91,7 @@ class BudgetRepositoryImpl
       spent: Value(budget.spent),
       categoryId: Value(budget.categoryId),
       period: budget.period.name,
+      periodAmount: Value(budget.periodAmount),
       startDate: budget.startDate,
       endDate: budget.endDate,
       isActive: Value(budget.isActive),
@@ -120,6 +121,7 @@ class BudgetRepositoryImpl
       includeUpcomingTransactionFromBudget:
           Value(budget.includeUpcomingTransactionFromBudget),
       dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+      colour: Value(budget.colour),
     );
 
     final id = await _database.into(_database.budgetsTable).insert(companion);
@@ -171,6 +173,7 @@ class BudgetRepositoryImpl
       includeUpcomingTransactionFromBudget:
           Value(budget.includeUpcomingTransactionFromBudget),
       dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+      colour: Value(budget.colour),
     );
 
     await (_database.update(_database.budgetsTable)
@@ -255,6 +258,7 @@ class BudgetRepositoryImpl
         spent: Value(budget.spent),
         categoryId: Value(budget.categoryId),
         period: budget.period.name,
+        periodAmount: Value(budget.periodAmount),
         startDate: budget.startDate,
         endDate: budget.endDate,
         isActive: Value(budget.isActive),
@@ -285,6 +289,7 @@ class BudgetRepositoryImpl
         includeUpcomingTransactionFromBudget:
             Value(budget.includeUpcomingTransactionFromBudget),
         dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+        colour: Value(budget.colour),
       );
       await _database.into(_database.budgetsTable).insert(companion);
     } else {
@@ -296,6 +301,7 @@ class BudgetRepositoryImpl
         spent: Value(budget.spent),
         categoryId: Value(budget.categoryId),
         period: Value(budget.period.name),
+        periodAmount: Value(budget.periodAmount),
         startDate: Value(budget.startDate),
         endDate: Value(budget.endDate),
         isActive: Value(budget.isActive),
@@ -324,6 +330,7 @@ class BudgetRepositoryImpl
         includeUpcomingTransactionFromBudget:
             Value(budget.includeUpcomingTransactionFromBudget),
         dateCreatedOriginal: Value(budget.dateCreatedOriginal),
+        colour: Value(budget.colour),
       );
 
       await (_database.update(_database.budgetsTable)
@@ -472,6 +479,7 @@ class BudgetRepositoryImpl
       spent: data.spent,
       categoryId: data.categoryId,
       period: BudgetPeriod.values.firstWhere((e) => e.name == data.period),
+      periodAmount: data.periodAmount,
       startDate: data.startDate,
       endDate: data.endDate,
       isActive: data.isActive,
@@ -503,6 +511,7 @@ class BudgetRepositoryImpl
           ? Map<String, dynamic>.from(
               jsonDecode(data.budgetTransactionFilters!))
           : null,
+      colour: data.colour,
     );
   }
 }

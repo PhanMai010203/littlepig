@@ -2086,6 +2086,14 @@ class $BudgetsTableTable extends BudgetsTable
           GeneratedColumn.checkTextLength(minTextLength: 1, maxTextLength: 20),
       type: DriftSqlType.string,
       requiredDuringInsert: true);
+  static const VerificationMeta _periodAmountMeta =
+      const VerificationMeta('periodAmount');
+  @override
+  late final GeneratedColumn<int> periodAmount = GeneratedColumn<int>(
+      'period_amount', aliasedName, false,
+      type: DriftSqlType.int,
+      requiredDuringInsert: false,
+      defaultValue: const Constant(1));
   static const VerificationMeta _startDateMeta =
       const VerificationMeta('startDate');
   @override
@@ -2131,6 +2139,11 @@ class $BudgetsTableTable extends BudgetsTable
       type: DriftSqlType.string,
       requiredDuringInsert: true,
       defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'));
+  static const VerificationMeta _colourMeta = const VerificationMeta('colour');
+  @override
+  late final GeneratedColumn<String> colour = GeneratedColumn<String>(
+      'colour', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   static const VerificationMeta _budgetTransactionFiltersMeta =
       const VerificationMeta('budgetTransactionFilters');
   @override
@@ -2235,12 +2248,14 @@ class $BudgetsTableTable extends BudgetsTable
         spent,
         categoryId,
         period,
+        periodAmount,
         startDate,
         endDate,
         isActive,
         createdAt,
         updatedAt,
         syncId,
+        colour,
         budgetTransactionFilters,
         excludeDebtCreditInstallments,
         excludeObjectiveInstallments,
@@ -2295,6 +2310,12 @@ class $BudgetsTableTable extends BudgetsTable
     } else if (isInserting) {
       context.missing(_periodMeta);
     }
+    if (data.containsKey('period_amount')) {
+      context.handle(
+          _periodAmountMeta,
+          periodAmount.isAcceptableOrUnknown(
+              data['period_amount']!, _periodAmountMeta));
+    }
     if (data.containsKey('start_date')) {
       context.handle(_startDateMeta,
           startDate.isAcceptableOrUnknown(data['start_date']!, _startDateMeta));
@@ -2324,6 +2345,10 @@ class $BudgetsTableTable extends BudgetsTable
           syncId.isAcceptableOrUnknown(data['sync_id']!, _syncIdMeta));
     } else if (isInserting) {
       context.missing(_syncIdMeta);
+    }
+    if (data.containsKey('colour')) {
+      context.handle(_colourMeta,
+          colour.isAcceptableOrUnknown(data['colour']!, _colourMeta));
     }
     if (data.containsKey('budget_transaction_filters')) {
       context.handle(
@@ -2422,6 +2447,8 @@ class $BudgetsTableTable extends BudgetsTable
           .read(DriftSqlType.int, data['${effectivePrefix}category_id']),
       period: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}period'])!,
+      periodAmount: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}period_amount'])!,
       startDate: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}start_date'])!,
       endDate: attachedDatabase.typeMapping
@@ -2434,6 +2461,8 @@ class $BudgetsTableTable extends BudgetsTable
           .read(DriftSqlType.dateTime, data['${effectivePrefix}updated_at'])!,
       syncId: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}sync_id'])!,
+      colour: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}colour']),
       budgetTransactionFilters: attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}budget_transaction_filters']),
@@ -2482,12 +2511,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
   final double spent;
   final int? categoryId;
   final String period;
+  final int periodAmount;
   final DateTime startDate;
   final DateTime endDate;
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String syncId;
+  final String? colour;
   final String? budgetTransactionFilters;
   final bool excludeDebtCreditInstallments;
   final bool excludeObjectiveInstallments;
@@ -2507,12 +2538,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       required this.spent,
       this.categoryId,
       required this.period,
+      required this.periodAmount,
       required this.startDate,
       required this.endDate,
       required this.isActive,
       required this.createdAt,
       required this.updatedAt,
       required this.syncId,
+      this.colour,
       this.budgetTransactionFilters,
       required this.excludeDebtCreditInstallments,
       required this.excludeObjectiveInstallments,
@@ -2536,12 +2569,16 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       map['category_id'] = Variable<int>(categoryId);
     }
     map['period'] = Variable<String>(period);
+    map['period_amount'] = Variable<int>(periodAmount);
     map['start_date'] = Variable<DateTime>(startDate);
     map['end_date'] = Variable<DateTime>(endDate);
     map['is_active'] = Variable<bool>(isActive);
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['sync_id'] = Variable<String>(syncId);
+    if (!nullToAbsent || colour != null) {
+      map['colour'] = Variable<String>(colour);
+    }
     if (!nullToAbsent || budgetTransactionFilters != null) {
       map['budget_transaction_filters'] =
           Variable<String>(budgetTransactionFilters);
@@ -2587,12 +2624,15 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           ? const Value.absent()
           : Value(categoryId),
       period: Value(period),
+      periodAmount: Value(periodAmount),
       startDate: Value(startDate),
       endDate: Value(endDate),
       isActive: Value(isActive),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       syncId: Value(syncId),
+      colour:
+          colour == null && nullToAbsent ? const Value.absent() : Value(colour),
       budgetTransactionFilters: budgetTransactionFilters == null && nullToAbsent
           ? const Value.absent()
           : Value(budgetTransactionFilters),
@@ -2634,12 +2674,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       spent: serializer.fromJson<double>(json['spent']),
       categoryId: serializer.fromJson<int?>(json['categoryId']),
       period: serializer.fromJson<String>(json['period']),
+      periodAmount: serializer.fromJson<int>(json['periodAmount']),
       startDate: serializer.fromJson<DateTime>(json['startDate']),
       endDate: serializer.fromJson<DateTime>(json['endDate']),
       isActive: serializer.fromJson<bool>(json['isActive']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncId: serializer.fromJson<String>(json['syncId']),
+      colour: serializer.fromJson<String?>(json['colour']),
       budgetTransactionFilters:
           serializer.fromJson<String?>(json['budgetTransactionFilters']),
       excludeDebtCreditInstallments:
@@ -2672,12 +2714,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       'spent': serializer.toJson<double>(spent),
       'categoryId': serializer.toJson<int?>(categoryId),
       'period': serializer.toJson<String>(period),
+      'periodAmount': serializer.toJson<int>(periodAmount),
       'startDate': serializer.toJson<DateTime>(startDate),
       'endDate': serializer.toJson<DateTime>(endDate),
       'isActive': serializer.toJson<bool>(isActive),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncId': serializer.toJson<String>(syncId),
+      'colour': serializer.toJson<String?>(colour),
       'budgetTransactionFilters':
           serializer.toJson<String?>(budgetTransactionFilters),
       'excludeDebtCreditInstallments':
@@ -2706,12 +2750,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           double? spent,
           Value<int?> categoryId = const Value.absent(),
           String? period,
+          int? periodAmount,
           DateTime? startDate,
           DateTime? endDate,
           bool? isActive,
           DateTime? createdAt,
           DateTime? updatedAt,
           String? syncId,
+          Value<String?> colour = const Value.absent(),
           Value<String?> budgetTransactionFilters = const Value.absent(),
           bool? excludeDebtCreditInstallments,
           bool? excludeObjectiveInstallments,
@@ -2731,12 +2777,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
         spent: spent ?? this.spent,
         categoryId: categoryId.present ? categoryId.value : this.categoryId,
         period: period ?? this.period,
+        periodAmount: periodAmount ?? this.periodAmount,
         startDate: startDate ?? this.startDate,
         endDate: endDate ?? this.endDate,
         isActive: isActive ?? this.isActive,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         syncId: syncId ?? this.syncId,
+        colour: colour.present ? colour.value : this.colour,
         budgetTransactionFilters: budgetTransactionFilters.present
             ? budgetTransactionFilters.value
             : this.budgetTransactionFilters,
@@ -2775,12 +2823,16 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
       categoryId:
           data.categoryId.present ? data.categoryId.value : this.categoryId,
       period: data.period.present ? data.period.value : this.period,
+      periodAmount: data.periodAmount.present
+          ? data.periodAmount.value
+          : this.periodAmount,
       startDate: data.startDate.present ? data.startDate.value : this.startDate,
       endDate: data.endDate.present ? data.endDate.value : this.endDate,
       isActive: data.isActive.present ? data.isActive.value : this.isActive,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncId: data.syncId.present ? data.syncId.value : this.syncId,
+      colour: data.colour.present ? data.colour.value : this.colour,
       budgetTransactionFilters: data.budgetTransactionFilters.present
           ? data.budgetTransactionFilters.value
           : this.budgetTransactionFilters,
@@ -2828,12 +2880,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           ..write('spent: $spent, ')
           ..write('categoryId: $categoryId, ')
           ..write('period: $period, ')
+          ..write('periodAmount: $periodAmount, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncId: $syncId, ')
+          ..write('colour: $colour, ')
           ..write('budgetTransactionFilters: $budgetTransactionFilters, ')
           ..write(
               'excludeDebtCreditInstallments: $excludeDebtCreditInstallments, ')
@@ -2862,12 +2916,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
         spent,
         categoryId,
         period,
+        periodAmount,
         startDate,
         endDate,
         isActive,
         createdAt,
         updatedAt,
         syncId,
+        colour,
         budgetTransactionFilters,
         excludeDebtCreditInstallments,
         excludeObjectiveInstallments,
@@ -2891,12 +2947,14 @@ class BudgetTableData extends DataClass implements Insertable<BudgetTableData> {
           other.spent == this.spent &&
           other.categoryId == this.categoryId &&
           other.period == this.period &&
+          other.periodAmount == this.periodAmount &&
           other.startDate == this.startDate &&
           other.endDate == this.endDate &&
           other.isActive == this.isActive &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.syncId == this.syncId &&
+          other.colour == this.colour &&
           other.budgetTransactionFilters == this.budgetTransactionFilters &&
           other.excludeDebtCreditInstallments ==
               this.excludeDebtCreditInstallments &&
@@ -2922,12 +2980,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
   final Value<double> spent;
   final Value<int?> categoryId;
   final Value<String> period;
+  final Value<int> periodAmount;
   final Value<DateTime> startDate;
   final Value<DateTime> endDate;
   final Value<bool> isActive;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<String> syncId;
+  final Value<String?> colour;
   final Value<String?> budgetTransactionFilters;
   final Value<bool> excludeDebtCreditInstallments;
   final Value<bool> excludeObjectiveInstallments;
@@ -2947,12 +3007,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     this.spent = const Value.absent(),
     this.categoryId = const Value.absent(),
     this.period = const Value.absent(),
+    this.periodAmount = const Value.absent(),
     this.startDate = const Value.absent(),
     this.endDate = const Value.absent(),
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncId = const Value.absent(),
+    this.colour = const Value.absent(),
     this.budgetTransactionFilters = const Value.absent(),
     this.excludeDebtCreditInstallments = const Value.absent(),
     this.excludeObjectiveInstallments = const Value.absent(),
@@ -2973,12 +3035,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     this.spent = const Value.absent(),
     this.categoryId = const Value.absent(),
     required String period,
+    this.periodAmount = const Value.absent(),
     required DateTime startDate,
     required DateTime endDate,
     this.isActive = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     required String syncId,
+    this.colour = const Value.absent(),
     this.budgetTransactionFilters = const Value.absent(),
     this.excludeDebtCreditInstallments = const Value.absent(),
     this.excludeObjectiveInstallments = const Value.absent(),
@@ -3004,12 +3068,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     Expression<double>? spent,
     Expression<int>? categoryId,
     Expression<String>? period,
+    Expression<int>? periodAmount,
     Expression<DateTime>? startDate,
     Expression<DateTime>? endDate,
     Expression<bool>? isActive,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? syncId,
+    Expression<String>? colour,
     Expression<String>? budgetTransactionFilters,
     Expression<bool>? excludeDebtCreditInstallments,
     Expression<bool>? excludeObjectiveInstallments,
@@ -3030,12 +3096,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       if (spent != null) 'spent': spent,
       if (categoryId != null) 'category_id': categoryId,
       if (period != null) 'period': period,
+      if (periodAmount != null) 'period_amount': periodAmount,
       if (startDate != null) 'start_date': startDate,
       if (endDate != null) 'end_date': endDate,
       if (isActive != null) 'is_active': isActive,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncId != null) 'sync_id': syncId,
+      if (colour != null) 'colour': colour,
       if (budgetTransactionFilters != null)
         'budget_transaction_filters': budgetTransactionFilters,
       if (excludeDebtCreditInstallments != null)
@@ -3068,12 +3136,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       Value<double>? spent,
       Value<int?>? categoryId,
       Value<String>? period,
+      Value<int>? periodAmount,
       Value<DateTime>? startDate,
       Value<DateTime>? endDate,
       Value<bool>? isActive,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<String>? syncId,
+      Value<String?>? colour,
       Value<String?>? budgetTransactionFilters,
       Value<bool>? excludeDebtCreditInstallments,
       Value<bool>? excludeObjectiveInstallments,
@@ -3093,12 +3163,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
       spent: spent ?? this.spent,
       categoryId: categoryId ?? this.categoryId,
       period: period ?? this.period,
+      periodAmount: periodAmount ?? this.periodAmount,
       startDate: startDate ?? this.startDate,
       endDate: endDate ?? this.endDate,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncId: syncId ?? this.syncId,
+      colour: colour ?? this.colour,
       budgetTransactionFilters:
           budgetTransactionFilters ?? this.budgetTransactionFilters,
       excludeDebtCreditInstallments:
@@ -3143,6 +3215,9 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     if (period.present) {
       map['period'] = Variable<String>(period.value);
     }
+    if (periodAmount.present) {
+      map['period_amount'] = Variable<int>(periodAmount.value);
+    }
     if (startDate.present) {
       map['start_date'] = Variable<DateTime>(startDate.value);
     }
@@ -3160,6 +3235,9 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
     }
     if (syncId.present) {
       map['sync_id'] = Variable<String>(syncId.value);
+    }
+    if (colour.present) {
+      map['colour'] = Variable<String>(colour.value);
     }
     if (budgetTransactionFilters.present) {
       map['budget_transaction_filters'] =
@@ -3217,12 +3295,14 @@ class BudgetsTableCompanion extends UpdateCompanion<BudgetTableData> {
           ..write('spent: $spent, ')
           ..write('categoryId: $categoryId, ')
           ..write('period: $period, ')
+          ..write('periodAmount: $periodAmount, ')
           ..write('startDate: $startDate, ')
           ..write('endDate: $endDate, ')
           ..write('isActive: $isActive, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncId: $syncId, ')
+          ..write('colour: $colour, ')
           ..write('budgetTransactionFilters: $budgetTransactionFilters, ')
           ..write(
               'excludeDebtCreditInstallments: $excludeDebtCreditInstallments, ')
@@ -7209,12 +7289,14 @@ typedef $$BudgetsTableTableCreateCompanionBuilder = BudgetsTableCompanion
   Value<double> spent,
   Value<int?> categoryId,
   required String period,
+  Value<int> periodAmount,
   required DateTime startDate,
   required DateTime endDate,
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   required String syncId,
+  Value<String?> colour,
   Value<String?> budgetTransactionFilters,
   Value<bool> excludeDebtCreditInstallments,
   Value<bool> excludeObjectiveInstallments,
@@ -7236,12 +7318,14 @@ typedef $$BudgetsTableTableUpdateCompanionBuilder = BudgetsTableCompanion
   Value<double> spent,
   Value<int?> categoryId,
   Value<String> period,
+  Value<int> periodAmount,
   Value<DateTime> startDate,
   Value<DateTime> endDate,
   Value<bool> isActive,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<String> syncId,
+  Value<String?> colour,
   Value<String?> budgetTransactionFilters,
   Value<bool> excludeDebtCreditInstallments,
   Value<bool> excludeObjectiveInstallments,
@@ -7320,6 +7404,9 @@ class $$BudgetsTableTableFilterComposer
   ColumnFilters<String> get period => $composableBuilder(
       column: $table.period, builder: (column) => ColumnFilters(column));
 
+  ColumnFilters<int> get periodAmount => $composableBuilder(
+      column: $table.periodAmount, builder: (column) => ColumnFilters(column));
+
   ColumnFilters<DateTime> get startDate => $composableBuilder(
       column: $table.startDate, builder: (column) => ColumnFilters(column));
 
@@ -7337,6 +7424,9 @@ class $$BudgetsTableTableFilterComposer
 
   ColumnFilters<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get budgetTransactionFilters => $composableBuilder(
       column: $table.budgetTransactionFilters,
@@ -7454,6 +7544,10 @@ class $$BudgetsTableTableOrderingComposer
   ColumnOrderings<String> get period => $composableBuilder(
       column: $table.period, builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get periodAmount => $composableBuilder(
+      column: $table.periodAmount,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get startDate => $composableBuilder(
       column: $table.startDate, builder: (column) => ColumnOrderings(column));
 
@@ -7471,6 +7565,9 @@ class $$BudgetsTableTableOrderingComposer
 
   ColumnOrderings<String> get syncId => $composableBuilder(
       column: $table.syncId, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get colour => $composableBuilder(
+      column: $table.colour, builder: (column) => ColumnOrderings(column));
 
   ColumnOrderings<String> get budgetTransactionFilters => $composableBuilder(
       column: $table.budgetTransactionFilters,
@@ -7565,6 +7662,9 @@ class $$BudgetsTableTableAnnotationComposer
   GeneratedColumn<String> get period =>
       $composableBuilder(column: $table.period, builder: (column) => column);
 
+  GeneratedColumn<int> get periodAmount => $composableBuilder(
+      column: $table.periodAmount, builder: (column) => column);
+
   GeneratedColumn<DateTime> get startDate =>
       $composableBuilder(column: $table.startDate, builder: (column) => column);
 
@@ -7582,6 +7682,9 @@ class $$BudgetsTableTableAnnotationComposer
 
   GeneratedColumn<String> get syncId =>
       $composableBuilder(column: $table.syncId, builder: (column) => column);
+
+  GeneratedColumn<String> get colour =>
+      $composableBuilder(column: $table.colour, builder: (column) => column);
 
   GeneratedColumn<String> get budgetTransactionFilters => $composableBuilder(
       column: $table.budgetTransactionFilters, builder: (column) => column);
@@ -7698,12 +7801,14 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<double> spent = const Value.absent(),
             Value<int?> categoryId = const Value.absent(),
             Value<String> period = const Value.absent(),
+            Value<int> periodAmount = const Value.absent(),
             Value<DateTime> startDate = const Value.absent(),
             Value<DateTime> endDate = const Value.absent(),
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<String> syncId = const Value.absent(),
+            Value<String?> colour = const Value.absent(),
             Value<String?> budgetTransactionFilters = const Value.absent(),
             Value<bool> excludeDebtCreditInstallments = const Value.absent(),
             Value<bool> excludeObjectiveInstallments = const Value.absent(),
@@ -7726,12 +7831,14 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             spent: spent,
             categoryId: categoryId,
             period: period,
+            periodAmount: periodAmount,
             startDate: startDate,
             endDate: endDate,
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,
             syncId: syncId,
+            colour: colour,
             budgetTransactionFilters: budgetTransactionFilters,
             excludeDebtCreditInstallments: excludeDebtCreditInstallments,
             excludeObjectiveInstallments: excludeObjectiveInstallments,
@@ -7754,12 +7861,14 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             Value<double> spent = const Value.absent(),
             Value<int?> categoryId = const Value.absent(),
             required String period,
+            Value<int> periodAmount = const Value.absent(),
             required DateTime startDate,
             required DateTime endDate,
             Value<bool> isActive = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             required String syncId,
+            Value<String?> colour = const Value.absent(),
             Value<String?> budgetTransactionFilters = const Value.absent(),
             Value<bool> excludeDebtCreditInstallments = const Value.absent(),
             Value<bool> excludeObjectiveInstallments = const Value.absent(),
@@ -7782,12 +7891,14 @@ class $$BudgetsTableTableTableManager extends RootTableManager<
             spent: spent,
             categoryId: categoryId,
             period: period,
+            periodAmount: periodAmount,
             startDate: startDate,
             endDate: endDate,
             isActive: isActive,
             createdAt: createdAt,
             updatedAt: updatedAt,
             syncId: syncId,
+            colour: colour,
             budgetTransactionFilters: budgetTransactionFilters,
             excludeDebtCreditInstallments: excludeDebtCreditInstallments,
             excludeObjectiveInstallments: excludeObjectiveInstallments,

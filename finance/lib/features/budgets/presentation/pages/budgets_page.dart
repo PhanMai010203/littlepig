@@ -1,11 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-
+import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/page_template.dart';
+import '../../../../app/router/app_routes.dart';
+
+import '../../domain/entities/budget.dart';
 import '../bloc/budgets_bloc.dart';
 import '../bloc/budgets_event.dart';
 import '../bloc/budgets_state.dart';
+import '../widgets/budget_tile.dart';
 
 /// The main page for the Budgets feature.
 ///
@@ -31,75 +35,89 @@ class _BudgetsPageState extends State<BudgetsPage> {
   Widget build(BuildContext context) {
     return PageTemplate(
       title: 'navigation.budgets'.tr(),
-      actions: [
-        IconButton(
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Budget settings (coming soon)')),
-            );
-          },
-          icon: const Icon(Icons.settings),
-        ),
-      ],
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Create new budget (coming soon)')),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
+      actions: [_buildSettingsButton(context)],
+      floatingActionButton: _buildFab(context),
       slivers: [
         BlocBuilder<BudgetsBloc, BudgetsState>(
           builder: (context, state) {
-            if (state is BudgetsLoading || state is BudgetsInitial) {
-              // Show a loading indicator while budgets are being fetched.
-              return const SliverFillRemaining(
-                child: Center(child: CircularProgressIndicator()),
-              );
-            }
-            if (state is BudgetsError) {
-              // Show an error message if something went wrong.
-              return SliverFillRemaining(
-                child: Center(child: Text('Error: ${state.message}')),
-              );
-            }
-            if (state is BudgetsLoaded) {
-              if (state.budgets.isEmpty) {
-                // Show a message if there are no budgets to display.
-                return const SliverFillRemaining(
-                  child: Center(child: Text('No budgets found. Create one!')),
-                );
-              }
-              // If budgets are loaded, display them in a list.
-              return SliverPadding(
-                padding: const EdgeInsets.all(16),
-                sliver: SliverList.builder(
-                  itemCount: state.budgets.length,
-                  itemBuilder: (context, index) {
-                    final budget = state.budgets[index];
-                    // Placeholder for the detailed budget card widget.
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 16),
-                      child: ListTile(
-                        title: Text(budget.name),
-                        subtitle: Text(
-                            'Amount: ${budget.amount.toStringAsFixed(2)}'),
-                      ),
-                    );
-                  },
-                ),
-              );
-            }
-            // Fallback for any other unhandled state.
-            return const SliverFillRemaining(
-              child: Center(child: Text('Something went wrong.')),
-            );
+            debugPrint('BlocBuilder rebuilding with state: ${state.runtimeType}');
+            return _buildBody(state);
           },
         ),
       ],
     );
   }
+
+  /// Builds the appropriate sliver based on the current [BudgetsState].
+  Widget _buildBody(BudgetsState state) {
+    debugPrint('_buildBody called with state: ${state.runtimeType}');
+    
+    if (state is BudgetsLoading || state is BudgetsInitial) {
+      return _buildLoading();
+    }
+
+    if (state is BudgetsError) {
+      return _buildError(state.message);
+    }
+
+    if (state is BudgetsLoaded) {
+      debugPrint('BudgetsLoaded: ${state.budgets.length} budgets with IDs: ${state.budgets.map((b) => b.id).toList()}');
+      if (state.budgets.isEmpty) return _buildEmpty();
+      return _buildBudgetList(state.budgets);
+    }
+
+    // Fallback – should rarely be reached.
+    return _buildError('Unhandled state: $state');
+  }
+
+  // ───────────────────────────────── UI Helpers ──────────────────────────────────
+
+  Widget _buildSettingsButton(BuildContext context) => IconButton(
+        icon: const Icon(Icons.settings),
+        onPressed: () =>
+            _showComingSoonSnackBar(context, 'budgets.settings'.tr()),
+        tooltip: 'budgets.settings'.tr(),
+      );
+
+  Widget _buildFab(BuildContext context) => FloatingActionButton(
+        onPressed: () => context.push(AppRoutes.budgetCreate),
+        tooltip: 'budgets.create'.tr(),
+        child: const Icon(Icons.add),
+      );
+
+  Widget _buildLoading() => const SliverFillRemaining(
+        child: Center(child: CircularProgressIndicator()),
+      );
+
+  Widget _buildError(String message) => SliverFillRemaining(
+        child: Center(
+            child: Text('common.error'.tr(namedArgs: {'message': message}))),
+      );
+
+  Widget _buildEmpty() => SliverFillRemaining(
+        child: Center(child: Text('budgets.empty'.tr())),
+      );
+
+  Widget _buildBudgetList(List<Budget> budgets) {
+    debugPrint('_buildBudgetList called with ${budgets.length} budgets: ${budgets.map((b) => b.id).toList()}');
+    return SliverPadding(
+      padding: const EdgeInsets.all(16),
+      sliver: SliverList.builder(
+        itemCount: budgets.length,
+        itemBuilder: (context, index) {
+          debugPrint('Building BudgetTile for index $index, budget ID: ${budgets[index].id}');
+          return BudgetTile(
+            key: ValueKey(budgets[index].id),
+            budget: budgets[index],
+          );
+        },
+      ),
+    );
+  }
+
+  void _showComingSoonSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
+  }
 }
-
-

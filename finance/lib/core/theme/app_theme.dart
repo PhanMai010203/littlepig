@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'app_colors.dart';
 import 'app_text_theme.dart';
 import '../settings/app_settings.dart';
@@ -7,6 +8,15 @@ import 'material_you.dart';
 
 /// Main theme configuration class
 class AppTheme {
+  /// Get platform-appropriate splash factory
+  /// Keeps Material splash effects on Android, removes them on iOS
+  static InteractiveInkFeatureFactory get _platformSplashFactory {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return NoSplash.splashFactory;
+    }
+    return InkRipple.splashFactory; // Material Design default
+  }
+
   /// Create light theme
   static ThemeData light({Color? accentColor}) {
     final accent = accentColor ?? MaterialYouManager.getAccentColor();
@@ -56,6 +66,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -66,6 +77,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -76,8 +88,17 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          splashFactory: _platformSplashFactory,
         ),
       ),
+
+      // Icon button theme
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          splashFactory: _platformSplashFactory,
+        ),
+      ),
+
       // Bottom navigation bar theme
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         type: BottomNavigationBarType.fixed,
@@ -86,6 +107,12 @@ class AppTheme {
         unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         elevation: 8,
       ),
+
+      // Platform-aware splash effects: disabled on iOS, enabled on Android
+      splashFactory: _platformSplashFactory,
+      
+      // Keep Material ink effects for better touch feedback
+      materialTapTargetSize: MaterialTapTargetSize.padded,
     );
 
     // Add custom colors extension
@@ -149,6 +176,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -159,6 +187,7 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -169,6 +198,14 @@ class AppTheme {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),
+          splashFactory: _platformSplashFactory,
+        ),
+      ),
+
+      // Icon button theme
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          splashFactory: _platformSplashFactory,
         ),
       ),
 
@@ -180,6 +217,12 @@ class AppTheme {
         unselectedItemColor: colorScheme.onSurface.withValues(alpha: 0.6),
         elevation: 8,
       ),
+
+      // Platform-aware splash effects: disabled on iOS, enabled on Android
+      splashFactory: _platformSplashFactory,
+      
+      // Keep Material ink effects for better touch feedback
+      materialTapTargetSize: MaterialTapTargetSize.padded,
     );
 
     // Add custom colors extension

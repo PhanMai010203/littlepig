@@ -1,8 +1,13 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import '../../core/di/injection.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../features/accounts/domain/repositories/account_repository.dart';
+import '../../features/budgets/domain/repositories/budget_repository.dart';
+import '../../features/budgets/domain/services/budget_display_service.dart';
+import '../../features/transactions/domain/services/transaction_display_service.dart';
+import '../../features/categories/domain/repositories/category_repository.dart';
 import '../../features/budgets/presentation/pages/budgets_page.dart';
 import '../../features/currencies/domain/repositories/currency_repository.dart';
 import '../../features/home/presentation/pages/home_page.dart';
@@ -10,15 +15,26 @@ import '../../features/more/presentation/pages/more_page.dart';
 import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
+import '../../features/transactions/domain/repositories/attachment_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
+import '../../features/budgets/presentation/pages/budget_create_page.dart';
+import '../../features/transactions/presentation/pages/transaction_create_page.dart';
+import '../../features/accounts/presentation/pages/account_create_page.dart';
+import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
+import '../../features/transactions/presentation/bloc/transaction_create_bloc.dart';
+import '../../features/accounts/presentation/bloc/account_create_bloc.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
 // Add these imports for demo pages
 import '../../demo/framework_demo_page.dart';
 import '../../demo/demo_transition_pages.dart';
 
+
 class AppRouter {
+  static final _rootNavigatorKey = GlobalKey<NavigatorState>();
+
   static final GoRouter router = GoRouter(
+    navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.home,
     routes: [
       ShellRoute(
@@ -32,9 +48,13 @@ class AppRouter {
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
               child: HomePage(
-                accountRepository: context.read<AccountRepository>(),
-                transactionRepository: context.read<TransactionRepository>(),
-                currencyRepository: context.read<CurrencyRepository>(),
+                accountRepository: getIt<AccountRepository>(),
+                transactionRepository: getIt<TransactionRepository>(),
+                currencyRepository: getIt<CurrencyRepository>(),
+                budgetRepository: getIt<BudgetRepository>(),
+                budgetDisplayService: getIt<BudgetDisplayService>(),
+                transactionDisplayService: getIt<TransactionDisplayService>(),
+                categoryRepository: getIt<CategoryRepository>(),
               ),
               name: state.name,
               key: state.pageKey,
@@ -82,6 +102,63 @@ class AppRouter {
           name: state.name,
           key: state.pageKey,
         ),
+      ),
+
+      // Budget creation page
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.budgetCreate,
+        name: AppRoutes.budgetCreate,
+        pageBuilder: (context, state) {
+          return AppPageTransitions.platformTransitionPage(
+            key: state.pageKey,
+            child: BlocProvider(
+              create: (_) => BudgetCreationBloc(
+                getIt<AccountRepository>(),
+                getIt<CategoryRepository>(),
+              ),
+              child: const BudgetCreatePage(),
+            ),
+            name: state.name,
+          );
+        },
+      ),
+
+      // Transaction creation page
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.transactionCreate,
+        name: AppRoutes.transactionCreate,
+        pageBuilder: (context, state) {
+          return AppPageTransitions.platformTransitionPage(
+            key: state.pageKey,
+            child: BlocProvider(
+              create: (_) => TransactionCreateBloc(
+                getIt<TransactionRepository>(),
+                getIt<CategoryRepository>(),
+                getIt<AccountRepository>(),
+                getIt<BudgetRepository>(),
+                getIt<AttachmentRepository>(),
+              ),
+              child: const TransactionCreatePage(),
+            ),
+            name: state.name,
+          );
+        },
+      ),
+
+      // Account creation page
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.accountCreate,
+        name: AppRoutes.accountCreate,
+        pageBuilder: (context, state) {
+          return AppPageTransitions.platformTransitionPage(
+            key: state.pageKey,
+            child: const AccountCreatePage(),
+            name: state.name,
+          );
+        },
       ),
 
       // Example of custom transition routes
@@ -139,6 +216,51 @@ class AppRouter {
             name: state.name,
             key: state.pageKey,
             direction: SlideDirection.fromBottom,
+          );
+        },
+      ),
+
+      // Modal slide transition example (settings modal)
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: '/settings-modal',
+        name: 'settings_modal',
+        pageBuilder: (context, state) {
+          return AppPageTransitions.modalSlideTransitionPage(
+            child: _buildPlaceholderPage('Settings Modal'),
+            name: state.name,
+            key: state.pageKey,
+            fullscreenDialog: true,
+          );
+        },
+      ),
+
+      // Subtle slide transition example (notifications)
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        pageBuilder: (context, state) {
+          return AppPageTransitions.subtleSlideTransitionPage(
+            child: _buildPlaceholderPage('Notifications'),
+            name: state.name,
+            key: state.pageKey,
+            direction: SlideDirection.fromTop,
+            slideOffset: 0.05,
+          );
+        },
+      ),
+
+      // Horizontal slide transition example (tab navigation simulation)
+      GoRoute(
+        path: '/categories',
+        name: 'categories',
+        pageBuilder: (context, state) {
+          return AppPageTransitions.horizontalSlideTransitionPage(
+            child: _buildPlaceholderPage('Categories'),
+            name: state.name,
+            key: state.pageKey,
+            fromRight: true,
+            slideDistance: 0.3,
           );
         },
       ),
