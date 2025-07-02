@@ -75,6 +75,7 @@
     "credit": "Credit",
     "debt": "Debt",
     "none": "None",
+    "recurrence": "Recurrence",
     "recurrence_none": "None",
     "recurrence_daily": "Daily",
     "recurrence_weekly": "Weekly",
@@ -92,7 +93,8 @@
     "photo_selected": "Photo selected: {fileName}",
     "failed_to_select_photo": "Failed to select photo: {error}",
     "photos_selected": "{count} photos selected",
-    "multiple_photos": "Multiple photos"
+    "multiple_photos": "Multiple photos",
+    "failed_to_select_photos": "Failed to select photos: {error}"
   },
 
   "budgets": {
@@ -117,6 +119,17 @@
     "today": "Today",
     "expense_budget": "Expense Budget",
     "savings_budget": "Savings Budget",
+    "gift": "Gift",
+    "other": "Other",
+    "default": "Default",
+    "all_categories": "All Categories",
+    "all_categories_description": "Track all categories together",
+    "no_category_selected": "No category selected",
+    "no_categories_selected": "No categories selected",
+    "categories_selected": "categories selected",
+    "no_categories_excluded": "No categories excluded",
+    "categories_excluded": "categories excluded",
+    "disabled_by_exclude": "Disabled by exclude mode",
 
     "form": {
       "create_new_budget": "Create New Budget",

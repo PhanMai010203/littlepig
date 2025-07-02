@@ -75,6 +75,7 @@
     "credit": "Tín dụng",
     "debt": "Nợ",
     "none": "Không có",
+    "recurrence": "Lặp lại",
     "recurrence_none": "Không có",
     "recurrence_daily": "Hàng ngày",
     "recurrence_weekly": "Hàng tuần",
@@ -92,7 +93,8 @@
     "photo_selected": "Đã chọn ảnh: {fileName}",
     "failed_to_select_photo": "Không thể chọn ảnh: {error}",
     "photos_selected": "Đã chọn {count} ảnh",
-    "multiple_photos": "Nhiều ảnh"
+    "multiple_photos": "Nhiều ảnh",
+    "failed_to_select_photos": "Không thể chọn nhiều ảnh: {error}"
   },
 
   "budgets": {
@@ -120,6 +122,17 @@
     "today": "Hôm nay",
     "expense_budget": "Chi tiêu",
     "savings_budget": "Tiết kiệm",
+    "gift": "Quà tặng",
+    "other": "Khác",
+    "default": "Mặc định",
+    "all_categories": "Tất cả danh mục",
+    "all_categories_description": "Theo dõi tất cả danh mục cùng lúc",
+    "no_category_selected": "Chưa chọn danh mục nào",
+    "no_categories_selected": "Chưa chọn danh mục nào",
+    "categories_selected": "danh mục đã chọn",
+    "no_categories_excluded": "Chưa loại trừ danh mục nào",
+    "categories_excluded": "danh mục đã loại trừ",
+    "disabled_by_exclude": "Đã bị vô hiệu hóa do chế độ loại trừ",
 
     "form": {
       "create_new_budget": "Tạo Ngân Sách Mới",
