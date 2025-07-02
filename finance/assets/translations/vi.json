@@ -60,7 +60,7 @@
     "select_category_action": "Chọn danh mục",
     "select_account_action": "Chọn tài khoản",
     "create_transaction_action": "Tạo giao dịch",
-    "title_hint": "Nhập tiêu đề giao dịch",
+    "title_hint": "Tiêu đề",
     "date_label": "Ngày:",
     "select_category": "Chọn danh mục",
     "select_account": "Chọn tài khoản",
@@ -91,7 +91,8 @@
     "failed_to_capture_photo": "Không thể chụp ảnh: {error}",
     "photo_selected": "Đã chọn ảnh: {fileName}",
     "failed_to_select_photo": "Không thể chọn ảnh: {error}",
-    "photos_selected": "Đã chọn {count} ảnh"
+    "photos_selected": "Đã chọn {count} ảnh",
+    "multiple_photos": "Nhiều ảnh"
   },
 
   "budgets": {
@@ -99,7 +100,6 @@
     "create_budget": "Tạo ngân sách",
     "budget_name": "Tên ngân sách",
     "budget_amount": "Số tiền ngân sách",
-    "period": "Kỳ hạn",
     "monthly": "Hàng tháng",
     "weekly": "Hàng tuần",
     "daily": "Hàng ngày",
@@ -331,7 +331,17 @@
     "all_accounts": "Tất cả tài khoản",
     "no_accounts_selected": "Chưa chọn tài khoản nào",
     "accounts_selected": "tài khoản đã chọn",
-    "all_accounts_description": "Theo dõi tất cả tài khoản cùng lúc"
+    "all_accounts_description": "Theo dõi tất cả tài khoản cùng lúc",
+    "create_account": "Tạo tài khoản",
+    "account_name_hint": "Tên tài khoản",
+    "beginning_balance": "Số dư ban đầu",
+    "enter_beginning_balance": "Nhập số dư ban đầu",
+    "currency_label": "Tiền tệ:",
+    "select_currency": "Chọn tiền tệ",
+    "select_currency_action": "Chọn tiền tệ",
+    "select_color": "Chọn màu",
+    "set_name_action": "Đặt tên",
+    "create_account_action": "Tạo tài khoản"
   },
 
   "actions": {

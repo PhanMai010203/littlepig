@@ -18,7 +18,9 @@ import '../../features/transactions/domain/repositories/transaction_repository.d
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../../features/budgets/presentation/pages/budget_create_page.dart';
 import '../../features/transactions/presentation/pages/transaction_create_page.dart';
+import '../../features/accounts/presentation/pages/account_create_page.dart';
 import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
+import '../../features/accounts/presentation/bloc/account_create_bloc.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
 // Add these imports for demo pages
@@ -135,6 +137,20 @@ class AppRouter {
               ),
               child: const TransactionCreatePage(),
             ),
+            name: state.name,
+          );
+        },
+      ),
+
+      // Account creation page
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.accountCreate,
+        name: AppRoutes.accountCreate,
+        pageBuilder: (context, state) {
+          return AppPageTransitions.platformTransitionPage(
+            key: state.pageKey,
+            child: const AccountCreatePage(),
             name: state.name,
           );
         },

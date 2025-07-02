@@ -91,7 +91,8 @@
     "failed_to_capture_photo": "Failed to capture photo: {error}",
     "photo_selected": "Photo selected: {fileName}",
     "failed_to_select_photo": "Failed to select photo: {error}",
-    "photos_selected": "{count} photos selected"
+    "photos_selected": "{count} photos selected",
+    "multiple_photos": "Multiple photos"
   },
 
   "budgets": {
@@ -327,7 +328,17 @@
     "all_accounts": "All Accounts",
     "no_accounts_selected": "No accounts selected",
     "accounts_selected": "accounts selected",
-    "all_accounts_description": "Track all accounts together"
+    "all_accounts_description": "Track all accounts together",
+    "create_account": "Create Account",
+    "account_name_hint": "Account Name",
+    "beginning_balance": "Beginning Balance",
+    "enter_beginning_balance": "Enter Beginning Balance",
+    "currency_label": "Currency:",
+    "select_currency": "Select Currency",
+    "select_currency_action": "Select Currency",
+    "select_color": "Select Color",
+    "set_name_action": "Set Name",
+    "create_account_action": "Create Account"
   },
 
   "actions": {

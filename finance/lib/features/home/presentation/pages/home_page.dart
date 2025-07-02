@@ -458,7 +458,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           // AddAccountCard at the end
           AddAccountCard(
             onTap: () {
-              // TODO: Navigate to add account page
+              context.go(AppRoutes.accountCreate);
             },
           ),
         ],

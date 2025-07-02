@@ -19,6 +19,8 @@ import '../../features/accounts/data/repositories/account_repository_impl.dart'
     as _i126;
 import '../../features/accounts/domain/repositories/account_repository.dart'
     as _i706;
+import '../../features/accounts/presentation/bloc/account_create_bloc.dart'
+    as _i923;
 import '../../features/budgets/data/repositories/budget_repository_impl.dart'
     as _i654;
 import '../../features/budgets/data/services/budget_auth_service.dart' as _i867;
@@ -235,6 +237,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i706.AccountRepository>(),
           gh<_i1021.BudgetRepository>(),
           gh<_i664.AttachmentRepository>(),
+        ));
+    gh.factory<_i923.AccountCreateBloc>(() => _i923.AccountCreateBloc(
+          gh<_i706.AccountRepository>(),
+          gh<_i351.CurrencyService>(),
         ));
     gh.lazySingleton<_i375.BudgetFilterService>(
         () => _i30.BudgetFilterServiceImpl(
