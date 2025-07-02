@@ -437,7 +437,7 @@ Both methods will:
 
 ```dart
 // Outstanding balance left on a loan
-final remaining = await transactionRepository.getRemainingAmount(parentLoanId);
+final remaining = await transactionRepository.getRemainingAmount(parentLoan);
 
 // All payments made towards a loan
 final payments = await transactionRepository.getLoanPayments(parentLoanId);

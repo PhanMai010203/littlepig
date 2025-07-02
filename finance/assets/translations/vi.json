@@ -4,6 +4,7 @@
   "navigation": {
     "home": "Trang chủ",
     "transactions": "Giao dịch",
+    "agent": "Trợ lý AI",
     "budgets": "Ngân sách",
     "more": "Thêm",
     "customize_title": "Tùy chỉnh Điều hướng",
@@ -360,5 +361,39 @@
   "actions": {
     "cancel": "Hủy",
     "save": "Lưu"
+  },
+
+  "agent": {
+    "welcome_title": "Gặp gỡ Trợ lý AI của bạn",
+    "welcome_subtitle": "Nhận thông tin chi tiết cá nhân hóa và khuyến nghị thông minh cho tài chính của bạn",
+    "features_title": "Tôi có thể giúp bạn điều gì",
+    "feature_analysis_title": "Phân tích thông minh",
+    "feature_analysis_subtitle": "Phân tích các mô hình và xu hướng chi tiêu của bạn",
+    "feature_insights_title": "Thông tin chi tiết cá nhân hóa", 
+    "feature_insights_subtitle": "Nhận lời khuyên phù hợp dựa trên thói quen tài chính của bạn",
+    "feature_predictions_title": "Dự đoán tương lai",
+    "feature_predictions_subtitle": "Dự báo chi phí và lập kế hoạch tốt hơn",
+    "chat_placeholder_title": "Sẵn sàng trò chuyện",
+    "chat_placeholder_subtitle": "Bắt đầu cuộc trò chuyện để nhận lời khuyên và thông tin tài chính cá nhân hóa",
+    "start_chat": "Bắt đầu trò chuyện",
+    "coming_soon": "Tính năng AI sắp ra mắt!",
+    "chat_assistant": "Trợ lý AI",
+    "voice_support": "Hỗ trợ giọng nói",
+    "bilingual_support": "Song ngữ",
+    "sample_user_message": "Tôi đã chi bao nhiều tiền cho thức ăn trong tháng này?",
+    "sample_ai_message": "Bạn đã chi 245$ cho thức ăn trong tháng này, ít hơn 12% so với tháng trước. Làm tốt lắm, bạn đã giữ được trong ngân sách!",
+    "start_listening": "Bắt đầu nghe",
+    "stop_listening": "Dừng nghe",
+    "switch_language": "Chuyển ngôn ngữ",
+    "listening": "Đang nghe...",
+    "no_messages": "Bắt đầu cuộc trò chuyện",
+    "type_message": "Nhập tin nhắn...",
+    "welcome_message": "Xin chào! Tôi là trợ lý AI tài chính của bạn. Hôm nay tôi có thể giúp gì cho bạn?",
+    "greeting_response": "Xin chào! Tôi ở đây để giúp bạn về tài chính. Bạn có thể hỏi tôi về chi tiêu, ngân sách, hoặc bất kỳ lời khuyên tài chính nào.",
+    "balance_response": "Tôi rất vui được giúp bạn kiểm tra số dư! Dựa trên các giao dịch gần đây của bạn, số dư hiện tại trông khá tốt.",
+    "expense_response": "Hãy để tôi phân tích các chi phí gần đây của bạn. Bạn đã làm rất tốt trong việc theo dõi các mô hình chi tiêu.",
+    "budget_response": "Ngân sách của bạn là một phần quan trọng trong việc lập kế hoạch tài chính. Tôi có thể giúp bạn xem xét và tối ưu hóa chúng.",
+    "help_response": "Tôi có thể giúp bạn: kiểm tra số dư, phân tích chi phí, lập kế hoạch ngân sách, thông tin tài chính, và trả lời câu hỏi về các mô hình chi tiêu của bạn.",
+    "default_response": "Đó là một câu hỏi thú vị! Tôi ở đây để giúp đỡ về tài chính của bạn. Bạn có thể hỏi tôi về chi phí, ngân sách, số dư, hoặc lập kế hoạch tài chính."
   }
 }

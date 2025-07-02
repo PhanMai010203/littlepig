@@ -373,6 +373,24 @@
     "chat_placeholder_title": "Ready to Chat",
     "chat_placeholder_subtitle": "Start a conversation to get personalized financial advice and insights",
     "start_chat": "Start Conversation",
-    "coming_soon": "AI features coming soon!"
+    "coming_soon": "AI features coming soon!",
+    "chat_assistant": "AI Assistant",
+    "voice_support": "Voice Support",
+    "bilingual_support": "Bilingual",
+    "sample_user_message": "How much did I spend on food this month?",
+    "sample_ai_message": "You spent $245 on food this month, which is 12% less than last month. Great job staying within your budget!",
+    "start_listening": "Start Listening",
+    "stop_listening": "Stop Listening",
+    "switch_language": "Switch Language",
+    "listening": "Listening...",
+    "no_messages": "Start a conversation",
+    "type_message": "Type a message...",
+    "welcome_message": "Hello! I'm your AI finance assistant. How can I help you today?",
+    "greeting_response": "Hello! I'm here to help you with your finances. You can ask me about your spending, budgets, or any financial advice.",
+    "balance_response": "I'd be happy to help you check your balance! Based on your recent transactions, your current balance looks healthy.",
+    "expense_response": "Let me analyze your recent expenses. You've been doing well with keeping track of your spending patterns.",
+    "budget_response": "Your budgets are an important part of financial planning. I can help you review and optimize them.",
+    "help_response": "I can help you with: checking balances, analyzing expenses, budget planning, financial insights, and answering questions about your spending patterns.",
+    "default_response": "That's an interesting question! I'm here to help with your finances. You can ask me about expenses, budgets, balances, or financial planning."
   }
 }
