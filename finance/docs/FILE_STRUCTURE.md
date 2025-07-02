@@ -1,382 +1,221 @@
-# 📱 Finance App - File Structure Documentation
+# 📱 Finance App – Updated File Structure (2025-06)
 
-This Flutter application follows **Clean Architecture** principles with a clear separation of concerns across Presentation, Domain, and Data layers.
+This Flutter application keeps a strict **Clean Architecture** separation across Presentation, Domain and Data layers.  The outline below reflects the *current* directory tree – remove the temporary directories that no longer exist and add the new modules that have been introduced since the last revision.
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture Layers
 
 ```
 📱 Presentation Layer (UI)
     ├── Pages (Screens)
-    ├── Widgets (UI Components)  
+    ├── Widgets (UI Components)
     └── BLoC (State Management)
            ↓
 ⚙️ Domain Layer (Business Logic)
-    ├── Entities (Data Models)
-    ├── Use Cases (Business Rules)
+    ├── Entities (Pure Models)
+    ├── Use-Cases (Business Rules)
     └── Repositories (Interfaces)
            ↓
 💾 Data Layer (External)
-    ├── Data Sources (API, Local DB)
-    ├── Repositories (Implementations)
-    └── Models (Data Transfer Objects)
+    ├── Data-Sources (API / Local DB)
+    ├── Repository Implementations
+    └── DTO Models
 ```
 
-## 📁 File Structure
+---
 
-### 🚀 Root Entry Point
+## 📁 Directory Overview
+
+Only the `lib/` tree is shown here – platform folders (`android/`, `ios/`, …), build output and CI tooling are omitted for brevity.
+
+### 🚀 Root entry point
+
 ```
 lib/
-├── main.dart                           # App entry point - initializes dependencies, settings, localization
-├── demo/                              # Demo and example code
-│   └── currency_demo.dart            # Currency system demonstration
-└── tmp/                               # Temporary files and development resources
-    ├── currencies.json               # Currency data (54KB)
-    ├── currenciesInfo.json           # Currency information data (28KB)
-    ├── currenciesInfo2.json          # Additional currency data (22KB)
-    └── ONLY_FOR_TEMPORARY_FILE_ONLY  # Placeholder file
+├── main.dart                     # Application entry – sets up DI, localisation & theming
+├── demo/                         # Demo utilities & playground screens
+│   ├── currency_demo.dart
+│   ├── data_seeder.dart          # Large in-memory seed data generator for quick testing
+│   ├── demo_transition_pages.dart
+│   └── framework_demo_page.dart  # Show-case of animation framework
 ```
-**Summary**: Main application entry point that initializes the Flutter app, sets up dependency injection, localization, Material You theming, and Bloc observers. Includes demo code and temporary development resources.
+**Summary**: Main bootstrap file plus a playground folder used during development and manual QA.  The former `tmp/` directory has been removed – any JSON reference data now lives in the appropriate data-source folders.
 
 ---
 
-### 📱 App Configuration Layer
+### 📱 App configuration layer
+
 ```
 lib/app/
-├── app.dart                           # Main app widget with theme and routing setup
-└── router/                            # Navigation configuration
-    ├── app_router.dart               # GoRouter setup with enhanced page transitions
-    ├── app_routes.dart               # Route constants and path definitions
-    └── page_transitions.dart         # Phase 4: Page transition framework with platform-aware animations
+├── app.dart                      # Top-level `MaterialApp` (theme, localisation wrappers)
+└── router/
+    ├── app_router.dart           # GoRouter configuration
+    ├── app_routes.dart           # Typed path constants
+    ├── page_transitions.dart     # Shared transition builders
+    └── _experimental_transitions.dart  # In-progress prototypes
 ```
-**Summary**: Contains the main app configuration including routing setup using GoRouter, theme management, and app-level state providers.
+**Summary**: Centralised navigation and theme/environment configuration.
 
 ---
 
-### ⚙️ Core Layer (Infrastructure & Shared Services)
+### ⚙️ Core layer (infrastructure & shared services)
+
 ```
 lib/core/
-├── database/                          # Database layer (Drift/SQLite)
-│   ├── app_database.dart             # Main database class with table definitions and migrations
-│   ├── app_database.g.dart           # Generated Drift database code
-│   ├── migrations/                  # Database schema migrations
-│   │   └── schema_cleanup_migration.dart # Phase 4 schema cleanup
-│   └── tables/                       # Database table definitions
-│       ├── financial_tables.dart     # Combined financial table definitions
-│       ├── transactions_table.dart   # Transaction table schema
-│       ├── categories_table.dart     # Category table schema
-│       ├── budgets_table.dart        # Budget table schema
-│       ├── accounts_table.dart       # Account table schema
-│       ├── attachments_table.dart    # Attachment/file table schema
-│       └── sync_metadata_table.dart  # Sync metadata for cloud synchronization
-├── services/                         # Core service layer
-│   ├── database_service.dart         # Database service abstraction
-│   ├── file_picker_service.dart      # File selection and attachment processing service
-│   ├── cache_management_service.dart # Local file cache management service
-│   ├── database_cache_service.dart # Phase 2: In-memory cache for database queries
-│   ├── database_connection_optimizer.dart # SQLite performance and WAL optimizations
-│   ├── timer_management_service.dart # Phase 1: Centralized timer management with battery-aware scheduling
-│   ├── platform_service.dart        # Platform detection, device capabilities, and high refresh rate management service
-│   ├── dialog_service.dart          # Dialog and popup service (Phase 3)
-│   └── animation_performance_service.dart # Phase 6: Advanced animation performance optimization and monitoring service
-├── sync/                             # Cloud synchronization services (Phase 5A)
-│   ├── sync_service.dart            # Legacy sync service interface
-│   ├── incremental_sync_service.dart # Event-driven sync service (Phase 4)
-│   ├── enhanced_incremental_sync_service.dart # Phase 5A enhanced sync service
-│   ├── event_processor.dart         # Phase 5A event processing engine
-│   ├── sync_state_manager.dart      # Phase 5A sync state and progress tracking
-│   ├── crdt_conflict_resolver.dart  # CRDT-based conflict resolution
-│   ├── google_drive_sync_service.dart # Google Drive sync implementation
-│   ├── interfaces/                  # Team A/B interface contracts
-│   │   └── sync_interfaces.dart    # Shared sync service interfaces
-│   └── (migrations moved to core/database/migrations — see below)
-├── utils/                            # Core utilities
-│   └── bloc_observer.dart           # BLoC observer for debugging and logging
-├── theme/                            # App theming system
-│   ├── app_theme.dart               # Main theme definitions (light/dark)
-│   ├── app_colors.dart              # Color constants and Material You colors
-│   ├── app_text_theme.dart          # Typography definitions
-│   └── material_you.dart            # Material You dynamic color implementation
-├── settings/                         # App settings management
-│   └── app_settings.dart            # SharedPreferences-based settings manager
-├── constants/                        # App constants and default data
-│   └── default_categories.dart      # Default financial categories with emojis
-└── di/                              # Dependency Injection
-    ├── injection.dart               # GetIt service locator configuration
-    └── injection.config.dart        # Generated dependency injection configuration
+├── database/
+│   ├── app_database.dart         # Drift DB wrapper
+│   ├── app_database.g.dart       # Generated code
+│   ├── migrations/
+│   │   ├── phase3_partial_loans_migration.dart
+│   │   └── schema_cleanup_migration.dart
+│   └── tables/
+│       ├── accounts_table.dart
+│       ├── attachments_table.dart
+│       ├── budgets_table.dart
+│       ├── categories_table.dart
+│       ├── sync_event_log_table.dart
+│       ├── sync_metadata_table.dart
+│       ├── sync_state_table.dart
+│       ├── transaction_budgets_table.dart
+│       └── transactions_table.dart
+│
+├── services/                     # Device / IO / performance facades
+│   ├── animation_performance_service.dart
+│   ├── cache_management_service.dart
+│   ├── database_cache_service.dart
+│   ├── database_connection_optimizer.dart
+│   ├── database_service.dart
+│   ├── dialog_service.dart
+│   ├── file_picker_service.dart
+│   ├── platform_service.dart
+│   └── timer_management_service.dart
+│
+├── sync/                         # Cloud sync & CRDT
+│   ├── enhanced_incremental_sync_service.dart
+│   ├── incremental_sync_service.dart
+│   ├── sync_event.dart
+│   ├── sync_service.dart
+│   ├── sync_state_manager.dart
+│   ├── event_processor.dart
+│   ├── google_drive_sync_service.dart
+│   ├── crdt_conflict_resolver.dart
+│   └── interfaces/
+│       └── sync_interfaces.dart
+│
+├── events/
+│   └── transaction_event_publisher.dart  # Domain-event broadcaster
+│
+├── repositories/
+│   └── cacheable_repository_mixin.dart   # Caching helper for data repos
+│
+├── settings/
+│   └── app_settings.dart
+│
+├── theme/
+│   ├── app_colors.dart
+│   ├── app_text_theme.dart
+│   ├── app_theme.dart
+│   └── material_you.dart
+│
+├── utils/
+│   └── bloc_observer.dart
+│
+├── constants/
+│   └── default_categories.dart
+│
+└── di/
+    ├── injection.dart
+    ├── injection.config.dart
+    └── register_module.dart
 ```
-**Summary**: Core infrastructure layer containing database setup with Drift ORM, file management and attachment services, **Phase 1 centralized timer management**, **Phase 5A advanced sync services** with event sourcing and real-time capabilities, **Phase 6.1 animation performance optimization**, platform detection with high refresh rate management for optimal display performance, theming system with Material You support, dependency injection setup, and shared utilities.
+**Summary**: Low-level infrastructure – Drift database, platform abstractions, advanced sync/CRDT engine, centralised settings & theme, DI glue and various performance helpers.
 
 ---
 
-### 🎯 Features Layer (Business Features)
+### 🎯 Features layer (business use-cases)
+
+Each feature follows the **presentation ⇄ domain ⇄ data** triplet.  Only high-level folders are listed here; see in-folder `README`s for deeper details.
+
 ```
 lib/features/
-├── home/                             # Home screen feature
-│   ├── presentation/                 # UI layer
-│   │   └── pages/
-│   │       └── home_page.dart       # Main dashboard page
-│   └── widgets/                      # Home-specific widgets
-│       └── home_page_username.dart   # Username display widget
-├── transactions/                     # Transaction management feature
-│   ├── domain/                       # Business logic layer
-│   │   ├── entities/
-│   │   │   ├── transaction.dart     # Transaction entity/model
-│   │   │   ├── attachment.dart      # Attachment entity with Google Drive integration
-│   │   │   └── transaction_card_data.dart # Lightweight display data model for homepage
-│   │   ├── repositories/
-│   │   │   ├── transaction_repository.dart # Transaction repository interface
-│   │   │   └── attachment_repository.dart # Attachment repository interface
-│   │   ├── services/
-│   │   │   └── transaction_display_service.dart # Transaction display service interface
-│   │   └── usecases/                # Business use cases
-│   │       ├── get_transactions.dart # Transaction retrieval use cases
-│   │       └── manage_transactions.dart # Transaction management use cases
-│   ├── data/                        # Data access layer
-│   │   ├── repositories/
-│   │   │   ├── transaction_repository_impl.dart # Transaction repository implementation
-│   │   │   └── attachment_repository_impl.dart # Attachment repository implementation
-│   │   └── services/
-│   │       └── transaction_display_service_impl.dart # Transaction display service implementation
-│   └── presentation/                # UI layer
-│       ├── pages/
-│       │   └── transactions_page.dart # Transaction list/management page
-│       ├── widgets/
-│       │   ├── transaction_list.dart # Complex transaction list (existing)
-│       │   └── transaction_summary_card.dart # Simplified homepage card
-│       └── bloc/                    # State management
-│           ├── transactions_event.dart # Transaction events
-│           └── transactions_state.dart # Transaction states
-├── budgets/                         # Budget management feature
-│   ├── domain/                      # Business logic layer
-│   │   ├── entities/
-│   │   │   └── budget.dart          # Budget entity/model
-│   │   └── repositories/
-│   │       └── budget_repository.dart # Budget repository interface
-│   ├── data/                        # Data access layer
-│   │   └── repositories/
-│   │       └── budget_repository_impl.dart # Budget repository implementation
-│   └── presentation/                # UI layer
-│       └── pages/
-│           └── budgets_page.dart    # Budget management page
-│       └── widgets/
-│           ├── animated_goo_background.dart # Gooey animated background
-│           ├── budget_progress_bar.dart     # Budget progress bar
-│           ├── budget_tile.dart             # Budget list item
-│           ├── budget_timeline.dart         # Timeline visualization for budget
-│           └── daily_allowance_label.dart   # Daily spending allowance
-├── accounts/                        # Account management feature
-│   ├── domain/                      # Business logic layer
-│   │   ├── entities/
-│   │   │   └── account.dart         # Account entity/model
-│   │   └── repositories/
-│   │       └── account_repository.dart # Account repository interface
-│   └── data/                        # Data access layer
-│       └── repositories/
-│           └── account_repository_impl.dart # Account repository implementation
-├── categories/                      # Category management feature
-│   ├── domain/                      # Business logic layer
-│   │   ├── entities/
-│   │   │   └── category.dart        # Category entity/model
-│   │   └── repositories/
-│   │       └── category_repository.dart # Category repository interface
-│   └── data/                        # Data access layer
-│       └── repositories/
-│           └── category_repository_impl.dart # Category repository implementation
-├── currencies/                      # Currency and exchange rate feature
-│   ├── domain/                      # Business logic layer
-│   │   ├── entities/
-│   │   │   ├── currency.dart        # Currency entity with formatting
-│   │   │   └── exchange_rate.dart   # Exchange rate entity
-│   │   ├── repositories/
-│   │   │   └── currency_repository.dart # Currency repository interface
-│   │   └── usecases/
-│   │       └── get_currencies.dart  # Currency retrieval use cases
-│   └── data/                        # Data access layer
-│       ├── repositories/
-│       │   └── currency_repository_impl.dart # Currency repository implementation
-│       ├── datasources/             # Data sources
-│       │   ├── currency_local_data_source.dart # Local currency data
-│       │   ├── exchange_rate_local_data_source.dart # Local exchange rates
-│       │   └── exchange_rate_remote_data_source.dart # Remote exchange API
-│       └── models/                  # Data transfer objects
-│           ├── currency_model.dart  # Currency data model
-│           └── exchange_rate_model.dart # Exchange rate data model
-├── navigation/                      # Navigation feature (Enhanced in Phase 5)
-│   ├── domain/                      # Navigation entities
-│   │   └── entities/                # Navigation-related entities
-│   │       └── navigation_item.dart # Navigation item entity with customization support
-│   └── presentation/                # Navigation UI components
-│       ├── widgets/                 # Navigation widgets
-│       │   ├── adaptive_bottom_navigation.dart # Bottom navigation bar with TappableWidget integration
-│       │   ├── main_shell.dart      # Main app shell wrapper with PopupFramework integration
-│       │   └── navigation_customization_content.dart # Phase 5: Custom dialog content for navigation customization
-│       └── bloc/                    # Navigation state management
-│           ├── navigation_bloc.dart # Navigation BLoC
-│           ├── navigation_event.dart # Navigation events
-│           ├── navigation_state.dart # Navigation states
-│           └── navigation_bloc.freezed.dart # Generated freezed code
-├── settings/                        # Settings feature
-│   └── presentation/                # Settings UI
-│       ├── pages/                   # Settings pages
-│       └── bloc/                    # Settings state management
-│           └── settings_bloc.dart   # Settings BLoC
-└── more/                           # More/additional features page
-    └── presentation/                # More page UI
+├── accounts/
+├── budgets/
+├── categories/
+├── currencies/
+├── home/
+├── more/
+├── navigation/
+├── settings/
+└── transactions/
 ```
-**Summary**: Feature modules organized by business domain, each following clean architecture with domain (entities, repositories, use cases), data (repository implementations, data sources), and presentation (UI, BLoC) layers. Includes comprehensive attachment management with Google Drive integration and multi-currency support.
+**Summary**: Modularised business functionality with independent tests and DI registrations.
 
 ---
 
-### 🔧 Services Layer (Business Services)
+### 🔧 Services layer (orchestration helpers)
+
 ```
 lib/services/
-├── finance_service.dart              # Example service demonstrating repository usage
-└── currency_service.dart             # Business logic service for currency utilities and conversions
+├── currency_service.dart
+└── finance_service.dart
 ```
-**Summary**: High-level business services that orchestrate multiple repositories and demonstrate usage patterns for the finance app's core functionality.
+These classes stitch multiple repositories together for convenience (e.g. UI widgets that need cross-cutting data).
 
 ---
 
-### 🛠️ Shared Layer (Reusable Components)
+### 🛠️ Shared layer (re-usable UI & utilities)
+
 ```
 lib/shared/
-├── widgets/                          # Reusable UI components
-│   ├── animations/                   # Comprehensive animation framework (Phase 1-6)
-│   │   ├── animation_utils.dart     # Core animation utilities with performance optimization
-│   │   ├── fade_in.dart             # Fade entrance animation
-│   │   ├── scale_in.dart            # Scale entrance animation with elastic curves
-│   │   ├── slide_in.dart            # Directional slide animations
-│   │   ├── bouncing_widget.dart     # Elastic bouncing effects
-│   │   ├── breathing_widget.dart    # Pulsing scale animations
-│   │   ├── animated_expanded.dart   # Smooth expand/collapse with fade
-│   │   ├── animated_size_switcher.dart # Content switching with size transitions
-│   │   ├── scaled_animated_switcher.dart # Scale + fade content switching
-│   │   ├── slide_fade_transition.dart # Combined slide and fade effects
-│   │   ├── tappable_widget.dart     # Tap response with customizable feedback (Enhanced in Phase 5)
-│   │   ├── shake_animation.dart     # Horizontal shake effects for errors
-│   │   └── animated_scale_opacity.dart # Combined scale and opacity changes
-│   │   └── animation_performance_monitor.dart # Real-time performance monitor widget
-│   ├── app_lifecycle_manager.dart   # App lifecycle manager for handling resume/pause events and high refresh rate
-│   ├── dialogs/                      # Reusable dialog framework (Phase 3)
-│   │   ├── popup_framework.dart     # Reusable popup template with Material 3 design
-│   │   └── bottom_sheet_service.dart # Smart bottom sheets with snapping and options
-│   ├── transitions/                  # Page transition components (Phase 4)
-│   │   └── open_container_navigation.dart # Material 3 OpenContainer navigation components
-│   ├── app_text.dart                # Custom text widgets with theming
-│   ├── page_template.dart           # Common page layout template (Enhanced in Phase 5 with FadeIn and AnimatedSwitcher)
-│   ├── collapsible_app_bar_title.dart # Reusable scrolling app bar title with fade animation
-│   └── language_selector.dart       # Language selection widget
-├── extensions/                      # Reusable extension methods
-│   └── account_currency_extension.dart # Account to currency helpers and formatters
-└── utils/                           # Shared utilities
-    ├── currency_formatter.dart       # Currency formatting with locale support
-    ├── performance_optimization.dart # Phase 1, 2, 3 & 4 - Performance monitoring and optimization utilities with physics tracking
-    ├── snap_size_cache.dart          # Phase 2 - Smart LRU cache for bottom sheet snap size calculations
-    ├── responsive_layout_builder.dart # Phase 2 - MediaQuery optimization framework with LayoutBuilder patterns
-    └── no_overscroll_behavior.dart   # Phase 4 - Custom scroll behavior to eliminate overscroll jank
+├── widgets/
+│   ├── animations/      # 18 animation wrappers incl. FadeIn, BreathingWidget, etc.
+│   ├── dialogs/         # popup_framework.dart, bottom_sheet_service.dart, note_popup.dart
+│   ├── transitions/     # open_container_navigation.dart
+│   ├── page_template.dart
+│   ├── app_text.dart
+│   ├── app_lifecycle_manager.dart
+│   ├── selector_widget.dart          # Generic multi/single select base
+│   ├── single_account_selector.dart  # Concrete selectors built on top
+│   ├── multi_account_selector.dart
+│   ├── single_category_selector.dart
+│   ├── multi_category_selector.dart
+│   ├── language_selector.dart
+│   └── collapsible_app_bar_title.dart
+│
+├── extensions/
+│   └── account_currency_extension.dart
+│
+└── utils/
+    ├── currency_formatter.dart
+    ├── no_overscroll_behavior.dart
+    ├── optimized_list_extensions.dart
+    ├── performance_optimization.dart
+    ├── responsive_layout_builder.dart
+    └── snap_size_cache.dart
 ```
-**Summary**: Shared components and utilities that can be used across multiple features, including a comprehensive animation and dialog framework, reusable widgets, and common utilities.
+**Summary**: A large collection of widgets, transition wrappers and pure-Dart helpers used throughout the app.  All widgets respect the central animation/low-motion settings.
 
 ---
 
-### 🧪 Performance & Benchmark Tests
+### 🧪 Performance & benchmark tests
+
 ```
 test/performance/
-  └── phase_2_performance_test.dart   # Database cache performance benchmarks (Phase 2)
+├── database_cache_performance_test.dart
+└── phase_2_performance_test.dart
 ```
-**Summary**: Contains automated Stopwatch-based benchmarks to verify Phase 2 database optimization impact – ensuring cache retrieval is at least 2× faster than uncached database-like operations. Phase 2 also includes UI performance optimizations with keyboard handling and rebuild elimination.
+Benchmarks ensure that database caching and re-layout optimisations hit their performance budgets.
 
-## 🎨 Key Architecture Patterns
+---
 
-### 🏛️ Clean Architecture Implementation
-- **Domain Layer**: Pure business logic with entities and repository interfaces
-- **Data Layer**: External concerns like database access and API calls
-- **Presentation Layer**: UI components and state management with BLoC
+## 🎨 Key architecture patterns (unchanged)
 
-### 🗄️ Database Architecture
-- **Drift ORM**: Type-safe SQL database access
-- **Table Definitions**: Separate files for each entity table
-- **Migration Support**: Schema versioning and data migration
-- **Sync Metadata**: Cloud synchronization tracking
+* **Clean Architecture** – Pure domain models, interface driven repositories.
+* **Drift ORM** – Type-safe SQL + migrations.
+* **BLoC + Freezed** – Reactive state management.
+* **GetIt + Injectable** – Compile-time DI.
+* **Material You** – Dynamic system colour extraction.
+* **High-refresh screen** handling & frame pacing.
+* **Google Drive** sync with CRDT conflict resolution.
+* **Locale & currency** abstraction for multi-currency budgeting.
 
-### 🎨 Theming System
-- **Material You**: Dynamic color generation from system
-- **Light/Dark Themes**: Comprehensive theme switching
-- **Custom Typography**: Consistent text styling across the app
-- **Color Management**: Centralized color constants
-
-### 🔄 State Management
-- **BLoC Pattern**: Business Logic Components for state management
-- **Freezed**: Immutable state and event classes
-- **Stream-based**: Reactive state updates
-
-### 🔗 Dependency Injection
-- **GetIt**: Service locator pattern
-- **Injectable**: Code generation for DI setup
-- **Repository Pattern**: Abstracted data access
-
-### 🌐 Localization
-- **EasyLocalization**: Multi-language support (English, Vietnamese)
-- **Asset-based**: Translation files in assets folder
-
-### 📱 High Refresh Rate Display
-- **Android Support**: Uses flutter_displaymode package for high refresh rate on supported devices
-- **iOS Support**: Configured with CADisableMinimumFrameDurationOnPhone in Info.plist
-- **Lifecycle Management**: Automatically sets high refresh rate on app startup and resume
-- **Platform Detection**: Smart detection of device capabilities and platform-specific handling
-
-### ☁️ Cloud Synchronization
-- **Google Drive**: Cloud storage for data backup and file attachments
-- **Conflict Resolution**: Sync metadata for data consistency
-- **Device Management**: Multi-device data synchronization
-- **File Upload**: Automatic attachment upload to Google Drive
-- **Authentication**: Google Sign-In integration for cloud access
-
-### 📁 File Management & Attachments
-- **Attachment System**: Complete file management with Google Drive integration
-- **Image Processing**: Automatic compression for camera-captured images
-- **Cache Management**: Smart local caching with 30-day expiry for camera images
-- **File Types**: Support for images, documents, and other file types
-- **Cloud Storage**: Seamless Google Drive upload and sharing
-
-### 💱 Currency System
-- **Multi-Currency**: Support for global currencies with exchange rates
-- **Currency Formatting**: Native symbol display and proper decimal handling
-- **Exchange Rates**: Local and remote data sources for real-time rates
-- **Country Integration**: Flag and country information for currencies
-
-## 📊 Feature Completeness
-- ✅ **Home Dashboard**: Overview of financial data
-- ✅ **Transaction Management**: CRUD operations with attachment support
-- ✅ **Attachment System**: File management with Google Drive integration
-- ✅ **Category System**: Expense and income categorization with emoji icons
-- ✅ **Account Management**: Multiple account support with balance tracking
-- ✅ **Budget Tracking**: Budget creation and monitoring
-- ✅ **Currency Support**: Multi-currency with exchange rate handling
-- ✅ **Navigation**: Bottom navigation with adaptive design
-- ✅ **Settings**: App configuration and preferences with enhanced animation controls
-- ✅ **Cloud Sync**: Google Drive integration with conflict resolution
-- ✅ **File Management**: Camera, gallery, and file picker integration
-- ✅ **Cache Management**: Smart local file caching system
-- ✅ **Theming**: Material You and custom themes
-- ✅ **Localization**: Multi-language support (English, Vietnamese)
-- ✅ **Use Cases**: Business logic abstraction layer
-- ✅ **State Management**: Comprehensive BLoC implementation
-- ✅ **Animation Framework**: Phase 1-6 - Complete animation and dialog framework with performance optimization.
-
-### 🎬 Animation Framework (All Phases Complete)
-- **Platform Detection**: Comprehensive platform and device capability detection with **Phase 3 cached optimization**
-- **Animation Settings**: Enhanced user preferences with granular animation controls  
-- **Animation Utilities**: Core framework with settings-aware animation wrappers
-- **Entry Animations**: FadeIn, ScaleIn, SlideIn, BouncingWidget, BreathingWidget
-- **Transition Animations**: AnimatedExpanded, AnimatedSizeSwitcher, ScaledAnimatedSwitcher, SlideFadeTransition
-- **Interactive Animations**: TappableWidget with **Phase 3 platform caching and InkSparkle optimization**, ShakeAnimation, AnimatedScaleOpacity
-- **Dialog Framework**: PopupFramework, DialogService, BottomSheetService with **Phase 3 animation layer consolidation**
-- **Page Transitions**: Platform-aware slide, fade, scale, and slide-fade transitions with Material 3 OpenContainer support
-- **Navigation Enhancement**: Seamless container transitions for card-to-page and list-to-page navigation
-- **Phase 5 Integration**: Enhanced navigation with PopupFramework dialogs, animated PageTemplate, and comprehensive TappableWidget integration
-- **Performance Optimization**: Battery saver, real-time performance monitoring, and reduced motion support with zero overhead when disabled
-- **Platform Adaptation**: iOS, Android, web, and desktop-specific behaviors with **Phase 3 cached platform detection**
-- **Phase 3 Consolidation**: Single animation ownership, eliminated competing layers, 15-25% animation overhead reduction
-
-This architecture provides a scalable, maintainable foundation for a comprehensive personal finance management application with advanced file management, multi-currency capabilities, and a sophisticated animation framework. 
+> See `docs/ARCHITECTURE.md` for an in-depth explanation of these patterns. 
