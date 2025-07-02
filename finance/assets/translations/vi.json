@@ -32,6 +32,7 @@
   "transactions": {
     "title": "Giao dịch",
     "add_transaction": "Thêm giao dịch",
+    "create_transaction": "Tạo giao dịch",
     "income": "Thu nhập",
     "expense": "Chi tiêu",
     "amount": "Số tiền",
@@ -50,7 +51,39 @@
     "transaction_deleted": "Đã xóa giao dịch thành công",
     "filter_all": "Tất cả",
     "filter_expense": "Chi tiêu",
-    "filter_income": "Thu nhập"
+    "filter_income": "Thu nhập",
+    "enter_amount": "Nhập số tiền",
+    "set_title_action": "Nhập tiêu đề",
+    "set_amount_action": "Nhập số tiền",
+    "select_category_action": "Chọn danh mục",
+    "select_account_action": "Chọn tài khoản",
+    "create_transaction_action": "Tạo giao dịch",
+    "title_hint": "Nhập tiêu đề giao dịch",
+    "date_label": "Ngày:",
+    "select_category": "Chọn danh mục",
+    "select_account": "Chọn tài khoản",
+    "note_hint": "Thêm ghi chú (tùy chọn)",
+    "advanced_features": "Tính năng nâng cao",
+    "state": {
+      "completed": "Hoàn thành",
+      "pending": "Đang chờ",
+      "scheduled": "Đã lên lịch"
+    },
+    "special_type": "Loại đặc biệt",
+    "credit": "Tín dụng",
+    "debt": "Nợ",
+    "none": "Không có",
+    "recurrence_none": "Không có",
+    "recurrence_daily": "Hàng ngày",
+    "recurrence_weekly": "Hàng tuần",
+    "recurrence_monthly": "Hàng tháng",
+    "recurrence_yearly": "Hàng năm",
+    "link_to_budgets": "Liên kết với ngân sách",
+    "add_budget_link": "Thêm liên kết ngân sách",
+    "attachments": "Tệp đính kèm",
+    "camera": "Máy ảnh",
+    "gallery": "Thư viện",
+    "select_budget": "Chọn ngân sách"
   },
 
   "budgets": {

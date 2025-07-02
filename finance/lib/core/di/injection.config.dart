@@ -74,6 +74,8 @@ import '../../features/transactions/domain/repositories/transaction_repository.d
     as _i421;
 import '../../features/transactions/domain/services/transaction_display_service.dart'
     as _i888;
+import '../../features/transactions/presentation/bloc/transaction_create_bloc.dart'
+    as _i612;
 import '../../features/transactions/presentation/bloc/transactions_bloc.dart'
     as _i439;
 import '../../services/currency_service.dart' as _i351;
@@ -226,6 +228,13 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i439.TransactionsBloc>(() => _i439.TransactionsBloc(
           gh<_i421.TransactionRepository>(),
           gh<_i266.CategoryRepository>(),
+        ));
+    gh.factory<_i612.TransactionCreateBloc>(() => _i612.TransactionCreateBloc(
+          gh<_i421.TransactionRepository>(),
+          gh<_i266.CategoryRepository>(),
+          gh<_i706.AccountRepository>(),
+          gh<_i1021.BudgetRepository>(),
+          gh<_i664.AttachmentRepository>(),
         ));
     gh.lazySingleton<_i375.BudgetFilterService>(
         () => _i30.BudgetFilterServiceImpl(

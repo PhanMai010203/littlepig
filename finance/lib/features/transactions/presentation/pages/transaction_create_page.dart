@@ -1,35 +1,29 @@
+import 'dart:io';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
 import '../../../../shared/widgets/dialogs/bottom_sheet_service.dart';
 import '../../../../shared/widgets/text_input.dart';
 import '../../../../shared/widgets/selector_widget.dart';
-import '../../../../shared/widgets/multi_account_selector.dart';
-import '../../../../shared/widgets/multi_category_selector.dart';
+import '../../../../shared/widgets/single_account_selector.dart';
+import '../../../../shared/widgets/single_category_selector.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 import '../../../../shared/widgets/page_template.dart';
-import '../../../../shared/widgets/tappable_text_entry.dart';
 
-import '../bloc/transactions_bloc.dart';
-import '../bloc/transactions_event.dart';
-import '../bloc/transactions_state.dart';
-import '../../domain/entities/transaction.dart';
+import '../bloc/transaction_create_bloc.dart';
+import '../bloc/transaction_create_event.dart';
+import '../bloc/transaction_create_state.dart';
 import '../../domain/entities/transaction_enums.dart';
+import '../../../../core/di/injection.dart';
 
-/// Enum for transaction types to make the selector more type-safe
-enum TransactionTypeSelector {
-  expense,
-  income;
-
-  bool get isExpense => this == TransactionTypeSelector.expense;
-  bool get isIncome => this == TransactionTypeSelector.income;
-}
 
 /// Full-screen page for creating a new transaction
-/// This page overlaps and hides the navbar for a focused creation experience
+/// This page uses BLoC for state management and supports all advanced transaction features
 class TransactionCreatePage extends StatefulWidget {
   const TransactionCreatePage({super.key});
 
@@ -52,30 +46,29 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
   late Animation<Color?> _titleBorderColorAnimation;
   late Animation<Color?> _noteBorderColorAnimation;
 
-  DateTime _selectedDate = DateTime.now();
-  TransactionTypeSelector _transactionType = TransactionTypeSelector.expense;
-  int? _selectedCategoryId;
-  int? _selectedAccountId;
-  late Color _selectedColor;
-
-  final List<Color> _transactionColors = const [
-    Color(0xFF4CAF50), // Green
-    Color(0xFF2196F3), // Blue
-    Color(0xFFFF9800), // Orange
-    Color(0xFFE91E63), // Pink
-    Color(0xFF9C27B0), // Purple
-    Color(0xFF795548), // Brown
-    Color(0xFF009688), // Teal
-    Color(0xFFF44336), // Red
-  ];
+  late TransactionCreateBloc _bloc;
+  final ImagePicker _imagePicker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    _selectedColor = _transactionColors[0];
-    _titleController.addListener(() => setState(() {}));
-    _amountController.addListener(() => setState(() {}));
-    _noteController.addListener(() => setState(() {}));
+    
+    // Initialize bloc
+    _bloc = getIt<TransactionCreateBloc>();
+    
+    // Initialize controllers and listeners
+    _titleController.addListener(() {
+      _bloc.add(UpdateTitle(_titleController.text));
+    });
+    _amountController.addListener(() {
+      final amount = double.tryParse(_amountController.text);
+      if (amount != null) {
+        _bloc.add(UpdateAmount(amount));
+      }
+    });
+    _noteController.addListener(() {
+      _bloc.add(UpdateNote(_noteController.text));
+    });
 
     // Initialize animation controllers
     _titleAnimationController = AnimationController(
@@ -90,6 +83,9 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
     // Setup focus listeners
     _titleFocusNode.addListener(_onTitleFocusChanged);
     _noteFocusNode.addListener(_onNoteFocusChanged);
+    
+    // Load initial data
+    _bloc.add(LoadInitialData());
   }
 
   @override
@@ -124,6 +120,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
     _noteFocusNode.dispose();
     _titleAnimationController.dispose();
     _noteAnimationController.dispose();
+    _bloc.close();
     super.dispose();
   }
 
@@ -143,10 +140,10 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
     }
   }
 
-  void _selectDate() async {
+  void _selectDate(DateTime currentDate) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: _selectedDate,
+      initialDate: currentDate,
       firstDate: DateTime(2000),
       lastDate: DateTime(2101),
       builder: (context, child) {
@@ -161,10 +158,8 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
         );
       },
     );
-    if (picked != null && picked != _selectedDate) {
-      setState(() {
-        _selectedDate = picked;
-      });
+    if (picked != null && picked != currentDate) {
+      _bloc.add(UpdateDate(picked));
     }
   }
 
@@ -204,87 +199,185 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
     );
   }
 
-  String get _progressiveButtonLabel {
-    if (_titleController.text.isEmpty) {
-      return 'transactions.set_title_action'.tr();
-    }
-    if (_amountController.text.isEmpty) {
-      return 'transactions.set_amount_action'.tr();
-    }
-    if (_selectedCategoryId == null) {
-      return 'transactions.select_category_action'.tr();
-    }
-    if (_selectedAccountId == null) {
-      return 'transactions.select_account_action'.tr();
+
+  String _formatCurrency(double amount) {
+    return NumberFormat.currency(
+      locale: 'en_US',
+      symbol: '\$',
+      decimalDigits: 2,
+    ).format(amount);
+  }
+
+  String _getProgressiveButtonLabel(TransactionCreateLoaded state) {
+    if (state.nextRequiredField != null) {
+      switch (state.nextRequiredField!) {
+        case 'title':
+          return 'transactions.set_title_action'.tr();
+        case 'amount':
+          return 'transactions.set_amount_action'.tr();
+        case 'category':
+          return 'transactions.select_category_action'.tr();
+        case 'account':
+          return 'transactions.select_account_action'.tr();
+        default:
+          return 'transactions.create_transaction_action'.tr();
+      }
     }
     return 'transactions.create_transaction_action'.tr();
   }
 
-  VoidCallback? get _progressiveButtonAction {
-    if (_titleController.text.isEmpty) {
-      return () => _titleFocusNode.requestFocus();
+  VoidCallback? _getProgressiveButtonAction(TransactionCreateLoaded state) {
+    if (state.nextRequiredField != null) {
+      switch (state.nextRequiredField!) {
+        case 'title':
+          return () => _titleFocusNode.requestFocus();
+        case 'amount':
+          return _selectAmount;
+        case 'category':
+        case 'account':
+          return null; // Handled by selectors
+        default:
+          return state.isValid ? _submit : null;
+      }
     }
-    if (_amountController.text.isEmpty) {
-      return _selectAmount;
-    }
-    if (_selectedCategoryId == null) {
-      return null; // Category selector will handle this
-    }
-    if (_selectedAccountId == null) {
-      return null; // Account selector will handle this
-    }
-    return _submit;
+    return state.isValid ? _submit : null;
   }
 
   void _submit() {
-    debugPrint('[TransactionCreatePage] _submit called');
-
-    // Create the transaction entity
-    final transaction = _createTransactionFromUiState();
-    debugPrint('[TransactionCreatePage] Created transaction: ${transaction.toString()}');
-
-    // Submit the transaction via BLoC
-    context.read<TransactionsBloc>().add(CreateTransactionEvent(transaction));
-
-    Navigator.pop(context);
+    _bloc.add(CreateTransaction());
   }
 
-  Transaction _createTransactionFromUiState() {
-    // Generate unique sync ID
-    final syncId = DateTime.now().millisecondsSinceEpoch.toString();
-
-    // Convert amount based on transaction type
-    final amount = double.tryParse(_amountController.text) ?? 0.0;
-    final finalAmount = _transactionType.isExpense ? -amount.abs() : amount.abs();
-
-    return Transaction(
-      title: _titleController.text,
-      note: _noteController.text.isEmpty ? null : _noteController.text,
-      amount: finalAmount,
-      categoryId: _selectedCategoryId!,
-      accountId: _selectedAccountId!,
-      date: _selectedDate,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-      syncId: syncId,
-      transactionType: _transactionType.isExpense 
-          ? TransactionType.expense 
-          : TransactionType.income,
-      transactionState: TransactionState.completed,
+  Widget _buildAttachmentPreview(AttachmentData attachment) {
+    final file = File(attachment.filePath);
+    final extension = path.extension(attachment.fileName).toLowerCase();
+    
+    // Check if file is an image
+    if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].contains(extension)) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: getColor(context, "border")),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: Image.file(
+            file,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.image_not_supported,
+                color: getColor(context, "textSecondary"),
+                size: 20,
+              );
+            },
+          ),
+        ),
+      );
+    }
+    
+    // For non-image files, show appropriate icon
+    IconData iconData;
+    Color iconColor = getColor(context, "textSecondary");
+    
+    switch (extension) {
+      case '.pdf':
+        iconData = Icons.picture_as_pdf;
+        iconColor = Colors.red;
+        break;
+      case '.doc':
+      case '.docx':
+        iconData = Icons.description;
+        iconColor = Colors.blue;
+        break;
+      case '.xls':
+      case '.xlsx':
+        iconData = Icons.table_chart;
+        iconColor = Colors.green;
+        break;
+      case '.txt':
+        iconData = Icons.text_snippet;
+        break;
+      default:
+        iconData = Icons.attach_file;
+    }
+    
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: iconColor.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: getColor(context, "border")),
+      ),
+      child: Icon(
+        iconData,
+        color: iconColor,
+        size: 20,
+      ),
     );
-  }
-
-  String _formatCurrency(String amountStr) {
-    final number = double.tryParse(amountStr) ?? 0.0;
-    return NumberFormat.currency(
-      locale: 'en_US',
-      symbol: '\$',
-      decimalDigits: 0,
-    ).format(number);
   }
 
   @override
   Widget build(BuildContext context) {
+    return BlocProvider<TransactionCreateBloc>(
+      create: (context) => _bloc,
+      child: BlocListener<TransactionCreateBloc, TransactionCreateState>(
+        listener: (context, state) {
+          if (state is TransactionCreateSuccess) {
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(state.message)),
+            );
+          } else if (state is TransactionCreateError) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: getColor(context, "error"),
+              ),
+            );
+          }
+        },
+        child: BlocBuilder<TransactionCreateBloc, TransactionCreateState>(
+          builder: (context, state) {
+            if (state is TransactionCreateLoading) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            if (state is TransactionCreateError) {
+              return Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(state.message),
+                      ElevatedButton(
+                        onPressed: () => _bloc.add(LoadInitialData()),
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
+            
+            if (state is! TransactionCreateLoaded) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            return _buildLoadedState(context, state);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoadedState(BuildContext context, TransactionCreateLoaded state) {
     return PageTemplate(
       title: 'transactions.create_transaction'.tr(),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -294,14 +387,22 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
           return ScaleTransition(scale: animation, child: child);
         },
         child: FloatingActionButton.extended(
-          key: ValueKey<String>(_progressiveButtonLabel),
-          onPressed: _progressiveButtonAction,
-          label: AppText(
-            _progressiveButtonLabel,
-            textColor: getColor(context, "white"),
-            fontWeight: FontWeight.w600,
-          ),
-          icon: Icon(Icons.arrow_forward, color: getColor(context, "white")),
+          key: ValueKey<String>(_getProgressiveButtonLabel(state)),
+          onPressed: state.isCreating ? null : _getProgressiveButtonAction(state),
+          label: state.isCreating 
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : AppText(
+                  _getProgressiveButtonLabel(state),
+                  textColor: getColor(context, "white"),
+                  fontWeight: FontWeight.w600,
+                ),
+          icon: state.isCreating 
+              ? null 
+              : Icon(Icons.arrow_forward, color: getColor(context, "white")),
           backgroundColor: getColor(context, "primary"),
         ),
       ),
@@ -309,311 +410,637 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           sliver: SliverList(
-            delegate: SliverChildListDelegate(
-              [
-                // Transaction Type Selector (Expense vs Income)
-                Container(
-                  margin: const EdgeInsets.only(bottom: 10),
-                  child: SelectorWidget<TransactionTypeSelector>(
-                    selectedValue: _transactionType,
-                    options: [
-                      SelectorOption<TransactionTypeSelector>(
-                        value: TransactionTypeSelector.expense,
-                        label: "transactions.expense".tr(),
-                        iconPath: 'assets/icons/arrow_down.svg',
-                        activeIconColor: getColor(context, "error"),
-                        activeTextColor: getColor(context, "textSecondary"),
-                        activeBackgroundColor: getColor(context, "primary"),
-                      ),
-                      SelectorOption<TransactionTypeSelector>(
-                        value: TransactionTypeSelector.income,
-                        label: "transactions.income".tr(),
-                        iconPath: 'assets/icons/arrow_up.svg',
-                        activeIconColor: getColor(context, "success"),
-                        activeTextColor: getColor(context, "textSecondary"),
-                        activeBackgroundColor: getColor(context, "success"),
-                      ),
-                    ],
-                    onSelectionChanged: (transactionType) {
-                      setState(() {
-                        _transactionType = transactionType;
-                      });
-                    },
-                  ),
-                ),
+            delegate: SliverChildListDelegate([
+              // Transaction Type Selector
+              _buildTransactionTypeSelector(state),
+              const SizedBox(height: 24),
 
-                // Title Input - Direct editing with animated border
-                Center(
-                  child: AnimatedBuilder(
-                    animation: _titleBorderColorAnimation,
-                    builder: (context, child) {
-                      return Container(
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          border: Border(
-                            bottom: BorderSide(
-                              color: _titleBorderColorAnimation.value ??
-                                  getColor(context, "border"),
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                        child: IntrinsicWidth(
-                          child: TextField(
-                            controller: _titleController,
-                            focusNode: _titleFocusNode,
-                            textAlign: TextAlign.center,
-                            textCapitalization: TextCapitalization.words,
-                            style: TextStyle(
-                              fontSize: 30,
-                              fontWeight: FontWeight.w500,
-                              color: getColor(context, "textPrimary"),
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'transactions.title_hint'.tr(),
-                              hintStyle: TextStyle(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w500,
-                                color: getColor(context, "textLight"),
-                              ),
-                              border: InputBorder.none,
-                              contentPadding:
-                                  const EdgeInsetsDirectional.fromSTEB(
-                                      10, 10, 10, 10),
-                              fillColor: Colors.transparent,
-                              filled: true,
-                            ),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+              // Title Input
+              _buildTitleInput(state),
+              const SizedBox(height: 24),
 
-                const SizedBox(height: 24),
+              // Amount Display
+              _buildAmountInput(state),
+              const SizedBox(height: 24),
 
-                // Amount Display
-                Center(
-                  child: TappableWidget(
-                    onTap: _selectAmount,
-                    animationType: TapAnimationType.scale,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(
-                            color: getColor(context, "border"),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                      child: AppText(
-                        _formatCurrency(_amountController.text),
-                        fontSize: 48,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
+              // Date Selector
+              _buildDateSelector(state),
+              const SizedBox(height: 24),
 
-                const SizedBox(height: 24),
+              // Category Selector
+              _buildCategorySelector(state),
+              const SizedBox(height: 16),
 
-                // Date Selector
-                TappableWidget(
-                  onTap: _selectDate,
-                  animationType: TapAnimationType.scale,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      AppText(
-                        'transactions.date_label'.tr() + ' ',
-                        fontSize: 18,
-                        textColor: getColor(context, "textLight"),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(
-                              color: getColor(context, "border"),
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                        child: AppText(
-                          DateFormat('MMMM d, yyyy').format(_selectedDate),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              // Account Selector
+              _buildAccountSelector(state),
+              const SizedBox(height: 24),
 
-                const SizedBox(height: 24),
+              // Note Input
+              _buildNoteInput(state),
+              const SizedBox(height: 24),
 
-                // Color Selector
-                SizedBox(
-                  height: 48,
-                  child: Center(
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      scrollDirection: Axis.horizontal,
-                      padding: const EdgeInsets.symmetric(horizontal: 0),
-                      itemCount: _transactionColors.length,
-                      itemBuilder: (context, index) {
-                        final color = _transactionColors[index];
-                        final isSelected = color == _selectedColor;
+              // Advanced Features Section
+              _buildAdvancedFeatures(state),
 
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
-                          child: TappableWidget(
-                            onTap: () {
-                              setState(() {
-                                _selectedColor = color;
-                              });
-                            },
-                            animationType: TapAnimationType.scale,
-                            child: Container(
-                              width: 48,
-                              height: 48,
-                              decoration: BoxDecoration(
-                                color: color,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : Colors.transparent,
-                                  width: 3,
-                                ),
-                              ),
-                              child: isSelected
-                                  ? const Icon(Icons.check,
-                                      color: Colors.white, size: 24)
-                                  : null,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Note Input
-                AnimatedBuilder(
-                  animation: _noteBorderColorAnimation,
-                  builder: (context, child) {
-                    return Container(
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(
-                          color: _noteBorderColorAnimation.value ??
-                              getColor(context, "border"),
-                          width: 1.5,
-                        ),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: TextField(
-                        controller: _noteController,
-                        focusNode: _noteFocusNode,
-                        maxLines: 3,
-                        textCapitalization: TextCapitalization.sentences,
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: getColor(context, "textPrimary"),
-                        ),
-                        decoration: InputDecoration(
-                          hintText: 'transactions.note_hint'.tr(),
-                          hintStyle: TextStyle(
-                            fontSize: 16,
-                            color: getColor(context, "textLight"),
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.all(12),
-                          fillColor: Colors.transparent,
-                          filled: true,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-
-                const SizedBox(height: 24),
-
-                // Category Selector Placeholder
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: getColor(context, "surface"),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: getColor(context, "border"),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        'transactions.select_category'.tr(),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      const SizedBox(height: 8),
-                      AppText(
-                        _selectedCategoryId != null 
-                            ? 'Category ID: $_selectedCategoryId'
-                            : 'transactions.no_category_selected'.tr(),
-                        fontSize: 14,
-                        textColor: getColor(context, "textLight"),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Account Selector Placeholder
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: getColor(context, "surface"),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: getColor(context, "border"),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      AppText(
-                        'transactions.select_account'.tr(),
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      const SizedBox(height: 8),
-                      AppText(
-                        _selectedAccountId != null 
-                            ? 'Account ID: $_selectedAccountId'
-                            : 'transactions.no_account_selected'.tr(),
-                        fontSize: 14,
-                        textColor: getColor(context, "textLight"),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Spacer
-                const SizedBox(height: 150),
-              ],
-            ),
+              // Spacer
+              const SizedBox(height: 150),
+            ]),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildTransactionTypeSelector(TransactionCreateLoaded state) {
+    return SelectorWidget<TransactionType>(
+      selectedValue: state.transactionType,
+      options: [
+        SelectorOption<TransactionType>(
+          value: TransactionType.expense,
+          label: "transactions.expense".tr(),
+          iconPath: 'assets/icons/arrow_down.svg',
+          activeIconColor: getColor(context, "error"),
+          activeTextColor: getColor(context, "textSecondary"),
+          activeBackgroundColor: getColor(context, "primary"),
+        ),
+        SelectorOption<TransactionType>(
+          value: TransactionType.income,
+          label: "transactions.income".tr(),
+          iconPath: 'assets/icons/arrow_up.svg',
+          activeIconColor: getColor(context, "success"),
+          activeTextColor: getColor(context, "textSecondary"),
+          activeBackgroundColor: getColor(context, "success"),
+        ),
+      ],
+      onSelectionChanged: (transactionType) {
+        _bloc.add(UpdateTransactionType(transactionType));
+      },
+    );
+  }
+
+  Widget _buildTitleInput(TransactionCreateLoaded state) {
+    return Center(
+      child: AnimatedBuilder(
+        animation: _titleBorderColorAnimation,
+        builder: (context, child) {
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              border: Border(
+                bottom: BorderSide(
+                  color: _titleBorderColorAnimation.value ??
+                      getColor(context, "border"),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: IntrinsicWidth(
+              child: TextField(
+                controller: _titleController,
+                focusNode: _titleFocusNode,
+                textAlign: TextAlign.center,
+                textCapitalization: TextCapitalization.words,
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w500,
+                  color: getColor(context, "textPrimary"),
+                ),
+                decoration: InputDecoration(
+                  hintText: 'transactions.title_hint'.tr(),
+                  hintStyle: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w500,
+                    color: getColor(context, "textLight"),
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsetsDirectional.fromSTEB(
+                      10, 10, 10, 10),
+                  fillColor: Colors.transparent,
+                  filled: true,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildAmountInput(TransactionCreateLoaded state) {
+    return Center(
+      child: TappableWidget(
+        onTap: _selectAmount,
+        animationType: TapAnimationType.scale,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: getColor(context, "border"),
+                width: 1.5,
+              ),
+            ),
+          ),
+          child: AppText(
+            _formatCurrency(state.amount ?? 0.0),
+            fontSize: 48,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDateSelector(TransactionCreateLoaded state) {
+    return TappableWidget(
+      onTap: () => _selectDate(state.date),
+      animationType: TapAnimationType.scale,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppText(
+            '${'transactions.date_label'.tr()} ',
+            fontSize: 18,
+            textColor: getColor(context, "textLight"),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: getColor(context, "border"),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            child: AppText(
+              DateFormat('MMMM d, yyyy').format(state.date),
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategorySelector(TransactionCreateLoaded state) {
+    return SingleCategorySelector(
+      availableCategories: state.currentCategories,
+      selectedCategory: state.selectedCategory,
+      onSelectionChanged: (category) {
+        _bloc.add(UpdateCategory(category));
+      },
+      title: 'transactions.select_category'.tr(),
+      isRequired: true,
+      errorText: state.validationErrors['category'],
+    );
+  }
+
+  Widget _buildAccountSelector(TransactionCreateLoaded state) {
+    return SingleAccountSelector(
+      availableAccounts: state.accounts,
+      selectedAccount: state.selectedAccount,
+      onSelectionChanged: (account) {
+        _bloc.add(UpdateAccount(account));
+      },
+      title: 'transactions.select_account'.tr(),
+      isRequired: true,
+      errorText: state.validationErrors['account'],
+    );
+  }
+
+  Widget _buildNoteInput(TransactionCreateLoaded state) {
+    return AnimatedBuilder(
+      animation: _noteBorderColorAnimation,
+      builder: (context, child) {
+        return Container(
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            border: Border.all(
+              color: _noteBorderColorAnimation.value ??
+                  getColor(context, "border"),
+              width: 1.5,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: TextField(
+            controller: _noteController,
+            focusNode: _noteFocusNode,
+            maxLines: 3,
+            textCapitalization: TextCapitalization.sentences,
+            style: TextStyle(
+              fontSize: 16,
+              color: getColor(context, "textPrimary"),
+            ),
+            decoration: InputDecoration(
+              hintText: 'transactions.note_hint'.tr(),
+              hintStyle: TextStyle(
+                fontSize: 16,
+                color: getColor(context, "textLight"),
+              ),
+              border: InputBorder.none,
+              contentPadding: const EdgeInsets.all(12),
+              fillColor: Colors.transparent,
+              filled: true,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAdvancedFeatures(TransactionCreateLoaded state) {
+    return ExpansionTile(
+      title: AppText(
+        'transactions.advanced_features'.tr(),
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+      ),
+      children: [
+        // Transaction State Selector
+        _buildTransactionStateSelector(state),
+        const SizedBox(height: 16),
+        
+        // Special Type Selector (Credit/Debt)
+        _buildSpecialTypeSelector(state),
+        const SizedBox(height: 16),
+        
+        // Recurrence Settings
+        _buildRecurrenceSettings(state),
+        const SizedBox(height: 16),
+        
+        // Budget Linking
+        if (state.manualBudgets.isNotEmpty) ...[
+          _buildBudgetLinking(state),
+          const SizedBox(height: 16),
+        ],
+        
+        // Attachments Section
+        _buildAttachmentsSection(state),
+      ],
+    );
+  }
+
+  Widget _buildTransactionStateSelector(TransactionCreateLoaded state) {
+    return SelectorWidget<TransactionState>(
+      selectedValue: state.transactionState,
+      options: [
+        SelectorOption<TransactionState>(
+          value: TransactionState.completed,
+          label: "transactions.state.completed".tr(),
+          iconPath: 'assets/icons/check.svg',
+        ),
+        SelectorOption<TransactionState>(
+          value: TransactionState.pending,
+          label: "transactions.state.pending".tr(),
+          iconPath: 'assets/icons/clock.svg',
+        ),
+        SelectorOption<TransactionState>(
+          value: TransactionState.scheduled,
+          label: "transactions.state.scheduled".tr(),
+          iconPath: 'assets/icons/calendar.svg',
+        ),
+      ],
+      onSelectionChanged: (transactionState) {
+        _bloc.add(UpdateTransactionState(transactionState));
+      },
+    );
+  }
+
+  Widget _buildSpecialTypeSelector(TransactionCreateLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'transactions.special_type'.tr(),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: RadioListTile<TransactionSpecialType?>(
+                title: AppText('transactions.credit'.tr()),
+                value: TransactionSpecialType.credit,
+                groupValue: state.specialType,
+                onChanged: (value) {
+                  _bloc.add(UpdateSpecialType(value));
+                },
+              ),
+            ),
+            Expanded(
+              child: RadioListTile<TransactionSpecialType?>(
+                title: AppText('transactions.debt'.tr()),
+                value: TransactionSpecialType.debt,
+                groupValue: state.specialType,
+                onChanged: (value) {
+                  _bloc.add(UpdateSpecialType(value));
+                },
+              ),
+            ),
+          ],
+        ),
+        RadioListTile<TransactionSpecialType?>(
+          title: AppText('transactions.none'.tr()),
+          value: null,
+          groupValue: state.specialType,
+          onChanged: (value) {
+            _bloc.add(UpdateSpecialType(value));
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildRecurrenceSettings(TransactionCreateLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'transactions.recurrence'.tr(),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<TransactionRecurrence>(
+          value: state.recurrence,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          items: TransactionRecurrence.values.map((recurrence) {
+            return DropdownMenuItem(
+              value: recurrence,
+              child: AppText('transactions.recurrence_${recurrence.name}'.tr()),
+            );
+          }).toList(),
+          onChanged: (recurrence) {
+            if (recurrence != null) {
+              _bloc.add(UpdateRecurrence(recurrence));
+            }
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBudgetLinking(TransactionCreateLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'transactions.link_to_budgets'.tr(),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        const SizedBox(height: 8),
+        if (state.budgetLinks.isNotEmpty) ...[
+          ...state.budgetLinks.map((link) => ListTile(
+                title: AppText(link.budget.name),
+                trailing: IconButton(
+                  icon: const Icon(Icons.remove_circle),
+                  onPressed: () {
+                    _bloc.add(RemoveBudgetLink(link.budget));
+                  },
+                ),
+              )),
+        ],
+        ElevatedButton(
+          onPressed: () => _showBudgetLinkingDialog(state),
+          child: AppText('transactions.add_budget_link'.tr()),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildAttachmentsSection(TransactionCreateLoaded state) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          'transactions.attachments'.tr(),
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        const SizedBox(height: 8),
+        if (state.attachments.isNotEmpty) ...[
+          ...state.attachments.map((attachment) => Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                decoration: BoxDecoration(
+                  border: Border.all(color: getColor(context, "border")),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: ListTile(
+                  title: AppText(attachment.fileName),
+                  subtitle: attachment.isCapturedFromCamera
+                      ? AppText(
+                          'transactions.captured_from_camera'.tr(),
+                          fontSize: 12,
+                          textColor: getColor(context, "textSecondary"),
+                        )
+                      : null,
+                  leading: _buildAttachmentPreview(attachment),
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete, color: getColor(context, "error")),
+                    onPressed: () {
+                      _bloc.add(RemoveAttachment(attachment.filePath));
+                    },
+                  ),
+                ),
+              )),
+        ],
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            ElevatedButton.icon(
+              onPressed: () => _pickImageFromCamera(),
+              icon: const Icon(Icons.camera_alt),
+              label: AppText('transactions.camera'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: getColor(context, "primary"),
+                foregroundColor: getColor(context, "white"),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () => _pickImageFromGallery(),
+              icon: const Icon(Icons.photo_library),
+              label: AppText('transactions.gallery'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: getColor(context, "primary"),
+                foregroundColor: getColor(context, "white"),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () => _pickMultipleImages(),
+              icon: const Icon(Icons.photo_library_outlined),
+              label: AppText('transactions.multiple_photos'.tr()),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: getColor(context, "secondary"),
+                foregroundColor: getColor(context, "white"),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showBudgetLinkingDialog(TransactionCreateLoaded state) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: AppText('transactions.select_budget'.tr()),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView.builder(
+            shrinkWrap: true,
+            itemCount: state.manualBudgets.length,
+            itemBuilder: (context, index) {
+              final budget = state.manualBudgets[index];
+              final isAlreadyLinked = state.budgetLinks
+                  .any((link) => link.budget.id == budget.id);
+              
+              return ListTile(
+                title: AppText(budget.name),
+                subtitle: AppText(_formatCurrency(budget.amount)),
+                enabled: !isAlreadyLinked,
+                onTap: isAlreadyLinked
+                    ? null
+                    : () {
+                        _bloc.add(LinkToBudget(budget));
+                        Navigator.pop(context);
+                      },
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: AppText('actions.cancel'.tr()),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      
+      if (image != null && mounted) {
+        final fileName = path.basename(image.path);
+        _bloc.add(AddAttachment(
+          image.path,
+          fileName,
+          isCapturedFromCamera: true,
+        ));
+        
+        // Show success feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Photo captured: $fileName'),
+            backgroundColor: getColor(context, "success"),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error feedback
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to capture photo: $e'),
+            backgroundColor: getColor(context, "error"),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      
+      if (image != null && mounted) {
+        final fileName = path.basename(image.path);
+        _bloc.add(AddAttachment(
+          image.path,
+          fileName,
+          isCapturedFromCamera: false,
+        ));
+        
+        // Show success feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Photo selected: $fileName'),
+            backgroundColor: getColor(context, "success"),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error feedback
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select photo: $e'),
+            backgroundColor: getColor(context, "error"),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickMultipleImages() async {
+    try {
+      final List<XFile> images = await _imagePicker.pickMultiImage(
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
+      );
+      
+      if (images.isNotEmpty && mounted) {
+        for (final image in images) {
+          final fileName = path.basename(image.path);
+          _bloc.add(AddAttachment(
+            image.path,
+            fileName,
+            isCapturedFromCamera: false,
+          ));
+        }
+        
+        // Show success feedback
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${images.length} photos selected'),
+            backgroundColor: getColor(context, "success"),
+          ),
+        );
+      }
+    } catch (e) {
+      // Show error feedback
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to select photos: $e'),
+            backgroundColor: getColor(context, "error"),
+          ),
+        );
+      }
+    }
   }
 }

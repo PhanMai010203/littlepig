@@ -32,6 +32,7 @@
   "transactions": {
     "title": "Transactions",
     "add_transaction": "Add Transaction",
+    "create_transaction": "Create Transaction",
     "income": "Income",
     "expense": "Expense",
     "amount": "Amount",
@@ -50,7 +51,39 @@
     "transaction_deleted": "Transaction deleted successfully",
     "filter_all": "All",
     "filter_expense": "Expense",
-    "filter_income": "Income"
+    "filter_income": "Income",
+    "enter_amount": "Enter Amount",
+    "set_title_action": "Set Title",
+    "set_amount_action": "Set Amount",
+    "select_category_action": "Select Category",
+    "select_account_action": "Select Account",
+    "create_transaction_action": "Create Transaction",
+    "title_hint": "Enter transaction title",
+    "date_label": "Date:",
+    "select_category": "Select Category",
+    "select_account": "Select Account",
+    "note_hint": "Add a note (optional)",
+    "advanced_features": "Advanced Features",
+    "state": {
+      "completed": "Completed",
+      "pending": "Pending",
+      "scheduled": "Scheduled"
+    },
+    "special_type": "Special Type",
+    "credit": "Credit",
+    "debt": "Debt",
+    "none": "None",
+    "recurrence_none": "None",
+    "recurrence_daily": "Daily",
+    "recurrence_weekly": "Weekly",
+    "recurrence_monthly": "Monthly",
+    "recurrence_yearly": "Yearly",
+    "link_to_budgets": "Link to Budgets",
+    "add_budget_link": "Add Budget Link",
+    "attachments": "Attachments",
+    "camera": "Camera",
+    "gallery": "Gallery",
+    "select_budget": "Select Budget"
   },
 
   "budgets": {
