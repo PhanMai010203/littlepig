@@ -51,17 +51,9 @@ class AccountCreateLoaded extends AccountCreateState {
 
   /// Check if the form is valid for submission
   bool get isValid {
-    return name.isNotEmpty && 
-           selectedCurrency != null && 
-           validationErrors.isEmpty;
+    return name.isNotEmpty && validationErrors.isEmpty;
   }
 
-  /// Get the next required field that needs to be filled
-  String? get _calculateNextRequiredField {
-    if (name.isEmpty) return 'name';
-    if (selectedCurrency == null) return 'currency';
-    return null;
-  }
 
   AccountCreateLoaded copyWith({
     String? name,
@@ -74,7 +66,7 @@ class AccountCreateLoaded extends AccountCreateState {
     Map<String, String>? validationErrors,
     String? nextRequiredField,
   }) {
-    final newState = AccountCreateLoaded(
+    return AccountCreateLoaded(
       name: name ?? this.name,
       balance: balance ?? this.balance,
       selectedCurrency: selectedCurrency ?? this.selectedCurrency,
@@ -83,12 +75,7 @@ class AccountCreateLoaded extends AccountCreateState {
       isCurrenciesLoading: isCurrenciesLoading ?? this.isCurrenciesLoading,
       isCreating: isCreating ?? this.isCreating,
       validationErrors: validationErrors ?? this.validationErrors,
-      nextRequiredField: nextRequiredField ?? this.nextRequiredField,
-    );
-
-    // Recalculate next required field if not explicitly provided
-    return newState.copyWith(
-      nextRequiredField: nextRequiredField ?? newState._calculateNextRequiredField,
+      nextRequiredField: nextRequiredField,
     );
   }
 

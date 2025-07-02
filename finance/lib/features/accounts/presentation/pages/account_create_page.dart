@@ -1,6 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../../../../shared/widgets/dialogs/bottom_sheet_service.dart';
 import '../../../../shared/widgets/text_input.dart';
 
@@ -59,6 +60,7 @@ class _AccountCreatePageState extends State<AccountCreatePage>
     _nameController.addListener(() {
       _bloc.add(UpdateAccountName(_nameController.text));
     });
+    _balanceController.text = '0.00'; // Initialize with default value
     _balanceController.addListener(() {
       final balance = double.tryParse(_balanceController.text);
       if (balance != null) {
@@ -149,15 +151,86 @@ class _AccountCreatePageState extends State<AccountCreatePage>
   }
 
   void _selectCurrency(AccountCreateLoaded state) async {
-    final selectedCurrency = await BottomSheetService.showOptionsBottomSheet<Currency>(
+    Currency? tempSelectedCurrency = state.selectedCurrency;
+
+    final selectedCurrency = await BottomSheetService.showCustomBottomSheet<Currency>(
       context,
+      StatefulBuilder(
+        builder: (context, setState) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Currency Options
+                        ...state.availableCurrencies.map((currency) {
+                          return RadioListTile<Currency>(
+                            title: AppText(
+                              '${currency.symbol} ${currency.code} - ${currency.name}',
+                              fontSize: 15,
+                            ),
+                            value: currency,
+                            groupValue: tempSelectedCurrency,
+                            onChanged: (Currency? value) {
+                              setState(() {
+                                tempSelectedCurrency = value;
+                              });
+                            },
+                            activeColor: getColor(context, "primary"),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: AppText(
+                          'actions.cancel'.tr(),
+                          textColor: getColor(context, "textSecondary"),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: tempSelectedCurrency != null 
+                            ? () {
+                                Navigator.pop(context, tempSelectedCurrency);
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: getColor(context, "primary"),
+                          foregroundColor: getColor(context, "white"),
+                        ),
+                        child: AppText(
+                          'actions.save'.tr(),
+                          textColor: getColor(context, "white"),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
       title: 'accounts.select_currency'.tr(),
-      options: state.availableCurrencies.map((currency) {
-        return BottomSheetOption(
-          title: '${currency.symbol} ${currency.code} - ${currency.name}',
-          value: currency,
-        );
-      }).toList(),
+      isScrollControlled: true,
+      resizeForKeyboard: false,
     );
 
     if (selectedCurrency != null) {
@@ -181,8 +254,6 @@ class _AccountCreatePageState extends State<AccountCreatePage>
       switch (state.nextRequiredField!) {
         case 'name':
           return 'accounts.set_name_action'.tr();
-        case 'currency':
-          return 'accounts.select_currency_action'.tr();
         default:
           return 'accounts.create_account_action'.tr();
       }
@@ -195,8 +266,6 @@ class _AccountCreatePageState extends State<AccountCreatePage>
       switch (state.nextRequiredField!) {
         case 'name':
           return () => _nameFocusNode.requestFocus();
-        case 'currency':
-          return () => _selectCurrency(state);
         default:
           return state.isValid ? _submit : null;
       }
@@ -205,27 +274,66 @@ class _AccountCreatePageState extends State<AccountCreatePage>
   }
 
   void _submit() {
-    _bloc.add(const CreateAccount());
+    final currentState = _bloc.state;
+    debugPrint('Submit called - State: ${currentState.runtimeType}');
+    
+    if (currentState is AccountCreateLoaded) {
+      debugPrint('Submit - isCreating: ${currentState.isCreating}, name: "${currentState.name}", isValid: ${currentState.isValid}');
+      
+      if (!currentState.isCreating) {
+        debugPrint('Adding CreateAccount event...');
+        _bloc.add(const CreateAccount());
+      } else {
+        debugPrint('Already creating, ignoring submit');
+      }
+    } else {
+      debugPrint('Invalid state for submit: ${currentState.runtimeType}');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AccountCreateBloc>(
-      create: (context) => _bloc,
+    return BlocProvider<AccountCreateBloc>.value(
+      value: _bloc,
       child: BlocListener<AccountCreateBloc, AccountCreateState>(
         listener: (context, state) {
+          debugPrint('BlocListener received state: ${state.runtimeType}');
+          
           if (state is AccountCreateSuccess) {
-            Navigator.pop(context);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.message)),
-            );
+            debugPrint('🎉 Success state received in UI: ${state.message}');
+            // Use post frame callback to ensure navigation happens after build
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              debugPrint('🔙 Post frame callback executing...');
+              if (mounted) {
+                if (Navigator.canPop(context)) {
+                  debugPrint('✅ Navigating back with pop');
+                  Navigator.pop(context);
+                } else {
+                  debugPrint('✅ Navigating back with GoRouter to home');
+                  context.go('/');
+                }
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(state.message)),
+                );
+              } else {
+                debugPrint('❌ Cannot navigate - not mounted');
+              }
+            });
           } else if (state is AccountCreateError) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(state.message),
-                backgroundColor: getColor(context, "error"),
-              ),
-            );
+            debugPrint('❌ Error state received in UI: ${state.message}');
+            // Use post frame callback for error handling too
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: getColor(context, "error"),
+                  ),
+                );
+              }
+            });
+          } else if (state is AccountCreateLoaded) {
+            debugPrint('📊 Loaded state - isCreating: ${state.isCreating}');
           }
         },
         child: BlocBuilder<AccountCreateBloc, AccountCreateState>(
@@ -443,6 +551,8 @@ class _AccountCreatePageState extends State<AccountCreatePage>
                     itemBuilder: (context, index) {
                       final color = _accountColors[index];
                       final isSelected = color == state.selectedColor;
+
+                      // debugPrint('Color $index: ${color.toString()}, Selected: ${state.selectedColor.toString()}, IsSelected: $isSelected');
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),

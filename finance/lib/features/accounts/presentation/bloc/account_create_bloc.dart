@@ -52,13 +52,20 @@ class AccountCreateBloc extends Bloc<AccountCreateEvent, AccountCreateState> {
       // Load popular currencies
       final currencies = await _currencyService.getPopularCurrencies();
       
-      // Try to get USD as default, fallback to first currency
+      // Set USD as default, fallback to first currency
       Currency? defaultCurrency;
       try {
         defaultCurrency = currencies.firstWhere((c) => c.code == 'USD');
       } catch (e) {
         defaultCurrency = currencies.isNotEmpty ? currencies.first : null;
       }
+
+      // If no USD found and no currencies available, create a mock USD currency
+      defaultCurrency ??= const Currency(
+        code: 'USD',
+        name: 'US Dollar',
+        symbol: '\$',
+      );
 
       emit(AccountCreateLoaded(
         selectedColor: defaultColors.first,
@@ -86,9 +93,13 @@ class AccountCreateBloc extends Bloc<AccountCreateEvent, AccountCreateState> {
         validationErrors['name'] = 'Account name is required';
       }
 
+      // Calculate next required field
+      final nextRequiredField = event.name.isEmpty ? 'name' : null;
+
       emit(currentState.copyWith(
         name: event.name,
         validationErrors: validationErrors,
+        nextRequiredField: nextRequiredField,
       ));
     }
   }
@@ -156,23 +167,25 @@ class AccountCreateBloc extends Bloc<AccountCreateEvent, AccountCreateState> {
     CreateAccount event,
     Emitter<AccountCreateState> emit,
   ) async {
+    debugPrint('🚀 Starting account creation...');
+    
     if (state is AccountCreateLoaded) {
       final currentState = state as AccountCreateLoaded;
+      debugPrint('Current state: name="${currentState.name}", balance=${currentState.balance}, currency=${currentState.selectedCurrency?.code}');
 
-      // Validate form
+      // Validate form - only name is required
       final validationErrors = <String, String>{};
       if (currentState.name.isEmpty) {
         validationErrors['name'] = 'Account name is required';
       }
-      if (currentState.selectedCurrency == null) {
-        validationErrors['currency'] = 'Currency is required';
-      }
 
       if (validationErrors.isNotEmpty) {
+        debugPrint('❌ Validation failed: $validationErrors');
         emit(currentState.copyWith(validationErrors: validationErrors));
         return;
       }
 
+      debugPrint('✅ Validation passed, setting isCreating to true');
       emit(currentState.copyWith(isCreating: true));
 
       try {
@@ -183,7 +196,7 @@ class AccountCreateBloc extends Bloc<AccountCreateEvent, AccountCreateState> {
         final account = Account(
           name: currentState.name.trim(),
           balance: currentState.balance,
-          currency: currentState.selectedCurrency!.code,
+          currency: currentState.selectedCurrency?.code ?? 'USD', // Default to USD
           isDefault: false, // Will be handled by repository if it's the first account
           createdAt: now,
           updatedAt: now,
@@ -191,17 +204,28 @@ class AccountCreateBloc extends Bloc<AccountCreateEvent, AccountCreateState> {
           color: currentState.selectedColor,
         );
 
+        debugPrint('💾 Creating account: ${account.name} with ${account.currency} ${account.balance}');
+
         // Save account
         final createdAccount = await _accountRepository.createAccount(account);
+        debugPrint('✅ Account created successfully: ${createdAccount.id}');
+        
+        // Add a small delay to ensure UI state is stable before navigation
+        await Future.delayed(const Duration(milliseconds: 100));
         
         emit(AccountCreateSuccess(
           message: 'Account "${createdAccount.name}" created successfully',
           accountName: createdAccount.name,
         ));
-      } catch (e) {
+        debugPrint('🎉 Success state emitted');
+      } catch (e, stackTrace) {
+        debugPrint('❌ Account creation failed: $e');
+        debugPrint('Stack trace: $stackTrace');
         emit(currentState.copyWith(isCreating: false));
         emit(AccountCreateError('Failed to create account: ${e.toString()}'));
       }
+    } else {
+      debugPrint('❌ Invalid state: ${state.runtimeType}');
     }
   }
 
