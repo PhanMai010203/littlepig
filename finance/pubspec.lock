@@ -637,6 +637,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.0"
+  gcloud:
+    dependency: transitive
+    description:
+      name: gcloud
+      sha256: caa415a0145ec8afac457322872c3e8b38379a88800d2944c53798ea8fbce386
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.19"
   get_it:
     dependency: "direct main"
     description:
@@ -661,6 +669,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "12.1.3"
+  google_generative_ai:
+    dependency: transitive
+    description:
+      name: google_generative_ai
+      sha256: "71f613d0247968992ad87a0eb21650a566869757442ba55a31a81be6746e0d1f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.7"
   google_identity_services_web:
     dependency: transitive
     description:
@@ -713,18 +729,18 @@ packages:
     dependency: "direct main"
     description:
       name: googleapis
-      sha256: c2f311bcd1b3e4052234162edc6b626a9013a7e1385d6aad37e9e6a6c5f89908
+      sha256: "864f222aed3f2ff00b816c675edf00a39e2aaf373d728d8abec30b37bee1a81c"
       url: "https://pub.dev"
     source: hosted
-    version: "11.4.0"
+    version: "13.2.0"
   googleapis_auth:
     dependency: "direct main"
     description:
       name: googleapis_auth
-      sha256: befd71383a955535060acde8792e7efc11d2fccd03dd1d3ec434e85b68775938
+      sha256: b81fe352cc4a330b3710d2b7ad258d9bcef6f909bb759b306bf42973a7d046db
       url: "https://pub.dev"
     source: hosted
-    version: "1.6.0"
+    version: "2.0.0"
   graphs:
     dependency: transitive
     description:
@@ -885,6 +901,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.9.5"
+  langchain:
+    dependency: "direct main"
+    description:
+      name: langchain
+      sha256: "8a9b80fc09fcc4b17d8fed636d2dfa7a10ab598c1e0ec9533b8bf1a4ae87115f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.8"
+  langchain_core:
+    dependency: transitive
+    description:
+      name: langchain_core
+      sha256: d761f364077543d77b6fc3242ddf9dbcf7b6c7b2419f81ab8feb55ffd3a7970f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.7"
+  langchain_google:
+    dependency: "direct main"
+    description:
+      name: langchain_google
+      sha256: "07290fb28a967709969dde8fef5c2c2181553ccd4dc134e1975ac964143014de"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.5"
   leak_tracker:
     dependency: transitive
     description:
@@ -1253,6 +1293,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
+  retry:
+    dependency: transitive
+    description:
+      name: retry
+      sha256: "822e118d5b3aafed083109c72d5f484c6dc66707885e07c0fbcb8b986bba7efc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.2"
   rxdart:
     dependency: "direct main"
     description:
@@ -1666,6 +1714,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  vertex_ai:
+    dependency: transitive
+    description:
+      name: vertex_ai
+      sha256: ba79b891af936944fa681e0d646b95ec445842b5dbdd60fa62844eec7c954c9f
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   vm_service:
     dependency: transitive
     description:

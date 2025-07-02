@@ -18,7 +18,9 @@
       "Bash(mkdir:*)",
       "Bash(jq:*)",
       "Bash(python3:*)",
-      "mcp__ide__getDiagnostics"
+      "mcp__ide__getDiagnostics",
+      "Bash(flutter pub:*)",
+      "WebFetch(domain:pub.dev)"
     ],
     "deny": []
   }

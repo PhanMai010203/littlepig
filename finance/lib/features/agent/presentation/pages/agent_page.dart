@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../../shared/widgets/page_template.dart';
 import '../../../agent/domain/entities/speech_service.dart';
-import 'chat_screen.dart';
+import 'ai_chat_screen.dart';
 
 class AgentPage extends StatelessWidget {
   const AgentPage({super.key});
@@ -328,7 +328,7 @@ class _ChatSection extends StatelessWidget {
                       MaterialPageRoute(
                         builder: (context) => ChangeNotifierProvider(
                           create: (context) => SpeechService(),
-                          child: const ChatScreen(),
+                          child: const AIChatScreen(),
                         ),
                       ),
                     );

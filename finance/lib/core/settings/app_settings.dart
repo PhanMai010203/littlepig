@@ -136,6 +136,13 @@ class AppSettings {
       // App behavior
       'firstLaunch': true,
       'lastVersion': '1.0.0',
+
+      // AI Agent settings
+      'geminiApiKey': '', // User configurable Gemini API key
+      'aiEnabled': false, // Whether AI features are enabled
+      'aiModel': 'gemini-1.5-pro', // Selected AI model
+      'aiTemperature': 0.3, // AI response creativity (0.0-1.0)
+      'aiMaxTokens': 4000, // Maximum tokens for AI responses
     };
   }
 
@@ -244,6 +251,47 @@ class AppSettings {
 
   static Future<void> setHapticFeedback(bool enabled) async {
     await set('hapticFeedback', enabled);
+  }
+
+  /// AI-related convenience methods
+  static String get geminiApiKey {
+    return get<String>('geminiApiKey') ?? '';
+  }
+
+  static Future<void> setGeminiApiKey(String apiKey) async {
+    await set('geminiApiKey', apiKey);
+  }
+
+  static bool get aiEnabled {
+    return get<bool>('aiEnabled') ?? false;
+  }
+
+  static Future<void> setAiEnabled(bool enabled) async {
+    await set('aiEnabled', enabled);
+  }
+
+  static String get aiModel {
+    return get<String>('aiModel') ?? 'gemini-1.5-pro';
+  }
+
+  static Future<void> setAiModel(String model) async {
+    await set('aiModel', model);
+  }
+
+  static double get aiTemperature {
+    return get<double>('aiTemperature') ?? 0.3;
+  }
+
+  static Future<void> setAiTemperature(double temperature) async {
+    await set('aiTemperature', temperature);
+  }
+
+  static int get aiMaxTokens {
+    return get<int>('aiMaxTokens') ?? 4000;
+  }
+
+  static Future<void> setAiMaxTokens(int maxTokens) async {
+    await set('aiMaxTokens', maxTokens);
   }
 
   /// Debug method to print all settings
