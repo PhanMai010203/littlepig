@@ -23,7 +23,7 @@ class SingleAccountSelector extends StatelessWidget {
     required this.availableAccounts,
     this.selectedAccount,
     required this.onSelectionChanged,
-    this.title = 'Select Account',
+    required this.title,
     this.subtitle,
     this.isLoading = false,
     this.isRequired = false,

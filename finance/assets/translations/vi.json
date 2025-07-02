@@ -53,6 +53,7 @@
     "filter_expense": "Chi tiêu",
     "filter_income": "Thu nhập",
     "enter_amount": "Nhập số tiền",
+    "amount_hint": "0.00",
     "set_title_action": "Nhập tiêu đề",
     "set_amount_action": "Nhập số tiền",
     "select_category_action": "Chọn danh mục",
@@ -83,7 +84,13 @@
     "attachments": "Tệp đính kèm",
     "camera": "Máy ảnh",
     "gallery": "Thư viện",
-    "select_budget": "Chọn ngân sách"
+    "select_budget": "Chọn ngân sách",
+    "captured_from_camera": "Chụp từ máy ảnh",
+    "photo_captured": "Đã chụp ảnh: {fileName}",
+    "failed_to_capture_photo": "Không thể chụp ảnh: {error}",
+    "photo_selected": "Đã chọn ảnh: {fileName}",
+    "failed_to_select_photo": "Không thể chọn ảnh: {error}",
+    "photos_selected": "Đã chọn {count} ảnh"
   },
 
   "budgets": {

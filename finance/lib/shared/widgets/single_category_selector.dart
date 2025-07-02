@@ -23,7 +23,7 @@ class SingleCategorySelector extends StatelessWidget {
     required this.availableCategories,
     this.selectedCategory,
     required this.onSelectionChanged,
-    this.title = 'Select Category',
+    required this.title,
     this.subtitle,
     this.isLoading = false,
     this.isRequired = false,

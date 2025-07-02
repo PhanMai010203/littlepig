@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/repositories/transaction_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
@@ -121,15 +122,18 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   Future<void> _onLoadTransactionsWithCategories(
       LoadTransactionsWithCategories event,
       Emitter<TransactionsState> emit) async {
+    debugPrint('🚀 LoadTransactionsWithCategories event triggered');
     emit(TransactionsLoading());
     try {
       // Load categories first
       final categories = await _categoryRepository.getAllCategories();
       _categories = {for (var c in categories) c.id!: c};
+      debugPrint('📂 Loaded ${_categories.length} categories');
 
       // Initialize pagination with empty state
       final initialPagingState = PagingState<int, TransactionListItem>();
 
+      debugPrint('🗓️ Setting selected month to: ${DateFormat('yyyy-MM').format(_selectedMonth)}');
       emit(TransactionsPaginated(
         pagingState: initialPagingState,
         categories: _categories,
@@ -137,8 +141,10 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
       ));
 
       // Trigger first page load
+      debugPrint('🔄 Triggering first page load...');
       add(FetchNextTransactionPage());
     } catch (e) {
+      debugPrint('❌ Error loading transactions with categories: $e');
       emit(TransactionsError('Failed to load data: $e'));
     }
   }
@@ -224,12 +230,22 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
         page: nextPageKey,
         limit: _pageSize,
       );
+      
+      debugPrint('🔍 Fetched ${newTransactions.length} transactions from repository (page $nextPageKey)');
 
       // Filter transactions by selected month
       final filteredTransactions = newTransactions.where((t) {
         return t.date.year == _selectedMonth.year &&
             t.date.month == _selectedMonth.month;
       }).toList();
+      
+      debugPrint('📅 After month filtering (${DateFormat('yyyy-MM').format(_selectedMonth)}): ${filteredTransactions.length} transactions');
+      if (filteredTransactions.isNotEmpty) {
+        debugPrint('💰 Filtered transactions for current month:');
+        for (var transaction in filteredTransactions.take(3)) {
+          debugPrint('   - ${transaction.title}: \$${transaction.amount} on ${DateFormat('MMM dd').format(transaction.date)}');
+        }
+      }
 
       if (filteredTransactions.isEmpty && newTransactions.isNotEmpty) {
         _consecutiveEmptyFetches++;

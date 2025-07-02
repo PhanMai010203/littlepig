@@ -74,10 +74,11 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       // Filter manual budgets only
       final manualBudgets = budgets.where((b) => b.manualAddMode).toList();
 
-      // Get default account
-      final defaultAccount = accounts.where((a) => a.isDefault).isNotEmpty 
-          ? accounts.firstWhere((a) => a.isDefault)
-          : (accounts.isNotEmpty ? accounts.first : null);
+      // Pre-select the default account to skip account selection step
+      final defaultAccount = accounts.firstWhere(
+        (account) => account.isDefault,
+        orElse: () => accounts.isNotEmpty ? accounts.first : throw Exception('No accounts available'),
+      );
 
       emit(TransactionCreateLoaded(
         incomeCategories: incomeCategories,
@@ -85,7 +86,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
         accounts: accounts,
         manualBudgets: manualBudgets,
         date: DateTime.now(),
-        selectedAccount: defaultAccount,
+        selectedAccount: defaultAccount, // Pre-select default account
       ));
       
       // Trigger validation after loading
@@ -276,11 +277,8 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
         nextField ??= 'category';
       }
 
-      // Validate account
-      if (currentState.selectedAccount == null) {
-        errors['account'] = 'Account is required';
-        nextField ??= 'account';
-      }
+      // Account validation is skipped since we pre-select the default account
+      // Account selection is still available in the UI but not part of the progressive flow
 
       // Additional validation for recurring transactions
       if (currentState.recurrence != TransactionRecurrence.none) {
@@ -295,7 +293,8 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       emit(currentState.copyWith(
         validationErrors: errors,
         isValid: isValid,
-        nextRequiredField: nextField,
+        nextRequiredField: nextField, // This will be null if all required fields are filled
+        clearNextRequiredField: nextField == null, // Clear if no next field is required
       ));
     }
   }
@@ -315,9 +314,16 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       try {
         // Create transaction entity
         final transaction = _createTransactionFromState(currentState);
+        debugPrint('💳 Creating transaction: ${transaction.title}');
+        debugPrint('💰 Amount: ${transaction.amount}');
+        debugPrint('📅 Date: ${transaction.date}');
+        debugPrint('🏷️ Category ID: ${transaction.categoryId}');
+        debugPrint('🏦 Account ID: ${transaction.accountId}');
+        debugPrint('🔄 Transaction Type: ${transaction.transactionType}');
         
         // Create transaction in repository
         final createdTransaction = await _transactionRepository.createTransaction(transaction);
+        debugPrint('✅ Transaction created with ID: ${createdTransaction.id}');
         
         // Handle attachments if any
         if (currentState.attachments.isNotEmpty) {
@@ -340,11 +346,12 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
   void _onResetForm(ResetForm event, Emitter<TransactionCreateState> emit) {
     if (state is TransactionCreateLoaded) {
       final currentState = state as TransactionCreateLoaded;
-      
-      // Get default account
-      final defaultAccount = currentState.accounts.where((a) => a.isDefault).isNotEmpty 
-          ? currentState.accounts.firstWhere((a) => a.isDefault)
-          : (currentState.accounts.isNotEmpty ? currentState.accounts.first : null);
+
+      // Pre-select the default account to skip account selection step
+      final defaultAccount = currentState.accounts.firstWhere(
+        (account) => account.isDefault,
+        orElse: () => currentState.accounts.isNotEmpty ? currentState.accounts.first : throw Exception('No accounts available'),
+      );
 
       emit(TransactionCreateLoaded(
         incomeCategories: currentState.incomeCategories,
@@ -352,7 +359,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
         accounts: currentState.accounts,
         manualBudgets: currentState.manualBudgets,
         date: DateTime.now(),
-        selectedAccount: defaultAccount,
+        selectedAccount: defaultAccount, // Pre-select default account
       ));
       
       add(ValidateForm());

@@ -19,6 +19,8 @@ import '../bloc/transaction_create_bloc.dart';
 import '../bloc/transaction_create_event.dart';
 import '../bloc/transaction_create_state.dart';
 import '../../domain/entities/transaction_enums.dart';
+import '../../../categories/domain/entities/category.dart';
+import '../../../accounts/domain/entities/account.dart';
 import '../../../../core/di/injection.dart';
 
 
@@ -112,6 +114,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
 
   @override
   void dispose() {
+    debugPrint('🧹 TransactionCreatePage disposing...');
     _titleController.dispose();
     _amountController.dispose();
     _noteController.dispose();
@@ -169,7 +172,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
       children: [
         TextInput(
           controller: _amountController,
-          hintText: '0.00',
+          hintText: 'transactions.amount_hint'.tr(),
           autofocus: true,
           textInputAction: TextInputAction.done,
           style: TextInputStyle.underline,
@@ -217,8 +220,6 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
           return 'transactions.set_amount_action'.tr();
         case 'category':
           return 'transactions.select_category_action'.tr();
-        case 'account':
-          return 'transactions.select_account_action'.tr();
         default:
           return 'transactions.create_transaction_action'.tr();
       }
@@ -234,8 +235,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
         case 'amount':
           return _selectAmount;
         case 'category':
-        case 'account':
-          return null; // Handled by selectors
+          return () => _showCategorySelector(state);
         default:
           return state.isValid ? _submit : null;
       }
@@ -243,7 +243,127 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
     return state.isValid ? _submit : null;
   }
 
+  void _showCategorySelector(TransactionCreateLoaded state) {
+    _showCategorySelectionModal(state);
+  }
+
+
+  void _showCategorySelectionModal(TransactionCreateLoaded state) {
+    Category? tempSelectedCategory = state.selectedCategory;
+
+    BottomSheetService.showCustomBottomSheet(
+      context,
+      StatefulBuilder(
+        builder: (context, setState) {
+          return ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.7,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Category Options
+                        ...state.currentCategories.map((category) {
+                          return RadioListTile<Category>(
+                            title: Row(
+                              children: [
+                                Container(
+                                  width: 24,
+                                  height: 24,
+                                  decoration: BoxDecoration(
+                                    color: category.color.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Center(
+                                    child: Text(
+                                      category.icon,
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: AppText(
+                                    category.name,
+                                    fontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: category.isDefault
+                                ? AppText(
+                                    'categories.default'.tr(),
+                                    fontSize: 12,
+                                    textColor: getColor(context, "textSecondary"),
+                                  )
+                                : null,
+                            value: category,
+                            groupValue: tempSelectedCategory,
+                            onChanged: (Category? value) {
+                              setState(() {
+                                tempSelectedCategory = value;
+                              });
+                            },
+                            activeColor: getColor(context, "primary"),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: AppText(
+                          'actions.cancel'.tr(),
+                          textColor: getColor(context, "textSecondary"),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: tempSelectedCategory != null 
+                            ? () {
+                                _bloc.add(UpdateCategory(tempSelectedCategory!));
+                                Navigator.pop(context);
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: getColor(context, "primary"),
+                          foregroundColor: getColor(context, "white"),
+                        ),
+                        child: AppText(
+                          'actions.save'.tr(),
+                          textColor: getColor(context, "white"),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+      title: 'transactions.select_category'.tr(),
+      isScrollControlled: true,
+      resizeForKeyboard: false,
+    );
+  }
+
+
   void _submit() {
+    debugPrint('🚀 Submitting transaction creation...');
     _bloc.add(CreateTransaction());
   }
 
@@ -326,11 +446,14 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
       child: BlocListener<TransactionCreateBloc, TransactionCreateState>(
         listener: (context, state) {
           if (state is TransactionCreateSuccess) {
+            debugPrint('🎉 Transaction created successfully: ${state.message}');
+            debugPrint('🔙 Navigating back to transactions page...');
             Navigator.pop(context);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.message)),
             );
           } else if (state is TransactionCreateError) {
+            debugPrint('❌ Transaction creation failed: ${state.message}');
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text(state.message),
@@ -949,7 +1072,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
         // Show success feedback
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Photo captured: $fileName'),
+            content: Text('transactions.photo_captured'.tr(namedArgs: {'fileName': fileName})),
             backgroundColor: getColor(context, "success"),
           ),
         );
@@ -959,7 +1082,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to capture photo: $e'),
+            content: Text('transactions.failed_to_capture_photo'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: getColor(context, "error"),
           ),
         );
@@ -987,7 +1110,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
         // Show success feedback
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Photo selected: $fileName'),
+            content: Text('transactions.photo_selected'.tr(namedArgs: {'fileName': fileName})),
             backgroundColor: getColor(context, "success"),
           ),
         );
@@ -997,7 +1120,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to select photo: $e'),
+            content: Text('transactions.failed_to_select_photo'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: getColor(context, "error"),
           ),
         );
@@ -1026,7 +1149,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
         // Show success feedback
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${images.length} photos selected'),
+            content: Text('transactions.photos_selected'.tr(namedArgs: {'count': images.length.toString()})),
             backgroundColor: getColor(context, "success"),
           ),
         );
@@ -1036,7 +1159,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to select photos: $e'),
+            content: Text('transactions.failed_to_select_photos'.tr(namedArgs: {'error': e.toString()})),
             backgroundColor: getColor(context, "error"),
           ),
         );

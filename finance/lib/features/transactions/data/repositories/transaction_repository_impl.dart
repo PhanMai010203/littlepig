@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 import 'package:drift/drift.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../../core/database/app_database.dart';
 import '../../../../core/repositories/cacheable_repository_mixin.dart';
@@ -120,48 +121,95 @@ class TransactionRepositoryImpl
 
   @override
   Future<Transaction> createTransaction(Transaction transaction) async {
-    final companion = TransactionsTableCompanion.insert(
-      title: transaction.title,
-      note: Value(transaction.note),
-      amount: transaction.amount,
-      categoryId: transaction.categoryId,
-      accountId: transaction.accountId,
-      date: transaction.date,
+    try {
+      // Validate required fields
+      if (transaction.title.trim().isEmpty) {
+        throw ArgumentError('Transaction title cannot be empty');
+      }
+      if (transaction.amount == 0) {
+        throw ArgumentError('Transaction amount cannot be zero');
+      }
+      if (transaction.categoryId <= 0) {
+        throw ArgumentError('Valid category ID is required');
+      }
+      if (transaction.accountId <= 0) {
+        throw ArgumentError('Valid account ID is required');
+      }
 
-      // Advanced fields
-      transactionType: Value(transaction.transactionType.name),
-      specialType: Value(transaction.specialType?.name),
-      recurrence: Value(transaction.recurrence.name),
-      periodLength: Value(transaction.periodLength),
-      endDate: Value(transaction.endDate),
-      originalDateDue: Value(transaction.originalDateDue),
-      transactionState: Value(transaction.transactionState.name),
-      paid: Value(transaction.paid),
-      skipPaid: Value(transaction.skipPaid),
-      createdAnotherFutureTransaction:
-          Value(transaction.createdAnotherFutureTransaction),
-      objectiveLoanFk: Value(transaction.objectiveLoanFk),
+      // Validate foreign key references exist
+      await _validateForeignKeyReferences(transaction.categoryId, transaction.accountId);
 
-      // Phase 3: Partial loan fields
-      remainingAmount: Value(transaction.remainingAmount),
-      parentTransactionId: Value(transaction.parentTransactionId),
+      if (kDebugMode) {
+        print('Creating transaction: ${transaction.title} - ${transaction.amount}');
+      }
+      
+      final companion = TransactionsTableCompanion.insert(
+        title: transaction.title,
+        note: Value(transaction.note),
+        amount: transaction.amount,
+        categoryId: transaction.categoryId,
+        accountId: transaction.accountId,
+        date: transaction.date,
 
-      // ✅ PHASE 4: Only essential sync field
-      syncId: const Uuid().v4(),
-    );
+        // Advanced fields
+        transactionType: Value(transaction.transactionType.name),
+        specialType: Value(transaction.specialType?.name),
+        recurrence: Value(transaction.recurrence.name),
+        periodLength: Value(transaction.periodLength),
+        endDate: Value(transaction.endDate),
+        originalDateDue: Value(transaction.originalDateDue),
+        transactionState: Value(transaction.transactionState.name),
+        paid: Value(transaction.paid),
+        skipPaid: Value(transaction.skipPaid),
+        createdAnotherFutureTransaction:
+            Value(transaction.createdAnotherFutureTransaction),
+        objectiveLoanFk: Value(transaction.objectiveLoanFk),
 
-    final id =
-        await _database.into(_database.transactionsTable).insert(companion);
-    final createdTransaction = transaction.copyWith(id: id);
+        // Phase 3: Partial loan fields
+        remainingAmount: Value(transaction.remainingAmount),
+        parentTransactionId: Value(transaction.parentTransactionId),
 
-    // Invalidate cache after creating transaction
-    await invalidateEntityCache('transaction');
+        // ✅ PHASE 4: Only essential sync field
+        syncId: const Uuid().v4(),
+      );
 
-    // Publish domain event for budget updates (decoupled from budget service)
-    _eventPublisher.publishTransactionChanged(
-        createdTransaction, TransactionChangeType.created);
+      final id = await _database.into(_database.transactionsTable).insert(companion);
+      final createdTransaction = transaction.copyWith(id: id);
 
-    return createdTransaction;
+      if (kDebugMode) {
+        print('Transaction created successfully with ID: $id');
+      }
+
+      // Invalidate cache after creating transaction
+      await invalidateEntityCache('transaction');
+
+      // Publish domain event for budget updates (decoupled from budget service)
+      _eventPublisher.publishTransactionChanged(
+          createdTransaction, TransactionChangeType.created);
+
+      return createdTransaction;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error creating transaction: $e');
+      }
+      
+      // Provide more specific error messages based on the error type
+      if (e.toString().contains('FOREIGN KEY constraint failed')) {
+        if (e.toString().contains('categoryId')) {
+          throw Exception('Selected category does not exist. Please select a valid category.');
+        } else if (e.toString().contains('accountId')) {
+          throw Exception('Selected account does not exist. Please select a valid account.');
+        } else {
+          throw Exception('Invalid reference to category or account. Please check your selections.');
+        }
+      } else if (e.toString().contains('NOT NULL constraint failed')) {
+        throw Exception('Required fields are missing. Please fill in all required information.');
+      } else if (e is ArgumentError) {
+        throw Exception('Validation error: ${e.message}');
+      } else {
+        throw Exception('Failed to create transaction: ${e.toString()}');
+      }
+    }
   }
 
   @override
@@ -582,6 +630,44 @@ class TransactionRepositoryImpl
     }
 
     return loan.remainingAmount ?? loan.amount.abs();
+  }
+
+  /// Validate that the category and account referenced by the transaction exist
+  Future<void> _validateForeignKeyReferences(int categoryId, int accountId) async {
+    try {
+      // Check if category exists
+      final categoryQuery = _database.customSelect(
+        'SELECT COUNT(*) as count FROM categories WHERE id = ?',
+        variables: [Variable.withInt(categoryId)],
+      );
+      final categoryResult = await categoryQuery.getSingle();
+      final categoryCount = categoryResult.data['count'] as int;
+      
+      if (categoryCount == 0) {
+        throw Exception('Category with ID $categoryId does not exist');
+      }
+
+      // Check if account exists
+      final accountQuery = _database.customSelect(
+        'SELECT COUNT(*) as count FROM accounts WHERE id = ?',
+        variables: [Variable.withInt(accountId)],
+      );
+      final accountResult = await accountQuery.getSingle();
+      final accountCount = accountResult.data['count'] as int;
+      
+      if (accountCount == 0) {
+        throw Exception('Account with ID $accountId does not exist');
+      }
+      
+      if (kDebugMode) {
+        print('Foreign key validation passed for category: $categoryId, account: $accountId');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Foreign key validation failed: $e');
+      }
+      rethrow;
+    }
   }
 }
 

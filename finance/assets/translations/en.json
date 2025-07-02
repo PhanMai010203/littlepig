@@ -53,6 +53,7 @@
     "filter_expense": "Expense",
     "filter_income": "Income",
     "enter_amount": "Enter Amount",
+    "amount_hint": "0.00",
     "set_title_action": "Set Title",
     "set_amount_action": "Set Amount",
     "select_category_action": "Select Category",
@@ -83,7 +84,13 @@
     "attachments": "Attachments",
     "camera": "Camera",
     "gallery": "Gallery",
-    "select_budget": "Select Budget"
+    "select_budget": "Select Budget",
+    "captured_from_camera": "Captured from camera",
+    "photo_captured": "Photo captured: {fileName}",
+    "failed_to_capture_photo": "Failed to capture photo: {error}",
+    "photo_selected": "Photo selected: {fileName}",
+    "failed_to_select_photo": "Failed to select photo: {error}",
+    "photos_selected": "{count} photos selected"
   },
 
   "budgets": {

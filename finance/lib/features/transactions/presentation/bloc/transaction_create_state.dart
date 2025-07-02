@@ -111,6 +111,7 @@ class TransactionCreateLoaded extends TransactionCreateState {
     bool? isValid,
     bool? isCreating,
     String? nextRequiredField,
+    bool clearNextRequiredField = false,
   }) {
     return TransactionCreateLoaded(
       incomeCategories: incomeCategories ?? this.incomeCategories,
@@ -134,7 +135,7 @@ class TransactionCreateLoaded extends TransactionCreateState {
       validationErrors: validationErrors ?? this.validationErrors,
       isValid: isValid ?? this.isValid,
       isCreating: isCreating ?? this.isCreating,
-      nextRequiredField: nextRequiredField ?? this.nextRequiredField,
+      nextRequiredField: clearNextRequiredField ? null : (nextRequiredField ?? this.nextRequiredField),
     );
   }
 
