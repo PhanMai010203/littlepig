@@ -626,7 +626,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
                 style: TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w500,
-                  color: getColor(context, "textPrimary"),
+                  color: getColor(context, "text"),
                 ),
                 decoration: InputDecoration(
                   hintText: 'transactions.title_hint'.tr(),
@@ -755,7 +755,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
             textCapitalization: TextCapitalization.sentences,
             style: TextStyle(
               fontSize: 16,
-              color: getColor(context, "textPrimary"),
+              color: getColor(context, "text"),
             ),
             decoration: InputDecoration(
               hintText: 'transactions.note_hint'.tr(),

@@ -11,20 +11,24 @@ import '../../domain/entities/transaction.dart';
 import '../../../categories/domain/entities/category.dart';
 import 'transactions_event.dart';
 import 'transactions_state.dart';
+import '../../../../core/events/transaction_event_publisher.dart';
 
 @injectable
 class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
   final TransactionRepository _transactionRepository;
   final CategoryRepository _categoryRepository;
+  final TransactionEventPublisher _transactionEventPublisher;
 
   static const int _pageSize = 25;
   Map<int, Category> _categories = {};
   DateTime _selectedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   int _consecutiveEmptyFetches = 0;
+  StreamSubscription<TransactionChangedEvent>? _transactionEventSubscription;
 
   TransactionsBloc(
     this._transactionRepository,
     this._categoryRepository,
+    this._transactionEventPublisher,
   ) : super(TransactionsInitial()) {
     on<LoadAllTransactions>(_onLoadAllTransactions);
     on<LoadTransactionsByAccount>(_onLoadTransactionsByAccount);
@@ -38,6 +42,27 @@ class TransactionsBloc extends Bloc<TransactionsEvent, TransactionsState> {
     on<ChangeSelectedMonth>(_onChangeSelectedMonth);
     on<FetchNextTransactionPage>(_onFetchNextTransactionPage);
     on<RefreshPaginatedTransactions>(_onRefreshPaginatedTransactions);
+    
+    // Subscribe to transaction events for automatic refresh
+    _subscribeToTransactionEvents();
+  }
+
+  void _subscribeToTransactionEvents() {
+    _transactionEventSubscription = _transactionEventPublisher.events.listen((event) {
+      debugPrint('🔔 Transaction event received: ${event.changeType} - ${event.transaction.title}');
+      
+      // Only refresh if we're in a loaded state and the transaction is relevant
+      if (state is TransactionsPaginated || state is TransactionsLoaded) {
+        debugPrint('🔄 Auto-refreshing transactions due to transaction ${event.changeType}');
+        add(RefreshPaginatedTransactions());
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _transactionEventSubscription?.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadAllTransactions(
