@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/foundation.dart' hide Category;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
@@ -92,7 +93,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       // Trigger validation after loading
       add(ValidateForm());
     } catch (e) {
-      emit(TransactionCreateError('Failed to load data: $e'));
+      emit(TransactionCreateError('errors.failed_to_load_data'.tr(args: [e.toString()])));
     }
   }
 
@@ -261,19 +262,19 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
 
       // Validate title
       if (currentState.title.trim().isEmpty) {
-        errors['title'] = 'Title is required';
+        errors['title'] = 'validation.title_required'.tr();
         nextField ??= 'title';
       }
 
       // Validate amount
       if (currentState.amount == null || currentState.amount == 0) {
-        errors['amount'] = 'Amount is required';
+        errors['amount'] = 'validation.amount_required'.tr();
         nextField ??= 'amount';
       }
 
       // Validate category
       if (currentState.selectedCategory == null) {
-        errors['category'] = 'Category is required';
+        errors['category'] = 'validation.category_required'.tr();
         nextField ??= 'category';
       }
 
@@ -283,7 +284,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       // Additional validation for recurring transactions
       if (currentState.recurrence != TransactionRecurrence.none) {
         if (currentState.periodLength == null || currentState.periodLength! < 1) {
-          errors['periodLength'] = 'Period length is required for recurring transactions';
+          errors['periodLength'] = 'validation.period_length_for_recurrence_required'.tr();
           nextField ??= 'periodLength';
         }
       }
@@ -305,7 +306,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       final currentState = state as TransactionCreateLoaded;
       
       if (!currentState.isValid) {
-        emit(TransactionCreateError('Please fill in all required fields'));
+        emit(TransactionCreateError('errors.fill_required_fields'.tr()));
         return;
       }
 
@@ -335,10 +336,10 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
           await _processBudgetLinks(createdTransaction.id!, currentState.budgetLinks);
         }
 
-        emit(const TransactionCreateSuccess('Transaction created successfully'));
+        emit(TransactionCreateSuccess('transactions.transaction_added'.tr()));
       } catch (e) {
         debugPrint('Error creating transaction: $e');
-        emit(TransactionCreateError('Failed to create transaction: $e'));
+        emit(TransactionCreateError('transactions.creation_failed_generic'.tr(args: [e.toString()])));
       }
     }
   }

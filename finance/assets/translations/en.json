@@ -49,6 +49,7 @@
     "transaction_added": "Transaction added successfully",
     "transaction_updated": "Transaction updated successfully",
     "transaction_deleted": "Transaction deleted successfully",
+    "creation_failed_generic": "Failed to create transaction: {error}",
     "filter_all": "All",
     "filter_expense": "Expense",
     "filter_income": "Income",
@@ -175,6 +176,7 @@
     "other": "Other",
     "all_categories": "All Categories",
     "all_categories_description": "Track all categories together",
+    "no_category_selected": "No category selected",
     "no_categories_selected": "No categories selected",
     "categories_selected": "categories selected",
     "no_categories_excluded": "No categories excluded",
@@ -293,7 +295,9 @@
     "insufficient_funds": "Insufficient funds",
     "file_not_found": "File not found",
     "permission_denied": "Permission denied",
-    "operation_failed": "Operation failed"
+    "operation_failed": "Operation failed",
+    "failed_to_load_data": "Failed to load initial data: {error}",
+    "fill_required_fields": "Please fill in all required fields"
   },
 
   "validation": {
@@ -303,7 +307,11 @@
     "amount_too_small": "Amount must be greater than 0",
     "amount_too_large": "Amount is too large",
     "text_too_short": "Text is too short",
-    "text_too_long": "Text is too long"
+    "text_too_long": "Text is too long",
+    "title_required": "Title is required",
+    "amount_required": "Amount is required",
+    "category_required": "Category is required",
+    "period_length_for_recurrence_required": "Period length is required for recurring transactions"
   },
 
   "currency": {

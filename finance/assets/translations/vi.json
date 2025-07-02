@@ -49,6 +49,7 @@
     "transaction_added": "Đã thêm giao dịch thành công",
     "transaction_updated": "Đã cập nhật giao dịch thành công",
     "transaction_deleted": "Đã xóa giao dịch thành công",
+    "creation_failed_generic": "Không thể tạo giao dịch: {error}",
     "filter_all": "Tất cả",
     "filter_expense": "Chi tiêu",
     "filter_income": "Thu nhập",
@@ -179,6 +180,7 @@
     "other": "Khác",
     "all_categories": "Tất cả danh mục",
     "all_categories_description": "Theo dõi tất cả danh mục cùng lúc",
+    "no_category_selected": "Chưa chọn danh mục nào",
     "no_categories_selected": "Chưa chọn danh mục nào",
     "categories_selected": "danh mục đã chọn",
     "no_categories_excluded": "Chưa loại trừ danh mục nào",
@@ -297,7 +299,9 @@
     "insufficient_funds": "Không đủ tiền",
     "file_not_found": "Không tìm thấy tệp",
     "permission_denied": "Không có quyền truy cập",
-    "operation_failed": "Thao tác thất bại"
+    "operation_failed": "Thao tác thất bại",
+    "failed_to_load_data": "Không thể tải dữ liệu ban đầu: {error}",
+    "fill_required_fields": "Vui lòng điền vào tất cả các trường bắt buộc"
   },
 
   "validation": {
@@ -307,7 +311,11 @@
     "amount_too_small": "Số tiền phải lớn hơn 0",
     "amount_too_large": "Số tiền quá lớn",
     "text_too_short": "Văn bản quá ngắn",
-    "text_too_long": "Văn bản quá dài"
+    "text_too_long": "Văn bản quá dài",
+    "title_required": "Tiêu đề là bắt buộc",
+    "amount_required": "Số tiền là bắt buộc",
+    "category_required": "Danh mục là bắt buộc",
+    "period_length_for_recurrence_required": "Độ dài kỳ cho các giao dịch định kỳ là bắt buộc"
   },
 
   "currency": {
