@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:finance/features/agent/domain/services/ai_service.dart';
 import 'package:finance/features/agent/domain/entities/ai_response.dart';
@@ -43,6 +44,14 @@ void main() {
       // Setup tool registry
       toolRegistry = DatabaseToolRegistry();
       registryService = AIToolRegistryService(toolRegistry);
+
+      // Register mocks with GetIt for dependency resolution in tools
+      final getIt = GetIt.instance;
+      getIt.reset();
+      getIt.registerSingleton<TransactionRepository>(mockTransactionRepo);
+      getIt.registerSingleton<BudgetRepository>(mockBudgetRepo);
+      getIt.registerSingleton<AccountRepository>(mockAccountRepo);
+      getIt.registerSingleton<CategoryRepository>(mockCategoryRepo);
     });
 
     tearDown(() async {
@@ -59,11 +68,11 @@ void main() {
         expect(registryService.availableToolNames, isNotEmpty);
         
         // Check for specific tools
-        expect(registryService.isToolAvailable('query_transactions'), isTrue);
-        expect(registryService.isToolAvailable('create_transaction'), isTrue);
-        expect(registryService.isToolAvailable('query_budgets'), isTrue);
-        expect(registryService.isToolAvailable('query_accounts'), isTrue);
-        expect(registryService.isToolAvailable('query_categories'), isTrue);
+        expect(registryService.isToolRegistered('query_transactions'), isTrue);
+        expect(registryService.isToolRegistered('create_transaction'), isTrue);
+        expect(registryService.isToolRegistered('query_budgets'), isTrue);
+        expect(registryService.isToolRegistered('query_accounts'), isTrue);
+        expect(registryService.isToolRegistered('query_categories'), isTrue);
       });
 
       test('should provide correct tool configurations', () {

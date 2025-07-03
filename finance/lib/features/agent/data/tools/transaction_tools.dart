@@ -248,12 +248,12 @@ class QueryTransactionsTool extends FinancialDataTool {
       'date': transaction.date.toIso8601String(),
       'created_at': transaction.createdAt.toIso8601String(),
       'updated_at': transaction.updatedAt.toIso8601String(),
-      'transaction_type': transaction.transactionType.toString(),
+      'transaction_type': transaction.transactionType.name,
       'is_income': transaction.isIncome,
       'is_expense': transaction.isExpense,
       'is_loan': transaction.isLoan,
       'is_recurring': transaction.isRecurring,
-      'transaction_state': transaction.transactionState.toString(),
+      'transaction_state': transaction.transactionState.name,
       'remaining_amount': transaction.remainingAmount,
       'parent_transaction_id': transaction.parentTransactionId,
     };
@@ -464,7 +464,7 @@ class CreateTransactionTool extends FinancialDataTool {
       'date': transaction.date.toIso8601String(),
       'created_at': transaction.createdAt.toIso8601String(),
       'updated_at': transaction.updatedAt.toIso8601String(),
-      'transaction_type': transaction.transactionType.toString(),
+      'transaction_type': transaction.transactionType.name,
       'is_income': transaction.isIncome,
       'is_expense': transaction.isExpense,
     };

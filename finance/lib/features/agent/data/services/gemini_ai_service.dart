@@ -469,8 +469,10 @@ class DatabaseToolRegistry implements AIToolManager {
     debugPrint('📝 DatabaseToolRegistry - Registering tool: ${tool.name}');
     debugPrint('📝 Tool description: ${tool.description}');
     _toolConfigurations[tool.name] = tool;
-    // For test compatibility, create a mock tool that can be executed
-    _tools[tool.name] = _MockTool(tool);
+    // For test compatibility, create a mock tool only if a real tool has not
+    // already been registered. This prevents accidentally overwriting real
+    // tool implementations when registerDatabaseTool has already added them.
+    _tools.putIfAbsent(tool.name, () => _MockTool(tool));
     debugPrint('✅ Tool registered successfully: ${tool.name}');
   }
 
