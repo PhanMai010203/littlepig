@@ -301,18 +301,20 @@ class RealGeminiAIService implements AIService {
       debugPrint('📡 Gemini API call completed successfully');
 
       final toolCalls = <AIToolCall>[];
-      String content = '';
+      // Collect all pieces of content to avoid overwriting when multiple tool
+      // calls are executed. We will join these parts at the end.
+      final List<String> _contentParts = [];
 
       // Handle function calls
-              if (response.functionCalls.isNotEmpty) {
-          debugPrint('🛠️ Function calls detected: ${response.functionCalls.length}');
-          
-          final functionCallsList = response.functionCalls.toList();
-          for (int i = 0; i < functionCallsList.length; i++) {
-            final functionCall = functionCallsList[i];
-            debugPrint('🔧 Processing function call ${i + 1}/${functionCallsList.length}: ${functionCall.name}');
-            debugPrint('🔧 Function arguments: ${jsonEncode(functionCall.args)}');
-          
+      if (response.functionCalls.isNotEmpty) {
+        debugPrint('🛠️ Function calls detected: ${response.functionCalls.length}');
+        
+        final functionCallsList = response.functionCalls.toList();
+        for (int i = 0; i < functionCallsList.length; i++) {
+          final functionCall = functionCallsList[i];
+          debugPrint('🔧 Processing function call ${i + 1}/${functionCallsList.length}: ${functionCall.name}');
+          debugPrint('🔧 Function arguments: ${jsonEncode(functionCall.args)}');
+        
           final toolCall = AIToolCall(
             id: _uuid.v4(),
             name: functionCall.name,
@@ -332,14 +334,21 @@ class RealGeminiAIService implements AIService {
             debugPrint('❌ Tool error: ${toolResult.error}');
           }
           
-          // Format the response
-          content = _formatToolResponse(message, toolCall, toolResult);
-          debugPrint('📝 Formatted tool response length: ${content.length}');
+          // Format the response and add it to the list so that previous
+          // results are preserved and not overwritten.
+          final formatted = _formatToolResponse(message, toolCall, toolResult);
+          _contentParts.add(formatted);
+          debugPrint('📝 Added formatted tool response (${formatted.length} chars)');
         }
-      } else if (response.text != null) {
-        content = response.text!;
-        debugPrint('📝 Direct text response length: ${content.length}');
       }
+
+      // If Gemini also returned direct text, append it after tool responses
+      if (response.text != null && response.text!.isNotEmpty) {
+        _contentParts.add(response.text!);
+        debugPrint('📝 Added direct text response (${response.text!.length} chars)');
+      }
+
+      final content = _contentParts.join('\n\n').trim();
 
       debugPrint('✅ sendMessage completed successfully');
       return AIResponse(
