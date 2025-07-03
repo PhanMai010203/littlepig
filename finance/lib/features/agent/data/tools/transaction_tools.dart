@@ -241,7 +241,12 @@ class QueryTransactionsTool extends FinancialDataTool {
 
   @override
   Future<bool> validateFinancialData(Map<String, dynamic> data) async {
-    // For read operations, validation is minimal
+    // Validate that amount is reasonable (not zero, not too large)
+    final amountValue = data['amount'] as num?;
+    if (amountValue == null || amountValue == 0.0 || amountValue.abs() > 1000000) {
+      return false;
+    }
+    
     return true;
   }
 
@@ -349,16 +354,20 @@ class CreateTransactionTool extends FinancialDataTool {
           ? (_safeParseDate(parameters['date'] as String) ?? now)
           : now;
           
+      // Safely convert amount from num to double
+      final amountValue = parameters['amount'] as num;
+      final amount = amountValue.toDouble();
+          
       final transactionType = parameters.containsKey('transaction_type')
           ? _parseTransactionType(parameters['transaction_type'] as String)
-          : (parameters['amount'] as double) > 0 
+          : amount > 0 
               ? TransactionType.income 
               : TransactionType.expense;
 
       final transaction = Transaction(
         title: parameters['title'] as String,
         note: parameters['note'] as String?,
-        amount: parameters['amount'] as double,
+        amount: amount,
         categoryId: parameters['category_id'] as int,
         accountId: parameters['account_id'] as int,
         date: date,
@@ -436,8 +445,8 @@ class CreateTransactionTool extends FinancialDataTool {
   @override
   Future<bool> validateFinancialData(Map<String, dynamic> data) async {
     // Validate that amount is reasonable (not zero, not too large)
-    final amount = data['amount'] as double?;
-    if (amount == null || amount == 0.0 || amount.abs() > 1000000) {
+    final amountValue = data['amount'] as num?;
+    if (amountValue == null || amountValue == 0.0 || amountValue.abs() > 1000000) {
       return false;
     }
     

@@ -23,7 +23,7 @@ class RealGeminiAIService implements AIService {
   ChatSession? _chatSession;
 
   RealGeminiAIService(this._toolRegistry) {
-    debugPrint('🤖 RealGeminiAIService - Constructor called');
+    debugPrint('[RealGeminiAI] Constructor called');
   }
 
   @override
@@ -34,12 +34,12 @@ class RealGeminiAIService implements AIService {
 
   @override
   Future<void> initialize(AIServiceConfig config) async {
-    debugPrint('🔧 RealGeminiAIService - Starting initialization...');
-    debugPrint('🔧 API Key provided: ${config.apiKey.isNotEmpty ? "Yes (${config.apiKey.length} chars)" : "No"}');
-    debugPrint('🔧 Model: ${config.model}');
-    debugPrint('🔧 Temperature: ${config.temperature}');
-    debugPrint('🔧 Max Tokens: ${config.maxTokens}');
-    debugPrint('🔧 Tools Enabled: ${config.toolsEnabled}');
+    debugPrint('[RealGeminiAI] Starting initialization...');
+    debugPrint('[RealGeminiAI] API Key provided: ${config.apiKey.isNotEmpty ? "Yes (${config.apiKey.length} chars)" : "No"}');
+    debugPrint('[RealGeminiAI] Model: ${config.model}');
+    debugPrint('[RealGeminiAI] Temperature: ${config.temperature}');
+    debugPrint('[RealGeminiAI] Max Tokens: ${config.maxTokens}');
+    debugPrint('[RealGeminiAI] Tools Enabled: ${config.toolsEnabled}');
     
     try {
       _config = config;
@@ -53,18 +53,18 @@ class RealGeminiAIService implements AIService {
       );
       
       if (validationErrors.isNotEmpty) {
-        debugPrint('❌ Configuration validation failed: ${validationErrors.join(', ')}');
+        debugPrint('[RealGeminiAI] Configuration validation failed: ${validationErrors.join(', ')}');
         throw Exception('Configuration errors: ${validationErrors.join(', ')}');
       }
 
-      debugPrint('✅ Configuration validation passed');
+      debugPrint('[RealGeminiAI] Configuration validation passed');
 
       // Build tools for Gemini
       final geminiTools = _buildGeminiTools();
-      debugPrint('🛠️ Built ${geminiTools.length} Gemini tools');
+      debugPrint('[RealGeminiAI] Built ${geminiTools.length} Gemini tools');
       
       // Initialize Gemini model with function calling capabilities
-      debugPrint('🔧 Initializing Gemini model with function calling...');
+      debugPrint('[RealGeminiAI] Initializing Gemini model with function calling...');
       _model = GenerativeModel(
         model: config.model,
         apiKey: config.apiKey,
@@ -77,13 +77,13 @@ class RealGeminiAIService implements AIService {
       );
 
       // Start a new chat session for conversation context
-      debugPrint('💬 Starting Gemini chat session...');
+      debugPrint('[RealGeminiAI] Starting Gemini chat session...');
       _chatSession = _model!.startChat();
       
       _isInitialized = true;
-      debugPrint('✅ RealGeminiAIService - Initialization completed successfully');
+      debugPrint('[RealGeminiAI] Initialization completed successfully');
     } catch (e) {
-      debugPrint('❌ RealGeminiAIService - Initialization failed: $e');
+      debugPrint('[RealGeminiAI] Initialization failed: $e');
       throw Exception('Failed to initialize Gemini AI service: ${AIErrorHandler.handleError(e)}');
     }
   }
@@ -94,31 +94,31 @@ class RealGeminiAIService implements AIService {
     List<ChatMessage>? conversationHistory,
     List<AIToolConfiguration>? availableTools,
   }) async* {
-    debugPrint('📤 RealGeminiAIService - sendMessageStream called');
-    debugPrint('📤 User message: "$message"');
-    debugPrint('📤 Conversation history length: ${conversationHistory?.length ?? 0}');
+    debugPrint('[RealGeminiAI] sendMessageStream called');
+    debugPrint('[RealGeminiAI] User message: "$message"');
+    debugPrint('[RealGeminiAI] Conversation history length: ${conversationHistory?.length ?? 0}');
     
     if (!isInitialized || _chatSession == null) {
-      debugPrint('❌ AI service not initialized or chat session null');
+      debugPrint('[RealGeminiAI] ERROR: AI service not initialized or chat session null');
       throw StateError('AI service not initialized');
     }
 
     try {
       // Apply rate limiting
-      debugPrint('⏱️ Checking rate limit...');
+      debugPrint('[RealGeminiAI] Checking rate limit...');
       await AIErrorHandler.checkRateLimit('sendMessageStream');
-      debugPrint('✅ Rate limit check passed');
+      debugPrint('[RealGeminiAI] Rate limit check passed');
       
       final responseId = _uuid.v4();
-      debugPrint('🆔 Generated response ID: $responseId');
+      debugPrint('[RealGeminiAI] Generated response ID: $responseId');
       
       // Send message to Gemini with retry logic
-      debugPrint('📡 Sending message to Gemini API...');
+      debugPrint('[RealGeminiAI] Sending message to Gemini API...');
       final response = await AIErrorHandler.executeWithRetry(() async {
-        debugPrint('🔄 Executing API call (with retry logic)');
+        debugPrint('[RealGeminiAI] Executing API call (with retry logic)');
         return _chatSession!.sendMessageStream(Content.text(message));
       });
-      debugPrint('📡 Gemini API call initiated successfully');
+      debugPrint('[RealGeminiAI] Gemini API call initiated successfully');
 
       String accumulatedContent = '';
       List<AIToolCall> toolCalls = [];
@@ -127,19 +127,19 @@ class RealGeminiAIService implements AIService {
 
       await for (final chunk in response) {
         chunkCount++;
-        debugPrint('📦 Processing chunk #$chunkCount');
+        debugPrint('[RealGeminiAI] Processing chunk #$chunkCount');
         
         // Handle tool calls if present
         if (chunk.functionCalls.isNotEmpty && !hasToolCalls) {
           hasToolCalls = true;
-          debugPrint('🛠️ Function calls detected: ${chunk.functionCalls.length}');
+          debugPrint('[RealGeminiAI] Function calls detected: ${chunk.functionCalls.length}');
           
           // Process function calls
           final functionCallsList = chunk.functionCalls.toList();
           for (int i = 0; i < functionCallsList.length; i++) {
             final functionCall = functionCallsList[i];
-            debugPrint('🔧 Processing function call ${i + 1}/${functionCallsList.length}: ${functionCall.name}');
-            debugPrint('🔧 Function arguments: ${jsonEncode(functionCall.args)}');
+            debugPrint('[RealGeminiAI] Processing function call ${i + 1}/${functionCallsList.length}: ${functionCall.name}');
+            debugPrint('[RealGeminiAI] Function arguments: ${jsonEncode(functionCall.args)}');
             
             final toolCall = AIToolCall(
               id: _uuid.v4(),
@@ -149,19 +149,19 @@ class RealGeminiAIService implements AIService {
             toolCalls.add(toolCall);
 
             // Execute the tool
-            debugPrint('⚙️ Executing tool: ${toolCall.name}');
+            debugPrint('[RealGeminiAI] Executing tool: ${toolCall.name}');
             final toolResult = await _toolRegistry.executeTool(toolCall);
-            debugPrint('⚙️ Tool execution result - Success: ${toolResult.success}');
+            debugPrint('[RealGeminiAI] Tool execution result - Success: ${toolResult.success}');
             if (toolResult.success) {
               final resultString = jsonEncode(toolResult.result);
               final previewLength = resultString.length > 200 ? 200 : resultString.length;
-              debugPrint('✅ Tool result: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
+              debugPrint('[RealGeminiAI] Tool result: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
             } else {
-              debugPrint('❌ Tool error: ${toolResult.error}');
+              debugPrint('[RealGeminiAI] Tool error: ${toolResult.error}');
             }
             
             // Store tool result for potential formatting later
-            debugPrint('💾 Storing tool result for potential formatting');
+            debugPrint('[RealGeminiAI] Storing tool result for potential formatting');
             final updatedToolCall = toolCall.copyWith(
               result: jsonEncode(toolResult.result),
               isExecuted: true,
@@ -175,27 +175,27 @@ class RealGeminiAIService implements AIService {
             }
 
             // Send tool result back to Gemini for response generation
-            debugPrint('📡 Sending tool result back to Gemini...');
+            debugPrint('[RealGeminiAI] Sending tool result back to Gemini...');
             final geminiResponse = await _chatSession!.sendMessage(Content.functionResponse(
               functionCall.name,
               toolResult.success ? toolResult.result : {'error': toolResult.error},
             ));
-            debugPrint('📡 Tool result sent to Gemini successfully');
+            debugPrint('[RealGeminiAI] Tool result sent to Gemini successfully');
             
             // Debug what Gemini returned
-            debugPrint('🔍 Gemini response text: ${geminiResponse.text}');
-            debugPrint('🔍 Gemini response parts count: ${geminiResponse.candidates?.first.content.parts.length ?? 0}');
+            debugPrint('[RealGeminiAI] Gemini response text: ${geminiResponse.text}');
+            debugPrint('[RealGeminiAI] Gemini response parts count: ${geminiResponse.candidates?.first.content.parts.length ?? 0}');
             
             // If Gemini provides a text response, add it to accumulated content
             if (geminiResponse.text != null && geminiResponse.text!.isNotEmpty) {
               accumulatedContent += geminiResponse.text!;
-              debugPrint('📝 Added Gemini response to content: ${geminiResponse.text!.length} chars');
+              debugPrint('[RealGeminiAI] Added Gemini response to content: ${geminiResponse.text!.length} chars');
             } else {
-              debugPrint('⚠️ Gemini did not provide a text response after tool execution');
+              debugPrint('[RealGeminiAI] WARNING: Gemini did not provide a text response after tool execution');
               // If Gemini doesn't provide a response, format the tool result ourselves
               final formattedResult = _formatToolResponse(message, toolCall, toolResult);
               accumulatedContent += formattedResult;
-              debugPrint('📝 Added formatted tool response: ${formattedResult.length} chars');
+              debugPrint('[RealGeminiAI] Added formatted tool response: ${formattedResult.length} chars');
             }
           }
 
@@ -208,14 +208,14 @@ class RealGeminiAIService implements AIService {
             isComplete: false,
             timestamp: DateTime.now(),
           );
-          debugPrint('📤 Yielded intermediate response with tool execution');
+          debugPrint('[RealGeminiAI] Yielded intermediate response with tool execution');
         }
 
         // Handle text content
         if (chunk.text != null) {
-          debugPrint('📝 Raw LLM text chunk: ${chunk.text}');
+          debugPrint('[RealGeminiAI] Raw LLM text chunk: ${chunk.text}');
           accumulatedContent += chunk.text!;
-          debugPrint('📝 Accumulated content length: ${accumulatedContent.length}');
+          debugPrint('[RealGeminiAI] Accumulated content length: ${accumulatedContent.length}');
           
           yield AIResponse(
             id: responseId,
@@ -230,27 +230,27 @@ class RealGeminiAIService implements AIService {
               'chunk_count': chunkCount,
             },
           );
-          debugPrint('📤 Yielded streaming response chunk #$chunkCount');
+          debugPrint('[RealGeminiAI] Yielded streaming response chunk #$chunkCount');
         }
       }
 
-      debugPrint('🏁 Streaming completed. Total chunks: $chunkCount');
-      debugPrint('🏁 Final content length: ${accumulatedContent.length}');
-      debugPrint('🏁 Tool calls executed: ${toolCalls.length}');
-      debugPrint('🏁 Accumulated content preview: ${accumulatedContent.length > 100 ? accumulatedContent.substring(0, 100) + '...' : accumulatedContent}');
+      debugPrint('[RealGeminiAI] Streaming completed. Total chunks: $chunkCount');
+      debugPrint('[RealGeminiAI] Final content length: ${accumulatedContent.length}');
+      debugPrint('[RealGeminiAI] Tool calls executed: ${toolCalls.length}');
+      debugPrint('[RealGeminiAI] Accumulated content preview: ${accumulatedContent.length > 100 ? accumulatedContent.substring(0, 100) + '...' : accumulatedContent}');
 
       // Final response - format tool results if no text content
       String finalContent = accumulatedContent;
       if (finalContent.isEmpty && toolCalls.isNotEmpty) {
         // Format tool results since Gemini didn't provide text
-        debugPrint('🔧 No accumulated content, formatting tool results...');
+        debugPrint('[RealGeminiAI] No accumulated content, formatting tool results...');
         finalContent = _formatMultipleToolResults(toolCalls);
-        debugPrint('📝 Generated formatted content from tool results: ${finalContent.length} chars');
+        debugPrint('[RealGeminiAI] Generated formatted content from tool results: ${finalContent.length} chars');
       } else if (finalContent.isEmpty) {
         finalContent = 'I have completed your request.';
-        debugPrint('📝 Using fallback message');
+        debugPrint('[RealGeminiAI] Using fallback message');
       } else {
-        debugPrint('📝 Using accumulated content as final response');
+        debugPrint('[RealGeminiAI] Using accumulated content as final response');
       }
 
       yield AIResponse(
@@ -267,11 +267,11 @@ class RealGeminiAIService implements AIService {
           'total_chunks': chunkCount,
         },
       );
-      debugPrint('✅ Final response yielded successfully');
+      debugPrint('[RealGeminiAI] Final response yielded successfully');
       
     } catch (e) {
-      debugPrint('❌ sendMessageStream error: $e');
-      debugPrint('❌ Error type: ${e.runtimeType}');
+      debugPrint('[RealGeminiAI] ERROR in sendMessageStream: $e');
+      debugPrint('[RealGeminiAI] Error type: ${e.runtimeType}');
       
       yield AIResponse(
         id: _uuid.v4(),
@@ -282,7 +282,7 @@ class RealGeminiAIService implements AIService {
         timestamp: DateTime.now(),
         metadata: {'error': e.toString()},
       );
-      debugPrint('📤 Error response yielded');
+      debugPrint('[RealGeminiAI] Error response yielded');
     }
   }
 
@@ -292,30 +292,30 @@ class RealGeminiAIService implements AIService {
     List<ChatMessage>? conversationHistory,
     List<AIToolConfiguration>? availableTools,
   }) async {
-    debugPrint('📤 RealGeminiAIService - sendMessage called');
-    debugPrint('📤 User message: "$message"');
+    debugPrint('[RealGeminiAI] sendMessage called');
+    debugPrint('[RealGeminiAI] User message: "$message"');
     
     if (!isInitialized || _model == null) {
-      debugPrint('❌ AI service not initialized or model null');
+      debugPrint('[RealGeminiAI] ERROR: AI service not initialized or model null');
       throw StateError('AI service not initialized');
     }
 
     try {
       // Apply rate limiting
-      debugPrint('⏱️ Checking rate limit...');
+      debugPrint('[RealGeminiAI] Checking rate limit...');
       await AIErrorHandler.checkRateLimit('sendMessage');
-      debugPrint('✅ Rate limit check passed');
+      debugPrint('[RealGeminiAI] Rate limit check passed');
       
       final responseId = _uuid.v4();
-      debugPrint('🆔 Generated response ID: $responseId');
+      debugPrint('[RealGeminiAI] Generated response ID: $responseId');
       
       // Send message to Gemini with retry logic
-      debugPrint('📡 Sending message to Gemini API...');
+      debugPrint('[RealGeminiAI] Sending message to Gemini API...');
       final response = await AIErrorHandler.executeWithRetry(() async {
-        debugPrint('🔄 Executing API call (with retry logic)');
+        debugPrint('[RealGeminiAI] Executing API call (with retry logic)');
         return _model!.generateContent([Content.text(message)]);
       });
-      debugPrint('📡 Gemini API call completed successfully');
+      debugPrint('[RealGeminiAI] Gemini API call completed successfully');
 
       final toolCalls = <AIToolCall>[];
       // Collect all pieces of content to avoid overwriting when multiple tool
@@ -323,17 +323,17 @@ class RealGeminiAIService implements AIService {
       final List<String> _contentParts = [];
 
       // Debug: Print raw LLM response text
-      debugPrint('📝 Raw LLM response text: ${response.text}');
+      debugPrint('[RealGeminiAI] Raw LLM response text: ${response.text}');
 
       // Handle function calls
       if (response.functionCalls.isNotEmpty) {
-        debugPrint('🛠️ Function calls detected: ${response.functionCalls.length}');
+        debugPrint('[RealGeminiAI] Function calls detected: ${response.functionCalls.length}');
         
         final functionCallsList = response.functionCalls.toList();
         for (int i = 0; i < functionCallsList.length; i++) {
           final functionCall = functionCallsList[i];
-          debugPrint('🔧 Processing function call ${i + 1}/${functionCallsList.length}: ${functionCall.name}');
-          debugPrint('🔧 Function arguments: ${jsonEncode(functionCall.args)}');
+          debugPrint('[RealGeminiAI] Processing function call ${i + 1}/${functionCallsList.length}: ${functionCall.name}');
+          debugPrint('[RealGeminiAI] Function arguments: ${jsonEncode(functionCall.args)}');
         
           final toolCall = AIToolCall(
             id: _uuid.v4(),
@@ -343,34 +343,34 @@ class RealGeminiAIService implements AIService {
           toolCalls.add(toolCall);
 
           // Execute the tool
-          debugPrint('⚙️ Executing tool: ${toolCall.name}');
+          debugPrint('[RealGeminiAI] Executing tool: ${toolCall.name}');
           final toolResult = await _toolRegistry.executeTool(toolCall);
-          debugPrint('⚙️ Tool execution result - Success: ${toolResult.success}');
+          debugPrint('[RealGeminiAI] Tool execution result - Success: ${toolResult.success}');
           if (toolResult.success) {
             final resultString = jsonEncode(toolResult.result);
             final previewLength = resultString.length > 200 ? 200 : resultString.length;
-            debugPrint('✅ Tool result: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
+            debugPrint('[RealGeminiAI] Tool result: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
           } else {
-            debugPrint('❌ Tool error: ${toolResult.error}');
+            debugPrint('[RealGeminiAI] Tool error: ${toolResult.error}');
           }
           
           // Format the response and add it to the list so that previous
           // results are preserved and not overwritten.
           final formatted = _formatToolResponse(message, toolCall, toolResult);
           _contentParts.add(formatted);
-          debugPrint('📝 Added formatted tool response (${formatted.length} chars)');
+          debugPrint('[RealGeminiAI] Added formatted tool response (${formatted.length} chars)');
         }
       }
 
       // If Gemini also returned direct text, append it after tool responses
       if (response.text != null && response.text!.isNotEmpty) {
         _contentParts.add(response.text!);
-        debugPrint('📝 Added direct text response (${response.text!.length} chars)');
+        debugPrint('[RealGeminiAI] Added direct text response (${response.text!.length} chars)');
       }
 
       final content = _contentParts.join('\n\n').trim();
 
-      debugPrint('✅ sendMessage completed successfully');
+      debugPrint('[RealGeminiAI] sendMessage completed successfully');
       return AIResponse(
         id: responseId,
         content: content,
@@ -386,8 +386,8 @@ class RealGeminiAIService implements AIService {
       );
       
     } catch (e) {
-      debugPrint('❌ sendMessage error: $e');
-      debugPrint('❌ Error type: ${e.runtimeType}');
+      debugPrint('[RealGeminiAI] ERROR in sendMessage: $e');
+      debugPrint('[RealGeminiAI] Error type: ${e.runtimeType}');
       
       return AIResponse(
         id: _uuid.v4(),
@@ -403,31 +403,31 @@ class RealGeminiAIService implements AIService {
 
   @override
   Future<void> updateConfiguration(AIServiceConfig config) async {
-    debugPrint('🔧 RealGeminiAIService - updateConfiguration called');
+    debugPrint('[RealGeminiAI] updateConfiguration called');
     await dispose();
     await initialize(config);
   }
 
   @override
   Future<void> dispose() async {
-    debugPrint('🗑️ RealGeminiAIService - dispose called');
+    debugPrint('[RealGeminiAI] dispose called');
     _isInitialized = false;
     _config = null;
     _model = null;
     _chatSession = null;
-    debugPrint('🗑️ RealGeminiAIService - disposed successfully');
+    debugPrint('[RealGeminiAI] disposed successfully');
   }
 
   /// Build Gemini function tools from available database tools
   List<Tool> _buildGeminiTools() {
-    debugPrint('🛠️ Building Gemini tools from available database tools...');
+    debugPrint('[RealGeminiAI] Building Gemini tools from available database tools...');
     final tools = <Tool>[];
     final availableTools = _toolRegistry.availableTools;
-    debugPrint('🛠️ Available tools count: ${availableTools.length}');
+    debugPrint('[RealGeminiAI] Available tools count: ${availableTools.length}');
     
     for (int i = 0; i < availableTools.length; i++) {
       final toolConfig = availableTools[i];
-      debugPrint('🔧 Building tool ${i + 1}/${availableTools.length}: ${toolConfig.name}');
+      debugPrint('[RealGeminiAI] Building tool ${i + 1}/${availableTools.length}: ${toolConfig.name}');
       
       final functionDeclaration = FunctionDeclaration(
         toolConfig.name,
@@ -440,10 +440,10 @@ class RealGeminiAIService implements AIService {
       );
       
       tools.add(Tool(functionDeclarations: [functionDeclaration]));
-      debugPrint('✅ Tool built: ${toolConfig.name}');
+      debugPrint('[RealGeminiAI] Tool built: ${toolConfig.name}');
     }
     
-    debugPrint('🛠️ Total Gemini tools built: ${tools.length}');
+    debugPrint('[RealGeminiAI] Total Gemini tools built: ${tools.length}');
     return tools;
   }
 
@@ -559,14 +559,15 @@ Only use query_transactions when users want to VIEW existing transactions:
 - "Tìm giao dịch"
 
 **Transaction Creation Process:**
-1. Extract amount (convert k=1000, e.g., 35k = 35000)
-2. Extract description from context (e.g., "ăn phở" = "Ăn phở")
-3. Use negative amount for expenses
-4. For defaults when not specified:
-   - account_id: Use 1 (default account) or query accounts to find default
-   - category_id: Use 1 for food/restaurant expenses, 2 for general expenses
-   - Food keywords (phở, cafe, ăn, uống): use food category
-5. Set date to today
+1. ALWAYS use the `create_transaction` tool when a user expresses intent to record spending or income.
+2. Extract `amount` (convert k=1000, e.g., 35k = 35000).
+3. Extract `title` from context (e.g., "ăn phở" = "Ăn phở").
+4. Use negative amount for expenses.
+5. For `account_id` and `category_id`:
+   - **MUST** provide these. If not specified by the user, use the following defaults:
+     - `account_id`: Always default to `1` (default user account).
+     - `category_id`: Default to `1` for food/restaurant expenses (e.g., for keywords like phở, cafe, ăn, uống, lunch, dinner, coffee), and `2` for general expenses.
+6. Set `date` to today if not specified.
 
 **Communication Style:**
 - Be conversational but professional
@@ -750,7 +751,7 @@ Remember: You have access to the user's complete financial data through your too
           final formattedResult = _formatToolResultData(toolCall.name, resultData);
           response.writeln(formattedResult);
         } catch (e) {
-          debugPrint('❌ Error formatting tool result: $e');
+          debugPrint('[RealGeminiAI] Error formatting tool result: $e');
           response.writeln(_formatToolCallFallback(toolCall));
         }
       } else {
