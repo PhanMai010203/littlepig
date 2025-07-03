@@ -21,6 +21,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
   final ScrollController _scrollController = ScrollController();
   final List<ChatMessage> _messages = [];
   final _uuid = const Uuid();
+  // Cached reference to SpeechService to avoid context lookups in dispose
+  SpeechService? _speechService;
   
   bool _isAITyping = false;
   bool _isAIServiceReady = false;
@@ -46,11 +48,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   Future<void> _initializeSpeechService() async {
-    final speechService = Provider.of<SpeechService>(context, listen: false);
-    await speechService.initialize();
+    _speechService = Provider.of<SpeechService>(context, listen: false);
+    await _speechService!.initialize();
     
     // Listen for speech results
-    speechService.addListener(_onSpeechResult);
+    _speechService!.addListener(_onSpeechResult);
   }
 
   Future<void> _initializeAIService() async {
@@ -69,10 +71,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   void _onSpeechResult() {
-    final speechService = Provider.of<SpeechService>(context, listen: false);
-    if (speechService.lastWords.isNotEmpty && !speechService.isListening) {
-      _sendMessage(speechService.lastWords, isVoiceMessage: true);
-      speechService.clearLastWords();
+    if (_speechService == null) return;
+
+    if (_speechService!.lastWords.isNotEmpty && !_speechService!.isListening) {
+      _sendMessage(_speechService!.lastWords, isVoiceMessage: true);
+      _speechService!.clearLastWords();
     }
   }
 
@@ -328,8 +331,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
   @override
   void dispose() {
-    final speechService = Provider.of<SpeechService>(context, listen: false);
-    speechService.removeListener(_onSpeechResult);
+    _speechService?.removeListener(_onSpeechResult);
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
