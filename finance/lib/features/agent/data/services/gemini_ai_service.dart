@@ -517,7 +517,9 @@ class DatabaseToolRegistry implements AIToolManager {
       debugPrint('✅ Tool execution completed successfully');
       debugPrint('✅ Execution time: ${executionTime}ms');
       debugPrint('✅ Result type: ${result.runtimeType}');
-      debugPrint('✅ Result preview: ${jsonEncode(result).substring(0, 200)}...');
+      final resultString = jsonEncode(result);
+      final previewLength = resultString.length > 200 ? 200 : resultString.length;
+      debugPrint('✅ Result preview: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
       
       return ToolExecutionResult(
         toolCallId: toolCall.id,

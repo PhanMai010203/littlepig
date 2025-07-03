@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'transaction_chat_card.dart';
 
 class ChatBubble extends StatelessWidget {
   const ChatBubble({
@@ -8,6 +10,7 @@ class ChatBubble extends StatelessWidget {
     required this.timestamp,
     this.isVoiceMessage = false,
     this.isTyping = false,
+    this.onTransactionTap,
   });
 
   final String message;
@@ -15,6 +18,7 @@ class ChatBubble extends StatelessWidget {
   final DateTime timestamp;
   final bool isVoiceMessage;
   final bool isTyping;
+  final Function(Map<String, dynamic>)? onTransactionTap;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +42,7 @@ class ChatBubble extends StatelessWidget {
               decoration: BoxDecoration(
                 color: isFromUser
                     ? colorScheme.primaryContainer
-                    : colorScheme.surfaceVariant,
+                    : colorScheme.surfaceContainerHighest,
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(20),
                   topRight: const Radius.circular(20),
@@ -47,7 +51,7 @@ class ChatBubble extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -74,8 +78,8 @@ class ChatBubble extends StatelessWidget {
                             'Voice message',
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: isFromUser 
-                                  ? colorScheme.onPrimaryContainer.withOpacity(0.7)
-                                  : colorScheme.onSurfaceVariant.withOpacity(0.7),
+                                  ? colorScheme.onPrimaryContainer.withValues(alpha: 0.7)
+                                  : colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -89,14 +93,7 @@ class ChatBubble extends StatelessWidget {
                           : colorScheme.onSurfaceVariant,
                     )
                   else
-                    Text(
-                      message,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: isFromUser 
-                            ? colorScheme.onPrimaryContainer 
-                            : colorScheme.onSurfaceVariant,
-                      ),
-                    ),
+                    _buildMessageContent(theme, colorScheme),
                 ],
               ),
             ),
@@ -104,12 +101,93 @@ class ChatBubble extends StatelessWidget {
             Text(
               _formatTime(timestamp),
               style: theme.textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.6),
                 fontSize: 11,
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildMessageContent(ThemeData theme, ColorScheme colorScheme) {
+    // Check if message contains structured transaction data
+    if (!isFromUser && message.contains('[TRANSACTIONS_DATA]')) {
+      return _buildRichTransactionContent(theme, colorScheme);
+    }
+    
+    // Default text message
+    return Text(
+      message,
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: isFromUser 
+            ? colorScheme.onPrimaryContainer 
+            : colorScheme.onSurfaceVariant,
+      ),
+    );
+  }
+
+  Widget _buildRichTransactionContent(ThemeData theme, ColorScheme colorScheme) {
+    try {
+      // Extract transaction data from message
+      const startTag = '[TRANSACTIONS_DATA]';
+      const endTag = '[/TRANSACTIONS_DATA]';
+      
+      final startIndex = message.indexOf(startTag);
+      final endIndex = message.indexOf(endTag);
+      
+      if (startIndex == -1 || endIndex == -1) {
+        return _buildFallbackText(theme, colorScheme);
+      }
+      
+      final dataJson = message.substring(
+        startIndex + startTag.length,
+        endIndex,
+      ).trim();
+      
+      final transactionList = jsonDecode(dataJson) as List;
+      final transactions = transactionList.cast<Map<String, dynamic>>();
+      
+      // Extract readable text (everything after the data block)
+      final textPart = message.substring(endIndex + endTag.length).trim();
+      
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Rich transaction display
+          if (transactions.isNotEmpty)
+            TransactionListChatWidget(
+              transactions: transactions,
+              title: 'Transactions Found',
+              onTransactionTap: onTransactionTap,
+            ),
+          
+          // Readable text part
+          if (textPart.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              textPart,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      );
+    } catch (e) {
+      // Fallback to regular text if parsing fails
+      return _buildFallbackText(theme, colorScheme);
+    }
+  }
+
+  Widget _buildFallbackText(ThemeData theme, ColorScheme colorScheme) {
+    return Text(
+      message,
+      style: theme.textTheme.bodyMedium?.copyWith(
+        color: isFromUser 
+            ? colorScheme.onPrimaryContainer 
+            : colorScheme.onSurfaceVariant,
       ),
     );
   }

@@ -152,18 +152,40 @@ class RealGeminiAIService implements AIService {
             final toolResult = await _toolRegistry.executeTool(toolCall);
             debugPrint('⚙️ Tool execution result - Success: ${toolResult.success}');
             if (toolResult.success) {
-              debugPrint('✅ Tool result: ${jsonEncode(toolResult.result).substring(0, 200)}...');
+              final resultString = jsonEncode(toolResult.result);
+              final previewLength = resultString.length > 200 ? 200 : resultString.length;
+              debugPrint('✅ Tool result: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
             } else {
               debugPrint('❌ Tool error: ${toolResult.error}');
             }
             
-            // Send tool result back to Gemini
+            // Store tool result for potential formatting later
+            debugPrint('💾 Storing tool result for potential formatting');
+            final updatedToolCall = toolCall.copyWith(
+              result: jsonEncode(toolResult.result),
+              isExecuted: true,
+              error: toolResult.success ? null : toolResult.error,
+            );
+            
+            // Replace the tool call in the list
+            final index = toolCalls.indexOf(toolCall);
+            if (index >= 0) {
+              toolCalls[index] = updatedToolCall;
+            }
+
+            // Send tool result back to Gemini for response generation
             debugPrint('📡 Sending tool result back to Gemini...');
-            await _chatSession!.sendMessage(Content.functionResponse(
+            final geminiResponse = await _chatSession!.sendMessage(Content.functionResponse(
               functionCall.name,
               toolResult.success ? toolResult.result : {'error': toolResult.error},
             ));
             debugPrint('📡 Tool result sent to Gemini successfully');
+            
+            // If Gemini provides a text response, add it to accumulated content
+            if (geminiResponse.text != null && geminiResponse.text!.isNotEmpty) {
+              accumulatedContent += geminiResponse.text!;
+              debugPrint('📝 Added Gemini response to content: ${geminiResponse.text!.length} chars');
+            }
           }
 
           // Yield response with tool execution
@@ -204,10 +226,19 @@ class RealGeminiAIService implements AIService {
       debugPrint('🏁 Final content length: ${accumulatedContent.length}');
       debugPrint('🏁 Tool calls executed: ${toolCalls.length}');
 
-      // Final response
+      // Final response - format tool results if no text content
+      String finalContent = accumulatedContent;
+      if (finalContent.isEmpty && toolCalls.isNotEmpty) {
+        // Format tool results since Gemini didn't provide text
+        finalContent = _formatMultipleToolResults(toolCalls);
+        debugPrint('📝 Generated formatted content from tool results: ${finalContent.length} chars');
+      } else if (finalContent.isEmpty) {
+        finalContent = 'I have completed your request.';
+      }
+
       yield AIResponse(
         id: responseId,
-        content: accumulatedContent.isNotEmpty ? accumulatedContent : 'I have completed your request.',
+        content: finalContent,
         toolCalls: toolCalls,
         isStreaming: false,
         isComplete: true,
@@ -294,7 +325,9 @@ class RealGeminiAIService implements AIService {
           final toolResult = await _toolRegistry.executeTool(toolCall);
           debugPrint('⚙️ Tool execution result - Success: ${toolResult.success}');
           if (toolResult.success) {
-            debugPrint('✅ Tool result: ${jsonEncode(toolResult.result).substring(0, 200)}...');
+            final resultString = jsonEncode(toolResult.result);
+            final previewLength = resultString.length > 200 ? 200 : resultString.length;
+            debugPrint('✅ Tool result: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
           } else {
             debugPrint('❌ Tool error: ${toolResult.error}');
           }
@@ -529,19 +562,28 @@ Remember: You have access to the user's complete financial data through your too
       return 'You do not have any transactions recorded yet. Would you like me to help you add some?';
     }
     
-    String response = 'I found $count transaction${count == 1 ? '' : 's'} for you:\n\n';
+    // Create a rich formatted response with structured data for UI rendering
+    String response = 'I found $count transaction${count == 1 ? '' : 's'} matching your search:\n\n';
     
-    for (int i = 0; i < transactions.take(5).length; i++) {
+    // Add structured transaction data that the UI can parse for rich display
+    response += '[TRANSACTIONS_DATA]\n';
+    response += jsonEncode(transactions.take(5).toList());
+    response += '\n[/TRANSACTIONS_DATA]\n\n';
+    
+    // Add readable text summary
+    for (int i = 0; i < transactions.take(3).length; i++) {
       final transaction = transactions[i] as Map<String, dynamic>;
       final amount = transaction['amount'] ?? 0.0;
       final description = transaction['description'] ?? 'Unknown';
       final date = transaction['date'] ?? 'Unknown date';
       
-      response += '• ${amount >= 0 ? '+' : ''}${amount.toStringAsFixed(2)} - $description ($date)\n';
+      response += '💰 ${amount >= 0 ? '+' : ''}${amount.toStringAsFixed(2)} - $description ($date)\n';
     }
     
-    if (transactions.length > 5) {
-      response += '\n... and ${transactions.length - 5} more transactions.';
+    if (transactions.length > 3) {
+      response += '\n... and ${transactions.length - 3} more transaction${transactions.length - 3 == 1 ? '' : 's'}. Tap on any transaction above to view details.';
+    } else if (transactions.isNotEmpty) {
+      response += '\nTap on any transaction above to view details.';
     }
     
     return response;
@@ -616,5 +658,72 @@ Remember: You have access to the user's complete financial data through your too
     response += 'This helps you organize and track your financial transactions effectively!';
     
     return response;
+  }
+
+  /// Format multiple tool results when Gemini doesn't provide text response
+  String _formatMultipleToolResults(List<AIToolCall> toolCalls) {
+    if (toolCalls.isEmpty) return 'No data found.';
+    
+    final StringBuffer response = StringBuffer();
+    
+    for (final toolCall in toolCalls) {
+      if (toolCall.result != null) {
+        try {
+          final resultData = jsonDecode(toolCall.result!);
+          final formattedResult = _formatToolResultData(toolCall.name, resultData);
+          response.writeln(formattedResult);
+        } catch (e) {
+          debugPrint('❌ Error formatting tool result: $e');
+          response.writeln(_formatToolCallFallback(toolCall));
+        }
+      } else {
+        response.writeln(_formatToolCallFallback(toolCall));
+      }
+      
+      if (toolCalls.length > 1) response.writeln();
+    }
+    
+    return response.toString().trim();
+  }
+
+  /// Format tool result data using the same logic as existing formatters
+  String _formatToolResultData(String toolName, dynamic resultData) {
+    if (resultData is! Map<String, dynamic>) {
+      return 'I retrieved the data but couldn\'t format it properly.';
+    }
+
+    final result = resultData;
+    
+    switch (toolName) {
+      case 'query_transactions':
+        return _formatTransactionResponse(result);
+      case 'query_budgets':
+        return _formatBudgetResponse(result);
+      case 'query_accounts':
+        return _formatAccountResponse(result);
+      case 'query_categories':
+        return _formatCategoryResponse(result);
+      default:
+        return 'I found some information about your ${toolName.replaceAll('query_', '').replaceAll('_', ' ')}: ${jsonEncode(result)}';
+    }
+  }
+
+  /// Fallback formatting when tool result is not available
+  String _formatToolCallFallback(AIToolCall toolCall) {
+    switch (toolCall.name) {
+      case 'query_transactions':
+        if (toolCall.arguments['keyword'] != null) {
+          return 'I searched for transactions containing "${toolCall.arguments['keyword']}" but couldn\'t retrieve the results properly. Please try asking again or check your transaction list directly.';
+        }
+        return 'I found your transactions but couldn\'t display them properly. Please try asking again.';
+      case 'query_budgets':
+        return 'I retrieved your budget information but couldn\'t display it properly. Please try asking again.';
+      case 'query_accounts':
+        return 'I found your account information but couldn\'t display it properly. Please try asking again.';
+      case 'query_categories':
+        return 'I retrieved your categories but couldn\'t display them properly. Please try asking again.';
+      default:
+        return 'I executed the requested operation but couldn\'t display the results properly. Please try asking again.';
+    }
   }
 }

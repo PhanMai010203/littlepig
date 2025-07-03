@@ -166,7 +166,7 @@ class AIServiceFactory {
     debugPrint('  - Instance initialized: ${_instance?.isInitialized ?? false}');
     debugPrint('  - Tool registry created: ${_toolRegistry != null}');
     debugPrint('  - Registry service created: ${_registryService != null}');
-    debugPrint('  - Available tools: ${toolCount}');
+    debugPrint('  - Available tools: $toolCount');
     debugPrint('  - Is ready: $isReady');
   }
 }

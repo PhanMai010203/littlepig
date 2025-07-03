@@ -224,7 +224,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
         }
 
         accumulatedResponse = aiResponse.content;
-        debugPrint('📝 AI Chat - Accumulated response: ${accumulatedResponse.substring(0, 100)}...');
+        final previewLength = accumulatedResponse.length > 100 ? 100 : accumulatedResponse.length;
+        debugPrint('📝 AI Chat - Accumulated response: ${accumulatedResponse.substring(0, previewLength)}${accumulatedResponse.length > 100 ? '...' : ''}');
         
         // Update or add the AI message
         setState(() {
@@ -407,6 +408,16 @@ class _AIChatScreenState extends State<AIChatScreen> {
       _isAIServiceReady = false;
     });
     await _initializeAIService();
+  }
+
+  void _handleTransactionTap(Map<String, dynamic> transaction) {
+    debugPrint('💳 AI Chat - Transaction tapped: ${transaction['id']}');
+    
+    // Show transaction details dialog
+    showDialog(
+      context: context,
+      builder: (context) => _TransactionDetailsDialog(transaction: transaction),
+    );
   }
 
   @override
@@ -653,6 +664,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                           timestamp: message.timestamp,
                           isVoiceMessage: message.isVoiceMessage,
                           isTyping: message.isTyping,
+                          onTransactionTap: _handleTransactionTap,
                         ),
                       );
                     },
@@ -744,6 +756,221 @@ class _AIChatScreenState extends State<AIChatScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Dialog for displaying transaction details with navigation options
+class _TransactionDetailsDialog extends StatelessWidget {
+  final Map<String, dynamic> transaction;
+
+  const _TransactionDetailsDialog({required this.transaction});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    final amount = (transaction['amount'] as num?)?.toDouble() ?? 0.0;
+    final description = transaction['description'] as String? ?? 'Unknown Transaction';
+    final date = transaction['date'] as String? ?? 'Unknown Date';
+    final category = transaction['category'] as String? ?? 'General';
+    final accountName = transaction['account'] as String? ?? 'Unknown Account';
+    final transactionId = transaction['id'] as String?;
+    
+    final isIncome = amount > 0;
+    final amountColor = isIncome ? Colors.green : Colors.red;
+
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              children: [
+                Icon(
+                  isIncome ? Icons.trending_up : Icons.trending_down,
+                  color: amountColor,
+                  size: 28,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Transaction Details',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Amount
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: amountColor.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: amountColor.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    'Amount',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${isIncome ? '+' : ''}${amount.toStringAsFixed(2)}',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      color: amountColor,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 20),
+            
+            // Details
+            _DetailRow(
+              icon: Icons.description,
+              label: 'Description',
+              value: description,
+              theme: theme,
+            ),
+            const SizedBox(height: 12),
+            _DetailRow(
+              icon: Icons.category,
+              label: 'Category',
+              value: category,
+              theme: theme,
+            ),
+            const SizedBox(height: 12),
+            _DetailRow(
+              icon: Icons.account_balance_wallet,
+              label: 'Account',
+              value: accountName,
+              theme: theme,
+            ),
+            const SizedBox(height: 12),
+            _DetailRow(
+              icon: Icons.access_time,
+              label: 'Date',
+              value: _formatDate(date),
+              theme: theme,
+            ),
+            
+            const SizedBox(height: 24),
+            
+            // Actions
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      // TODO: Navigate to transaction edit page
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Edit transaction feature coming soon!')),
+                      );
+                    },
+                    icon: const Icon(Icons.edit),
+                    label: const Text('Edit'),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      // TODO: Navigate to full transaction page
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('View in Transactions page feature coming soon!')),
+                      );
+                    },
+                    icon: const Icon(Icons.open_in_new),
+                    label: const Text('View Full'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return DateFormat('EEEE, MMMM dd, yyyy').format(date);
+    } catch (e) {
+      return dateString;
+    }
+  }
+}
+
+/// Helper widget for displaying detail rows in transaction dialog
+class _DetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final ThemeData theme;
+
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = theme.colorScheme;
+    
+    return Row(
+      children: [
+        Icon(
+          icon,
+          size: 20,
+          color: colorScheme.onSurfaceVariant,
+        ),
+        const SizedBox(width: 12),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              value,
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
