@@ -36,7 +36,8 @@ lib/
 │   ├── currency_demo.dart
 │   ├── data_seeder.dart          # Large in-memory seed data generator for quick testing
 │   ├── demo_transition_pages.dart
-│   └── framework_demo_page.dart  # Show-case of animation framework
+│   ├── framework_demo_page.dart  # Show-case of animation framework
+│   └── framework_demo_README.md
 ```
 **Summary**: Main bootstrap file plus a playground folder used during development and manual QA.  The former `tmp/` directory has been removed – any JSON reference data now lives in the appropriate data-source folders.
 
@@ -137,6 +138,7 @@ Each feature follows the **presentation ⇄ domain ⇄ data** triplet.  Only hig
 
 ```
 lib/features/
+├── agent/
 ├── accounts/
 ├── budgets/
 ├── categories/
@@ -170,6 +172,10 @@ lib/shared/
 │   ├── animations/      # 18 animation wrappers incl. FadeIn, BreathingWidget, etc.
 │   ├── dialogs/         # popup_framework.dart, bottom_sheet_service.dart, note_popup.dart
 │   ├── transitions/     # open_container_navigation.dart
+│   ├── chat_bubble.dart
+│   ├── transaction_chat_card.dart
+│   ├── tappable_text_entry.dart
+│   ├── text_input.dart
 │   ├── page_template.dart
 │   ├── app_text.dart
 │   ├── app_lifecycle_manager.dart
