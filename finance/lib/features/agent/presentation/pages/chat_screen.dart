@@ -20,27 +20,28 @@ class _ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = [];
   final _uuid = const Uuid();
   bool _isAITyping = false;
+  // Hold a reference to SpeechService to safely access it during the widget lifecycle
+  late SpeechService _speechService;
 
   @override
   void initState() {
     super.initState();
+    // Obtain the SpeechService once and keep the reference for later use (e.g. in dispose)
+    _speechService = Provider.of<SpeechService>(context, listen: false);
     _initializeSpeechService();
     _addWelcomeMessage();
   }
 
   Future<void> _initializeSpeechService() async {
-    final speechService = Provider.of<SpeechService>(context, listen: false);
-    await speechService.initialize();
-    
+    await _speechService.initialize();
     // Listen for speech results
-    speechService.addListener(_onSpeechResult);
+    _speechService.addListener(_onSpeechResult);
   }
 
   void _onSpeechResult() {
-    final speechService = Provider.of<SpeechService>(context, listen: false);
-    if (speechService.lastWords.isNotEmpty && !speechService.isListening) {
-      _sendMessage(speechService.lastWords, isVoiceMessage: true);
-      speechService.clearLastWords();
+    if (_speechService.lastWords.isNotEmpty && !_speechService.isListening) {
+      _sendMessage(_speechService.lastWords, isVoiceMessage: true);
+      _speechService.clearLastWords();
     }
   }
 
@@ -161,8 +162,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   @override
   void dispose() {
-    final speechService = Provider.of<SpeechService>(context, listen: false);
-    speechService.removeListener(_onSpeechResult);
+    _speechService.removeListener(_onSpeechResult);
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
