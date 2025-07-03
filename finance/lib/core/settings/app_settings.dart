@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/animation_performance_service.dart';
 
 /// Global app settings manager based on the budget app's system
@@ -10,6 +11,9 @@ class AppSettings {
 
   /// Initialize the settings system - call this in main()
   static Future<bool> initialize() async {
+    // Load environment variables
+    await dotenv.load(fileName: ".env");
+    
     _prefs = await SharedPreferences.getInstance();
     await _loadSettings();
     return true;
@@ -76,7 +80,7 @@ class AppSettings {
         _settings = _getDefaultSettings();
       }
     } catch (e) {
-      print('Error loading settings: $e');
+      debugPrint('Error loading settings: $e');
       _settings = _getDefaultSettings();
     }
   }
@@ -87,7 +91,7 @@ class AppSettings {
       final settingsJson = json.encode(_settings);
       await _prefs?.setString('app_settings', settingsJson);
     } catch (e) {
-      print('Error saving settings: $e');
+      debugPrint('Error saving settings: $e');
     }
   }
 
@@ -138,11 +142,11 @@ class AppSettings {
       'lastVersion': '1.0.0',
 
       // AI Agent settings
-      'geminiApiKey': '', // User configurable Gemini API key
-      'aiEnabled': false, // Whether AI features are enabled
-      'aiModel': 'gemini-1.5-pro', // Selected AI model
-      'aiTemperature': 0.3, // AI response creativity (0.0-1.0)
-      'aiMaxTokens': 4000, // Maximum tokens for AI responses
+      'geminiApiKey': dotenv.env['GEMINI_API_KEY'] ?? '', // Load from environment
+      'aiEnabled': dotenv.env['AI_ENABLED']?.toLowerCase() == 'true', // Load from environment
+      'aiModel': dotenv.env['AI_MODEL'] ?? 'gemini-1.5-pro', // Load from environment
+      'aiTemperature': double.tryParse(dotenv.env['AI_TEMPERATURE'] ?? '0.3') ?? 0.3, // Load from environment
+      'aiMaxTokens': int.tryParse(dotenv.env['AI_MAX_TOKENS'] ?? '4000') ?? 4000, // Load from environment
     };
   }
 
@@ -296,10 +300,10 @@ class AppSettings {
 
   /// Debug method to print all settings
   static void debugPrintSettings() {
-    print('=== App Settings ===');
+    debugPrint('=== App Settings ===');
     _settings.forEach((key, value) {
-      print('$key: $value');
+      debugPrint('$key: $value');
     });
-    print('==================');
+    debugPrint('==================');
   }
 }

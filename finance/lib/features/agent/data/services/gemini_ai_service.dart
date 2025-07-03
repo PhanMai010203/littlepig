@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/ai_response.dart';
@@ -453,38 +454,68 @@ class DatabaseToolRegistry implements AIToolManager {
   final Map<String, dynamic> _tools = {};
   final Map<String, AIToolConfiguration> _toolConfigurations = {};
 
+  DatabaseToolRegistry() {
+    debugPrint('🏗️ DatabaseToolRegistry - Constructor called');
+  }
+
   @override
-  List<AIToolConfiguration> get availableTools => _toolConfigurations.values.toList();
+  List<AIToolConfiguration> get availableTools {
+    debugPrint('📋 DatabaseToolRegistry - availableTools requested: ${_toolConfigurations.length} tools');
+    return _toolConfigurations.values.toList();
+  }
 
   @override
   void registerTool(AIToolConfiguration tool) {
+    debugPrint('📝 DatabaseToolRegistry - Registering tool: ${tool.name}');
+    debugPrint('📝 Tool description: ${tool.description}');
     _toolConfigurations[tool.name] = tool;
     // For test compatibility, create a mock tool that can be executed
     _tools[tool.name] = _MockTool(tool);
+    debugPrint('✅ Tool registered successfully: ${tool.name}');
   }
 
   void registerDatabaseTool(dynamic tool) {
+    debugPrint('🛠️ DatabaseToolRegistry - Registering database tool');
     if (tool.configuration != null) {
       final config = tool.configuration as AIToolConfiguration;
+      debugPrint('🛠️ Database tool name: ${config.name}');
       _tools[config.name] = tool;
       registerTool(config);
+      debugPrint('✅ Database tool registered: ${config.name}');
+    } else {
+      debugPrint('❌ Database tool registration failed: no configuration found');
     }
   }
 
   List<AIToolConfiguration> getAllTools() {
+    debugPrint('📋 DatabaseToolRegistry - getAllTools called: ${availableTools.length} tools');
     return availableTools;
   }
 
   @override
   Future<ToolExecutionResult> executeTool(AIToolCall toolCall) async {
+    debugPrint('⚙️ DatabaseToolRegistry - Executing tool: ${toolCall.name}');
+    debugPrint('⚙️ Tool call ID: ${toolCall.id}');
+    debugPrint('⚙️ Tool arguments: ${jsonEncode(toolCall.arguments)}');
+    
     final tool = _tools[toolCall.name];
     if (tool == null) {
+      debugPrint('❌ Tool not found: ${toolCall.name}');
+      debugPrint('❌ Available tools: ${_tools.keys.join(', ')}');
       throw Exception('Tool ${toolCall.name} not found');
     }
 
+    debugPrint('🔧 Tool found, executing...');
     try {
+      final startTime = DateTime.now();
       final result = await tool.execute(toolCall.arguments);
       final endTime = DateTime.now();
+      final executionTime = endTime.difference(startTime).inMilliseconds;
+      
+      debugPrint('✅ Tool execution completed successfully');
+      debugPrint('✅ Execution time: ${executionTime}ms');
+      debugPrint('✅ Result type: ${result.runtimeType}');
+      debugPrint('✅ Result preview: ${jsonEncode(result).substring(0, 200)}...');
       
       return ToolExecutionResult(
         toolCallId: toolCall.id,
@@ -494,6 +525,9 @@ class DatabaseToolRegistry implements AIToolManager {
       );
     } catch (e) {
       final endTime = DateTime.now();
+      debugPrint('❌ Tool execution failed: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
+      
       return ToolExecutionResult(
         toolCallId: toolCall.id,
         result: {'error': e.toString()},
@@ -506,17 +540,30 @@ class DatabaseToolRegistry implements AIToolManager {
 
   @override
   Future<List<ToolExecutionResult>> executeTools(List<AIToolCall> toolCalls) async {
-    return Future.wait(toolCalls.map((toolCall) => executeTool(toolCall)));
+    debugPrint('⚙️ DatabaseToolRegistry - Executing multiple tools: ${toolCalls.length}');
+    for (int i = 0; i < toolCalls.length; i++) {
+      debugPrint('⚙️ Tool ${i + 1}/${toolCalls.length}: ${toolCalls[i].name}');
+    }
+    
+    final results = await Future.wait(toolCalls.map((toolCall) => executeTool(toolCall)));
+    debugPrint('✅ Multiple tool execution completed: ${results.length} results');
+    
+    return results;
   }
 
   @override
   bool isToolAvailable(String toolName) {
-    return _tools.containsKey(toolName);
+    final available = _tools.containsKey(toolName);
+    debugPrint('🔍 DatabaseToolRegistry - isToolAvailable($toolName): $available');
+    return available;
   }
 
   @override
   AIToolConfiguration? getToolConfiguration(String toolName) {
-    return _toolConfigurations[toolName];
+    debugPrint('🔍 DatabaseToolRegistry - getToolConfiguration($toolName)');
+    final config = _toolConfigurations[toolName];
+    debugPrint('🔍 Configuration found: ${config != null}');
+    return config;
   }
 }
 

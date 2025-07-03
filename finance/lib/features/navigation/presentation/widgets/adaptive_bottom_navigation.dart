@@ -83,7 +83,7 @@ class _AdaptiveBottomNavigationState extends State<AdaptiveBottomNavigation> {
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
             child: LayoutBuilder(
               builder: (context, constraints) {
                 return Stack(
@@ -201,19 +201,20 @@ class _BulgeNavigationItem extends StatelessWidget {
       child: Container(
         color: Colors.transparent,
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+        height: 56, // Set a fixed height for the item
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
           children: [
-            // Bulge effect container
-            Transform.translate(
-              offset: const Offset(0, -16), // Move up by 16 pixels for bulge effect
+            // Bulge effect container, positioned to overflow upwards
+            Positioned(
+              top: -20, // Adjust this value to control the bulge amount
               child: Container(
                 width: 64,
                 height: 64,
                 decoration: BoxDecoration(
-                  color: isSelected 
-                      ? colorScheme.primary 
+                  color: isSelected
+                      ? colorScheme.primary
                       : colorScheme.primaryContainer,
                   shape: BoxShape.circle,
                   boxShadow: [
@@ -227,10 +228,10 @@ class _BulgeNavigationItem extends StatelessWidget {
                 child: _buildBulgeIcon(context, item, isSelected, isTapped),
               ),
             ),
-            
-            // Label positioned normally (the bulge is only for the icon)
-            Transform.translate(
-              offset: const Offset(0, -8), // Slight adjustment for visual balance
+
+            // Label positioned at the bottom of the fixed-height container
+            Positioned(
+              bottom: 0,
               child: AnimatedDefaultTextStyle(
                 duration: const Duration(milliseconds: 200),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -337,7 +338,7 @@ class _AnimatedNavigationItem extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(
           horizontal: 12,
-          vertical: 8,
+          vertical: 4,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -345,7 +346,7 @@ class _AnimatedNavigationItem extends StatelessWidget {
             // Icon container with flutter_animate bounce effect
             _buildIcon(context, item, isSelected, isTapped),
 
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
 
             // Animated text
             AnimatedDefaultTextStyle(
@@ -382,25 +383,41 @@ class _AnimatedNavigationItem extends StatelessWidget {
   }
 
   Widget _buildIcon(BuildContext context, NavigationItem item, bool isSelected, bool isTapped) {
+    Widget iconWidget;
+    final color = isSelected
+        ? Theme.of(context).colorScheme.primary
+        : Theme.of(context)
+            .colorScheme
+            .onSurface
+            .withValues(alpha: 0.6);
+
+    if (item.iconPath.endsWith('.png')) {
+      iconWidget = Image.asset(
+        item.iconPath,
+        key: ValueKey('${item.iconPath}_$isSelected'),
+        width: 24,
+        height: 24,
+        color: color,
+        colorBlendMode: BlendMode.srcIn,
+      );
+    } else {
+      iconWidget = SvgPicture.asset(
+        item.iconPath,
+        key: ValueKey('${item.iconPath}_$isSelected'),
+        width: 24,
+        height: 24,
+        colorFilter: ColorFilter.mode(
+          color,
+          BlendMode.srcIn,
+        ),
+      );
+    }
+
     Widget iconContainer = Container(
       padding: const EdgeInsets.all(8),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        child: SvgPicture.asset(
-          item.iconPath,
-          key: ValueKey('${item.iconPath}_$isSelected'),
-          width: 24,
-          height: 24,
-          colorFilter: ColorFilter.mode(
-            isSelected
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context)
-                    .colorScheme
-                    .onSurface
-                    .withValues(alpha: 0.6),
-            BlendMode.srcIn,
-          ),
-        ),
+        child: iconWidget,
       ),
     );
 

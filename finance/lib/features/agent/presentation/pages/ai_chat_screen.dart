@@ -56,13 +56,32 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   Future<void> _initializeAIService() async {
+    debugPrint('🔧 AI Chat - Initializing AI service...');
     try {
+      debugPrint('🔧 AI Chat - Calling AIServiceFactory.getInstance()');
       _aiService = await AIServiceFactory.getInstance();
+      debugPrint('✅ AI Chat - AI service instance obtained');
+      
+      final isReady = AIServiceFactory.isReady;
+      final toolCount = AIServiceFactory.toolCount;
+      
+      debugPrint('✅ AI Chat - Service ready: $isReady, Tools available: $toolCount');
+      
       setState(() {
-        _isAIServiceReady = AIServiceFactory.isReady;
+        _isAIServiceReady = isReady;
         _lastError = null;
       });
+      
+      if (isReady) {
+        debugPrint('✅ AI Chat - AI service initialization completed successfully');
+        // Print debug info
+        AIServiceFactory.printDebugInfo();
+      } else {
+        debugPrint('⚠️ AI Chat - AI service not ready after initialization');
+      }
     } catch (e) {
+      debugPrint('❌ AI Chat - AI service initialization failed: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
       setState(() {
         _isAIServiceReady = false;
         _lastError = 'AI Service initialization failed: $e';
@@ -71,19 +90,29 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   void _onSpeechResult() {
-    if (_speechService == null) return;
+    debugPrint('🎤 AI Chat - Speech result received');
+    if (_speechService == null) {
+      debugPrint('⚠️ AI Chat - Speech service is null');
+      return;
+    }
 
     if (_speechService!.lastWords.isNotEmpty && !_speechService!.isListening) {
-      _sendMessage(_speechService!.lastWords, isVoiceMessage: true);
+      final spokenText = _speechService!.lastWords;
+      debugPrint('🎤 AI Chat - Spoken text: "$spokenText"');
+      _sendMessage(spokenText, isVoiceMessage: true);
       _speechService!.clearLastWords();
+      debugPrint('🎤 AI Chat - Speech text cleared');
     }
   }
 
   void _addWelcomeMessage() {
+    debugPrint('👋 AI Chat - Adding welcome message');
     final toolCount = AIServiceFactory.toolCount;
     final welcomeText = _isAIServiceReady 
         ? 'Hello! I\'m your AI financial assistant powered by Gemini. I have access to $toolCount tools to help you manage your finances. Ask me about your transactions, budgets, accounts, or categories!'
         : 'agent.welcome_message'.tr();
+    
+    debugPrint('👋 Welcome message: "$welcomeText"');
     
     final welcomeMessage = ChatMessage(
       id: _uuid.v4(),
@@ -97,10 +126,20 @@ class _AIChatScreenState extends State<AIChatScreen> {
     setState(() {
       _messages.add(welcomeMessage);
     });
+    
+    debugPrint('✅ AI Chat - Welcome message added');
   }
 
   void _sendMessage(String text, {bool isVoiceMessage = false}) {
-    if (text.trim().isEmpty) return;
+    debugPrint('📤 AI Chat - Sending message');
+    debugPrint('📤 Message text: "$text"');
+    debugPrint('📤 Is voice message: $isVoiceMessage');
+    debugPrint('📤 AI service ready: $_isAIServiceReady');
+    
+    if (text.trim().isEmpty) {
+      debugPrint('⚠️ AI Chat - Empty message, skipping');
+      return;
+    }
 
     final userMessage = ChatMessage(
       id: _uuid.v4(),
@@ -110,6 +149,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
       isTyping: false,
       isVoiceMessage: isVoiceMessage,
     );
+
+    debugPrint('📝 AI Chat - User message created with ID: ${userMessage.id}');
 
     setState(() {
       _messages.add(userMessage);
@@ -121,13 +162,17 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     // Use real AI service or fallback to simulation
     if (_isAIServiceReady && _aiService != null) {
+      debugPrint('🤖 AI Chat - Using real AI service');
       _handleAIResponse(text.trim());
     } else {
+      debugPrint('🔄 AI Chat - Using simulation fallback');
       _simulateAIResponse(text.trim());
     }
   }
 
   Future<void> _handleAIResponse(String userMessage) async {
+    debugPrint('🤖 AI Chat - Handling AI response for: "$userMessage"');
+    
     // Add typing indicator
     final typingMessage = ChatMessage(
       id: '${_uuid.v4()}_typing',
@@ -138,6 +183,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
       isVoiceMessage: false,
     );
 
+    debugPrint('⏳ AI Chat - Adding typing indicator');
     setState(() {
       _messages.add(typingMessage);
     });
@@ -145,25 +191,40 @@ class _AIChatScreenState extends State<AIChatScreen> {
     _scrollToBottom();
 
     try {
+      debugPrint('📡 AI Chat - Calling sendMessageStream');
+      
       // Use streaming response for better UX
       final responseStream = _aiService!.sendMessageStream(
         userMessage,
         conversationHistory: _getConversationHistory(),
       );
 
+      debugPrint('📡 AI Chat - Stream created, waiting for responses...');
+
       String accumulatedResponse = '';
       bool isFirstChunk = true;
+      String? currentResponseId;
       
       await for (final aiResponse in responseStream) {
+        debugPrint('📦 AI Chat - Received AI response chunk');
+        debugPrint('📦 Response ID: ${aiResponse.id}');
+        debugPrint('📦 Content length: ${aiResponse.content.length}');
+        debugPrint('📦 Is streaming: ${aiResponse.isStreaming}');
+        debugPrint('📦 Is complete: ${aiResponse.isComplete}');
+        debugPrint('📦 Tool calls: ${aiResponse.toolCalls.length}');
+        
         if (isFirstChunk) {
           // Remove typing indicator on first chunk
+          debugPrint('🗑️ AI Chat - Removing typing indicator');
           setState(() {
             _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
           });
           isFirstChunk = false;
+          currentResponseId = aiResponse.id;
         }
 
         accumulatedResponse = aiResponse.content;
+        debugPrint('📝 AI Chat - Accumulated response: ${accumulatedResponse.substring(0, 100)}...');
         
         // Update or add the AI message
         setState(() {
@@ -181,8 +242,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
           );
 
           if (existingIndex >= 0) {
+            debugPrint('🔄 AI Chat - Updating existing message at index $existingIndex');
             _messages[existingIndex] = aiMessage;
           } else {
+            debugPrint('➕ AI Chat - Adding new AI message');
             _messages.add(aiMessage);
           }
         });
@@ -190,12 +253,18 @@ class _AIChatScreenState extends State<AIChatScreen> {
         _scrollToBottom();
       }
 
+      debugPrint('✅ AI Chat - AI response stream completed');
+      debugPrint('✅ Final response length: ${accumulatedResponse.length}');
+
       setState(() {
         _isAITyping = false;
         _lastError = null;
       });
 
     } catch (e) {
+      debugPrint('❌ AI Chat - AI response error: $e');
+      debugPrint('❌ Error type: ${e.runtimeType}');
+      
       // Remove typing indicator
       setState(() {
         _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
@@ -213,6 +282,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
         isVoiceMessage: false,
       );
 
+      debugPrint('📝 AI Chat - Adding error message');
       setState(() {
         _messages.add(errorMessage);
       });
@@ -222,6 +292,8 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   Future<void> _simulateAIResponse(String userMessage) async {
+    debugPrint('🔄 AI Chat - Simulating AI response for: "$userMessage"');
+    
     // Add typing indicator
     final typingMessage = ChatMessage(
       id: '${_uuid.v4()}_typing',
@@ -232,6 +304,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
       isVoiceMessage: false,
     );
 
+    debugPrint('⏳ AI Chat - Adding typing indicator (simulation)');
     setState(() {
       _messages.add(typingMessage);
     });
@@ -239,9 +312,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
     _scrollToBottom();
 
     // Simulate processing time
+    debugPrint('⏱️ AI Chat - Simulating 2 second delay');
     await Future.delayed(const Duration(seconds: 2));
 
     // Remove typing indicator
+    debugPrint('🗑️ AI Chat - Removing typing indicator (simulation)');
     setState(() {
       _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
       _isAITyping = false;
@@ -249,6 +324,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     // Generate fallback response
     String aiResponse = _generateFallbackResponse(userMessage);
+    debugPrint('📝 AI Chat - Generated fallback response: "$aiResponse"');
 
     final aiMessage = ChatMessage(
       id: _uuid.v4(),
@@ -264,34 +340,42 @@ class _AIChatScreenState extends State<AIChatScreen> {
     });
 
     _scrollToBottom();
+    debugPrint('✅ AI Chat - Simulation completed');
   }
 
   String _generateFallbackResponse(String userMessage) {
+    debugPrint('💭 AI Chat - Generating fallback response for: "$userMessage"');
     final lowercaseMessage = userMessage.toLowerCase();
     
     if (!_isAIServiceReady) {
-      return 'I\'m sorry, but my AI capabilities are not available right now. ${_lastError ?? "Please check your internet connection and API configuration."}';
+      final fallback = 'I\'m sorry, but my AI capabilities are not available right now. ${_lastError ?? "Please check your internet connection and API configuration."}';
+      debugPrint('💭 Fallback (not ready): "$fallback"');
+      return fallback;
     }
     
     // Simple response logic for demonstration
+    String response;
     if (lowercaseMessage.contains('hello') || lowercaseMessage.contains('hi')) {
-      return 'agent.greeting_response'.tr();
+      response = 'agent.greeting_response'.tr();
     } else if (lowercaseMessage.contains('balance') || lowercaseMessage.contains('money')) {
-      return 'agent.balance_response'.tr();
+      response = 'agent.balance_response'.tr();
     } else if (lowercaseMessage.contains('expense') || lowercaseMessage.contains('spending')) {
-      return 'agent.expense_response'.tr();
+      response = 'agent.expense_response'.tr();
     } else if (lowercaseMessage.contains('budget')) {
-      return 'agent.budget_response'.tr();
+      response = 'agent.budget_response'.tr();
     } else if (lowercaseMessage.contains('help')) {
-      return 'agent.help_response'.tr();
+      response = 'agent.help_response'.tr();
     } else {
-      return 'agent.default_response'.tr();
+      response = 'agent.default_response'.tr();
     }
+    
+    debugPrint('💭 Generated response: "$response"');
+    return response;
   }
 
   List<ChatMessage> _getConversationHistory() {
     // Return last 10 messages for context (excluding typing indicators)
-    return _messages
+    final history = _messages
         .where((msg) => !msg.id.endsWith('_typing'))
         .toList()
         .reversed
@@ -299,6 +383,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
         .toList()
         .reversed
         .toList();
+    
+    debugPrint('📜 AI Chat - Conversation history: ${history.length} messages');
+    return history;
   }
 
   void _scrollToBottom() {
@@ -314,19 +401,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
   }
 
   void _retryAIInitialization() async {
+    debugPrint('🔄 AI Chat - Retrying AI initialization');
     setState(() {
       _lastError = null;
       _isAIServiceReady = false;
     });
-    
-    try {
-      await AIServiceFactory.reset();
-      await _initializeAIService();
-    } catch (e) {
-      setState(() {
-        _lastError = 'Retry failed: $e';
-      });
-    }
+    await _initializeAIService();
   }
 
   @override
