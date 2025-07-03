@@ -220,7 +220,7 @@ class VoiceSettings {
   final List<String> preferredEngines;
 
   const VoiceSettings({
-    this.language = 'en-US',
+    this.language = 'auto',
     this.locale,
     this.speechRate = 0.8,
     this.pitch = 1.0,

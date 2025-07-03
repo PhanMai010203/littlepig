@@ -449,6 +449,8 @@ class _VoiceChatInterfaceState extends State<VoiceChatInterface>
           setState(() {
             _currentSettings = settings;
           });
+          // Apply settings immediately
+          _voiceService.updateSettings(settings);
         },
       ),
     );
@@ -559,7 +561,7 @@ class _VoiceSettingsSheet extends StatefulWidget {
 
 class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
   late VoiceSettings _settings;
-  List<String> _availableLanguages = [];
+  List<String> _availableLanguages = ['auto'];
   bool _isLoadingLanguages = true;
 
   @override
@@ -572,8 +574,10 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
   Future<void> _loadAvailableLanguages() async {
     try {
       final languages = await widget.voiceService.getAvailableTtsLanguages();
+      // Ensure no duplicates if 'auto' is somehow returned by service
+      final uniqueLanguages = languages.where((l) => l != 'auto').toList();
       setState(() {
-        _availableLanguages = languages;
+        _availableLanguages.addAll(uniqueLanguages);
         _isLoadingLanguages = false;
       });
     } catch (e) {
@@ -644,7 +648,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
                   vertical: 8,
                 ),
               ),
-              items: _availableLanguages.map((language) {
+              items: _availableLanguages.toSet().map((language) {
                 return DropdownMenuItem(
                   value: language,
                   child: Text(_getLanguageDisplayName(language)),
@@ -655,6 +659,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
                   setState(() {
                     _settings = _settings.copyWith(language: value);
                   });
+                  widget.onSettingsChanged(_settings);
                 }
               },
             ),
@@ -677,6 +682,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
               setState(() {
                 _settings = _settings.copyWith(speechRate: value);
               });
+              widget.onSettingsChanged(_settings);
             },
           ),
           
@@ -698,6 +704,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
               setState(() {
                 _settings = _settings.copyWith(pitch: value);
               });
+              widget.onSettingsChanged(_settings);
             },
           ),
           
@@ -719,6 +726,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
               setState(() {
                 _settings = _settings.copyWith(volume: value);
               });
+              widget.onSettingsChanged(_settings);
             },
           ),
           
@@ -732,6 +740,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
               setState(() {
                 _settings = _settings.copyWith(enableHapticFeedback: value);
               });
+              widget.onSettingsChanged(_settings);
             },
           ),
           
@@ -743,18 +752,17 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
               setState(() {
                 _settings = _settings.copyWith(enablePartialResults: value);
               });
+              widget.onSettingsChanged(_settings);
             },
           ),
           
           const SizedBox(height: 24),
           
-          // Apply button
+          // Close button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                widget.onSettingsChanged(_settings);
-                widget.voiceService.updateSettings(_settings);
                 Navigator.of(context).pop();
               },
               style: ElevatedButton.styleFrom(
@@ -762,7 +770,7 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
                 foregroundColor: colorScheme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              child: const Text('Apply Settings'),
+              child: const Text('Close'),
             ),
           ),
           
@@ -774,6 +782,9 @@ class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
   }
 
   String _getLanguageDisplayName(String languageCode) {
+    if (languageCode == 'auto') {
+      return 'Automatic';
+    }
     final Map<String, String> languageNames = {
       'en-US': 'English (US)',
       'en-GB': 'English (UK)',

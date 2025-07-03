@@ -8,6 +8,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:uuid/uuid.dart';
+import 'package:google_mlkit_language_id/google_mlkit_language_id.dart';
 
 import '../../domain/entities/voice_command.dart';
 import '../../domain/services/native_voice_service.dart';
@@ -31,6 +32,12 @@ class FlutterNativeVoiceService implements NativeVoiceService {
   VoiceSettings _currentSettings = const VoiceSettings();
   String? _currentListeningSessionId;
   Timer? _listeningTimeoutTimer;
+  String? _lastDetectedLocale;
+  String? _activeSttLanguage;
+  
+  // ML Kit language identifier for auto language detection
+  final LanguageIdentifier _languageIdentifier =
+      LanguageIdentifier(confidenceThreshold: 0.5);
   
   @override
   bool get isInitialized => _isInitialized;
@@ -96,7 +103,9 @@ class FlutterNativeVoiceService implements NativeVoiceService {
 
   Future<void> _initializeTts(VoiceSettings settings) async {
     // Configure TTS settings
+    if (settings.language != 'auto') {
     await _tts.setLanguage(settings.language);
+    }
     await _tts.setSpeechRate(settings.speechRate);
     await _tts.setPitch(settings.pitch);
     await _tts.setVolume(settings.volume);
@@ -161,12 +170,14 @@ class FlutterNativeVoiceService implements NativeVoiceService {
             timestamp: DateTime.now(),
             message: 'Speech recognition started',
           ));
-        } else if (status == 'notListening') {
+        } else if (status == 'notListening' || status == 'done') {
+          if (_isListening) {
           _isListening = false;
           _eventController.add(SpeechRecognitionStoppedEvent(
             timestamp: DateTime.now(),
             message: 'Speech recognition stopped',
           ));
+          }
         }
       },
       onError: (error) {
@@ -208,6 +219,7 @@ class FlutterNativeVoiceService implements NativeVoiceService {
       await _voiceCommandController.close();
       
       _isInitialized = false;
+      _languageIdentifier.close();
       debugPrint('$_logTag - Voice service disposed');
     } catch (e) {
       debugPrint('$_logTag - Error during disposal: $e');
@@ -297,9 +309,16 @@ class FlutterNativeVoiceService implements NativeVoiceService {
     final effectiveSettings = settings ?? _currentSettings;
     _currentListeningSessionId = _uuid.v4();
     
-    debugPrint('$_logTag - Starting listening session: $_currentListeningSessionId');
+    var languageForSession = effectiveSettings.language;
+    if (languageForSession == 'auto' && _lastDetectedLocale != null) {
+      languageForSession = _lastDetectedLocale!;
+    }
     
-    _startListeningInternal(effectiveSettings, partialResults);
+    debugPrint(
+        '$_logTag - Starting listening session: $_currentListeningSessionId with language: $languageForSession');
+    
+    _startListeningInternal(
+        effectiveSettings.copyWith(language: languageForSession), partialResults);
     
     return _voiceCommandController.stream;
   }
@@ -327,7 +346,7 @@ class FlutterNativeVoiceService implements NativeVoiceService {
       });
       
       await _stt.listen(
-        onResult: (SpeechRecognitionResult result) {
+        onResult: (SpeechRecognitionResult result) async {
           final command = VoiceCommand(
             id: _uuid.v4(),
             text: result.recognizedWords,
@@ -344,8 +363,30 @@ class FlutterNativeVoiceService implements NativeVoiceService {
             },
           );
           
-          debugPrint('$_logTag - Voice command: ${command.text} (confidence: ${command.confidence})');
           _voiceCommandController.add(command);
+
+          if (result.finalResult &&
+              result.recognizedWords.isNotEmpty &&
+              _currentSettings.language == 'auto') {
+            final detectedLang =
+                await _languageIdentifier.identifyLanguage(result.recognizedWords);
+            if (detectedLang != 'und' && detectedLang.isNotEmpty) {
+              final availableLocales = await getAvailableSpeechLanguages();
+              String? matchedLocale;
+              for (final locale in availableLocales) {
+                if (locale.startsWith(detectedLang)) {
+                  matchedLocale = locale;
+                  break;
+                }
+              }
+
+              if (matchedLocale != null && matchedLocale != _lastDetectedLocale) {
+                debugPrint(
+                    '$_logTag - Language for next session detected: $matchedLocale');
+                _lastDetectedLocale = matchedLocale;
+              }
+            }
+          }
           
           // Auto-stop on final result if not in continuous mode
           if (result.finalResult && !settings.enableContinuousListening) {
@@ -357,7 +398,7 @@ class FlutterNativeVoiceService implements NativeVoiceService {
         listenFor: settings.listeningTimeout,
         pauseFor: settings.pauseThreshold,
         partialResults: partialResults && settings.enablePartialResults,
-        localeId: settings.language,
+        localeId: settings.language == 'auto' ? null : settings.language,
         onSoundLevelChange: settings.enableVisualFeedback ? (level) {
           // You can emit sound level events here if needed
         } : null,
@@ -378,7 +419,8 @@ class FlutterNativeVoiceService implements NativeVoiceService {
       debugPrint('$_logTag - Stopping listening...');
       _listeningTimeoutTimer?.cancel();
       await _stt.stop();
-      _isListening = false;
+      // This is managed by the status listener now
+      // _isListening = false; 
     } catch (e) {
       debugPrint('$_logTag - Error stopping listening: $e');
     }
@@ -390,7 +432,8 @@ class FlutterNativeVoiceService implements NativeVoiceService {
       debugPrint('$_logTag - Cancelling listening...');
       _listeningTimeoutTimer?.cancel();
       await _stt.cancel();
-      _isListening = false;
+      // This is managed by the status listener now
+      // _isListening = false;
     } catch (e) {
       debugPrint('$_logTag - Error cancelling listening: $e');
     }
@@ -408,9 +451,18 @@ class FlutterNativeVoiceService implements NativeVoiceService {
     try {
       debugPrint('$_logTag - Speaking: "$text"');
       
-      // Update TTS settings if provided
+      // Update TTS settings if provided, handling auto language detection
       if (settings != null) {
+        if (settings.language == 'auto') {
+          // Detect language from text before speaking
+          final langCode = await _languageIdentifier.identifyLanguage(text);
+          if (langCode != 'und' && langCode.isNotEmpty) {
+            await _tts.setLanguage(langCode);
+          }
+          // else, use the last known or default language
+        } else {
         await _tts.setLanguage(settings.language);
+        }
         await _tts.setSpeechRate(settings.speechRate);
         await _tts.setPitch(settings.pitch);
         await _tts.setVolume(settings.volume);
@@ -503,9 +555,16 @@ class FlutterNativeVoiceService implements NativeVoiceService {
     final oldSettings = _currentSettings;
     
     try {
+      // If the user manually selects a language, reset our auto-detection.
+      if (settings.language != 'auto') {
+        _lastDetectedLocale = null;
+      }
+
       // Update TTS settings
       if (await isTextToSpeechAvailable) {
+        if (settings.language != 'auto') {
         await _tts.setLanguage(settings.language);
+        }
         await _tts.setSpeechRate(settings.speechRate);
         await _tts.setPitch(settings.pitch);
         await _tts.setVolume(settings.volume);
@@ -570,8 +629,11 @@ class FlutterNativeVoiceService implements NativeVoiceService {
   Future<void> setLanguage(String language) async {
     final oldLanguage = _currentSettings.language;
     try {
+      if (language != 'auto') {
       await _tts.setLanguage(language);
+      }
       _currentSettings = _currentSettings.copyWith(language: language);
+      _lastDetectedLocale = null; // Reset on manual language change
       
       _eventController.add(LanguageChangedEvent(
         oldLanguage: oldLanguage,
@@ -600,7 +662,9 @@ class FlutterNativeVoiceService implements NativeVoiceService {
     
     try {
       if (testLanguage != originalLanguage) {
+        if (testLanguage != 'auto') {
         await setLanguage(testLanguage);
+        }
       }
       
       await speak(testText);
@@ -655,8 +719,8 @@ class FlutterNativeVoiceService implements NativeVoiceService {
         systemLanguage = 'en-US'; // Fallback to English
       }
       
-      return VoiceSettings(
-        language: systemLanguage,
+      return const VoiceSettings(
+        language: 'auto', // Default to automatic detection
         speechRate: 0.8,
         pitch: 1.0,
         volume: 1.0,

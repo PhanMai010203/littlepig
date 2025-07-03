@@ -540,30 +540,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
               );
             },
           ),
-          Consumer<SpeechService>(
-            builder: (context, speechService, child) {
-              return IconButton(
-                onPressed: speechService.isAvailable
-                    ? () {
-                        if (speechService.isListening) {
-                          speechService.stopListening();
-                        } else {
-                          speechService.startListening();
-                        }
-                      }
-                    : null,
-                icon: Icon(
-                  speechService.isListening ? Icons.mic : Icons.mic_none,
-                  color: speechService.isListening 
-                      ? colorScheme.primary 
-                      : colorScheme.onSurfaceVariant,
-                ),
-                tooltip: speechService.isListening 
-                    ? 'agent.stop_listening'.tr() 
-                    : 'agent.start_listening'.tr(),
-              );
-            },
-          ),
         ],
       ),
       body: Column(
