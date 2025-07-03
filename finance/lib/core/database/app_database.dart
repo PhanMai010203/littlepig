@@ -42,13 +42,14 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 13;
+  int get schemaVersion => 14;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (Migrator m) async {
           await m.createAll();
           await _insertDefaultCategories();
+          await _insertDefaultAccount();
         },
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 7) {
@@ -107,6 +108,21 @@ class AppDatabase extends _$AppDatabase {
             await m.addColumn(
                 budgetsTable, budgetsTable.periodAmount as GeneratedColumn);
             print('✅ Budget Period Amount migration completed successfully!');
+          }
+
+          // ✅ Default Account Creation (v13 → v14)
+          if (from < 14) {
+            print('🏦 Starting Default Account Creation Migration (v13 → v14)...');
+            // Check if there are no accounts, then create default account
+            final accountCount = await customSelect('SELECT COUNT(*) as count FROM accounts').getSingle();
+            final count = accountCount.data['count'] as int;
+            if (count == 0) {
+              await _insertDefaultAccount();
+              print('✅ Default account created successfully!');
+            } else {
+              print('✅ Accounts already exist, skipping default account creation.');
+            }
+            print('✅ Default Account migration completed successfully!');
           }
         },
       );
@@ -338,6 +354,19 @@ class AppDatabase extends _$AppDatabase {
         ),
       );
     }
+  }
+
+  Future<void> _insertDefaultAccount() async {
+    await into(accountsTable).insert(
+      AccountsTableCompanion.insert(
+        name: 'Main Account',
+        balance: const Value(0.0),
+        currency: const Value('VND'),
+        isDefault: const Value(true),
+        color: const Value(0xFF2196F3), // Blue color
+        syncId: 'default-main-account',
+      ),
+    );
   }
 }
 

@@ -909,10 +909,10 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.9.5"
-  langchain:
+  4:
     dependency: "direct main"
     description:
-      name: langchain
+      name: 551C 
       sha256: "8a9b80fc09fcc4b17d8fed636d2dfa7a10ab598c1e0ec9533b8bf1a4ae87115f"
       url: "https://pub.dev"
     source: hosted

@@ -216,9 +216,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
         if (isFirstChunk) {
           // Remove typing indicator on first chunk
           debugPrint('🗑️ AI Chat - Removing typing indicator');
-          setState(() {
-            _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
-          });
+          if (mounted) {
+            setState(() {
+              _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
+            });
+          }
           isFirstChunk = false;
           currentResponseId = aiResponse.id;
         }
@@ -228,28 +230,30 @@ class _AIChatScreenState extends State<AIChatScreen> {
         debugPrint('📝 AI Chat - Accumulated response: ${accumulatedResponse.substring(0, previewLength)}${accumulatedResponse.length > 100 ? '...' : ''}');
         
         // Update or add the AI message
-        setState(() {
-          final existingIndex = _messages.indexWhere(
-            (msg) => msg.id == aiResponse.id && !msg.isFromUser,
-          );
-          
-          final aiMessage = ChatMessage(
-            id: aiResponse.id,
-            text: accumulatedResponse,
-            isFromUser: false,
+        if (mounted) {
+          setState(() {
+            final existingIndex = _messages.indexWhere(
+              (msg) => msg.id == aiResponse.id && !msg.isFromUser,
+            );
+            
+            final aiMessage = ChatMessage(
+              id: aiResponse.id,
+              text: accumulatedResponse,
+              isFromUser: false,
             timestamp: aiResponse.timestamp ?? DateTime.now(),
             isTyping: !aiResponse.isComplete,
             isVoiceMessage: false,
           );
 
-          if (existingIndex >= 0) {
-            debugPrint('🔄 AI Chat - Updating existing message at index $existingIndex');
-            _messages[existingIndex] = aiMessage;
-          } else {
-            debugPrint('➕ AI Chat - Adding new AI message');
-            _messages.add(aiMessage);
-          }
-        });
+            if (existingIndex >= 0) {
+              debugPrint('🔄 AI Chat - Updating existing message at index $existingIndex');
+              _messages[existingIndex] = aiMessage;
+            } else {
+              debugPrint('➕ AI Chat - Adding new AI message');
+              _messages.add(aiMessage);
+            }
+          });
+        }
 
         _scrollToBottom();
       }
@@ -257,21 +261,25 @@ class _AIChatScreenState extends State<AIChatScreen> {
       debugPrint('✅ AI Chat - AI response stream completed');
       debugPrint('✅ Final response length: ${accumulatedResponse.length}');
 
-      setState(() {
-        _isAITyping = false;
-        _lastError = null;
-      });
+      if (mounted) {
+        setState(() {
+          _isAITyping = false;
+          _lastError = null;
+        });
+      }
 
     } catch (e) {
       debugPrint('❌ AI Chat - AI response error: $e');
       debugPrint('❌ Error type: ${e.runtimeType}');
       
       // Remove typing indicator
-      setState(() {
-        _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
-        _isAITyping = false;
-        _lastError = 'AI response error: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
+          _isAITyping = false;
+          _lastError = 'AI response error: $e';
+        });
+      }
 
       // Add error message
       final errorMessage = ChatMessage(
@@ -284,9 +292,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
       );
 
       debugPrint('📝 AI Chat - Adding error message');
-      setState(() {
-        _messages.add(errorMessage);
-      });
+      if (mounted) {
+        setState(() {
+          _messages.add(errorMessage);
+        });
+      }
     }
 
     _scrollToBottom();
@@ -318,10 +328,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
     // Remove typing indicator
     debugPrint('🗑️ AI Chat - Removing typing indicator (simulation)');
-    setState(() {
-      _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
-      _isAITyping = false;
-    });
+    if (mounted) {
+      setState(() {
+        _messages.removeWhere((msg) => msg.id.endsWith('_typing'));
+        _isAITyping = false;
+      });
+    }
 
     // Generate fallback response
     String aiResponse = _generateFallbackResponse(userMessage);
@@ -336,9 +348,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
       isVoiceMessage: false,
     );
 
-    setState(() {
-      _messages.add(aiMessage);
-    });
+    if (mounted) {
+      setState(() {
+        _messages.add(aiMessage);
+      });
+    }
 
     _scrollToBottom();
     debugPrint('✅ AI Chat - Simulation completed');
