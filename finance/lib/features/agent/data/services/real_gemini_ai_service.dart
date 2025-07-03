@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:uuid/uuid.dart';
+import 'package:intl/intl.dart';
 
 import '../../domain/entities/ai_response.dart';
 import '../../domain/entities/ai_tool_call.dart';
@@ -181,10 +182,20 @@ class RealGeminiAIService implements AIService {
             ));
             debugPrint('📡 Tool result sent to Gemini successfully');
             
+            // Debug what Gemini returned
+            debugPrint('🔍 Gemini response text: ${geminiResponse.text}');
+            debugPrint('🔍 Gemini response parts count: ${geminiResponse.candidates?.first.content.parts.length ?? 0}');
+            
             // If Gemini provides a text response, add it to accumulated content
             if (geminiResponse.text != null && geminiResponse.text!.isNotEmpty) {
               accumulatedContent += geminiResponse.text!;
               debugPrint('📝 Added Gemini response to content: ${geminiResponse.text!.length} chars');
+            } else {
+              debugPrint('⚠️ Gemini did not provide a text response after tool execution');
+              // If Gemini doesn't provide a response, format the tool result ourselves
+              final formattedResult = _formatToolResponse(message, toolCall, toolResult);
+              accumulatedContent += formattedResult;
+              debugPrint('📝 Added formatted tool response: ${formattedResult.length} chars');
             }
           }
 
@@ -202,6 +213,7 @@ class RealGeminiAIService implements AIService {
 
         // Handle text content
         if (chunk.text != null) {
+          debugPrint('📝 Raw LLM text chunk: ${chunk.text}');
           accumulatedContent += chunk.text!;
           debugPrint('📝 Accumulated content length: ${accumulatedContent.length}');
           
@@ -225,15 +237,20 @@ class RealGeminiAIService implements AIService {
       debugPrint('🏁 Streaming completed. Total chunks: $chunkCount');
       debugPrint('🏁 Final content length: ${accumulatedContent.length}');
       debugPrint('🏁 Tool calls executed: ${toolCalls.length}');
+      debugPrint('🏁 Accumulated content preview: ${accumulatedContent.length > 100 ? accumulatedContent.substring(0, 100) + '...' : accumulatedContent}');
 
       // Final response - format tool results if no text content
       String finalContent = accumulatedContent;
       if (finalContent.isEmpty && toolCalls.isNotEmpty) {
         // Format tool results since Gemini didn't provide text
+        debugPrint('🔧 No accumulated content, formatting tool results...');
         finalContent = _formatMultipleToolResults(toolCalls);
         debugPrint('📝 Generated formatted content from tool results: ${finalContent.length} chars');
       } else if (finalContent.isEmpty) {
         finalContent = 'I have completed your request.';
+        debugPrint('📝 Using fallback message');
+      } else {
+        debugPrint('📝 Using accumulated content as final response');
       }
 
       yield AIResponse(
@@ -304,6 +321,9 @@ class RealGeminiAIService implements AIService {
       // Collect all pieces of content to avoid overwriting when multiple tool
       // calls are executed. We will join these parts at the end.
       final List<String> _contentParts = [];
+
+      // Debug: Print raw LLM response text
+      debugPrint('📝 Raw LLM response text: ${response.text}');
 
       // Handle function calls
       if (response.functionCalls.isNotEmpty) {
@@ -487,8 +507,13 @@ class RealGeminiAIService implements AIService {
 
   /// Build comprehensive system prompt for financial assistant
   String _buildSystemPrompt() {
+    final now = DateTime.now();
+    final formatter = DateFormat('yyyy-MM-dd'); // Using a simple format for now
+    final currentDate = formatter.format(now);
+
     return '''
 You are an AI Financial Assistant for a personal finance management app. You have access to comprehensive financial tools and data.
+The current date is $currentDate.
 
 **Your Role:**
 - Help users understand their financial situation
@@ -502,6 +527,46 @@ You are an AI Financial Assistant for a personal finance management app. You hav
 - Provide financial insights and recommendations
 - Calculate budgets, spending patterns, and trends
 - Help with financial planning and goal setting
+
+**Language Support:**
+- Support both English and Vietnamese language interactions
+- Understand financial terms and expressions in both languages
+- Recognize transaction creation requests in natural language
+
+**CRITICAL: Transaction Creation Recognition**
+When users mention spending money or making purchases, ALWAYS create a transaction using create_transaction tool:
+
+English Examples (CREATE transaction):
+- "I bought coffee for \$5"
+- "Spent \$20 on gas" 
+- "Just ate lunch for \$15"
+- "Paid \$100 for groceries"
+
+Vietnamese Examples (CREATE transaction):
+- "mới đi ăn phở 35k" → CREATE transaction: title="Ăn phở", amount=-35000
+- "vừa mua cafe 25k" → CREATE transaction: title="Mua cafe", amount=-25000
+- "chi tiền ăn uống 50k" → CREATE transaction: title="Ăn uống", amount=-50000
+- "đi ăn trưa 40k" → CREATE transaction: title="Ăn trưa", amount=-40000
+
+Keywords for CREATING transactions:
+- English: bought, spent, paid, purchased, ate, went
+- Vietnamese: mới, vừa, chi tiền, đi ăn, mua, ăn
+
+Only use query_transactions when users want to VIEW existing transactions:
+- "Show me my transactions"
+- "Xem giao dịch của tôi"
+- "Find transactions"
+- "Tìm giao dịch"
+
+**Transaction Creation Process:**
+1. Extract amount (convert k=1000, e.g., 35k = 35000)
+2. Extract description from context (e.g., "ăn phở" = "Ăn phở")
+3. Use negative amount for expenses
+4. For defaults when not specified:
+   - account_id: Use 1 (default account) or query accounts to find default
+   - category_id: Use 1 for food/restaurant expenses, 2 for general expenses
+   - Food keywords (phở, cafe, ăn, uống): use food category
+5. Set date to today
 
 **Communication Style:**
 - Be conversational but professional
@@ -519,12 +584,15 @@ You are an AI Financial Assistant for a personal finance management app. You hav
 - Provide context for financial decisions
 
 **Tool Usage Guidelines:**
+- ALWAYS use create_transaction for spending mentions (mới, vừa, chi, đi ăn, mua)
+- Use query_transactions ONLY for viewing/searching existing transactions
 - Always use appropriate tools to access current user data
 - Format responses with actual data, not assumptions
-- Explain what you're checking when using tools
+- Explain what you're doing when using tools
 - Provide summaries and insights after retrieving data
 
 **Data Presentation:**
+- Use [TRANSACTIONS_DATA] tags for rich transaction displays in responses
 - Show amounts with proper currency formatting
 - Include relevant dates and timeframes
 - Highlight important trends or alerts
