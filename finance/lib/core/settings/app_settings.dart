@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../services/animation_performance_service.dart';
+import '../../features/agent/domain/entities/voice_command.dart';
 
 /// Global app settings manager based on the budget app's system
 class AppSettings {
@@ -147,6 +148,14 @@ class AppSettings {
       'aiModel': dotenv.env['AI_MODEL'] ?? 'gemini-1.5-pro', // Load from environment
       'aiTemperature': double.tryParse(dotenv.env['AI_TEMPERATURE'] ?? '0.3') ?? 0.3, // Load from environment
       'aiMaxTokens': int.tryParse(dotenv.env['AI_MAX_TOKENS'] ?? '4000') ?? 4000, // Load from environment
+
+      // Voice settings
+      'voiceLanguage': 'auto',
+      'voiceSpeechRate': 0.8,
+      'voicePitch': 1.0,
+      'voiceVolume': 1.0,
+      'voiceEnableHapticFeedback': true,
+      'voiceEnablePartialResults': true,
     };
   }
 
@@ -296,6 +305,79 @@ class AppSettings {
 
   static Future<void> setAiMaxTokens(int maxTokens) async {
     await set('aiMaxTokens', maxTokens);
+  }
+
+  /// Voice settings convenience methods
+  static String get voiceLanguage {
+    return get<String>('voiceLanguage') ?? 'auto';
+  }
+
+  static Future<void> setVoiceLanguage(String language) async {
+    await set('voiceLanguage', language);
+  }
+
+  static double get voiceSpeechRate {
+    return get<double>('voiceSpeechRate') ?? 0.8;
+  }
+
+  static Future<void> setVoiceSpeechRate(double rate) async {
+    await set('voiceSpeechRate', rate);
+  }
+
+  static double get voicePitch {
+    return get<double>('voicePitch') ?? 1.0;
+  }
+
+  static Future<void> setVoicePitch(double pitch) async {
+    await set('voicePitch', pitch);
+  }
+
+  static double get voiceVolume {
+    return get<double>('voiceVolume') ?? 1.0;
+  }
+
+  static Future<void> setVoiceVolume(double volume) async {
+    await set('voiceVolume', volume);
+  }
+
+  static bool get voiceEnableHapticFeedback {
+    return get<bool>('voiceEnableHapticFeedback') ?? true;
+  }
+
+  static Future<void> setVoiceEnableHapticFeedback(bool enabled) async {
+    await set('voiceEnableHapticFeedback', enabled);
+  }
+
+  static bool get voiceEnablePartialResults {
+    return get<bool>('voiceEnablePartialResults') ?? true;
+  }
+
+  static Future<void> setVoiceEnablePartialResults(bool enabled) async {
+    await set('voiceEnablePartialResults', enabled);
+  }
+
+  /// Helper method to get VoiceSettings from AppSettings
+  static VoiceSettings getVoiceSettings() {
+    return VoiceSettings(
+      language: voiceLanguage,
+      speechRate: voiceSpeechRate,
+      pitch: voicePitch,
+      volume: voiceVolume,
+      enableHapticFeedback: voiceEnableHapticFeedback,
+      enablePartialResults: voiceEnablePartialResults,
+    );
+  }
+
+  /// Helper method to save VoiceSettings to AppSettings
+  static Future<void> setVoiceSettings(VoiceSettings settings) async {
+    await Future.wait([
+      setVoiceLanguage(settings.language),
+      setVoiceSpeechRate(settings.speechRate),
+      setVoicePitch(settings.pitch),
+      setVoiceVolume(settings.volume),
+      setVoiceEnableHapticFeedback(settings.enableHapticFeedback),
+      setVoiceEnablePartialResults(settings.enablePartialResults),
+    ]);
   }
 
   /// Debug method to print all settings

@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:permission_handler/permission_handler.dart';
+import '../../../../core/settings/app_settings.dart';
 
 class SpeechService extends ChangeNotifier {
   final SpeechToText _speechToText = SpeechToText();
@@ -68,7 +69,23 @@ class SpeechService extends ChangeNotifier {
 
     try {
       _recognizedText = '';
-      final selectedLocale = localeId ?? _currentLocale;
+      
+      // Use voice language from settings if not explicitly provided
+      String selectedLocale;
+      if (localeId != null) {
+        selectedLocale = localeId;
+      } else {
+        final voiceLanguage = AppSettings.voiceLanguage;
+        if (voiceLanguage == 'auto') {
+          selectedLocale = _currentLocale; // Fall back to current locale for auto
+        } else {
+          selectedLocale = voiceLanguage;
+          // Update current locale to match settings
+          _currentLocale = voiceLanguage;
+        }
+      }
+      
+      debugPrint('🎤 SpeechService - Starting listening with locale: $selectedLocale');
       
       await _speechToText.listen(
         onResult: _onSpeechResult,

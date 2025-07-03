@@ -39,6 +39,9 @@ class FlutterNativeVoiceService implements NativeVoiceService {
   final LanguageIdentifier _languageIdentifier =
       LanguageIdentifier(confidenceThreshold: 0.5);
   
+  // Cache for available locales to avoid repeated calls
+  List<String>? _cachedAvailableLocales;
+  
   @override
   bool get isInitialized => _isInitialized;
   
@@ -314,13 +317,27 @@ class FlutterNativeVoiceService implements NativeVoiceService {
       languageForSession = _lastDetectedLocale!;
     }
     
+    // Normalize and validate Vietnamese language code
+    languageForSession = _normalizeLanguageCode(languageForSession);
+    
     debugPrint(
         '$_logTag - Starting listening session: $_currentListeningSessionId with language: $languageForSession');
+    debugPrint('$_logTag - Original language setting: ${effectiveSettings.language}');
+    debugPrint('$_logTag - Normalized language: $languageForSession');
     
-    _startListeningInternal(
-        effectiveSettings.copyWith(language: languageForSession), partialResults);
+    // Validate and fix the language asynchronously
+    _validateAndStartListening(effectiveSettings.copyWith(language: languageForSession), partialResults);
     
     return _voiceCommandController.stream;
+  }
+
+  /// Validates language and starts listening
+  Future<void> _validateAndStartListening(VoiceSettings settings, bool partialResults) async {
+    final validatedLanguage = await _validateAndFixLanguage(settings.language);
+    final validatedSettings = settings.copyWith(language: validatedLanguage);
+    
+    debugPrint('$_logTag - Final validated language: $validatedLanguage');
+    await _startListeningInternal(validatedSettings, partialResults);
   }
 
   Future<void> _startListeningInternal(
@@ -398,7 +415,7 @@ class FlutterNativeVoiceService implements NativeVoiceService {
         listenFor: settings.listeningTimeout,
         pauseFor: settings.pauseThreshold,
         partialResults: partialResults && settings.enablePartialResults,
-        localeId: settings.language == 'auto' ? null : settings.language,
+        localeId: settings.language,
         onSoundLevelChange: settings.enableVisualFeedback ? (level) {
           // You can emit sound level events here if needed
         } : null,
@@ -778,5 +795,102 @@ class FlutterNativeVoiceService implements NativeVoiceService {
       debugPrint('$_logTag - Error checking feature support for $feature: $e');
       return false;
     }
+  }
+
+  /// Normalizes language codes and validates Vietnamese support
+  String _normalizeLanguageCode(String languageCode) {
+    if (languageCode == 'auto') {
+      return languageCode;
+    }
+
+    // Map common Vietnamese language codes to proper locale IDs
+    final languageMap = <String, List<String>>{
+      'vi': ['vi-VN', 'vi'], // Vietnamese variants
+      'vietnamese': ['vi-VN', 'vi'],
+      'en': ['en-US', 'en-GB', 'en'], // English variants
+      'english': ['en-US', 'en'],
+      'zh': ['zh-CN', 'zh-TW', 'zh'], // Chinese variants
+      'ja': ['ja-JP', 'ja'], // Japanese variants
+      'ko': ['ko-KR', 'ko'], // Korean variants
+      'es': ['es-ES', 'es-MX', 'es'], // Spanish variants
+      'fr': ['fr-FR', 'fr'], // French variants
+      'de': ['de-DE', 'de'], // German variants
+    };
+
+    final lowerCode = languageCode.toLowerCase();
+    
+    // Check if it's already a valid locale ID format
+    if (lowerCode.contains('-') || lowerCode.length > 3) {
+      return languageCode;
+    }
+
+    // Try to map to proper locale
+    if (languageMap.containsKey(lowerCode)) {
+      final variants = languageMap[lowerCode]!;
+      debugPrint('$_logTag - Mapping $languageCode to Vietnamese variants: $variants');
+      return variants.first; // Return the first variant
+    }
+
+    return languageCode;
+  }
+
+  /// Validates if a language is supported by checking available locales
+  Future<String> _validateAndFixLanguage(String languageCode) async {
+    if (languageCode == 'auto') {
+      return languageCode;
+    }
+
+    // Get available locales (use cache if available)
+    _cachedAvailableLocales ??= await getAvailableSpeechLanguages();
+    final availableLocales = _cachedAvailableLocales!;
+    
+    debugPrint('$_logTag - Available speech locales: $availableLocales');
+    debugPrint('$_logTag - Requested language: $languageCode');
+
+    // Check exact match first
+    if (availableLocales.contains(languageCode)) {
+      debugPrint('$_logTag - ✅ Exact match found for $languageCode');
+      return languageCode;
+    }
+
+    // For Vietnamese, try common variants
+    if (languageCode.toLowerCase().startsWith('vi')) {
+      final vietnameseVariants = ['vi-VN', 'vi', 'vi-vi', 'vie'];
+      for (final variant in vietnameseVariants) {
+        if (availableLocales.contains(variant)) {
+          debugPrint('$_logTag - ✅ Vietnamese variant found: $variant');
+          return variant;
+        }
+      }
+      debugPrint('$_logTag - ❌ No Vietnamese variant found in available locales');
+    }
+
+    // Try language prefix match (e.g., 'en-US' for 'en')
+    final baseLanguage = languageCode.split('-').first.toLowerCase();
+    for (final locale in availableLocales) {
+      if (locale.toLowerCase().startsWith(baseLanguage)) {
+        debugPrint('$_logTag - ✅ Language prefix match found: $locale for $languageCode');
+        return locale;
+      }
+    }
+
+    // Fallback to English or first available locale
+    final fallbacks = ['en-US', 'en', 'en-GB'];
+    for (final fallback in fallbacks) {
+      if (availableLocales.contains(fallback)) {
+        debugPrint('$_logTag - ⚠️ Falling back to $fallback for unsupported $languageCode');
+        return fallback;
+      }
+    }
+
+    // Last resort: return first available locale
+    if (availableLocales.isNotEmpty) {
+      final fallback = availableLocales.first;
+      debugPrint('$_logTag - ⚠️ Using first available locale: $fallback for $languageCode');
+      return fallback;
+    }
+
+    debugPrint('$_logTag - ❌ No available locales found, returning original: $languageCode');
+    return languageCode;
   }
 } 

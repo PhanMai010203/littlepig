@@ -5,12 +5,13 @@ import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/speech_service.dart';
+import '../../domain/entities/voice_command.dart';
+import '../../../../core/settings/app_settings.dart';
 
 import '../../domain/services/ai_service.dart';
 import '../../domain/services/native_voice_service.dart';
 import '../../data/services/ai_service_factory.dart';
 import '../../data/services/flutter_native_voice_service.dart';
-import '../widgets/voice_chat_interface.dart';
 import '../../../../shared/widgets/chat_bubble.dart';
 
 class AIChatScreen extends StatefulWidget {
@@ -30,11 +31,9 @@ class _AIChatScreenState extends State<AIChatScreen> {
   
   bool _isAITyping = false;
   bool _isAIServiceReady = false;
-  bool _showVoiceInterface = false;
   String? _lastError;
   AIService? _aiService;
   NativeVoiceService? _nativeVoiceService;
-  final GlobalKey _voiceInterfaceKey = GlobalKey();
 
   @override
   void initState() {
@@ -58,9 +57,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
   Future<void> _initializeNativeVoiceService() async {
     try {
       _nativeVoiceService = FlutterNativeVoiceService();
-      final settings = await _nativeVoiceService!.getSystemDefaultSettings();
+      // Load voice settings from AppSettings
+      final settings = AppSettings.getVoiceSettings();
       await _nativeVoiceService!.initialize(settings);
-      debugPrint('✅ AI Chat - Native voice service initialized');
+      debugPrint('✅ AI Chat - Native voice service initialized with saved settings');
     } catch (e) {
       debugPrint('❌ AI Chat - Native voice service initialization failed: $e');
     }
@@ -453,10 +453,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
     );
   }
 
-  void _onVoiceMessageSent(String message, {bool isVoiceMessage = false}) {
-    debugPrint('🎤 AI Chat - Voice message sent: "$message"');
-    _sendMessage(message, isVoiceMessage: isVoiceMessage);
-  }
 
   Future<void> _speakMessage(String message) async {
     if (_nativeVoiceService == null) {
@@ -478,6 +474,49 @@ class _AIChatScreenState extends State<AIChatScreen> {
       }
     } catch (e) {
       debugPrint('❌ AI Chat - Error speaking message: $e');
+    }
+  }
+
+  void _showVoiceSettings(BuildContext context) {
+    if (_nativeVoiceService == null) return;
+    
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) => _VoiceSettingsSheet(
+        currentSettings: AppSettings.getVoiceSettings(),
+        voiceService: _nativeVoiceService!,
+        onSettingsChanged: (settings) async {
+          // Save settings to AppSettings
+          await AppSettings.setVoiceSettings(settings);
+          // Apply settings to the voice service
+          _nativeVoiceService!.updateSettings(settings);
+        },
+      ),
+    );
+  }
+
+  String _getLocaleDisplayText(String locale) {
+    debugPrint('🎤 AI Chat - Current locale for display: $locale, Voice setting: ${AppSettings.voiceLanguage}');
+    
+    if (locale.startsWith('vi')) {
+      return 'VI';
+    } else if (locale.startsWith('en')) {
+      return 'EN';
+    } else if (locale.startsWith('es')) {
+      return 'ES';
+    } else if (locale.startsWith('fr')) {
+      return 'FR';
+    } else if (locale.startsWith('de')) {
+      return 'DE';
+    } else if (locale.startsWith('zh')) {
+      return 'ZH';
+    } else if (locale.startsWith('ja')) {
+      return 'JA';
+    } else if (locale.startsWith('ko')) {
+      return 'KO';
+    } else {
+      return locale.length > 2 ? locale.substring(0, 2).toUpperCase() : locale.toUpperCase();
     }
   }
 
@@ -526,19 +565,13 @@ class _AIChatScreenState extends State<AIChatScreen> {
               icon: Icon(Icons.refresh),
               tooltip: 'Retry AI Service',
             ),
-          Consumer<SpeechService>(
-            builder: (context, speechService, child) {
-              return IconButton(
-                onPressed: () {
-                  speechService.switchLocale();
-                },
-                icon: Icon(
-                  Icons.language,
-                  color: colorScheme.primary,
-                ),
-                tooltip: 'agent.switch_language'.tr(),
-              );
-            },
+          IconButton(
+            onPressed: _nativeVoiceService != null ? () => _showVoiceSettings(context) : null,
+            icon: Icon(
+              Icons.language,
+              color: colorScheme.primary,
+            ),
+            tooltip: 'agent.switch_language'.tr(),
           ),
         ],
       ),
@@ -647,7 +680,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                       ),
                     ],
                     Text(
-                      speechService.currentLocale == 'en_US' ? 'EN' : 'VI',
+                      _getLocaleDisplayText(speechService.currentLocale),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.secondary,
                         fontWeight: FontWeight.bold,
@@ -723,15 +756,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                 ),
               ],
             ),
-            child: _showVoiceInterface
-                ? VoiceChatInterface(
-                    key: _voiceInterfaceKey,
-                    onMessageSent: _onVoiceMessageSent,
-                    onSpeakResponse: _speakMessage,
-                    enableVisualFeedback: true,
-                    enableHapticFeedback: true,
-                  )
-                : Row(
+            child: Row(
                     children: [
                       Expanded(
                         child: TextField(
@@ -800,56 +825,6 @@ class _AIChatScreenState extends State<AIChatScreen> {
                       ),
                     ],
                   ),
-          ),
-          
-          // Interface Toggle Bar
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              border: Border(
-                top: BorderSide(
-                  color: colorScheme.outline.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _showVoiceInterface ? Icons.keyboard : Icons.record_voice_over,
-                  size: 16,
-                  color: colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  _showVoiceInterface 
-                      ? 'Using voice interface - full speech recognition and TTS'
-                      : 'Using text interface - tap to switch to voice',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
-                ),
-                const Spacer(),
-                TextButton.icon(
-                  onPressed: () {
-                    setState(() {
-                      _showVoiceInterface = !_showVoiceInterface;
-                    });
-                  },
-                  icon: Icon(
-                    _showVoiceInterface ? Icons.keyboard : Icons.keyboard_voice, 
-                    size: 16,
-                  ),
-                  label: Text(_showVoiceInterface ? 'Text Input' : 'Voice Chat'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: colorScheme.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -1069,5 +1044,463 @@ class _DetailRow extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+
+/// Voice settings bottom sheet
+class _VoiceSettingsSheet extends StatefulWidget {
+  final VoiceSettings currentSettings;
+  final NativeVoiceService voiceService;
+  final Function(VoiceSettings) onSettingsChanged;
+
+  const _VoiceSettingsSheet({
+    required this.currentSettings,
+    required this.voiceService,
+    required this.onSettingsChanged,
+  });
+
+  @override
+  State<_VoiceSettingsSheet> createState() => _VoiceSettingsSheetState();
+}
+
+class _VoiceSettingsSheetState extends State<_VoiceSettingsSheet> {
+  late VoiceSettings _settings;
+  List<String> _availableLanguages = ['auto'];
+  bool _isLoadingLanguages = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _settings = widget.currentSettings;
+    _loadAvailableLanguages();
+  }
+
+  Future<void> _loadAvailableLanguages() async {
+    try {
+      // Load SPEECH RECOGNITION languages (STT) from device
+      final deviceLanguages = await widget.voiceService.getAvailableSpeechLanguages();
+      debugPrint('🎤 Voice Settings - Device speech languages: $deviceLanguages');
+      debugPrint('🎤 Voice Settings - Current setting language: ${_settings.language}');
+      
+      // Create comprehensive language list with common languages (both dash and underscore formats)
+      final commonLanguages = [
+        'auto',
+        // English
+        'en-US', 'en-GB', 'en', 'en_US', 'en_GB',
+        // Vietnamese - THE MOST IMPORTANT!
+        'vi-VN', 'vi', 'vi_VN', 'vietnamese',
+        // Spanish
+        'es-ES', 'es-MX', 'es', 'es_ES', 'es_MX',
+        // French
+        'fr-FR', 'fr', 'fr_FR',
+        // German  
+        'de-DE', 'de', 'de_DE',
+        // Italian
+        'it-IT', 'it', 'it_IT',
+        // Portuguese
+        'pt-BR', 'pt', 'pt_BR',
+        // Russian
+        'ru-RU', 'ru', 'ru_RU',
+        // Japanese
+        'ja-JP', 'ja', 'ja_JP',
+        // Korean
+        'ko-KR', 'ko', 'ko_KR',
+        // Chinese
+        'zh-CN', 'zh-TW', 'zh', 'zh_CN', 'zh_TW',
+        // Other languages
+        'ar', 'hi', 'th', 'id', 'ms', 'tl', 'tr', 'nl',
+        'sv', 'no', 'da', 'fi', 'pl', 'cs', 'sk', 'hu',
+        'ro', 'bg', 'hr', 'sl'
+      ];
+      
+      // Create a Set to avoid duplicates
+      final languageSet = <String>{};
+      
+      // Add 'auto' first
+      languageSet.add('auto');
+      
+      // Add device languages (normalize and check against common languages)
+      for (final deviceLang in deviceLanguages) {
+        if (deviceLang == 'auto') continue;
+        
+        // Normalize language code (convert underscores to dashes)
+        final normalizedLang = _normalizeLanguageCode(deviceLang);
+        
+        // Check if normalized version is in our common languages or if device lang is
+        if (commonLanguages.contains(normalizedLang) || commonLanguages.contains(deviceLang)) {
+          languageSet.add(normalizedLang);
+        }
+        
+        debugPrint('🎤 Voice Settings - Device language: $deviceLang -> normalized: $normalizedLang');
+      }
+      
+      // If no Vietnamese variant found in device languages, add vi-VN anyway
+      final hasVietnamese = languageSet.any((lang) => lang.startsWith('vi'));
+      if (!hasVietnamese) {
+        debugPrint('🎤 Voice Settings - Vietnamese not found in device languages, adding vi-VN');
+        languageSet.add('vi-VN');
+      }
+      
+      // Ensure current language is in the list
+      if (_settings.language != 'auto' && !languageSet.contains(_settings.language)) {
+        debugPrint('🎤 Voice Settings - Adding current language ${_settings.language} to available list');
+        languageSet.add(_settings.language);
+      }
+      
+      // Convert to sorted list (keeping 'auto' first)
+      final sortedLanguages = languageSet.toList();
+      sortedLanguages.remove('auto');
+      sortedLanguages.sort();
+      sortedLanguages.insert(0, 'auto');
+      
+      setState(() {
+        _availableLanguages = sortedLanguages;
+        _isLoadingLanguages = false;
+      });
+      debugPrint('🎤 Voice Settings - Final available languages: $_availableLanguages');
+    } catch (e) {
+      debugPrint('❌ Voice Settings - Error loading languages: $e');
+      setState(() {
+        // Fallback to essential languages if loading fails
+        _availableLanguages = ['auto', 'en-US', 'vi-VN', 'es-ES', 'fr-FR', 'de-DE', 'zh-CN', 'ja-JP'];
+        _isLoadingLanguages = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header
+          Row(
+            children: [
+              Icon(
+                Icons.settings_voice,
+                color: colorScheme.primary,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Voice Settings',
+                style: theme.textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Language selection
+          Text(
+            'Language',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (_isLoadingLanguages)
+            const Center(child: CircularProgressIndicator())
+          else
+            DropdownButtonFormField<String>(
+              value: _availableLanguages.contains(_settings.language) ? _settings.language : 'auto',
+              decoration: InputDecoration(
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+              items: _availableLanguages.map((language) {
+                return DropdownMenuItem(
+                  value: language,
+                  child: Text(_getLanguageDisplayName(language)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _settings = _settings.copyWith(language: value);
+                  });
+                }
+              },
+            ),
+          
+          const SizedBox(height: 16),
+          
+          // Speech rate
+          Text(
+            'Speech Rate: ${_settings.speechRate.toStringAsFixed(1)}x',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Slider(
+            value: _settings.speechRate,
+            min: 0.1,
+            max: 2.0,
+            divisions: 19,
+            onChanged: (value) {
+              setState(() {
+                _settings = _settings.copyWith(speechRate: value);
+              });
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Pitch
+          Text(
+            'Pitch: ${_settings.pitch.toStringAsFixed(1)}x',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Slider(
+            value: _settings.pitch,
+            min: 0.5,
+            max: 2.0,
+            divisions: 15,
+            onChanged: (value) {
+              setState(() {
+                _settings = _settings.copyWith(pitch: value);
+              });
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Volume
+          Text(
+            'Volume: ${(_settings.volume * 100).round()}%',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          Slider(
+            value: _settings.volume,
+            min: 0.0,
+            max: 1.0,
+            divisions: 20,
+            onChanged: (value) {
+              setState(() {
+                _settings = _settings.copyWith(volume: value);
+              });
+            },
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Switches
+          SwitchListTile(
+            title: const Text('Enable Haptic Feedback'),
+            value: _settings.enableHapticFeedback,
+            onChanged: (value) {
+              setState(() {
+                _settings = _settings.copyWith(enableHapticFeedback: value);
+              });
+            },
+          ),
+          
+          SwitchListTile(
+            title: const Text('Enable Partial Results'),
+            subtitle: const Text('Show speech recognition results as you speak'),
+            value: _settings.enablePartialResults,
+            onChanged: (value) {
+              setState(() {
+                _settings = _settings.copyWith(enablePartialResults: value);
+              });
+            },
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Action buttons
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Cancel'),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // Apply settings and close
+                    widget.onSettingsChanged(_settings);
+                    Navigator.of(context).pop();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: const Text('Save'),
+                ),
+              ),
+            ],
+          ),
+          
+          // Safe area bottom padding
+          SizedBox(height: MediaQuery.of(context).padding.bottom),
+        ],
+      ),
+    );
+  }
+
+  String _normalizeLanguageCode(String languageCode) {
+    // Convert underscores to dashes (Android often uses en_US instead of en-US)
+    String normalized = languageCode.replaceAll('_', '-');
+    
+    // Handle common variations
+    final languageMap = {
+      'en': 'en-US',
+      'vi': 'vi-VN', 
+      'es': 'es-ES',
+      'fr': 'fr-FR',
+      'de': 'de-DE',
+      'it': 'it-IT',
+      'pt': 'pt-BR',
+      'ru': 'ru-RU',
+      'ja': 'ja-JP',
+      'ko': 'ko-KR',
+      'zh': 'zh-CN',
+    };
+    
+    // If it's a simple language code, map it to a region-specific one
+    if (languageMap.containsKey(normalized)) {
+      normalized = languageMap[normalized]!;
+    }
+    
+    return normalized;
+  }
+
+  String _getLanguageDisplayName(String languageCode) {
+    if (languageCode == 'auto') {
+      return 'Automatic Detection';
+    }
+    final Map<String, String> languageNames = {
+      // English variants
+      'en-US': 'English (US) 🇺🇸',
+      'en-GB': 'English (UK) 🇬🇧',
+      'en': 'English',
+      'en_US': 'English (US) 🇺🇸', // Android format
+      'en_GB': 'English (UK) 🇬🇧', // Android format
+      
+      // Spanish variants
+      'es-ES': 'Spanish (Spain) 🇪🇸',
+      'es-MX': 'Spanish (Mexico) 🇲🇽',
+      'es': 'Spanish',
+      'es_ES': 'Spanish (Spain) 🇪🇸',
+      'es_MX': 'Spanish (Mexico) 🇲🇽',
+      
+      // French variants
+      'fr-FR': 'French (France) 🇫🇷',
+      'fr': 'French',
+      'fr_FR': 'French (France) 🇫🇷',
+      
+      // German variants
+      'de-DE': 'German (Germany) 🇩🇪',
+      'de': 'German',
+      'de_DE': 'German (Germany) 🇩🇪',
+      
+      // Italian variants
+      'it-IT': 'Italian (Italy) 🇮🇹',
+      'it': 'Italian',
+      'it_IT': 'Italian (Italy) 🇮🇹',
+      
+      // Portuguese variants
+      'pt-BR': 'Portuguese (Brazil) 🇧🇷',
+      'pt': 'Portuguese',
+      'pt_BR': 'Portuguese (Brazil) 🇧🇷',
+      
+      // Russian variants
+      'ru-RU': 'Russian (Russia) 🇷🇺',
+      'ru': 'Russian',
+      'ru_RU': 'Russian (Russia) 🇷🇺',
+      
+      // Japanese variants
+      'ja-JP': 'Japanese (Japan) 🇯🇵',
+      'ja': 'Japanese',
+      'ja_JP': 'Japanese (Japan) 🇯🇵',
+      
+      // Korean variants
+      'ko-KR': 'Korean (Korea) 🇰🇷',
+      'ko': 'Korean',
+      'ko_KR': 'Korean (Korea) 🇰🇷',
+      
+      // Chinese variants
+      'zh-CN': 'Chinese (Simplified) 🇨🇳',
+      'zh-TW': 'Chinese (Traditional) 🇹🇼',
+      'zh': 'Chinese',
+      'zh_CN': 'Chinese (Simplified) 🇨🇳',
+      'zh_TW': 'Chinese (Traditional) 🇹🇼',
+      
+      // Vietnamese variants - THE IMPORTANT ONES!
+      'vi-VN': 'Vietnamese (Vietnam) 🇻🇳',
+      'vi': 'Vietnamese 🇻🇳',
+      'vi_VN': 'Vietnamese (Vietnam) 🇻🇳', // Android format
+      'vietnamese': 'Vietnamese 🇻🇳',
+      'ar': 'Arabic',
+      'hi': 'Hindi',
+      'th': 'Thai',
+      'id': 'Indonesian',
+      'ms': 'Malay',
+      'tl': 'Tagalog',
+      'tr': 'Turkish',
+      'nl': 'Dutch',
+      'sv': 'Swedish',
+      'no': 'Norwegian',
+      'da': 'Danish',
+      'fi': 'Finnish',
+      'pl': 'Polish',
+      'cs': 'Czech',
+      'sk': 'Slovak',
+      'hu': 'Hungarian',
+      'ro': 'Romanian',
+      'bg': 'Bulgarian',
+      'hr': 'Croatian',
+      'sl': 'Slovenian',
+      'et': 'Estonian',
+      'lv': 'Latvian',
+      'lt': 'Lithuanian',
+      'uk': 'Ukrainian',
+      'he': 'Hebrew',
+      'fa': 'Persian',
+      'ur': 'Urdu',
+      'bn': 'Bengali',
+      'ta': 'Tamil',
+      'te': 'Telugu',
+      'mr': 'Marathi',
+      'gu': 'Gujarati',
+      'kn': 'Kannada',
+    };
+    
+    return languageNames[languageCode] ?? languageCode.toUpperCase();
   }
 }
