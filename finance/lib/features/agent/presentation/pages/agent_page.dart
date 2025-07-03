@@ -326,10 +326,7 @@ class _ChatSection extends StatelessWidget {
                   onPressed: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => ChangeNotifierProvider(
-                          create: (context) => SpeechService(),
-                          child: const AIChatScreen(),
-                        ),
+                        builder: (context) => const AIChatScreen(),
                       ),
                     );
                   },

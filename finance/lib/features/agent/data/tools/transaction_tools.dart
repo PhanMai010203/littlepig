@@ -116,8 +116,16 @@ class QueryTransactionsTool extends FinancialDataTool {
           break;
           
         case 'by_date_range':
-          final startDate = DateTime.parse(parameters['start_date'] as String);
-          final endDate = DateTime.parse(parameters['end_date'] as String);
+          final startDate = _safeParseDate(parameters['start_date'] as String);
+          final endDate = _safeParseDate(parameters['end_date'] as String);
+
+          if (startDate == null || endDate == null) {
+            return {
+              'success': false,
+              'error': 'Invalid date format. Please use YYYY-MM-DD.',
+            };
+          }
+
           transactions = await _transactionRepository.getTransactionsByDateRange(startDate, endDate);
           break;
           
@@ -337,8 +345,8 @@ class CreateTransactionTool extends FinancialDataTool {
   Future<dynamic> execute(Map<String, dynamic> parameters) async {
     try {
       final now = DateTime.now();
-      final date = parameters.containsKey('date') 
-          ? DateTime.parse(parameters['date'] as String)
+      final date = parameters.containsKey('date')
+          ? (_safeParseDate(parameters['date'] as String) ?? now)
           : now;
           
       final transactionType = parameters.containsKey('transaction_type')
@@ -562,8 +570,8 @@ class UpdateTransactionTool extends FinancialDataTool {
         categoryId: parameters['category_id'] as int?,
         accountId: parameters['account_id'] as int?,
         note: parameters['note'] as String?,
-        date: parameters.containsKey('date') 
-            ? DateTime.parse(parameters['date'] as String)
+        date: parameters.containsKey('date')
+            ? _safeParseDate(parameters['date'] as String)
             : null,
         updatedAt: DateTime.now(),
       );
@@ -840,12 +848,20 @@ class TransactionAnalyticsTool extends FinancialDataTool {
   Future<dynamic> execute(Map<String, dynamic> parameters) async {
     try {
       final analysisType = parameters['analysis_type'] as String;
-      final startDate = parameters.containsKey('start_date') 
-          ? DateTime.parse(parameters['start_date'] as String)
+      final startDate = parameters.containsKey('start_date')
+          ? _safeParseDate(parameters['start_date'] as String)
           : null;
       final endDate = parameters.containsKey('end_date')
-          ? DateTime.parse(parameters['end_date'] as String)
+          ? _safeParseDate(parameters['end_date'] as String)
           : null;
+
+      if ((parameters.containsKey('start_date') && startDate == null) ||
+          (parameters.containsKey('end_date') && endDate == null)) {
+        return {
+          'success': false,
+          'error': 'Invalid date format for start_date or end_date. Please use YYYY-MM-DD.',
+        };
+      }
 
       switch (analysisType) {
         case 'spending_by_category':
@@ -988,4 +1004,11 @@ class TransactionAnalyticsTool extends FinancialDataTool {
     if (endDate == null) return 'From ${startDate.toIso8601String().split('T')[0]}';
     return '${startDate.toIso8601String().split('T')[0]} to ${endDate.toIso8601String().split('T')[0]}';
   }
+}
+
+/// Safely parse a date string in `YYYY-MM-DD` (or ISO-8601) format.
+/// Returns `null` if the string cannot be parsed.
+DateTime? _safeParseDate(String? dateStr) {
+  if (dateStr == null) return null;
+  return DateTime.tryParse(dateStr);
 }

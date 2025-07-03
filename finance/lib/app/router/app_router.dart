@@ -2,7 +2,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import '../../core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:provider/provider.dart';
 
 import '../../features/accounts/domain/repositories/account_repository.dart';
 import '../../features/budgets/domain/repositories/budget_repository.dart';
@@ -78,10 +77,7 @@ class AppRouter {
             name: AppRoutes.agent,
             pageBuilder: (context, state) =>
                 AppPageTransitions.noTransitionPage(
-              child: ChangeNotifierProvider(
-                create: (_) => SpeechService(),
-                child: const AIChatScreen(),
-              ),
+              child: const AIChatScreen(),
               name: state.name,
               key: state.pageKey,
             ),
