@@ -5,8 +5,12 @@ import 'package:uuid/uuid.dart';
 
 import '../../domain/entities/chat_message.dart';
 import '../../domain/entities/speech_service.dart';
+
 import '../../domain/services/ai_service.dart';
+import '../../domain/services/native_voice_service.dart';
 import '../../data/services/ai_service_factory.dart';
+import '../../data/services/flutter_native_voice_service.dart';
+import '../widgets/voice_chat_interface.dart';
 import '../../../../shared/widgets/chat_bubble.dart';
 
 class AIChatScreen extends StatefulWidget {
@@ -26,8 +30,11 @@ class _AIChatScreenState extends State<AIChatScreen> {
   
   bool _isAITyping = false;
   bool _isAIServiceReady = false;
+  bool _showVoiceInterface = false;
   String? _lastError;
   AIService? _aiService;
+  NativeVoiceService? _nativeVoiceService;
+  final GlobalKey _voiceInterfaceKey = GlobalKey();
 
   @override
   void initState() {
@@ -38,12 +45,24 @@ class _AIChatScreenState extends State<AIChatScreen> {
   Future<void> _initializeServices() async {
     try {
       await _initializeSpeechService();
+      await _initializeNativeVoiceService();
       await _initializeAIService();
       _addWelcomeMessage();
     } catch (e) {
       setState(() {
         _lastError = 'Failed to initialize services: $e';
       });
+    }
+  }
+
+  Future<void> _initializeNativeVoiceService() async {
+    try {
+      _nativeVoiceService = FlutterNativeVoiceService();
+      final settings = await _nativeVoiceService!.getSystemDefaultSettings();
+      await _nativeVoiceService!.initialize(settings);
+      debugPrint('✅ AI Chat - Native voice service initialized');
+    } catch (e) {
+      debugPrint('❌ AI Chat - Native voice service initialization failed: $e');
     }
   }
 
@@ -434,9 +453,38 @@ class _AIChatScreenState extends State<AIChatScreen> {
     );
   }
 
+  void _onVoiceMessageSent(String message, {bool isVoiceMessage = false}) {
+    debugPrint('🎤 AI Chat - Voice message sent: "$message"');
+    _sendMessage(message, isVoiceMessage: isVoiceMessage);
+  }
+
+  Future<void> _speakMessage(String message) async {
+    if (_nativeVoiceService == null) {
+      debugPrint('⚠️ AI Chat - Native voice service not available');
+      return;
+    }
+
+    try {
+      debugPrint('🔊 AI Chat - Speaking message: "$message"');
+      // Clean the message text for TTS (remove special formatting)
+      String cleanMessage = message
+          .replaceAll(RegExp(r'\[TRANSACTIONS_DATA\].*?\[/TRANSACTIONS_DATA\]', dotAll: true), '')
+          .replaceAll(RegExp(r'[•\-\+]'), '')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+      
+      if (cleanMessage.isNotEmpty) {
+        await _nativeVoiceService!.speak(cleanMessage);
+      }
+    } catch (e) {
+      debugPrint('❌ AI Chat - Error speaking message: $e');
+    }
+  }
+
   @override
   void dispose() {
     _speechService?.removeListener(_onSpeechResult);
+    _nativeVoiceService?.dispose();
     _textController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -679,6 +727,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
                           isVoiceMessage: message.isVoiceMessage,
                           isTyping: message.isTyping,
                           onTransactionTap: _handleTransactionTap,
+                          onSpeakMessage: !message.isFromUser ? _speakMessage : null,
                         ),
                       );
                     },
@@ -698,72 +747,130 @@ class _AIChatScreenState extends State<AIChatScreen> {
                 ),
               ],
             ),
+            child: _showVoiceInterface
+                ? VoiceChatInterface(
+                    key: _voiceInterfaceKey,
+                    onMessageSent: _onVoiceMessageSent,
+                    onSpeakResponse: _speakMessage,
+                    enableVisualFeedback: true,
+                    enableHapticFeedback: true,
+                  )
+                : Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _textController,
+                          decoration: InputDecoration(
+                            hintText: _isAIServiceReady 
+                                ? 'Ask me about your finances...' 
+                                : 'agent.type_message'.tr(),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(24),
+                              borderSide: BorderSide.none,
+                            ),
+                            filled: true,
+                            fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                          ),
+                          maxLines: null,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (text) => _sendMessage(text),
+                          enabled: !_isAITyping,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Consumer<SpeechService>(
+                        builder: (context, speechService, child) {
+                          return IconButton.filled(
+                            onPressed: speechService.isAvailable && !_isAITyping
+                                ? () {
+                                    if (speechService.isListening) {
+                                      speechService.stopListening();
+                                    } else {
+                                      speechService.startListening();
+                                    }
+                                  }
+                                : null,
+                            icon: Icon(
+                              speechService.isListening ? Icons.mic_off : Icons.mic,
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: speechService.isListening 
+                                  ? colorScheme.primary 
+                                  : colorScheme.primaryContainer,
+                              foregroundColor: speechService.isListening 
+                                  ? colorScheme.onPrimary 
+                                  : colorScheme.onPrimaryContainer,
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton.filled(
+                        onPressed: _isAITyping ? null : () => _sendMessage(_textController.text),
+                        icon: _isAITyping 
+                            ? SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: colorScheme.onPrimary,
+                                ),
+                              )
+                            : const Icon(Icons.send),
+                      ),
+                    ],
+                  ),
+          ),
+          
+          // Interface Toggle Bar
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              border: Border(
+                top: BorderSide(
+                  color: colorScheme.outline.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+            ),
             child: Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _textController,
-                    decoration: InputDecoration(
-                      hintText: _isAIServiceReady 
-                          ? 'Ask me about your finances...' 
-                          : 'agent.type_message'.tr(),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(24),
-                        borderSide: BorderSide.none,
-                      ),
-                      filled: true,
-                      fillColor: colorScheme.surfaceVariant.withOpacity(0.5),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 12,
-                      ),
-                    ),
-                    maxLines: null,
-                    textInputAction: TextInputAction.send,
-                    onSubmitted: (text) => _sendMessage(text),
-                    enabled: !_isAITyping,
+                Icon(
+                  _showVoiceInterface ? Icons.keyboard : Icons.record_voice_over,
+                  size: 16,
+                  color: colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  _showVoiceInterface 
+                      ? 'Using voice interface - full speech recognition and TTS'
+                      : 'Using text interface - tap to switch to voice',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Consumer<SpeechService>(
-                  builder: (context, speechService, child) {
-                    return IconButton.filled(
-                      onPressed: speechService.isAvailable && !_isAITyping
-                          ? () {
-                              if (speechService.isListening) {
-                                speechService.stopListening();
-                              } else {
-                                speechService.startListening();
-                              }
-                            }
-                          : null,
-                      icon: Icon(
-                        speechService.isListening ? Icons.mic_off : Icons.mic,
-                      ),
-                      style: IconButton.styleFrom(
-                        backgroundColor: speechService.isListening 
-                            ? colorScheme.primary 
-                            : colorScheme.primaryContainer,
-                        foregroundColor: speechService.isListening 
-                            ? colorScheme.onPrimary 
-                            : colorScheme.onPrimaryContainer,
-                      ),
-                    );
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showVoiceInterface = !_showVoiceInterface;
+                    });
                   },
-                ),
-                const SizedBox(width: 8),
-                IconButton.filled(
-                  onPressed: _isAITyping ? null : () => _sendMessage(_textController.text),
-                  icon: _isAITyping 
-                      ? SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: colorScheme.onPrimary,
-                          ),
-                        )
-                      : const Icon(Icons.send),
+                  icon: Icon(
+                    _showVoiceInterface ? Icons.keyboard : Icons.keyboard_voice, 
+                    size: 16,
+                  ),
+                  label: Text(_showVoiceInterface ? 'Text Input' : 'Voice Chat'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                  ),
                 ),
               ],
             ),

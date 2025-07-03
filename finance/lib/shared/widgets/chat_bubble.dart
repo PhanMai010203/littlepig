@@ -11,6 +11,7 @@ class ChatBubble extends StatelessWidget {
     this.isVoiceMessage = false,
     this.isTyping = false,
     this.onTransactionTap,
+    this.onSpeakMessage,
   });
 
   final String message;
@@ -19,6 +20,7 @@ class ChatBubble extends StatelessWidget {
   final bool isVoiceMessage;
   final bool isTyping;
   final Function(Map<String, dynamic>)? onTransactionTap;
+  final Function(String)? onSpeakMessage;
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +85,24 @@ class ChatBubble extends StatelessWidget {
                               fontStyle: FontStyle.italic,
                             ),
                           ),
+                          if (!isFromUser) ...[
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: onSpeakMessage != null ? () => onSpeakMessage!(message) : null,
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: colorScheme.primary.withValues(alpha: 0.1),
+                                ),
+                                child: Icon(
+                                  Icons.volume_up,
+                                  size: 12,
+                                  color: colorScheme.primary,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

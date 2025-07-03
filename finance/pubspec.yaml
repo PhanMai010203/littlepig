@@ -99,6 +99,7 @@ dependencies:
   flutter_background_service: ^5.1.0
   sa3_liquid: ^1.0.1
   mockito: ^5.4.6
+  flutter_tts: ^4.2.3
 
 dev_dependencies:
   flutter_test:
