@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'dart:collection';
 
 import '../../domain/entities/ai_response.dart';
 import '../../domain/entities/ai_tool_call.dart';
@@ -453,6 +454,9 @@ class _MockTool {
 class DatabaseToolRegistry implements AIToolManager {
   final Map<String, dynamic> _tools = {};
   final Map<String, AIToolConfiguration> _toolConfigurations = {};
+  final LinkedHashMap<String, _CacheEntry> _cache = LinkedHashMap();
+  static const int _cacheCapacity = 100;
+  static const Duration _defaultCacheTTL = Duration(minutes: 5);
 
   DatabaseToolRegistry() {
     debugPrint('🏗️ DatabaseToolRegistry - Constructor called');
@@ -500,6 +504,14 @@ class DatabaseToolRegistry implements AIToolManager {
     debugPrint('⚙️ Tool call ID: ${toolCall.id}');
     debugPrint('⚙️ Tool arguments: ${jsonEncode(toolCall.arguments)}');
     
+    final cacheKey = '${toolCall.name}-${jsonEncode(toolCall.arguments)}';
+    final cachedEntry = _cache[cacheKey];
+    if (cachedEntry != null &&
+        DateTime.now().difference(cachedEntry.timestamp) <= _defaultCacheTTL) {
+      debugPrint('⚡ DatabaseToolRegistry - Cache hit for $cacheKey');
+      return cachedEntry.result;
+    }
+
     final tool = _tools[toolCall.name];
     if (tool == null) {
       debugPrint('❌ Tool not found: ${toolCall.name}');
@@ -521,12 +533,14 @@ class DatabaseToolRegistry implements AIToolManager {
       final previewLength = resultString.length > 200 ? 200 : resultString.length;
       debugPrint('✅ Result preview: ${resultString.substring(0, previewLength)}${resultString.length > 200 ? '...' : ''}');
       
-      return ToolExecutionResult(
+      final executionResult = ToolExecutionResult(
         toolCallId: toolCall.id,
         result: result,
         success: true,
         executedAt: endTime,
       );
+      _addToCache(cacheKey, executionResult);
+      return executionResult;
     } catch (e) {
       final endTime = DateTime.now();
       debugPrint('❌ Tool execution failed: $e');
@@ -541,6 +555,16 @@ class DatabaseToolRegistry implements AIToolManager {
       );
     }
   }
+
+  void _addToCache(String key, ToolExecutionResult result) {
+    _cache[key] = _CacheEntry(result, DateTime.now());
+    if (_cache.length > _cacheCapacity) {
+      _cache.remove(_cache.keys.first);
+    }
+  }
+
+  /// Clears all cached tool results – useful for tests and debugging
+  void clearCache() => _cache.clear();
 
   @override
   Future<List<ToolExecutionResult>> executeTools(List<AIToolCall> toolCalls) async {
@@ -569,6 +593,13 @@ class DatabaseToolRegistry implements AIToolManager {
     debugPrint('🔍 Configuration found: ${config != null}');
     return config;
   }
+}
+
+/// Internal cache entry for storing tool execution results with timestamp
+class _CacheEntry {
+  final ToolExecutionResult result;
+  final DateTime timestamp;
+  const _CacheEntry(this.result, this.timestamp);
 }
 
 /// Simple conversation manager implementation
