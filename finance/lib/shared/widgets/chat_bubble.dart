@@ -137,7 +137,12 @@ class ChatBubble extends StatelessWidget {
       final startIndex = message.indexOf(startTag);
       final endIndex = message.indexOf(endTag);
       
-      if (startIndex == -1 || endIndex == -1) {
+      // Validate that both tags exist and appear in the expected order.
+      // We also ensure that there is at least one character between the tags
+      // (startTag.length is added to startIndex to represent the first
+      // character after the start tag). If any of these conditions fail we
+      // fall back to rendering plain text to avoid a RangeError.
+      if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex + startTag.length) {
         return _buildFallbackText(theme, colorScheme);
       }
       
