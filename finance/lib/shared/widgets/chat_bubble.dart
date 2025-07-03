@@ -134,15 +134,16 @@ class ChatBubble extends StatelessWidget {
       const startTag = '[TRANSACTIONS_DATA]';
       const endTag = '[/TRANSACTIONS_DATA]';
       
+      // Locate the first occurrence of the start tag.
       final startIndex = message.indexOf(startTag);
-      final endIndex = message.indexOf(endTag);
-      
-      // Validate that both tags exist and appear in the expected order.
-      // We also ensure that there is at least one character between the tags
-      // (startTag.length is added to startIndex to represent the first
-      // character after the start tag). If any of these conditions fail we
-      // fall back to rendering plain text to avoid a RangeError.
-      if (startIndex == -1 || endIndex == -1 || endIndex <= startIndex + startTag.length) {
+      if (startIndex == -1) {
+        return _buildFallbackText(theme, colorScheme);
+      }
+
+      // Locate the first occurrence of the end tag *after* the start tag to
+      // guarantee correct ordering and avoid substring range errors.
+      final endIndex = message.indexOf(endTag, startIndex + startTag.length);
+      if (endIndex == -1) {
         return _buildFallbackText(theme, colorScheme);
       }
       
