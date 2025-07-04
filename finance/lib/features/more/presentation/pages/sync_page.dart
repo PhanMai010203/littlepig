@@ -209,22 +209,21 @@ class _SyncPageContent extends StatelessWidget {
           ),
 
           // Account Management Section
+          const _SectionHeader(title: 'sync.section_account'),
           if (state.isSignedIn) ...[
-            const _SectionHeader(title: 'Account'),
             _AccountInfoCard(
               email: state.userEmail ?? 'Unknown',
               onSignOut: () => _showSignOutDialog(context),
             ),
           ] else ...[
-            const _SectionHeader(title: 'Account'),
             _SignInCard(
               onSignIn: () => context.read<SyncBloc>().add(const SyncSignInEvent()),
             ),
           ],
 
           // Sync Controls Section
+          const _SectionHeader(title: 'sync.section_controls'),
           if (state.isSignedIn) ...[
-            const _SectionHeader(title: 'Sync Controls'),
             _SyncControlsCard(
               issyncing: state.status != SyncStatus.idle && state.status != SyncStatus.completed,
               onFullSync: () => context.read<SyncBloc>().add(
@@ -244,12 +243,12 @@ class _SyncPageContent extends StatelessWidget {
 
           // Sync History Section
           if (state.lastResult != null) ...[
-            const _SectionHeader(title: 'Last Sync Result'),
+            const _SectionHeader(title: 'sync.section_last_result'),
             _SyncHistoryCard(result: state.lastResult!),
           ],
 
           // Settings and Information
-          const _SectionHeader(title: 'Information'),
+          const _SectionHeader(title: 'sync.section_info'),
           _SyncInfoCard(),
         ],
       ),

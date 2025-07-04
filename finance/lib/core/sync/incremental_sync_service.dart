@@ -1,5 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
@@ -19,7 +22,14 @@ class IncrementalSyncService implements SyncService {
     'https://www.googleapis.com/auth/drive.file',
   ];
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: _scopes,
+    signInOption: SignInOption.standard,
+    // Set hostedDomain to null to allow any Google account
+    hostedDomain: null,
+    // Force user consent dialog every time to help with testing
+    forceCodeForRefreshToken: true,
+  );
   final AppDatabase _database;
   final StreamController<SyncStatus> _statusController =
       StreamController<SyncStatus>.broadcast();
@@ -48,28 +58,213 @@ class IncrementalSyncService implements SyncService {
 
   @override
   Future<bool> isSignedIn() async {
-    return _googleSignIn.isSignedIn();
+    try {
+      final result = await _googleSignIn.isSignedIn();
+      debugPrint('🔬 GoogleSignIn.isSignedIn() returned: $result');
+      if (result) {
+        final currentUser = _googleSignIn.currentUser;
+        debugPrint('🔬 Current user: ${currentUser?.email ?? 'null'}');
+      }
+      return result;
+    } catch (e) {
+      debugPrint('❌ Error checking sign-in status: $e');
+      return false;
+    }
   }
 
   @override
   Future<bool> signIn() async {
+    debugPrint('🔐 IncrementalSyncService: Starting Google Sign-In process...');
+    debugPrint('🔬 GoogleSignIn config - scopes: $_scopes');
+    debugPrint('🔬 Current device ID: $_deviceId');
+    
+    // Get package info for debugging
     try {
-      final account = await _googleSignIn.signIn();
-      return account != null;
+      const packageName = 'com.sheep.budget';
+      debugPrint('📦 Package name: $packageName');
     } catch (e) {
+      debugPrint('❌ Error getting package info: $e');
+    }
+    
+    try {
+      // Check if already signed in
+      final isSignedIn = await _googleSignIn.isSignedIn();
+      debugPrint('🔬 GoogleSignIn.isSignedIn() returned: $isSignedIn');
+      
+      if (isSignedIn) {
+        final currentUser = _googleSignIn.currentUser;
+        debugPrint('🔬 Already signed in: ${currentUser?.email}, attempting to retrieve auth headers...');
+        try {
+          final headers = await currentUser?.authHeaders;
+          debugPrint('🔬 Auth headers: ${headers?.keys.toList()}');
+          debugPrint('🔬 Auth token available: ${headers?['Authorization'] != null}');
+        } catch (headerError) {
+          debugPrint('❌ Error retrieving auth headers: $headerError');
+        }
+      }
+      
+      // Try silent sign-in first
+      try {
+        debugPrint('🔬 Attempting silent sign-in first...');
+        final silentAccount = await _googleSignIn.signInSilently();
+        if (silentAccount != null) {
+          debugPrint('✅ Silent sign-in succeeded with account: ${silentAccount.email}');
+          return true;
+        } else {
+          debugPrint('ℹ️ Silent sign-in returned null, continuing to interactive sign-in');
+        }
+      } catch (silentError) {
+        debugPrint('ℹ️ Silent sign-in failed: $silentError, continuing to interactive sign-in');
+      }
+      
+      debugPrint('🔬 Calling _googleSignIn.signIn()...');
+      final account = await _googleSignIn.signIn();
+      
+      debugPrint('🔐 IncrementalSyncService: Sign-In result: ${account != null ? 'Success' : 'Canceled/Failed'}');
+      
+      if (account != null) {
+        debugPrint('🔬 ACCOUNT RAW DATA:');
+        debugPrint('� - ID: ${account.id}');
+        debugPrint('🔬 - Email: ${account.email}');
+        debugPrint('🔬 - Display Name: ${account.displayName}');
+        debugPrint('🔬 - Photo URL: ${account.photoUrl}');
+        debugPrint('🔬 - Server Auth Code available: ${account.serverAuthCode != null}');
+        
+        try {
+          final authHeaders = await account.authHeaders;
+          debugPrint('🔬 Auth headers obtained: ${authHeaders.keys.toList()}');
+          final authToken = authHeaders['Authorization']?.split(' ')[1];
+          debugPrint('🔬 Auth token available: ${authToken != null}, First 10 chars: ${authToken?.substring(0, min(10, authToken.length))}...');
+          
+          // Check if we can access Drive API
+          debugPrint('🔬 Testing Drive API access...');
+          final client = authenticatedClient(
+            http.Client(),
+            AccessCredentials(
+              AccessToken('Bearer', authToken ?? '', DateTime.now().add(const Duration(hours: 1))),
+              null,
+              _scopes,
+            ),
+          );
+          
+          try {
+            final driveApi = drive.DriveApi(client);
+            final about = await driveApi.about.get($fields: 'user');
+            debugPrint('🔬 Drive API access successful: ${about.toJson()}');
+          } catch (driveError) {
+            debugPrint('❌ Drive API access failed: $driveError');
+          } finally {
+            client.close();
+          }
+        } catch (authError) {
+          debugPrint('❌ Failed to get auth headers: $authError');
+        }
+      } else {
+        debugPrint('❌ Sign-in failed or was cancelled by the user');
+      }
+      
+      return account != null;
+    } catch (e, stackTrace) {
+      debugPrint('❌ IncrementalSyncService: Sign-In error: $e');
+      debugPrint('❌ Stack trace: $stackTrace');
+      
+      // More detailed error reporting for common Google Sign-In errors
+      if (e is PlatformException) {
+        if (e.code == 'sign_in_failed') {
+          if (e.message?.contains('ApiException: 10') == true) {
+            debugPrint('❗❗❗ GOOGLE SIGN IN ERROR DIAGNOSIS ❗❗❗');
+            debugPrint('Error code 10 indicates a developer configuration error OR app verification issue.');
+            
+            if (e.message?.contains('blocked') == true || e.message?.contains('verification') == true) {
+              debugPrint('❗❗❗ APP VERIFICATION ISSUE DETECTED ❗❗❗');
+              debugPrint('Your app has not completed the Google verification process for sensitive scopes.');
+              debugPrint('This is preventing users from signing in with Google Drive access.');
+              
+              debugPrint('\n🔐 SOLUTIONS:');
+              debugPrint('1. SHORT TERM: Add test users to your Google Cloud Console project:');
+              debugPrint('   - Go to: https://console.cloud.google.com/apis/credentials/consent');
+              debugPrint('   - Click on your OAuth consent screen');
+              debugPrint('   - Scroll down to "Test users" and click "ADD USERS"');
+              debugPrint('   - Add your Google email address and any other test users');
+              debugPrint('   - Save changes and try again with those accounts');
+              
+              debugPrint('\n2. LONG TERM: Complete Google\'s verification process:');
+              debugPrint('   - Go to: https://console.cloud.google.com/apis/credentials/consent');
+              debugPrint('   - Click "EDIT APP" and complete all required fields');
+              debugPrint('   - Submit your app for verification by Google');
+              debugPrint('   - This may take several days to weeks to complete');
+            } else {
+              debugPrint('This typically means:');
+              debugPrint('1. SHA-1/SHA-256 fingerprints don\'t match what\'s in Google Cloud Console');
+              debugPrint('2. Package name (com.sheep.budget) doesn\'t match what\'s registered');
+              debugPrint('3. The Google Cloud project isn\'t properly configured for OAuth');
+              
+              // Print debug information to help with troubleshooting
+              debugPrint('\n📱 APP CONFIGURATION:');
+              debugPrint('Package name: com.sheep.budget');
+              debugPrint('Requested scopes: $_scopes');
+              
+              // Generate helpful command to obtain SHA-1
+              debugPrint('\n🔑 TO FIX: Run this command to get your debug SHA-1:');
+              debugPrint('keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android');
+              debugPrint('\nThen update this SHA-1 in your Google Cloud Console project.');
+              debugPrint('Go to: https://console.cloud.google.com/apis/credentials');
+            }
+          } else if (e.message?.contains('12501') == true) {
+            debugPrint('❗ User cancelled the sign-in process');
+          } else {
+            debugPrint('❗ Unknown sign-in failure: ${e.message}');
+          }
+        }
+      }
+      
       return false;
     }
   }
 
   @override
   Future<void> signOut() async {
-    await _googleSignIn.signOut();
+    debugPrint('🔬 Attempting to sign out user...');
+    try {
+      final wasSignedIn = await _googleSignIn.isSignedIn();
+      debugPrint('🔬 User was signed in: $wasSignedIn');
+      if (wasSignedIn) {
+        final email = _googleSignIn.currentUser?.email;
+        debugPrint('🔬 Signing out user: $email');
+      }
+      
+      await _googleSignIn.signOut();
+      debugPrint('✅ User signed out successfully');
+      
+      final isStillSignedIn = await _googleSignIn.isSignedIn();
+      debugPrint('🔬 User is still signed in after signOut: $isStillSignedIn');
+    } catch (e) {
+      debugPrint('❌ Error during sign out: $e');
+      debugPrint('❌ Stack trace: ${StackTrace.current}');
+    }
   }
 
   @override
   Future<String?> getCurrentUserEmail() async {
-    final account = _googleSignIn.currentUser;
-    return account?.email;
+    try {
+      final account = _googleSignIn.currentUser;
+      debugPrint('🔬 getCurrentUserEmail - currentUser: ${account != null ? 'found' : 'null'}');
+      if (account != null) {
+        debugPrint('🔬 getCurrentUserEmail - email: ${account.email}');
+        
+        try {
+          // Check if auth is still valid
+          final authHeaders = await account.authHeaders;
+          debugPrint('🔬 Auth headers valid: ${authHeaders.isNotEmpty}');
+        } catch (authError) {
+          debugPrint('❌ Auth validation failed: $authError');
+        }
+      }
+      return account?.email;
+    } catch (e) {
+      debugPrint('❌ Error in getCurrentUserEmail: $e');
+      return null;
+    }
   }
 
   @override
@@ -355,8 +550,6 @@ class IncrementalSyncService implements SyncService {
 
   Future<void> _markEventsAsSynced(List<SyncEventLogData> events) async {
     if (events.isEmpty) return;
-
-    final now = DateTime.now();
 
     try {
       // ✅ PHASE 4.4: Enhanced batch operation using event IDs for better control
