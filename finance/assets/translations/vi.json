@@ -428,6 +428,18 @@
     "data_security": "Bảo mật dữ liệu",
     "encrypted_transmission": "Truyền dữ liệu được mã hóa",
     "multi_device": "Đa thiết bị",
-    "sync_across_devices": "Đồng bộ trên tất cả thiết bị của bạn"
+    "sync_across_devices": "Đồng bộ trên tất cả thiết bị của bạn",
+    "signed_in_as": "Đăng nhập với tư cách",
+    "initialization_failed": "Khởi tạo thất bại",
+    "sign_in_failed": "Đăng nhập thất bại",
+    "sign_out_failed": "Đăng xuất thất bại",
+    "operation_failed": "Thao tác đồng bộ thất bại",
+    "conflict_resolution_failed": "Giải quyết xung đột thất bại",
+    "bulk_resolution_failed": "Giải quyết tất cả xung đột thất bại",
+    "sync_error_occurred": "Đã xảy ra lỗi đồng bộ",
+    "sync_completed": "Đồng bộ hoàn tất",
+    "not_signed_in": "Chưa đăng nhập",
+    "sign_in_to_enable_sync": "Đăng nhập Google Drive để bật đồng bộ",
+    "cancel": "Hủy"
   }
 }

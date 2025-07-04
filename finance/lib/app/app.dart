@@ -14,6 +14,7 @@ import '../features/budgets/presentation/bloc/budgets_bloc.dart';
 import '../features/navigation/presentation/bloc/navigation_bloc.dart';
 import '../features/settings/presentation/bloc/settings_bloc.dart';
 import '../features/transactions/presentation/bloc/transactions_bloc.dart';
+import '../features/more/presentation/bloc/sync_bloc.dart';
 import '../features/agent/domain/entities/speech_service.dart';
 import 'router/app_router.dart';
 import '../shared/widgets/text_input.dart' show ResumeTextFieldFocus;
@@ -29,6 +30,7 @@ class MainAppProvider extends StatelessWidget {
   final SettingsBloc settingsBloc;
   final TransactionsBloc transactionsBloc;
   final BudgetsBloc budgetsBloc;
+  final SyncBloc syncBloc;
 
   const MainAppProvider({
     super.key,
@@ -41,6 +43,7 @@ class MainAppProvider extends StatelessWidget {
     required this.settingsBloc,
     required this.transactionsBloc,
     required this.budgetsBloc,
+    required this.syncBloc,
   });
 
   @override
@@ -55,6 +58,7 @@ class MainAppProvider extends StatelessWidget {
       settingsBloc: settingsBloc,
       transactionsBloc: transactionsBloc,
       budgetsBloc: budgetsBloc,
+      syncBloc: syncBloc,
     );
   }
 }
@@ -70,6 +74,7 @@ class MainApp extends StatefulWidget {
   final SettingsBloc settingsBloc;
   final TransactionsBloc transactionsBloc;
   final BudgetsBloc budgetsBloc;
+  final SyncBloc syncBloc;
 
   const MainApp({
     super.key,
@@ -82,6 +87,7 @@ class MainApp extends StatefulWidget {
     required this.settingsBloc,
     required this.transactionsBloc,
     required this.budgetsBloc,
+    required this.syncBloc,
   });
 
   @override
@@ -139,6 +145,9 @@ class _MainAppState extends State<MainApp> {
             ),
             BlocProvider.value(
               value: widget.budgetsBloc,
+            ),
+            BlocProvider.value(
+              value: widget.syncBloc,
             ),
           ],
           child: BlocBuilder<SettingsBloc, SettingsState>(

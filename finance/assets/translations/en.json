@@ -460,7 +460,7 @@
     "use_remote": "Use Remote",
     "signed_in_as": "Signed in as",
     "sign_out": "Sign Out",
-    "sign_in_to_enable_sync": "Sign in to Google Drive to enable automatic data synchronization across all your devices",
+    "sign_in_to_enable_sync": "Sign in to Google Drive to enable sync",
     "cancel": "Cancel",
     "operation_failed": "Sync operation failed",
     "conflict_resolution_failed": "Failed to resolve conflict",
@@ -477,6 +477,13 @@
     "section_account": "Account",
     "section_controls": "Sync Controls",
     "section_last_result": "Last Sync Result",
-    "section_info": "Information"
+    "section_info": "Information",
+    "initialization_failed": "Initialization failed",
+    "sign_in_failed": "Sign in failed",
+    "sign_out_failed": "Sign out failed",
+    "sync_completed": "Sync completed",
+    "not_signed_in": "Not signed in",
+    "sign_in_to_enable_sync": "Sign in to Google Drive to enable sync",
+    "manual_sync": "Manual Sync"
   }
 }

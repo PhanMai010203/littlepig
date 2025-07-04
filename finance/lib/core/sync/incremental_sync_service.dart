@@ -59,13 +59,40 @@ class IncrementalSyncService implements SyncService {
   @override
   Future<bool> isSignedIn() async {
     try {
+      // First try to check if already signed in
       final result = await _googleSignIn.isSignedIn();
       debugPrint('🔬 GoogleSignIn.isSignedIn() returned: $result');
+      
       if (result) {
         final currentUser = _googleSignIn.currentUser;
         debugPrint('🔬 Current user: ${currentUser?.email ?? 'null'}');
+        
+        // If signed in but no current user, try silent sign-in to restore session
+        if (currentUser == null) {
+          debugPrint('🔬 User signed in but no current user, attempting silent sign-in...');
+          try {
+            final account = await _googleSignIn.signInSilently();
+            debugPrint('🔬 Silent sign-in result: ${account?.email ?? 'null'}');
+            return account != null;
+          } catch (silentSignInError) {
+            debugPrint('❌ Silent sign-in failed: $silentSignInError');
+            return false;
+          }
+        }
+        
+        return true;
+      } else {
+        // Try silent sign-in to restore previous authentication
+        debugPrint('🔬 Not signed in, attempting silent sign-in to restore session...');
+        try {
+          final account = await _googleSignIn.signInSilently();
+          debugPrint('🔬 Silent sign-in result: ${account?.email ?? 'null'}');
+          return account != null;
+        } catch (silentSignInError) {
+          debugPrint('🔬 Silent sign-in failed (expected if never signed in): $silentSignInError');
+          return false;
+        }
       }
-      return result;
     } catch (e) {
       debugPrint('❌ Error checking sign-in status: $e');
       return false;
@@ -141,7 +168,7 @@ class IncrementalSyncService implements SyncService {
           final client = authenticatedClient(
             http.Client(),
             AccessCredentials(
-              AccessToken('Bearer', authToken ?? '', DateTime.now().add(const Duration(hours: 1))),
+              AccessToken('Bearer', authToken ?? '', DateTime.now().toUtc().add(const Duration(hours: 1))),
               null,
               _scopes,
             ),
@@ -247,8 +274,20 @@ class IncrementalSyncService implements SyncService {
   @override
   Future<String?> getCurrentUserEmail() async {
     try {
-      final account = _googleSignIn.currentUser;
+      var account = _googleSignIn.currentUser;
       debugPrint('🔬 getCurrentUserEmail - currentUser: ${account != null ? 'found' : 'null'}');
+      
+      // If no current user, try silent sign-in to restore session
+      if (account == null) {
+        debugPrint('🔬 No current user, attempting silent sign-in...');
+        try {
+          account = await _googleSignIn.signInSilently();
+          debugPrint('🔬 Silent sign-in result: ${account?.email ?? 'null'}');
+        } catch (silentSignInError) {
+          debugPrint('🔬 Silent sign-in failed: $silentSignInError');
+        }
+      }
+      
       if (account != null) {
         debugPrint('🔬 getCurrentUserEmail - email: ${account.email}');
         
@@ -258,6 +297,9 @@ class IncrementalSyncService implements SyncService {
           debugPrint('🔬 Auth headers valid: ${authHeaders.isNotEmpty}');
         } catch (authError) {
           debugPrint('❌ Auth validation failed: $authError');
+          // If auth is invalid, try to sign out and return null
+          await _googleSignIn.signOut();
+          return null;
         }
       }
       return account?.email;
@@ -308,7 +350,7 @@ class IncrementalSyncService implements SyncService {
           AccessToken(
               'Bearer',
               authHeaders['Authorization']?.split(' ')[1] ?? '',
-              DateTime.now().add(const Duration(hours: 1))),
+              DateTime.now().toUtc().add(const Duration(hours: 1))),
           null,
           _scopes,
         ),
@@ -389,7 +431,7 @@ class IncrementalSyncService implements SyncService {
           AccessToken(
               'Bearer',
               authHeaders['Authorization']?.split(' ')[1] ?? '',
-              DateTime.now().add(const Duration(hours: 1))),
+              DateTime.now().toUtc().add(const Duration(hours: 1))),
           null,
           _scopes,
         ),

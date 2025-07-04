@@ -1,18 +1,19 @@
 import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:injectable/injectable.dart';
 import '../../../../core/sync/sync_service.dart';
 import '../../../../core/di/injection.dart';
 import 'sync_event.dart';
 import 'sync_state.dart';
 
+@injectable
 class SyncBloc extends Bloc<SyncEvent, SyncBlocState> {
   final SyncService _syncService;
   StreamSubscription<SyncStatus>? _syncStatusSubscription;
 
-  SyncBloc({SyncService? syncService})
-      : _syncService = syncService ?? getIt<SyncService>(),
-        super(const SyncInitialState()) {
+  SyncBloc(this._syncService)
+      : super(const SyncInitialState()) {
     on<SyncInitializeEvent>(_onInitialize);
     on<SyncSignInEvent>(_onSignIn);
     on<SyncSignOutEvent>(_onSignOut);

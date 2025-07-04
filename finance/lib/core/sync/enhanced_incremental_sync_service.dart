@@ -354,7 +354,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       http.Client(),
       AccessCredentials(
         AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
-            DateTime.now().add(const Duration(hours: 1))),
+            DateTime.now().toUtc().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
@@ -396,7 +396,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       http.Client(),
       AccessCredentials(
         AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
-            DateTime.now().add(const Duration(hours: 1))),
+            DateTime.now().toUtc().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),

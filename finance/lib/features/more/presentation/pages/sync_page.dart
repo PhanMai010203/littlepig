@@ -14,10 +14,7 @@ class SyncPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => SyncBloc(),
-      child: const _SyncPageContent(),
-    );
+    return const _SyncPageContent();
   }
 }
 

@@ -65,6 +65,9 @@ import '../../features/currencies/domain/services/currency_intelligence_service.
 import '../../features/currencies/domain/usecases/exchange_rate_operations.dart'
     as _i116;
 import '../../features/currencies/domain/usecases/get_currencies.dart' as _i126;
+import '../../features/currencies/presentation/bloc/currency_display_bloc.dart'
+    as _i653;
+import '../../features/more/presentation/bloc/sync_bloc.dart' as _i259;
 import '../../features/navigation/presentation/bloc/navigation_bloc.dart'
     as _i162;
 import '../../features/settings/presentation/bloc/settings_bloc.dart' as _i585;
@@ -224,6 +227,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1056.CurrencyRepository>(),
           gh<_i706.AccountRepository>(),
         ));
+    gh.factory<_i259.SyncBloc>(() => _i259.SyncBloc(gh<_i520.SyncService>()));
     gh.lazySingleton<_i108.FilePickerService>(() => _i108.FilePickerService(
           gh<_i664.AttachmentRepository>(),
           gh<_i116.GoogleSignIn>(),
@@ -235,6 +239,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1021.BudgetRepository>(),
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
+        ));
+    gh.factory<_i653.CurrencyDisplayBloc>(() => _i653.CurrencyDisplayBloc(
+          gh<_i351.CurrencyService>(),
+          gh<_i1056.CurrencyRepository>(),
+          gh<_i706.AccountRepository>(),
         ));
     gh.lazySingleton<_i91.CurrencyIntelligenceService>(
         () => _i888.CurrencyIntelligenceServiceImpl(
