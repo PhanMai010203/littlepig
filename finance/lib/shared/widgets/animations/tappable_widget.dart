@@ -160,12 +160,15 @@ class _TappableWidgetState extends State<TappableWidget>
 
   void _animateBounce() async {
     if (!AnimationUtils.shouldAnimate() ||
-        !AnimationUtils.canStartAnimation()) {
+        !AnimationUtils.canStartAnimation() ||
+        !mounted) {
       return;
     }
 
     await _controller.forward();
-    await _controller.reverse();
+    if (mounted) {
+      await _controller.reverse();
+    }
   }
 
   @override

@@ -12,8 +12,11 @@ import '../../features/budgets/presentation/pages/budgets_page.dart';
 import '../../features/currencies/domain/repositories/currency_repository.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/more/presentation/pages/more_page.dart';
+import '../../features/agent/presentation/pages/ai_chat_screen.dart';
+import '../../features/agent/domain/entities/speech_service.dart';
 import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/more/presentation/pages/sync_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/domain/repositories/attachment_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
@@ -71,6 +74,16 @@ class AppRouter {
             ),
           ),
           GoRoute(
+            path: AppRoutes.agent,
+            name: AppRoutes.agent,
+            pageBuilder: (context, state) =>
+                AppPageTransitions.noTransitionPage(
+              child: const AIChatScreen(),
+              name: state.name,
+              key: state.pageKey,
+            ),
+          ),
+          GoRoute(
             path: AppRoutes.budgets,
             name: AppRoutes.budgets,
             pageBuilder: (context, state) =>
@@ -99,6 +112,18 @@ class AppRouter {
         pageBuilder: (context, state) =>
             AppPageTransitions.platformTransitionPage(
           child: const SettingsPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+
+      // Sync page
+      GoRoute(
+        path: AppRoutes.sync,
+        name: AppRoutes.sync,
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
+          child: const SyncPage(),
           name: state.name,
           key: state.pageKey,
         ),

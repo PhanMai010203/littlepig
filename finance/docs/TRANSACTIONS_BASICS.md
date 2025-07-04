@@ -26,6 +26,21 @@ final transactions = await transactionRepository.getAllTransactions();
 print('Found ${transactions.length} transactions');
 ```
 
+### Get Paginated Transactions (Lazy Loading)
+```dart
+// Fetch the first page of 20 transactions (page index starts at 0)
+final firstPage = await transactionRepository.getTransactions(
+  page: 0,
+  limit: 20,
+);
+
+// Fetch the next page of 20 transactions
+final secondPage = await transactionRepository.getTransactions(
+  page: 1,
+  limit: 20,
+);
+```
+
 ### Get Transactions by Account
 ```dart
 // Get all transactions for a specific account
@@ -206,4 +221,4 @@ print('Updated: ${transaction.updatedAt}');
 print('Category ID: ${transaction.categoryId}');
 print('Account ID: ${transaction.accountId}');
 print('Sync ID: ${transaction.syncId}');
-``` 
+```

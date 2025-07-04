@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
+import '../widgets/sync_status_compact_widget.dart';
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key});
@@ -40,6 +41,12 @@ class MorePage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Notifications tapped')),
               );
+            },
+          ),
+          const _SectionHeader(title: 'Data & Sync'),
+          _SyncMenuItem(
+            onTap: () {
+              context.push('/sync');
             },
           ),
           const _SectionHeader(title: 'Analytics'),
@@ -149,6 +156,42 @@ class _MenuItem extends StatelessWidget {
       ),
       title: Text(title),
       subtitle: Text(subtitle),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: onTap,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    );
+  }
+}
+
+class _SyncMenuItem extends StatelessWidget {
+  const _SyncMenuItem({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primaryContainer,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          Icons.sync,
+          color: Theme.of(context).colorScheme.primary,
+          size: 20,
+        ),
+      ),
+      title: const Text('Sync'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Manage data synchronization and backup'),
+          const SizedBox(height: 4),
+          const SyncStatusCompactWidget(),
+        ],
+      ),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),

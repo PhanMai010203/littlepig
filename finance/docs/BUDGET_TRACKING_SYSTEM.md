@@ -19,6 +19,8 @@ The budget module lets you create, filter, and monitor budgets with advanced rul
 -   **Automatic Mode (Wallet-Based):** This is the standard mode where the budget automatically tracks all transactions from specific wallets (`walletFks`). This is the most common use case.
 -   **Manual Mode (No Wallets):** By **not** providing any `walletFks`, the budget enters "Manual Mode". In this mode, no transactions are tracked automatically. You must manually link individual transactions to the budget. This is useful for event-specific budgets (e.g., a "Vacation" budget) where you want to hand-pick expenses from multiple wallets. The `budget.manualAddMode` getter can be used to check this in the UI.
 
+   **Implementation Note (v2):** The creation wizard relies on the `BudgetTrackingType` enum (`manual` | `automatic`) defined in `lib/features/budgets/domain/entities/budget_enums.dart`. The enum drives the form logic, but the final mode is still determined by whether `walletFks` is present (automatic) or omitted (manual).
+
 ---
 
 ## 3. BLoC State Management (for Frontend)
@@ -113,7 +115,24 @@ if (state is BudgetDetailsLoaded) {
 - `BudgetAuthenticationSuccess`: UI can now show the sensitive budget details.
 - `BudgetAuthenticationFailed`: UI should show an error message.
 
-### 3.3 BudgetsEvent - User Actions
+#### `BudgetCreationState`
+This state powers the multi-step *Create / Edit Budget* flow.
+
+Key fields you are most likely to bind to UI controls:
+
+- `trackingType`: `BudgetTrackingType` – determines whether the wizard shows account selectors (`automatic`) or transaction-linking UI (`manual`). Convenience getters `isManual` and `isAutomatic` are available.
+- `availableAccounts` / `selectedAccounts` / `isAllAccountsSelected`
+- `availableCategories`, `includedCategories`, `excludedCategories`, `isAllCategoriesIncluded`
+- `isAccountsLoading`, `isCategoriesLoading` – show loading indicators while data is fetched.
+
+Helper getters:
+
+- `shouldShowAccountsSelector` – `true` when `trackingType.isAutomatic`.
+- `shouldReduceIncludeCategoriesOpacity` – `true` when any categories are excluded, useful for subtle UI hints.
+
+---
+
+## 3.3 BudgetsEvent - User Actions
 These events represent user interactions and system triggers. Dispatch them to the `BudgetsBloc` to perform actions.
 
 -   `LoadAllBudgets`: Fetches all budgets for the main list view. Call this in `initState` or on pull-to-refresh.
@@ -125,6 +144,11 @@ These events represent user interactions and system triggers. Dispatch them to t
 -   `AuthenticateForBudgetAccess(budgetId)`: Triggers biometric authentication.
 -   `RecalculateAllBudgets` / `RecalculateBudget(budgetId)`: Forces a manual recalculation of spent amounts. Useful for pull-to-refresh.
 -   `ExportBudgetData(budget)` / `ExportMultipleBudgets(budgets)`: Triggers a CSV export.
+-   `BudgetTrackingTypeChanged(trackingType)`: Switches between *Automatic* and *Manual* during creation.
+-   `LoadAccountsForBudget` / `LoadCategoriesForBudget`: Fetches data for selectors in the creation wizard.
+-   `BudgetAccountsSelected(selectedAccounts, isAllSelected)`
+-   `BudgetIncludeCategoriesSelected(selectedCategories, isAllSelected)`
+-   `BudgetExcludeCategoriesSelected(selectedCategories)`
 
 **Example: Creating a Budget**
 ```dart
@@ -208,10 +232,15 @@ ListView.builder(
 An entity that links a `Transaction` to a `Budget`. This is primarily used for **manual mode** budgets to track which transactions have been hand-picked by the user.
 
 ### 4.4 `BudgetPeriod` and Other Enums
-Located in `lib/features/budgets/domain/entities/budget_enums.dart`. These enums define fixed sets of values for budget properties.
--   `BudgetPeriod`: `daily`, `weekly`, `monthly`, `yearly`.
--   `BudgetTransactionFilter`: For advanced, low-level filtering.
--   `BudgetShareType`: For shared/household budgets.
+The main enums live in `lib/features/budgets/domain/entities/budget_enums.dart`, except for `BudgetPeriod`, which is declared directly in `budget.dart` along with the `Budget` class.
+
+| Enum | Location | Notes |
+|------|----------|-------|
+| `BudgetPeriod` | `lib/features/budgets/domain/entities/budget.dart` | Core period enum used by the mobile UI (`daily`, `weekly`, `monthly`, `yearly`). |
+| `BudgetTrackingType` | `budget_enums.dart` | `manual` vs `automatic` with helper getters. |
+| `BudgetPeriodType` | `budget_enums.dart` | Broader presets used by other layers (`weekly`, `biweekly`, `monthly`, `quarterly`, `yearly`, `custom`). |
+| `BudgetTransactionFilter` | `budget_enums.dart` | Advanced low-level filtering. |
+| `BudgetShareType` | `budget_enums.dart` | Options for shared/household budgets. |
 
 ---
 

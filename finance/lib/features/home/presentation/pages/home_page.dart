@@ -158,16 +158,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ));
       }
 
-      setState(() {
-        _accountTiles = tiles;
-        _isLoading = false;
-        _errorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _accountTiles = tiles;
+          _isLoading = false;
+          _errorMessage = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Failed to load accounts: ${e.toString()}';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load accounts: ${e.toString()}';
+        });
+      }
 
       // Show error feedback to user
       if (mounted) {
@@ -187,16 +191,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       // Retrieve active budgets as Budget entities
       final budgets = await widget.budgetRepository.getActiveBudgets();
 
-      setState(() {
-        _budgets = budgets;
-        _isBudgetsLoading = false;
-        _budgetsErrorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _budgets = budgets;
+          _isBudgetsLoading = false;
+          _budgetsErrorMessage = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isBudgetsLoading = false;
-        _budgetsErrorMessage = 'Failed to load budgets: ${e.toString()}';
-      });
+      if (mounted) {
+        setState(() {
+          _isBudgetsLoading = false;
+          _budgetsErrorMessage = 'Failed to load budgets: ${e.toString()}';
+        });
+      }
 
       // Show error feedback to user
       if (mounted) {
@@ -212,10 +220,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Loads transactions and prepares them for display
   Future<void> _loadTransactions() async {
-    setState(() {
-      _isTransactionsLoading = true;
-      _transactionsErrorMessage = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isTransactionsLoading = true;
+        _transactionsErrorMessage = null;
+      });
+    }
     
     // Clear cache for fresh data load
     _cachedCurrentMonthTransactions = null;
@@ -299,17 +309,21 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Single handler for account selection
   void _onSelectAccount(int index) {
-    setState(() {
-      _selectedAccountIndex = index;
-    });
+    if (mounted) {
+      setState(() {
+        _selectedAccountIndex = index;
+      });
+    }
   }
 
   /// Handler for transaction filter selection
   void _onTransactionFilterChanged(TransactionFilter filter) {
-    setState(() {
-      _selectedTransactionFilter = filter;
-    });
-    _applyTransactionFilter();
+    if (mounted) {
+      setState(() {
+        _selectedTransactionFilter = filter;
+      });
+      _applyTransactionFilter();
+    }
   }
 
   @override

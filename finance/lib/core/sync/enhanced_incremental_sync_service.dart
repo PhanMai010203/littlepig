@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
@@ -20,6 +21,7 @@ import 'google_drive_sync_service.dart';
 class EnhancedIncrementalSyncService implements interfaces.SyncService {
   static const List<String> _scopes = [
     'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.appdata',
   ];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
@@ -353,7 +355,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       http.Client(),
       AccessCredentials(
         AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
-            DateTime.now().add(const Duration(hours: 1))),
+            DateTime.now().toUtc().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),
@@ -395,7 +397,7 @@ class EnhancedIncrementalSyncService implements interfaces.SyncService {
       http.Client(),
       AccessCredentials(
         AccessToken('Bearer', authHeaders['Authorization']?.split(' ')[1] ?? '',
-            DateTime.now().add(const Duration(hours: 1))),
+            DateTime.now().toUtc().add(const Duration(hours: 1))),
         null,
         _scopes,
       ),

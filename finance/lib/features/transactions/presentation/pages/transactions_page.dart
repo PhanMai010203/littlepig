@@ -34,6 +34,15 @@ class _TransactionsPageState extends State<TransactionsPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     debugPrint('🔄 TransactionsPage didChangeDependencies - Checking if refresh needed');
+    
+    // Check if we need to refresh due to navigation or AI service changes
+    final shouldRefresh = ModalRoute.of(context)?.isCurrent == true;
+    debugPrint('🔄 Should refresh transactions: $shouldRefresh');
+    
+    if (shouldRefresh) {
+      debugPrint('🔄 Triggering transaction refresh...');
+      context.read<TransactionsBloc>().add(RefreshTransactions());
+    }
   }
 
   @override
