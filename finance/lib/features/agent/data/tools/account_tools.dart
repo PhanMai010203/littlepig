@@ -5,6 +5,8 @@ import '../../../accounts/domain/entities/account.dart';
 import '../../../transactions/domain/repositories/transaction_repository.dart';
 import '../../domain/services/database_tool.dart';
 import '../../domain/entities/ai_tool_call.dart';
+import '../../../currencies/domain/services/currency_intelligence_service.dart';
+import '../../../../core/settings/app_settings.dart';
 
 /// Tool for querying and searching accounts
 class QueryAccountsTool extends FinancialDataTool {
@@ -206,9 +208,13 @@ class QueryAccountsTool extends FinancialDataTool {
 /// Tool for creating new accounts
 class CreateAccountTool extends FinancialDataTool {
   final AccountRepository _accountRepository;
+  final CurrencyIntelligenceService _currencyIntelligenceService;
   final _uuid = const Uuid();
 
-  CreateAccountTool(this._accountRepository);
+  CreateAccountTool(
+    this._accountRepository,
+    this._currencyIntelligenceService,
+  );
 
   @override
   String get name => 'create_account';
@@ -228,7 +234,7 @@ class CreateAccountTool extends FinancialDataTool {
       },
       'currency': {
         'type': 'string',
-        'description': 'Currency code (e.g., "USD", "EUR", "GBP")',
+        'description': 'Currency code (e.g., "USD", "EUR", "GBP") - will be intelligently detected if not provided',
         'minLength': 3,
         'maxLength': 3,
       },
@@ -247,7 +253,7 @@ class CreateAccountTool extends FinancialDataTool {
         'description': 'Account color as hex code (e.g., "#4CAF50")',
       },
     },
-    'required': ['name', 'currency'],
+    'required': ['name'],
   };
 
   @override
@@ -275,6 +281,7 @@ class CreateAccountTool extends FinancialDataTool {
     try {
       final now = DateTime.now();
       final colorString = parameters['color'] as String?;
+      final accountName = parameters['name'] as String;
       
       Color accountColor = Colors.blue; // Default color
       if (colorString != null) {
@@ -287,9 +294,40 @@ class CreateAccountTool extends FinancialDataTool {
         }
       }
 
+      // **INTELLIGENT CURRENCY DETECTION**
+      String currency;
+      String? currencyNote;
+      final providedCurrency = parameters['currency'] as String?;
+      
+      if (providedCurrency != null && await _currencyIntelligenceService.isCurrencySupported(providedCurrency)) {
+        // Use explicitly provided currency
+        currency = providedCurrency.toUpperCase();
+      } else {
+        // Get suggested currencies for account creation
+        final suggestions = await _currencyIntelligenceService.getSuggestedCurrenciesForAccount(
+          voiceLanguage: AppSettings.voiceLanguage,
+          appLocale: AppSettings.get<String>('locale'),
+        );
+        
+        // Use the highest confidence suggestion
+        final bestSuggestion = suggestions.isNotEmpty ? suggestions.first : null;
+        
+        if (bestSuggestion != null) {
+          currency = bestSuggestion.currencyCode;
+          
+          if (bestSuggestion.confidence < 0.8) {
+            currencyNote = 'Currency auto-detected: ${bestSuggestion.reasoning}';
+          }
+        } else {
+          // Ultimate fallback
+          currency = 'USD';
+          currencyNote = 'Currency fallback: Using USD as no intelligent detection was possible';
+        }
+      }
+
       final account = Account(
-        name: parameters['name'] as String,
-        currency: (parameters['currency'] as String).toUpperCase(),
+        name: accountName,
+        currency: currency,
         balance: (parameters['initial_balance'] as num?)?.toDouble() ?? 0.0,
         isDefault: parameters['is_default'] as bool? ?? false,
         createdAt: now,
@@ -300,11 +338,19 @@ class CreateAccountTool extends FinancialDataTool {
 
       final createdAccount = await _accountRepository.createAccount(account);
 
-      return {
+      // Build enhanced response with currency intelligence info
+      final response = {
         'success': true,
         'account': _accountToMap(createdAccount, true),
         'message': 'Account created successfully',
+        'currency_intelligence': {
+          'detected_currency': currency,
+          'currency_note': currencyNote,
+          'was_auto_detected': providedCurrency == null,
+        },
       };
+
+      return response;
 
     } catch (e) {
       return {
@@ -317,18 +363,16 @@ class CreateAccountTool extends FinancialDataTool {
 
   @override
   bool validateParameters(Map<String, dynamic> parameters) {
-    final requiredFields = ['name', 'currency'];
-    
-    for (final field in requiredFields) {
-      if (!parameters.containsKey(field)) return false;
-    }
+    // Only name is required now - currency will be intelligently detected
+    if (!parameters.containsKey('name')) return false;
     
     if (parameters['name'] is! String || (parameters['name'] as String).isEmpty) {
       return false;
     }
     
+    // Validate currency if provided
     final currency = parameters['currency'] as String?;
-    if (currency == null || currency.length != 3) {
+    if (currency != null && currency.length != 3) {
       return false;
     }
     
@@ -338,7 +382,7 @@ class CreateAccountTool extends FinancialDataTool {
   @override
   List<Map<String, dynamic>> get examples => [
     {
-      'description': 'Create a checking account',
+      'description': 'Create a checking account with explicit currency',
       'parameters': {
         'name': 'Main Checking Account',
         'currency': 'USD',
@@ -348,12 +392,19 @@ class CreateAccountTool extends FinancialDataTool {
       },
     },
     {
-      'description': 'Create a savings account',
+      'description': 'Create a savings account with intelligent currency detection',
       'parameters': {
         'name': 'Emergency Savings',
-        'currency': 'USD',
         'initial_balance': 5000.00,
         'color': '#4CAF50',
+      },
+    },
+    {
+      'description': 'Create Vietnamese cash wallet (currency auto-detected)',
+      'parameters': {
+        'name': 'Tiền mặt',
+        'initial_balance': 1000000.0,
+        'color': '#FF9800',
       },
     },
   ];

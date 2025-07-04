@@ -56,8 +56,12 @@ import '../../features/currencies/data/datasources/exchange_rate_remote_data_sou
     as _i771;
 import '../../features/currencies/data/repositories/currency_repository_impl.dart'
     as _i575;
+import '../../features/currencies/data/services/currency_intelligence_service_impl.dart'
+    as _i888;
 import '../../features/currencies/domain/repositories/currency_repository.dart'
     as _i1056;
+import '../../features/currencies/domain/services/currency_intelligence_service.dart'
+    as _i91;
 import '../../features/currencies/domain/usecases/exchange_rate_operations.dart'
     as _i116;
 import '../../features/currencies/domain/usecases/get_currencies.dart' as _i126;
@@ -232,6 +236,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
         ));
+    gh.lazySingleton<_i91.CurrencyIntelligenceService>(
+        () => _i888.CurrencyIntelligenceServiceImpl(
+              gh<_i351.CurrencyService>(),
+              gh<_i706.AccountRepository>(),
+            ));
     gh.factory<_i612.TransactionCreateBloc>(() => _i612.TransactionCreateBloc(
           gh<_i421.TransactionRepository>(),
           gh<_i266.CategoryRepository>(),

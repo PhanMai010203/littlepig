@@ -4,6 +4,8 @@ import '../../../transactions/domain/entities/transaction.dart';
 import '../../../transactions/domain/entities/transaction_enums.dart';
 import '../../domain/services/database_tool.dart';
 import '../../domain/entities/ai_tool_call.dart';
+import '../../../currencies/domain/services/currency_intelligence_service.dart';
+import '../../../../core/settings/app_settings.dart';
 
 /// Tool for querying and searching transactions
 class QueryTransactionsTool extends FinancialDataTool {
@@ -276,9 +278,13 @@ class QueryTransactionsTool extends FinancialDataTool {
 /// Tool for creating new transactions
 class CreateTransactionTool extends FinancialDataTool {
   final TransactionRepository _transactionRepository;
+  final CurrencyIntelligenceService _currencyIntelligenceService;
   final _uuid = const Uuid();
 
-  CreateTransactionTool(this._transactionRepository);
+  CreateTransactionTool(
+    this._transactionRepository,
+    this._currencyIntelligenceService,
+  );
 
   @override
   String get name => 'create_transaction';
@@ -322,6 +328,18 @@ class CreateTransactionTool extends FinancialDataTool {
         'enum': ['expense', 'income', 'transfer', 'loan', 'subscription'],
         'description': 'Type of transaction',
       },
+      'currency': {
+        'type': 'string',
+        'description': 'Currency code (optional - will be intelligently detected if not provided)',
+      },
+      'original_amount': {
+        'type': 'number',
+        'description': 'Original amount in a different currency (if currency conversion is needed)',
+      },
+      'original_currency': {
+        'type': 'string',
+        'description': 'Original currency code (if amount was provided in different currency)',
+      },
     },
     'required': ['title', 'amount', 'category_id', 'account_id'],
   };
@@ -356,17 +374,62 @@ class CreateTransactionTool extends FinancialDataTool {
           
       // Safely convert amount from num to double
       final amountValue = parameters['amount'] as num;
-      final amount = amountValue.toDouble();
-          
+      var amount = amountValue.toDouble();
+      
+      final title = parameters['title'] as String;
       final transactionType = parameters.containsKey('transaction_type')
           ? _parseTransactionType(parameters['transaction_type'] as String)
           : amount > 0 
               ? TransactionType.income 
               : TransactionType.expense;
 
+      // **INTELLIGENT CURRENCY DETECTION AND CONVERSION**
+      String detectedCurrency;
+      String? conversionNote;
+      final providedCurrency = parameters['currency'] as String?;
+      
+      if (providedCurrency != null && await _currencyIntelligenceService.isCurrencySupported(providedCurrency)) {
+        // Use explicitly provided currency
+        detectedCurrency = providedCurrency.toUpperCase();
+      } else {
+        // Intelligently detect currency from context
+        final detection = await _currencyIntelligenceService.detectOptimalCurrency(
+          description: title,
+          amount: amount.abs(),
+          voiceLanguage: AppSettings.voiceLanguage,
+          appLocale: AppSettings.get<String>('locale'),
+          preferAccountCurrency: true,
+        );
+        
+        detectedCurrency = detection.currencyCode;
+        
+        if (detection.confidence < 0.7) {
+          conversionNote = 'Currency auto-detected: ${detection.reasoning}';
+        }
+      }
+
+      // Handle currency conversion if original amount was in different currency
+      final originalAmount = parameters['original_amount'] as num?;
+      final originalCurrency = parameters['original_currency'] as String?;
+      
+      if (originalAmount != null && originalCurrency != null) {
+        final conversion = await _currencyIntelligenceService.convertAmountWithContext(
+          amount: originalAmount.toDouble(),
+          fromCurrency: originalCurrency.toUpperCase(),
+          toCurrency: detectedCurrency,
+          conversionReason: 'User provided amount in $originalCurrency, converted to account currency',
+        );
+        
+        if (conversion.wasConverted) {
+          amount = conversion.convertedAmount;
+          conversionNote = conversion.formattedConversionNote;
+        }
+      }
+
+      // Create transaction with intelligent currency handling
       final transaction = Transaction(
-        title: parameters['title'] as String,
-        note: parameters['note'] as String?,
+        title: title,
+        note: _buildIntelligentNote(parameters['note'] as String?, conversionNote),
         amount: amount,
         categoryId: parameters['category_id'] as int,
         accountId: parameters['account_id'] as int,
@@ -379,11 +442,19 @@ class CreateTransactionTool extends FinancialDataTool {
 
       final createdTransaction = await _transactionRepository.createTransaction(transaction);
 
-      return {
+      // Build enhanced response with currency intelligence info
+      final response = {
         'success': true,
         'transaction': _transactionToMap(createdTransaction),
         'message': 'Transaction created successfully',
+        'currency_intelligence': {
+          'detected_currency': detectedCurrency,
+          'conversion_applied': originalAmount != null && originalCurrency != null,
+          'currency_note': conversionNote,
+        },
       };
+
+      return response;
 
     } catch (e) {
       return {
@@ -485,6 +556,14 @@ class CreateTransactionTool extends FinancialDataTool {
       'is_income': transaction.isIncome,
       'is_expense': transaction.isExpense,
     };
+  }
+
+  /// Build intelligent note combining user note with currency conversion info
+  String? _buildIntelligentNote(String? userNote, String? conversionNote) {
+    if (userNote == null && conversionNote == null) return null;
+    if (userNote == null) return conversionNote;
+    if (conversionNote == null) return userNote;
+    return '$userNote\n\n[Currency Intelligence]: $conversionNote';
   }
 }
 

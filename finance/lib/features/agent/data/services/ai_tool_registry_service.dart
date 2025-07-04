@@ -48,7 +48,7 @@ class AIToolRegistryService {
 
       debugPrint('  🔧 Registering CreateTransactionTool');
       _toolRegistry.registerDatabaseTool(
-        CreateTransactionTool(getIt.get()),
+        CreateTransactionTool(getIt.get(), getIt.get()),
       );
 
       debugPrint('  🔧 Registering UpdateTransactionTool');
@@ -114,7 +114,7 @@ class AIToolRegistryService {
 
       debugPrint('  🔧 Registering CreateAccountTool');
       _toolRegistry.registerDatabaseTool(
-        CreateAccountTool(getIt.get()),
+        CreateAccountTool(getIt.get(), getIt.get()),
       );
 
       debugPrint('  🔧 Registering UpdateAccountTool');
