@@ -242,11 +242,20 @@ class CurrencyIntelligenceServiceImpl implements CurrencyIntelligenceService {
     String? appLocale,
     bool preferAccountCurrency = true,
   }) async {
+    print('🔍 [CurrencyIntelligence] detectOptimalCurrency called:');
+    print('   Description: $description');
+    print('   Amount: $amount');
+    print('   Voice Language: $voiceLanguage');
+    print('   App Locale: $appLocale');
+    print('   Prefer Account Currency: $preferAccountCurrency');
+    
     final results = <CurrencyDetectionResult>[];
 
     // 1. Account-based detection (highest priority if preferAccountCurrency is true)
     if (preferAccountCurrency) {
+      print('🏦 [CurrencyIntelligence] Checking account-based detection...');
       final accountResult = await getUserPreferredCurrency();
+      print('🏦 [CurrencyIntelligence] Account result: ${accountResult.currencyCode} (confidence: ${accountResult.confidence})');
       if (accountResult.confidence > 0.6) {
         results.add(CurrencyDetectionResult(
           currencyCode: accountResult.currencyCode,
@@ -269,10 +278,12 @@ class CurrencyIntelligenceServiceImpl implements CurrencyIntelligenceService {
     }
 
     // 3. Language-based detection
+    print('🗣️ [CurrencyIntelligence] Checking language-based detection...');
     final languageResult = await guessCurrencyFromLanguage(
       voiceLanguage: voiceLanguage,
       appLocale: appLocale,
     );
+    print('🗣️ [CurrencyIntelligence] Language result: ${languageResult.currencyCode} (confidence: ${languageResult.confidence}) - ${languageResult.reasoning}');
     results.add(languageResult);
 
     // 4. Amount pattern analysis
@@ -286,16 +297,25 @@ class CurrencyIntelligenceServiceImpl implements CurrencyIntelligenceService {
     // Find the result with highest confidence
     results.sort((a, b) => b.confidence.compareTo(a.confidence));
     
+    print('🎯 [CurrencyIntelligence] All detection results:');
+    for (int i = 0; i < results.length; i++) {
+      final result = results[i];
+      print('   ${i + 1}. ${result.currencyCode} (confidence: ${result.confidence}) - ${result.reasoning}');
+    }
+    
     if (results.isNotEmpty) {
       final best = results.first;
       final alternatives = results.skip(1).take(3).map((r) => r.currencyCode).toList();
       
-      return CurrencyDetectionResult(
+      final finalResult = CurrencyDetectionResult(
         currencyCode: best.currencyCode,
         confidence: best.confidence,
         reasoning: 'Optimal detection: ${best.reasoning}',
         alternatives: alternatives,
       );
+      
+      print('🏆 [CurrencyIntelligence] Final result: ${finalResult.currencyCode} (confidence: ${finalResult.confidence})');
+      return finalResult;
     }
 
     // Ultimate fallback

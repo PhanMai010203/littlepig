@@ -384,27 +384,57 @@ class CreateTransactionTool extends FinancialDataTool {
               : TransactionType.expense;
 
       // **INTELLIGENT CURRENCY DETECTION AND CONVERSION**
-      String detectedCurrency;
+      String inputCurrency;
       String? conversionNote;
+      bool conversionApplied = false;
       final providedCurrency = parameters['currency'] as String?;
       
       if (providedCurrency != null && await _currencyIntelligenceService.isCurrencySupported(providedCurrency)) {
         // Use explicitly provided currency
-        detectedCurrency = providedCurrency.toUpperCase();
+        inputCurrency = providedCurrency.toUpperCase();
       } else {
-        // Intelligently detect currency from context
-        final detection = await _currencyIntelligenceService.detectOptimalCurrency(
+        // First detect the INPUT currency from language/context (without account preference)
+        final inputDetection = await _currencyIntelligenceService.detectOptimalCurrency(
           description: title,
           amount: amount.abs(),
           voiceLanguage: AppSettings.voiceLanguage,
           appLocale: AppSettings.get<String>('locale'),
-          preferAccountCurrency: true,
+          preferAccountCurrency: false, // Detect input currency, not account currency
         );
         
-        detectedCurrency = detection.currencyCode;
+        inputCurrency = inputDetection.currencyCode;
+        print('🌍 [CurrencyIntelligence] Input currency detected: $inputCurrency (confidence: ${inputDetection.confidence}) - ${inputDetection.reasoning}');
         
-        if (detection.confidence < 0.7) {
-          conversionNote = 'Currency auto-detected: ${detection.reasoning}';
+        // Now get the account currency for comparison
+        final accountCurrency = await _currencyIntelligenceService.getCurrentSelectedAccountCurrency() ?? 'USD';
+        print('💳 [CurrencyIntelligence] Account currency: $accountCurrency');
+        
+        // If input currency differs from account currency, convert
+        if (inputCurrency != accountCurrency && await _currencyIntelligenceService.isCurrencySupported(inputCurrency)) {
+          print('🔄 [CurrencyIntelligence] Converting ${amount.abs()} $inputCurrency to $accountCurrency');
+          
+          final conversion = await _currencyIntelligenceService.convertAmountWithContext(
+            amount: amount.abs(),
+            fromCurrency: inputCurrency,
+            toCurrency: accountCurrency,
+            conversionReason: 'Currency auto-detected from ${AppSettings.voiceLanguage} language',
+          );
+          
+          if (conversion.wasConverted) {
+            // Apply the conversion, preserving the sign
+            amount = amount < 0 ? -conversion.convertedAmount : conversion.convertedAmount;
+            conversionNote = conversion.formattedConversionNote;
+            conversionApplied = true;
+            print('✅ [CurrencyIntelligence] Conversion successful: $conversionNote');
+          } else {
+            print('❌ [CurrencyIntelligence] Conversion failed, using original amount');
+          }
+        } else {
+          print('💰 [CurrencyIntelligence] No conversion needed - same currency or unsupported input currency');
+        }
+        
+        if (inputDetection.confidence < 0.7 && !conversionApplied) {
+          conversionNote = 'Currency auto-detected: ${inputDetection.reasoning}';
         }
       }
 
@@ -412,17 +442,24 @@ class CreateTransactionTool extends FinancialDataTool {
       final originalAmount = parameters['original_amount'] as num?;
       final originalCurrency = parameters['original_currency'] as String?;
       
-      if (originalAmount != null && originalCurrency != null) {
+      if (originalAmount != null && originalCurrency != null && !conversionApplied) {
+        print('🔄 [CurrencyIntelligence] Additional conversion from original_amount: ${originalAmount} $originalCurrency');
+        
+        // Get the target currency (account currency)
+        final targetCurrency = await _currencyIntelligenceService.getCurrentSelectedAccountCurrency() ?? 'USD';
+        
         final conversion = await _currencyIntelligenceService.convertAmountWithContext(
           amount: originalAmount.toDouble(),
           fromCurrency: originalCurrency.toUpperCase(),
-          toCurrency: detectedCurrency,
+          toCurrency: targetCurrency,
           conversionReason: 'User provided amount in $originalCurrency, converted to account currency',
         );
         
         if (conversion.wasConverted) {
           amount = conversion.convertedAmount;
           conversionNote = conversion.formattedConversionNote;
+          conversionApplied = true;
+          print('✅ [CurrencyIntelligence] Additional conversion successful: $conversionNote');
         }
       }
 
@@ -442,14 +479,18 @@ class CreateTransactionTool extends FinancialDataTool {
 
       final createdTransaction = await _transactionRepository.createTransaction(transaction);
 
+      // Get final currency for response (account currency after conversion)
+      final finalCurrency = await _currencyIntelligenceService.getCurrentSelectedAccountCurrency() ?? 'USD';
+
       // Build enhanced response with currency intelligence info
       final response = {
         'success': true,
         'transaction': _transactionToMap(createdTransaction),
         'message': 'Transaction created successfully',
         'currency_intelligence': {
-          'detected_currency': detectedCurrency,
-          'conversion_applied': originalAmount != null && originalCurrency != null,
+          'detected_currency': inputCurrency,
+          'final_currency': finalCurrency,
+          'conversion_applied': conversionApplied,
           'currency_note': conversionNote,
         },
       };
