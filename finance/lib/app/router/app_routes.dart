@@ -8,6 +8,7 @@ class AppRoutes {
 
   // Secondary routes
   static const String settings = '/settings';
+  static const String sync = '/sync';
   static const String budgetCreate = '/budget/create';
   static const String transactionCreate = '/transaction/create';
   static const String accountCreate = '/account/create';
