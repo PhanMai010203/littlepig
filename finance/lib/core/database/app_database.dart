@@ -50,6 +50,7 @@ class AppDatabase extends _$AppDatabase {
           await m.createAll();
           await _insertDefaultCategories();
           await _insertDefaultAccount();
+          await _addEventSourcingTriggers();
         },
         onUpgrade: (Migrator m, int from, int to) async {
           if (from < 7) {

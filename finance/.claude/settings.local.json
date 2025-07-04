@@ -22,7 +22,8 @@
       "Bash(flutter pub:*)",
       "WebFetch(domain:pub.dev)",
       "WebFetch(domain:langchaindart.dev)",
-      "Bash(flutter packages:*)"
+      "Bash(flutter packages:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": []
   }

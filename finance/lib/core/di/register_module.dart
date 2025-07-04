@@ -24,6 +24,7 @@ abstract class RegisterModule {
   @lazySingleton
   GoogleSignIn get googleSignIn => GoogleSignIn(scopes: [
         'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive.appdata',
       ]);
 
   /// Provides HTTP client for network operations
@@ -55,8 +56,11 @@ abstract class RegisterModule {
   /// Provides IncrementalSyncService with async initialization
   /// Uses @preResolve to handle the async initialize() call
   @preResolve
-  Future<IncrementalSyncService> incrementalSyncService(AppDatabase database) async {
-    final service = IncrementalSyncService(database);
+  Future<IncrementalSyncService> incrementalSyncService(
+    AppDatabase database,
+    SharedPreferences prefs,
+  ) async {
+    final service = IncrementalSyncService(database, prefs);
     await service.initialize();
     return service;
   }

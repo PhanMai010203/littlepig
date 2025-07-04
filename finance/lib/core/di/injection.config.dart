@@ -190,12 +190,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i654.BudgetRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i706.AccountRepository>(
         () => _i126.AccountRepositoryImpl(gh<_i982.AppDatabase>()));
-    await gh.factoryAsync<_i767.IncrementalSyncService>(
-      () => registerModule.incrementalSyncService(gh<_i982.AppDatabase>()),
-      preResolve: true,
-    );
     await gh.factoryAsync<_i465.GoogleDriveSyncService>(
       () => registerModule.googleDriveSyncService(gh<_i982.AppDatabase>()),
+      preResolve: true,
+    );
+    await gh.factoryAsync<_i767.IncrementalSyncService>(
+      () => registerModule.incrementalSyncService(
+        gh<_i982.AppDatabase>(),
+        gh<_i460.SharedPreferences>(),
+      ),
       preResolve: true,
     );
     gh.lazySingleton<_i664.AttachmentRepository>(
@@ -227,7 +230,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1056.CurrencyRepository>(),
           gh<_i706.AccountRepository>(),
         ));
-    gh.factory<_i259.SyncBloc>(() => _i259.SyncBloc(gh<_i520.SyncService>()));
+    gh.lazySingleton<_i259.SyncBloc>(
+        () => _i259.SyncBloc(gh<_i520.SyncService>()));
     gh.lazySingleton<_i108.FilePickerService>(() => _i108.FilePickerService(
           gh<_i664.AttachmentRepository>(),
           gh<_i116.GoogleSignIn>(),

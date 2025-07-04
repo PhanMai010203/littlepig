@@ -8,6 +8,7 @@ import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:drift/drift.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'sync_service.dart';
 import 'sync_event.dart';
@@ -20,6 +21,7 @@ import 'google_drive_sync_service.dart';
 class IncrementalSyncService implements SyncService {
   static const List<String> _scopes = [
     'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.appdata',
   ];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(
@@ -31,14 +33,20 @@ class IncrementalSyncService implements SyncService {
     forceCodeForRefreshToken: true,
   );
   final AppDatabase _database;
+  final SharedPreferences _prefs;
   final StreamController<SyncStatus> _statusController =
       StreamController<SyncStatus>.broadcast();
   final CRDTConflictResolver _conflictResolver = CRDTConflictResolver();
 
   String? _deviceId;
   bool _isSyncing = false;
+  
+  // Authentication state caching keys
+  static const String _authStatusKey = 'sync_auth_status';
+  static const String _userEmailKey = 'sync_user_email';
+  static const String _lastAuthCheckKey = 'sync_last_auth_check';
 
-  IncrementalSyncService(this._database);
+  IncrementalSyncService(this._database, this._prefs);
 
   @override
   Stream<SyncStatus> get syncStatusStream => _statusController.stream;
@@ -59,7 +67,31 @@ class IncrementalSyncService implements SyncService {
   @override
   Future<bool> isSignedIn() async {
     try {
-      // First try to check if already signed in
+      // First check cached authentication status for faster startup
+      final cached = _getCachedAuthenticationStatus();
+      if (cached != null) {
+        final (isSignedIn, _) = cached;
+        if (isSignedIn) {
+          // Verify current user exists for cached positive results
+          final currentUser = _googleSignIn.currentUser;
+          if (currentUser != null) {
+            debugPrint('🔬 Using cached auth status: signed-in=true');
+            return true;
+          }
+        } else {
+          // For cached negative results, trust them for faster negative response
+          debugPrint('🔬 Using cached auth status: signed-in=false');
+          return false;
+        }
+      }
+      
+      // If no valid cache, perform full authentication check
+      debugPrint('🔬 Performing fresh authentication check...');
+      
+      bool finalResult = false;
+      String? finalEmail;
+      
+      // Check current Google Sign-In status
       final result = await _googleSignIn.isSignedIn();
       debugPrint('🔬 GoogleSignIn.isSignedIn() returned: $result');
       
@@ -67,34 +99,44 @@ class IncrementalSyncService implements SyncService {
         final currentUser = _googleSignIn.currentUser;
         debugPrint('🔬 Current user: ${currentUser?.email ?? 'null'}');
         
-        // If signed in but no current user, try silent sign-in to restore session
-        if (currentUser == null) {
+        if (currentUser != null) {
+          finalResult = true;
+          finalEmail = currentUser.email;
+        } else {
+          // If signed in but no current user, try silent sign-in to restore session
           debugPrint('🔬 User signed in but no current user, attempting silent sign-in...');
           try {
             final account = await _googleSignIn.signInSilently();
             debugPrint('🔬 Silent sign-in result: ${account?.email ?? 'null'}');
-            return account != null;
+            finalResult = account != null;
+            finalEmail = account?.email;
           } catch (silentSignInError) {
             debugPrint('❌ Silent sign-in failed: $silentSignInError');
-            return false;
+            finalResult = false;
           }
         }
-        
-        return true;
       } else {
         // Try silent sign-in to restore previous authentication
         debugPrint('🔬 Not signed in, attempting silent sign-in to restore session...');
         try {
           final account = await _googleSignIn.signInSilently();
           debugPrint('🔬 Silent sign-in result: ${account?.email ?? 'null'}');
-          return account != null;
+          finalResult = account != null;
+          finalEmail = account?.email;
         } catch (silentSignInError) {
           debugPrint('🔬 Silent sign-in failed (expected if never signed in): $silentSignInError');
-          return false;
+          finalResult = false;
         }
       }
+      
+      // Cache the result for future use
+      await _cacheAuthenticationStatus(finalResult, finalEmail);
+      
+      return finalResult;
     } catch (e) {
       debugPrint('❌ Error checking sign-in status: $e');
+      // Cache negative result on error
+      await _cacheAuthenticationStatus(false, null);
       return false;
     }
   }
@@ -190,7 +232,16 @@ class IncrementalSyncService implements SyncService {
         debugPrint('❌ Sign-in failed or was cancelled by the user');
       }
       
-      return account != null;
+      final success = account != null;
+      
+      // Cache authentication status after sign-in attempt
+      if (success) {
+        await _cacheAuthenticationStatus(true, account.email);
+      } else {
+        await _cacheAuthenticationStatus(false, null);
+      }
+      
+      return success;
     } catch (e, stackTrace) {
       debugPrint('❌ IncrementalSyncService: Sign-In error: $e');
       debugPrint('❌ Stack trace: $stackTrace');
@@ -262,6 +313,9 @@ class IncrementalSyncService implements SyncService {
       
       await _googleSignIn.signOut();
       debugPrint('✅ User signed out successfully');
+      
+      // Clear authentication cache after sign-out
+      await _clearAuthenticationCache();
       
       final isStillSignedIn = await _googleSignIn.isSignedIn();
       debugPrint('🔬 User is still signed in after signOut: $isStillSignedIn');
@@ -544,6 +598,89 @@ class IncrementalSyncService implements SyncService {
           ..where((t) => t.isSynced.equals(false))
           ..orderBy([(t) => OrderingTerm.asc(t.sequenceNumber)]))
         .get();
+  }
+
+  /// Cache authentication status locally for faster startup
+  Future<void> _cacheAuthenticationStatus(bool isSignedIn, String? userEmail) async {
+    await _prefs.setBool(_authStatusKey, isSignedIn);
+    await _prefs.setString(_userEmailKey, userEmail ?? '');
+    await _prefs.setInt(_lastAuthCheckKey, DateTime.now().millisecondsSinceEpoch);
+    debugPrint('🔬 Cached auth status: signed-in=$isSignedIn, email=$userEmail');
+  }
+
+  /// Get cached authentication status with expiry check
+  (bool isSignedIn, String? userEmail)? _getCachedAuthenticationStatus() {
+    try {
+      final lastCheck = _prefs.getInt(_lastAuthCheckKey) ?? 0;
+      final isRecent = DateTime.now().millisecondsSinceEpoch - lastCheck < 300000; // 5 minutes
+      
+      if (isRecent) {
+        final isSignedIn = _prefs.getBool(_authStatusKey) ?? false;
+        final userEmail = _prefs.getString(_userEmailKey);
+        final email = (userEmail?.isEmpty ?? true) ? null : userEmail;
+        debugPrint('🔬 Using cached auth status: signed-in=$isSignedIn, email=$email');
+        return (isSignedIn, email);
+      }
+      
+      debugPrint('🔬 Cached auth status expired, will check fresh');
+      return null;
+    } catch (e) {
+      debugPrint('🔬 Error reading cached auth status: $e');
+      return null;
+    }
+  }
+
+  /// Clear cached authentication status
+  Future<void> _clearAuthenticationCache() async {
+    await _prefs.remove(_authStatusKey);
+    await _prefs.remove(_userEmailKey);
+    await _prefs.remove(_lastAuthCheckKey);
+    debugPrint('🔬 Cleared auth status cache');
+  }
+
+  /// Diagnostic method to verify sync system is working
+  Future<Map<String, dynamic>> getSyncDiagnostics() async {
+    try {
+      // Check database triggers exist
+      final triggerQuery = await _database.customSelect('''
+        SELECT name FROM sqlite_master 
+        WHERE type = 'trigger' AND name LIKE '%_sync_event%'
+      ''').get();
+      
+      // Count sync events
+      final eventCount = await _database.customSelect('''
+        SELECT COUNT(*) as count FROM sync_event_log
+      ''').getSingle();
+      
+      // Count unsynced events
+      final unsyncedCount = await _database.customSelect('''
+        SELECT COUNT(*) as count FROM sync_event_log WHERE is_synced = false
+      ''').getSingle();
+      
+      // Check authentication status
+      final isSignedIn = await this.isSignedIn();
+      final userEmail = await getCurrentUserEmail();
+      
+      final diagnostics = {
+        'triggers_found': triggerQuery.length,
+        'trigger_names': triggerQuery.map((row) => row.data['name']).toList(),
+        'total_sync_events': eventCount.data['count'] ?? 0,
+        'unsynced_events': unsyncedCount.data['count'] ?? 0,
+        'is_signed_in': isSignedIn,
+        'user_email': userEmail,
+        'device_id': _deviceId,
+        'sync_status': 'functional',
+      };
+      
+      debugPrint('🔬 Sync Diagnostics: $diagnostics');
+      return diagnostics;
+    } catch (e) {
+      debugPrint('❌ Error getting sync diagnostics: $e');
+      return {
+        'error': e.toString(),
+        'sync_status': 'error',
+      };
+    }
   }
 
   Future<String> _ensureFolderExists(

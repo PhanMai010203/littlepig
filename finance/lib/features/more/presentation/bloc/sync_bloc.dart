@@ -7,7 +7,7 @@ import '../../../../core/di/injection.dart';
 import 'sync_event.dart';
 import 'sync_state.dart';
 
-@injectable
+@lazySingleton
 class SyncBloc extends Bloc<SyncEvent, SyncBlocState> {
   final SyncService _syncService;
   StreamSubscription<SyncStatus>? _syncStatusSubscription;

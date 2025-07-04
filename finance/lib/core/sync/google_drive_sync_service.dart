@@ -17,6 +17,7 @@ import '../database/app_database.dart';
 class GoogleDriveSyncService implements SyncService {
   static const List<String> _scopes = [
     'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.appdata',
   ];
 
   // ✅ PHASE 1 FIX 1: Namespace Separation

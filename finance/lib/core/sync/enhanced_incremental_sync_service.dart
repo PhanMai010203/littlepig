@@ -21,6 +21,7 @@ import 'google_drive_sync_service.dart';
 class EnhancedIncrementalSyncService implements interfaces.SyncService {
   static const List<String> _scopes = [
     'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.appdata',
   ];
 
   final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: _scopes);
