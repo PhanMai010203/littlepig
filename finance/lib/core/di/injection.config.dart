@@ -124,10 +124,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc());
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
-    gh.lazySingleton<_i588.CRDTConflictResolver>(
-        () => _i588.CRDTConflictResolver());
     gh.lazySingleton<_i388.TransactionEventPublisher>(
         () => _i388.TransactionEventPublisher());
+    gh.lazySingleton<_i588.CRDTConflictResolver>(
+        () => _i588.CRDTConflictResolver());
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(

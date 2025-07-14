@@ -127,9 +127,7 @@ class _AIChatScreenState extends State<AIChatScreen> {
   void _addWelcomeMessage() {
     debugPrint('👋 AI Chat - Adding welcome message');
     final toolCount = AIServiceFactory.toolCount;
-    final welcomeText = _isAIServiceReady 
-        ? 'Hello! I\'m your AI financial assistant powered by Gemini. I have access to $toolCount tools to help you manage your finances. Ask me about your transactions, budgets, accounts, or categories!'
-        : 'agent.welcome_message'.tr();
+    final welcomeText = 'agent.welcome_message'.tr();
     
     debugPrint('👋 Welcome message: "$welcomeText"');
     

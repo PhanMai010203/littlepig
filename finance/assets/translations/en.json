@@ -131,6 +131,7 @@
     "no_categories_excluded": "No categories excluded",
     "categories_excluded": "categories excluded",
     "disabled_by_exclude": "Disabled by exclude mode",
+    "daily_allowance_label": "You can spend \\${}/day for {} more days",
 
     "form": {
       "create_new_budget": "Create New Budget",
@@ -297,7 +298,8 @@
     "select": "Select",
     "choose": "Choose",
     "optional": "Optional",
-    "required": "Required"
+    "required": "Required",
+    "unknown": "Unknown"
   },
 
   "errors": {

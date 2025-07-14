@@ -206,10 +206,10 @@ class _SyncPageContent extends StatelessWidget {
           ),
 
           // Account Management Section
-          const _SectionHeader(title: 'sync.section_account'),
+          _SectionHeader(title: 'sync.section_account'.tr()),
           if (state.isSignedIn) ...[
             _AccountInfoCard(
-              email: state.userEmail ?? 'Unknown',
+              email: state.userEmail ?? 'common.unknown'.tr(),
               onSignOut: () => _showSignOutDialog(context),
             ),
           ] else ...[
@@ -219,7 +219,7 @@ class _SyncPageContent extends StatelessWidget {
           ],
 
           // Sync Controls Section
-          const _SectionHeader(title: 'sync.section_controls'),
+          _SectionHeader(title: 'sync.section_controls'.tr()),
           if (state.isSignedIn) ...[
             _SyncControlsCard(
               issyncing: state.status != SyncStatus.idle && state.status != SyncStatus.completed,
@@ -240,12 +240,12 @@ class _SyncPageContent extends StatelessWidget {
 
           // Sync History Section
           if (state.lastResult != null) ...[
-            const _SectionHeader(title: 'sync.section_last_result'),
+             _SectionHeader(title: 'sync.section_last_result'.tr()),
             _SyncHistoryCard(result: state.lastResult!),
           ],
 
           // Settings and Information
-          const _SectionHeader(title: 'sync.section_info'),
+           _SectionHeader(title: 'sync.section_info'.tr()),
           _SyncInfoCard(),
         ],
       ),

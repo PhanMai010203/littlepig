@@ -8,6 +8,7 @@ import '../bloc/budgets_bloc.dart';
 
 import '../../../../shared/widgets/animations/fade_in.dart';
 import '../../../../shared/widgets/app_text.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 extension _BudgetRemainingDays on Budget {
   int remainingDays(DateTime now) {
@@ -33,7 +34,7 @@ class DailyAllowanceLabel extends StatelessWidget {
       builder: (context, allowance) {
         final remainingDays = budget.remainingDays(DateTime.now());
         // TODO: Localize this string properly and use currency formatting
-        final message = 'You can spend \$${allowance.toStringAsFixed(0)}/day for $remainingDays more days';
+        final message = 'Bạn có thể chi \$${allowance.toStringAsFixed(0)}/ngày trong $remainingDays ngày nữa';
         return AppText(
           message,
           fontSize: 11,
