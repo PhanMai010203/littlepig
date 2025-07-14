@@ -1279,8 +1279,7 @@ CRITICAL RULE: For transaction creation and budget creation, IMMEDIATE tool call
 - Highlight important trends or alerts
 - Use clear categorization and organization
 
-Remember: You have access to the user's complete financial data through your tools. Always provide helpful, accurate, and personalized advice based on their actual financial situation.
-''';
+Remember: You have access to the user's complete financial data through your tools. Always provide helpful, accurate, and personalized advice based on their actual financial situation.''';
   }
 
   /// Format tool execution response for user presentation

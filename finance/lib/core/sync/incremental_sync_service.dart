@@ -57,6 +57,9 @@ class IncrementalSyncService implements SyncService {
   @override
   Future<bool> initialize() async {
     try {
+      // 🔧 Migrate any legacy timestamp strings to ISO-8601 before we start using the database
+      await _migrateLegacyTimestampFormats();
+
       _deviceId = await _getOrCreateDeviceId();
       return true;
     } catch (e) {
@@ -379,10 +382,25 @@ class IncrementalSyncService implements SyncService {
     _statusController.add(SyncStatus.uploading);
 
     try {
+      debugPrint('📤 Starting syncToCloud...');
+      
+      // 🌡️ Extra diagnostic – ensure no bad timestamps remain before proceeding
+      await _detectInvalidTimestamps();
+
       // Get unsynced events since last sync
-      final unsyncedEvents = await _getUnsyncedEvents();
+      debugPrint('📋 Fetching unsynced events...');
+      List<SyncEventLogData> unsyncedEvents;
+      try {
+        unsyncedEvents = await _getUnsyncedEvents();
+        debugPrint('📋 Found ${unsyncedEvents.length} unsynced events');
+      } catch (e, stackTrace) {
+        debugPrint('❌ ERROR in _getUnsyncedEvents: $e');
+        debugPrint('📍 Stack trace: $stackTrace');
+        rethrow;
+      }
 
       if (unsyncedEvents.isEmpty) {
+        debugPrint('✅ No unsynced events found, sync complete');
         _statusController.add(SyncStatus.completed);
         return SyncResult(
           success: true,
@@ -392,11 +410,13 @@ class IncrementalSyncService implements SyncService {
         );
       }
 
+      debugPrint('🔑 Checking authentication...');
       final account = _googleSignIn.currentUser;
       if (account == null) {
         throw Exception('Not signed in');
       }
 
+      debugPrint('🔐 Getting auth headers...');
       final authHeaders = await account.authHeaders;
       final client = authenticatedClient(
         http.Client(),
@@ -413,28 +433,54 @@ class IncrementalSyncService implements SyncService {
       final driveApi = drive.DriveApi(client);
 
       // Create events batch (much smaller than entire database!)
+      debugPrint('📦 Creating events batch...');
+      List<SyncEvent> events;
+      try {
+        events = unsyncedEvents.map(SyncEvent.fromEventLog).toList();
+        debugPrint('📦 Successfully created ${events.length} sync events');
+      } catch (e, stackTrace) {
+        debugPrint('❌ ERROR creating SyncEvent from EventLog: $e');
+        debugPrint('📍 Stack trace: $stackTrace');
+        
+        // Log details about each problematic event
+        for (int i = 0; i < unsyncedEvents.length; i++) {
+          final event = unsyncedEvents[i];
+          try {
+            SyncEvent.fromEventLog(event);
+          } catch (eventError) {
+            debugPrint('❌ Problem with event $i: eventId=${event.eventId}, timestamp=${event.timestamp}, error=$eventError');
+          }
+        }
+        rethrow;
+      }
+
       final eventsBatch = SyncEventBatch(
         deviceId: _deviceId!,
         timestamp: DateTime.now(),
-        events: unsyncedEvents.map(SyncEvent.fromEventLog).toList(),
+        events: events,
       );
 
       // Upload to dedicated sync folder
+      debugPrint('📁 Ensuring sync folder exists...');
       final syncFolderId = await _ensureFolderExists(
           driveApi, GoogleDriveSyncService.SYNC_FOLDER);
       final fileName =
           'events_${_deviceId}_${DateTime.now().millisecondsSinceEpoch}.json';
 
+      debugPrint('☁️ Uploading events batch...');
       await _uploadEventBatch(driveApi, syncFolderId, fileName, eventsBatch);
 
       // Mark events as synced
+      debugPrint('✅ Marking events as synced...');
       await _markEventsAsSynced(unsyncedEvents);
 
       // Update sync state
+      debugPrint('🔄 Updating sync state...');
       await _updateSyncState();
 
       client.close();
       _statusController.add(SyncStatus.completed);
+      debugPrint('✅ syncToCloud completed successfully');
 
       return SyncResult(
         success: true,
@@ -442,7 +488,18 @@ class IncrementalSyncService implements SyncService {
         downloadedCount: 0,
         timestamp: DateTime.now(),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ FATAL ERROR in syncToCloud: $e');
+      debugPrint('📍 Full stack trace: $stackTrace');
+      
+      // Check if it's a FormatException specifically
+      if (e is FormatException) {
+        debugPrint('🔢 FormatException details:');
+        debugPrint('   - message: ${e.message}');
+        debugPrint('   - source: ${e.source}');
+        debugPrint('   - offset: ${e.offset}');
+      }
+      
       _statusController.add(SyncStatus.error);
       return SyncResult(
         success: false,
@@ -593,11 +650,181 @@ class IncrementalSyncService implements SyncService {
     return deviceId;
   }
 
+  /// Converts legacy timestamp strings that use a space separator (e.g. "2025-07-14 09:35:13")
+  /// to proper ISO-8601 strings with a "T" separator so that `DateTime.parse` can read them.
+  ///
+  /// Older app versions saved `DateTime` values as TEXT in the form `yyyy-MM-dd HH:mm:ss` which
+  /// is not accepted by `DateTime.parse`. This leads to a `FormatException` when Drift tries to
+  /// hydrate those rows. Running this SQL once at startup fixes the data in-place so normal
+  /// queries work again.
+  Future<void> _migrateLegacyTimestampFormats() async {
+    try {
+      debugPrint('🛠️ Running legacy timestamp migration…');
+
+      // First, let's see what we're working with
+      debugPrint('🔍 Inspecting current timestamp data...');
+      final sampleRows = await _database.customSelect(
+        'SELECT event_id, timestamp, typeof(timestamp) as type FROM sync_event_log LIMIT 5'
+      ).get();
+      
+      for (int i = 0; i < sampleRows.length; i++) {
+        final row = sampleRows[i];
+        debugPrint('🔍 Sample row $i: event_id=${row.data['event_id']}, timestamp="${row.data['timestamp']}", type=${row.data['type']}');
+      }
+
+      // Count rows that have TEXT timestamps (should be INTEGER for Drift)
+      final textTimestamps = await _database.customSelect(
+        "SELECT COUNT(*) AS cnt FROM sync_event_log WHERE typeof(timestamp) = 'text'",
+      ).getSingle();
+      debugPrint('🕑 Rows with TEXT timestamps: ${textTimestamps.data['cnt']}');
+
+      if ((textTimestamps.data['cnt'] as int? ?? 0) > 0) {
+        debugPrint('🔧 Converting TEXT timestamps to Unix timestamps...');
+        
+        // Test the conversion on one row first
+        debugPrint('🧪 Testing conversion on first row...');
+        final testResult = await _database.customSelect('''
+          SELECT 
+            timestamp as original,
+            CASE
+              WHEN timestamp LIKE '%T%' THEN
+                CAST((julianday(timestamp) - julianday('1970-01-01 00:00:00')) * 86400 AS INTEGER)
+              WHEN timestamp LIKE '% %' THEN
+                CAST((julianday(REPLACE(timestamp, ' ', 'T')) - julianday('1970-01-01 00:00:00')) * 86400 AS INTEGER)
+              ELSE timestamp
+            END as converted
+          FROM sync_event_log 
+          WHERE typeof(timestamp) = 'text' 
+          LIMIT 1
+        ''').getSingle();
+        
+        debugPrint('🧪 Test conversion: "${testResult.data['original']}" -> ${testResult.data['converted']}');
+        
+        // Convert ISO-8601 strings to Unix timestamps
+        debugPrint('🔧 Executing bulk conversion...');
+        await _database.customStatement('''
+          UPDATE sync_event_log 
+          SET timestamp = (
+            CASE 
+              WHEN typeof(timestamp) = 'text' THEN
+                CASE
+                  WHEN timestamp LIKE '%T%' THEN
+                    -- ISO-8601 format: convert to Unix timestamp
+                    CAST((julianday(timestamp) - julianday('1970-01-01 00:00:00')) * 86400 AS INTEGER)
+                  WHEN timestamp LIKE '% %' THEN
+                    -- Legacy format with space: convert to Unix timestamp  
+                    CAST((julianday(REPLACE(timestamp, ' ', 'T')) - julianday('1970-01-01 00:00:00')) * 86400 AS INTEGER)
+                  ELSE timestamp
+                END
+              ELSE timestamp
+            END
+          )
+          WHERE typeof(timestamp) = 'text';
+        ''');
+
+        // Verify conversion
+        debugPrint('🔍 Verifying conversion results...');
+        final afterConversion = await _database.customSelect(
+          "SELECT COUNT(*) AS cnt FROM sync_event_log WHERE typeof(timestamp) = 'text'",
+        ).getSingle();
+        debugPrint('🕑 Rows with TEXT timestamps after conversion: ${afterConversion.data['cnt']}');
+        
+        // Show some converted data
+        final convertedSamples = await _database.customSelect(
+          'SELECT event_id, timestamp, typeof(timestamp) as type FROM sync_event_log LIMIT 5'
+        ).get();
+        
+        for (int i = 0; i < convertedSamples.length; i++) {
+          final row = convertedSamples[i];
+          debugPrint('🔍 Converted row $i: event_id=${row.data['event_id']}, timestamp=${row.data['timestamp']}, type=${row.data['type']}');
+        }
+      }
+
+      debugPrint('✅ Legacy timestamp migration completed');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Legacy timestamp migration failed: $e');
+      debugPrint('📍 Migration stack trace: $stackTrace');
+      
+      // If the migration fails, try to delete problematic rows as a last resort
+      try {
+        debugPrint('🧹 Attempting to clean up problematic rows...');
+        final countBefore = await _database.customSelect(
+          "SELECT COUNT(*) AS cnt FROM sync_event_log WHERE typeof(timestamp) = 'text'"
+        ).getSingle();
+        debugPrint('🧹 Rows to delete: ${countBefore.data['cnt']}');
+        
+        await _database.customStatement('''
+          DELETE FROM sync_event_log WHERE typeof(timestamp) = 'text';
+        ''');
+        
+        final countAfter = await _database.customSelect(
+          "SELECT COUNT(*) AS cnt FROM sync_event_log"
+        ).getSingle();
+        debugPrint('🧹 Total rows remaining after cleanup: ${countAfter.data['cnt']}');
+      } catch (cleanupError, cleanupStackTrace) {
+        debugPrint('❌ Cleanup also failed: $cleanupError');
+        debugPrint('📍 Cleanup stack trace: $cleanupStackTrace');
+      }
+    }
+  }
+
+  /// Scan the event log and print any timestamps that **still** fail to parse, just before upload.
+  Future<void> _detectInvalidTimestamps() async {
+    try {
+      debugPrint('🔍 Scanning for invalid timestamps in sync_event_log…');
+      final rows = await _database.customSelect(
+        'SELECT event_id, timestamp FROM sync_event_log',
+      ).get();
+
+      for (final row in rows) {
+        final ts = row.data['timestamp'];
+        if (ts is String) {
+          try {
+            DateTime.parse(ts);
+          } catch (_) {
+            debugPrint('❌ Cannot parse timestamp for eventId=${row.data['event_id']} – value="$ts"');
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('ℹ️ Timestamp scan failed: $e');
+    }
+  }
+
   Future<List<SyncEventLogData>> _getUnsyncedEvents() async {
-    return await (_database.select(_database.syncEventLogTable)
-          ..where((t) => t.isSynced.equals(false))
-          ..orderBy([(t) => OrderingTerm.asc(t.sequenceNumber)]))
-        .get();
+    try {
+      debugPrint('🔍 Querying sync_event_log for unsynced events...');
+      
+      final query = _database.select(_database.syncEventLogTable)
+        ..where((t) => t.isSynced.equals(false))
+        ..orderBy([(t) => OrderingTerm.asc(t.sequenceNumber)]);
+      
+      debugPrint('🔍 Executing database query...');
+      final result = await query.get();
+      
+      debugPrint('🔍 Query returned ${result.length} rows');
+      return result;
+    } catch (e, stackTrace) {
+      debugPrint('❌ ERROR in _getUnsyncedEvents database query: $e');
+      debugPrint('📍 Stack trace: $stackTrace');
+      
+      // Try to get raw data to see what's in the table
+      try {
+        debugPrint('🔍 Attempting raw query to inspect table contents...');
+        final rawRows = await _database.customSelect(
+          'SELECT event_id, timestamp, sequence_number FROM sync_event_log WHERE is_synced = 0 LIMIT 5'
+        ).get();
+        
+        for (int i = 0; i < rawRows.length; i++) {
+          final row = rawRows[i];
+          debugPrint('🔍 Raw row $i: event_id=${row.data['event_id']}, timestamp="${row.data['timestamp']}", sequence_number=${row.data['sequence_number']}');
+        }
+      } catch (rawError) {
+        debugPrint('❌ Raw query also failed: $rawError');
+      }
+      
+      rethrow;
+    }
   }
 
   /// Cache authentication status locally for faster startup
@@ -770,17 +997,61 @@ class IncrementalSyncService implements SyncService {
   }
 
   Future<void> _updateSyncState() async {
-    final now = DateTime.now();
-    final lastSequence = await _getLastSequenceNumber();
-
-    await _database.into(_database.syncStateTable).insertOnConflictUpdate(
-          SyncStateTableCompanion.insert(
-            deviceId: _deviceId!,
-            lastSyncTime: now,
-            lastSequenceNumber: Value(lastSequence),
-            status: const Value('idle'),
-          ),
-        );
+    try {
+      debugPrint('🔄 Updating sync state for device: $_deviceId');
+      
+      final now = DateTime.now();
+      final lastSequence = await _getLastSequenceNumber();
+      
+      debugPrint('🔄 Last sequence number: $lastSequence');
+      
+      // Check if device already exists in sync_state
+      final existingState = await (_database.select(_database.syncStateTable)
+            ..where((tbl) => tbl.deviceId.equals(_deviceId!)))
+          .getSingleOrNull();
+      
+      if (existingState != null) {
+        debugPrint('🔄 Updating existing sync state record (id: ${existingState.id})');
+        // Update existing record
+        await (_database.update(_database.syncStateTable)
+              ..where((tbl) => tbl.deviceId.equals(_deviceId!)))
+            .write(SyncStateTableCompanion(
+          lastSyncTime: Value(now),
+          lastSequenceNumber: Value(lastSequence),
+          status: const Value('idle'),
+        ));
+      } else {
+        debugPrint('🔄 Creating new sync state record');
+        // Insert new record
+        await _database.into(_database.syncStateTable).insert(
+              SyncStateTableCompanion.insert(
+                deviceId: _deviceId!,
+                lastSyncTime: now,
+                lastSequenceNumber: Value(lastSequence),
+                status: const Value('idle'),
+              ),
+            );
+      }
+      
+      debugPrint('✅ Sync state updated successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error updating sync state: $e');
+      debugPrint('📍 Sync state stack trace: $stackTrace');
+      
+      // Try to see what's in the table
+      try {
+        final allStates = await _database.select(_database.syncStateTable).get();
+        debugPrint('🔍 Current sync_state table contents:');
+        for (int i = 0; i < allStates.length; i++) {
+          final state = allStates[i];
+          debugPrint('🔍   Row $i: id=${state.id}, deviceId=${state.deviceId}, lastSyncTime=${state.lastSyncTime}');
+        }
+      } catch (inspectError) {
+        debugPrint('❌ Could not inspect sync_state table: $inspectError');
+      }
+      
+      rethrow;
+    }
   }
 
   Future<int> _getLastSequenceNumber() async {
@@ -1199,11 +1470,52 @@ class IncrementalSyncService implements SyncService {
   }
 
   Future<void> _updateLastSyncTime(DateTime time) async {
-    await _database.into(_database.syncMetadataTable).insertOnConflictUpdate(
-          SyncMetadataTableCompanion.insert(
-            key: 'last_sync_time',
-            value: time.toIso8601String(),
-          ),
-        );
+    try {
+      debugPrint('🕒 Updating last sync time to: ${time.toIso8601String()}');
+      
+      // Check if 'last_sync_time' key already exists
+      final existing = await (_database.select(_database.syncMetadataTable)
+            ..where((tbl) => tbl.key.equals('last_sync_time')))
+          .getSingleOrNull();
+      
+      if (existing != null) {
+        debugPrint('🕒 Updating existing last_sync_time record (id: ${existing.id})');
+        // Update existing record
+        await (_database.update(_database.syncMetadataTable)
+              ..where((tbl) => tbl.key.equals('last_sync_time')))
+            .write(SyncMetadataTableCompanion(
+          value: Value(time.toIso8601String()),
+          updatedAt: Value(DateTime.now()),
+        ));
+      } else {
+        debugPrint('🕒 Creating new last_sync_time record');
+        // Insert new record
+        await _database.into(_database.syncMetadataTable).insert(
+              SyncMetadataTableCompanion.insert(
+                key: 'last_sync_time',
+                value: time.toIso8601String(),
+              ),
+            );
+      }
+      
+      debugPrint('✅ Last sync time updated successfully');
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error updating last sync time: $e');
+      debugPrint('📍 Last sync time stack trace: $stackTrace');
+      
+      // Try to see what's in the sync_metadata table
+      try {
+        final allMetadata = await _database.select(_database.syncMetadataTable).get();
+        debugPrint('🔍 Current sync_metadata table contents:');
+        for (int i = 0; i < allMetadata.length; i++) {
+          final meta = allMetadata[i];
+          debugPrint('🔍   Row $i: id=${meta.id}, key=${meta.key}, value=${meta.value}');
+        }
+      } catch (inspectError) {
+        debugPrint('❌ Could not inspect sync_metadata table: $inspectError');
+      }
+      
+      rethrow;
+    }
   }
 }
