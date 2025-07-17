@@ -36,16 +36,19 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
     _LoadAccounts event,
     Emitter<AccountSelectionState> emit,
   ) async {
+    print('DEBUG: _onLoadAccounts called');
     emit(state.copyWith(isLoading: true, errorMessage: null));
 
     try {
       final accounts = await _accountRepository.getAllAccounts();
+      print('DEBUG: Loaded ${accounts.length} accounts');
       emit(state.copyWith(
         isLoading: false,
         availableAccounts: accounts,
         errorMessage: null,
       ));
     } catch (e) {
+      print('DEBUG: Error loading accounts: $e');
       emit(state.copyWith(
         isLoading: false,
         errorMessage: 'Failed to load accounts: ${e.toString()}',
@@ -58,10 +61,15 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
     _SelectAccount event,
     Emitter<AccountSelectionState> emit,
   ) async {
+    print('DEBUG: _onSelectAccount called with accountId: ${event.accountId}');
     final index = state.findAccountIndex(event.accountId);
+    print('DEBUG: Found index: $index for accountId: ${event.accountId}');
     if (index >= 0) {
       final account = state.availableAccounts[index];
+      print('DEBUG: Found account: ${account.name} at index: $index');
       await _updateSelection(account, index, emit);
+    } else {
+      print('DEBUG: No account found for accountId: ${event.accountId}');
     }
   }
 
@@ -70,9 +78,15 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
     _SelectAccountByIndex event,
     Emitter<AccountSelectionState> emit,
   ) async {
+    print('DEBUG: _onSelectAccountByIndex called with index: ${event.index}');
+    print('DEBUG: Available accounts count: ${state.availableAccounts.length}');
+    
     final account = state.getAccountByIndex(event.index);
     if (account != null) {
+      print('DEBUG: Found account: ${account.name} (ID: ${account.id})');
       await _updateSelection(account, event.index, emit);
+    } else {
+      print('DEBUG: No account found at index: ${event.index}');
     }
   }
 
@@ -81,6 +95,7 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
     _InitializeWithDefault event,
     Emitter<AccountSelectionState> emit,
   ) async {
+    print('DEBUG: _onInitializeWithDefault called, accounts count: ${state.availableAccounts.length}');
     if (state.availableAccounts.isNotEmpty) {
       // Try to find the default account first
       int defaultIndex = state.availableAccounts.indexWhere((account) => account.isDefault);
@@ -90,8 +105,11 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
         defaultIndex = 0;
       }
 
+      print('DEBUG: Selecting default account at index: $defaultIndex');
       final defaultAccount = state.availableAccounts[defaultIndex];
       await _updateSelection(defaultAccount, defaultIndex, emit);
+    } else {
+      print('DEBUG: No accounts available for default selection');
     }
   }
 
@@ -142,11 +160,15 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
     int index,
     Emitter<AccountSelectionState> emit,
   ) async {
+    print('DEBUG: _updateSelection called for account: ${account.name} at index: $index');
+    
     // Update local state
     emit(state.copyWith(
       selectedAccount: account,
       selectedIndex: index,
     ));
+
+    print('DEBUG: State updated, selected index: ${state.selectedIndex}');
 
     // Trigger currency display update
     _currencyDisplayBloc.add(
@@ -155,10 +177,13 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
         accountId: account.id?.toString() ?? '',
       ),
     );
+    
+    print('DEBUG: Currency display event dispatched for currency: ${account.currency}');
   }
 
   /// Initialize the bloc with account loading and default selection
   Future<void> initialize() async {
+    print('DEBUG: initialize() called');
     add(const AccountSelectionEvent.loadAccounts());
     
     // Wait a bit for accounts to load, then select default

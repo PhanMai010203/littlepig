@@ -258,13 +258,6 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i351.CurrencyService>(),
               gh<_i706.AccountRepository>(),
             ));
-    gh.factory<_i612.TransactionCreateBloc>(() => _i612.TransactionCreateBloc(
-          gh<_i421.TransactionRepository>(),
-          gh<_i266.CategoryRepository>(),
-          gh<_i706.AccountRepository>(),
-          gh<_i1021.BudgetRepository>(),
-          gh<_i664.AttachmentRepository>(),
-        ));
     gh.factory<_i923.AccountCreateBloc>(() => _i923.AccountCreateBloc(
           gh<_i706.AccountRepository>(),
           gh<_i351.CurrencyService>(),
@@ -277,6 +270,14 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i351.CurrencyService>(),
               gh<_i871.BudgetCsvService>(),
             ));
+    gh.factory<_i612.TransactionCreateBloc>(() => _i612.TransactionCreateBloc(
+          gh<_i421.TransactionRepository>(),
+          gh<_i266.CategoryRepository>(),
+          gh<_i706.AccountRepository>(),
+          gh<_i1021.BudgetRepository>(),
+          gh<_i664.AttachmentRepository>(),
+          gh<_i653.CurrencyDisplayBloc>(),
+        ));
     gh.lazySingleton<_i527.BudgetUpdateService>(
       () => _i249.BudgetUpdateServiceImpl(
         gh<_i1021.BudgetRepository>(),

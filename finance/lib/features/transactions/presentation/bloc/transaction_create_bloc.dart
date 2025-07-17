@@ -14,6 +14,7 @@ import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../../budgets/domain/entities/budget.dart';
 import '../../../budgets/domain/repositories/budget_repository.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
 import 'transaction_create_event.dart';
 import 'transaction_create_state.dart';
 
@@ -24,6 +25,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
   final AccountRepository _accountRepository;
   final BudgetRepository _budgetRepository;
   final AttachmentRepository _attachmentRepository;
+  final CurrencyDisplayBloc _currencyDisplayBloc;
 
   TransactionCreateBloc(
     this._transactionRepository,
@@ -31,6 +33,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
     this._accountRepository,
     this._budgetRepository,
     this._attachmentRepository,
+    this._currencyDisplayBloc,
   ) : super(TransactionCreateInitial()) {
     on<LoadInitialData>(_onLoadInitialData);
     on<UpdateTitle>(_onUpdateTitle);
@@ -165,6 +168,14 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       final currentState = state as TransactionCreateLoaded;
       emit(currentState.copyWith(selectedAccount: event.account));
       add(ValidateForm());
+      
+      // Update currency display when account changes
+      _currencyDisplayBloc.add(
+        CurrencyDisplayEvent.accountCurrencyChanged(
+          accountCurrency: event.account.currency,
+          accountId: event.account.id?.toString() ?? '',
+        ),
+      );
     }
   }
 

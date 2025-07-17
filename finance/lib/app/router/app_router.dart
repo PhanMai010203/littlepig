@@ -27,6 +27,7 @@ import '../../features/accounts/presentation/pages/account_create_page.dart';
 import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
 import '../../features/transactions/presentation/bloc/transaction_create_bloc.dart';
 import '../../features/accounts/presentation/bloc/account_create_bloc.dart';
+import '../../features/currencies/presentation/bloc/currency_display_bloc.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
 // Add these imports for demo pages
@@ -165,6 +166,7 @@ class AppRouter {
                 getIt<AccountRepository>(),
                 getIt<BudgetRepository>(),
                 getIt<AttachmentRepository>(),
+                getIt<CurrencyDisplayBloc>(),
               ),
               child: const TransactionCreatePage(),
             ),

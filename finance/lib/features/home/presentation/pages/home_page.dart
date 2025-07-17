@@ -312,9 +312,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Single handler for account selection
   void _onSelectAccount(int index) {
+    print('DEBUG: _onSelectAccount called with index: $index');
     if (mounted) {
       final accountSelectionBloc = getIt<AccountSelectionBloc>();
-      accountSelectionBloc.add(AccountSelectionEvent.selectAccountByIndex(index: index));
+      
+      // Get the account from our local data to find its ID
+      if (index < _accountTiles.length) {
+        final account = _accountTiles[index].account;
+        print('DEBUG: Selecting account: ${account.name} (ID: ${account.id})');
+        
+        // Use selectAccount with the account ID instead of index
+        accountSelectionBloc.add(AccountSelectionEvent.selectAccount(accountId: account.id.toString()));
+      } else {
+        print('DEBUG: Index $index out of bounds for _accountTiles (length: ${_accountTiles.length})');
+      }
+    } else {
+      print('DEBUG: Widget not mounted, skipping account selection');
     }
   }
 
@@ -451,15 +464,22 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     return BlocBuilder<AccountSelectionBloc, AccountSelectionState>(
       bloc: getIt<AccountSelectionBloc>(),
       builder: (context, accountSelectionState) {
+        print('DEBUG: BlocBuilder rebuild - selectedIndex: ${accountSelectionState.selectedIndex}, accounts: ${accountSelectionState.availableAccounts.length}');
+        
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           clipBehavior: Clip.none,
           child: Row(
             children: [
-              // Account cards from data
+              // Account cards from data - use the same data source for both display and selection
               ..._accountTiles.asMap().entries.map((entry) {
                 final index = entry.key;
                 final tileData = entry.value;
+
+                // Check if this account matches the selected account from the bloc
+                final isSelected = accountSelectionState.selectedAccount?.id == tileData.account.id;
+                
+                print('DEBUG: Account ${tileData.account.name} (index: $index, id: ${tileData.account.id}) - isSelected: $isSelected');
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 16),
@@ -468,7 +488,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     amount: tileData.formattedBalance,
                     transactions: '${tileData.transactionCount} transactions',
                     color: tileData.account.color,
-                    isSelected: accountSelectionState.selectedIndex == index,
+                    isSelected: isSelected,
                     index: index,
                     onSelected: _onSelectAccount,
                   ),
