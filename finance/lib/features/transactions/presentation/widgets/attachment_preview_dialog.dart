@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -87,34 +88,68 @@ class _AttachmentPreviewDialogState extends State<AttachmentPreviewDialog> {
   Widget _buildImagePreview() {
     debugPrint('🖼️ [AttachmentPreview] Building image preview');
     debugPrint('🖼️ [AttachmentPreview] googleDriveLink: ${widget.attachment.googleDriveLink}');
+    debugPrint('🖼️ [AttachmentPreview] filePath: ${widget.attachment.filePath}');
     
     return InteractiveViewer(
       minScale: 0.1,
       maxScale: 5.0,
-      child: widget.attachment.googleDriveLink != null
-          ? Image.network(
-              widget.attachment.googleDriveLink!,
-              fit: BoxFit.contain,
-              loadingBuilder: (context, child, loadingProgress) {
-                if (loadingProgress == null) {
-                  debugPrint('✅ [AttachmentPreview] Image loaded successfully');
-                  return child;
-                }
-                debugPrint('⏳ [AttachmentPreview] Loading image... Progress: ${loadingProgress.cumulativeBytesLoaded}/${loadingProgress.expectedTotalBytes}');
-                return const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                );
-              },
-              errorBuilder: (context, error, stackTrace) {
-                debugPrint('❌ [AttachmentPreview] Image load error: $error');
-                debugPrint('❌ [AttachmentPreview] StackTrace: $stackTrace');
-                return _buildErrorState();
-              },
-            )
-          : _buildErrorState(),
+      child: _buildImageWidget(),
     );
+  }
+
+  Widget _buildImageWidget() {
+    // Try local file first if Google Drive is not available
+    if (widget.attachment.filePath != null) {
+      final file = File(widget.attachment.filePath!);
+      debugPrint('🖼️ [AttachmentPreview] Checking local file: ${file.path}');
+      
+      if (file.existsSync()) {
+        debugPrint('✅ [AttachmentPreview] Loading from local file');
+        return Image.file(
+          file,
+          fit: BoxFit.contain,
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint('❌ [AttachmentPreview] Local file error: $error');
+            return _buildDriveImageWidget();
+          },
+        );
+      } else {
+        debugPrint('⚠️ [AttachmentPreview] Local file does not exist');
+      }
+    }
+    
+    // Fallback to Google Drive
+    return _buildDriveImageWidget();
+  }
+
+  Widget _buildDriveImageWidget() {
+    if (widget.attachment.googleDriveLink != null) {
+      debugPrint('☁️ [AttachmentPreview] Loading from Google Drive');
+      return Image.network(
+        widget.attachment.googleDriveLink!,
+        fit: BoxFit.contain,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) {
+            debugPrint('✅ [AttachmentPreview] Google Drive image loaded successfully');
+            return child;
+          }
+          debugPrint('⏳ [AttachmentPreview] Loading from Google Drive... Progress: ${loadingProgress.cumulativeBytesLoaded}/${loadingProgress.expectedTotalBytes}');
+          return const Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          );
+        },
+        errorBuilder: (context, error, stackTrace) {
+          debugPrint('❌ [AttachmentPreview] Google Drive load error: $error');
+          debugPrint('❌ [AttachmentPreview] StackTrace: $stackTrace');
+          return _buildErrorState();
+        },
+      );
+    }
+    
+    debugPrint('❌ [AttachmentPreview] No Google Drive link available');
+    return _buildErrorState();
   }
 
   Widget _buildDocumentPreview() {

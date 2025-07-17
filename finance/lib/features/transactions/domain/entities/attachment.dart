@@ -79,7 +79,10 @@ class Attachment extends Equatable {
 
   bool get isImage => type == AttachmentType.image;
   bool get isDocument => type == AttachmentType.document;
-  bool get isAvailable => !isDeleted && isUploaded && googleDriveLink != null;
+  bool get isAvailable => !isDeleted && (
+    (isUploaded && googleDriveLink != null) || // Available via Google Drive
+    (filePath != null && (isLocalCacheValid || !isUploaded)) // Or available locally (with valid cache OR if not yet uploaded)
+  );
 
   // Check if local file should be cached (only camera-captured images for 30 days)
   bool get shouldCacheLocally => isCapturedFromCamera && isImage;

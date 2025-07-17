@@ -425,7 +425,15 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
         final createdAttachment = await _attachmentRepository.createAttachment(attachmentEntity);
         
         // 3. Upload to Google Drive in background
-        await _attachmentRepository.uploadToGoogleDrive(createdAttachment);
+        try {
+          await _attachmentRepository.uploadToGoogleDrive(createdAttachment);
+          debugPrint('✅ [TransactionCreateBloc] Google Drive upload successful for: ${attachment.fileName}');
+        } catch (uploadError) {
+          debugPrint('❌ [TransactionCreateBloc] Google Drive upload failed for: ${attachment.fileName}');
+          debugPrint('❌ [TransactionCreateBloc] Upload error: $uploadError');
+          // Don't fail the entire transaction creation - just log the error
+          // The file is still saved locally and can be uploaded later
+        }
         
         debugPrint('Successfully processed attachment: ${attachment.fileName}');
       } catch (e) {
