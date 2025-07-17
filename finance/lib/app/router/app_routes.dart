@@ -11,6 +11,7 @@ class AppRoutes {
   static const String sync = '/sync';
   static const String budgetCreate = '/budget/create';
   static const String transactionCreate = '/transaction/create';
+  static const String transactionDetail = '/transaction';
   static const String accountCreate = '/account/create';
 
   // Additional pages that can be customized in nav bar

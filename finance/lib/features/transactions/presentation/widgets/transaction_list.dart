@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/transaction.dart';
@@ -279,7 +280,7 @@ class TransactionTile extends StatelessWidget {
         shadowColor: Colors.transparent,
         child: TappableWidget(
           onTap: () {
-            // TODO: Navigate to transaction details
+            context.push('/transaction/${transaction.id}');
           },
           child: ListTile(
             contentPadding: EdgeInsets.zero,

@@ -22,6 +22,7 @@ import '../../features/transactions/domain/repositories/attachment_repository.da
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../../features/budgets/presentation/pages/budget_create_page.dart';
 import '../../features/transactions/presentation/pages/transaction_create_page.dart';
+import '../../features/transactions/presentation/pages/transaction_detail_page.dart';
 import '../../features/accounts/presentation/pages/account_create_page.dart';
 import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
 import '../../features/transactions/presentation/bloc/transaction_create_bloc.dart';
@@ -189,15 +190,15 @@ class AppRouter {
       // Example of custom transition routes
       // These demonstrate different transition types available
 
-      // Slide transition example (future transaction details page)
+      // Transaction detail page
       GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
         path: '/transaction/:id',
         name: 'transaction_detail',
         pageBuilder: (context, state) {
-          final transactionId = state.pathParameters['id']!;
-          // This is a placeholder - you would create the actual TransactionDetailPage
+          final transactionId = int.parse(state.pathParameters['id']!);
           return AppPageTransitions.slideTransitionPage(
-            child: _buildPlaceholderPage('Transaction $transactionId'),
+            child: TransactionDetailPage(transactionId: transactionId),
             name: state.name,
             key: state.pageKey,
             direction: SlideDirection.fromRight,
