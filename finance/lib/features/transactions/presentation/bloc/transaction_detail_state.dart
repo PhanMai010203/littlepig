@@ -20,12 +20,20 @@ class TransactionDetailLoaded extends TransactionDetailState {
   final List<Attachment> attachments;
   final Category? category;
   final Account? account;
+  final bool isNoteSaving;
+  final bool isAttachmentLoading;
+  final bool isGoogleDriveAuthenticated;
+  final bool isAuthenticating;
 
   const TransactionDetailLoaded({
     required this.transaction,
     required this.attachments,
     this.category,
     this.account,
+    this.isNoteSaving = false,
+    this.isAttachmentLoading = false,
+    this.isGoogleDriveAuthenticated = false,
+    this.isAuthenticating = false,
   });
 
   TransactionDetailLoaded copyWith({
@@ -33,17 +41,25 @@ class TransactionDetailLoaded extends TransactionDetailState {
     List<Attachment>? attachments,
     Category? category,
     Account? account,
+    bool? isNoteSaving,
+    bool? isAttachmentLoading,
+    bool? isGoogleDriveAuthenticated,
+    bool? isAuthenticating,
   }) {
     return TransactionDetailLoaded(
       transaction: transaction ?? this.transaction,
       attachments: attachments ?? this.attachments,
       category: category ?? this.category,
       account: account ?? this.account,
+      isNoteSaving: isNoteSaving ?? this.isNoteSaving,
+      isAttachmentLoading: isAttachmentLoading ?? this.isAttachmentLoading,
+      isGoogleDriveAuthenticated: isGoogleDriveAuthenticated ?? this.isGoogleDriveAuthenticated,
+      isAuthenticating: isAuthenticating ?? this.isAuthenticating,
     );
   }
 
   @override
-  List<Object?> get props => [transaction, attachments, category, account];
+  List<Object?> get props => [transaction, attachments, category, account, isNoteSaving, isAttachmentLoading, isGoogleDriveAuthenticated, isAuthenticating];
 }
 
 class TransactionDetailActionSuccess extends TransactionDetailState {

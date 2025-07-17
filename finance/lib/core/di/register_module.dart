@@ -2,6 +2,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../services/database_service.dart';
 import '../database/app_database.dart';
@@ -78,4 +79,8 @@ abstract class RegisterModule {
   /// Uses IncrementalSyncService as the default implementation
   @lazySingleton
   SyncService syncService(IncrementalSyncService service) => service;
+
+  /// Provides ImagePicker instance
+  @lazySingleton
+  ImagePicker get imagePicker => ImagePicker();
 }

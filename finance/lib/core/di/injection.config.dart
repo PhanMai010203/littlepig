@@ -12,6 +12,7 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:google_sign_in/google_sign_in.dart' as _i116;
 import 'package:http/http.dart' as _i519;
+import 'package:image_picker/image_picker.dart' as _i183;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
@@ -126,6 +127,7 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc());
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
+    gh.lazySingleton<_i183.ImagePicker>(() => registerModule.imagePicker);
     gh.lazySingleton<_i588.CRDTConflictResolver>(
         () => _i588.CRDTConflictResolver());
     gh.lazySingleton<_i388.TransactionEventPublisher>(

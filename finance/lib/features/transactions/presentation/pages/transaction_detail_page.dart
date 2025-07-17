@@ -5,8 +5,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../shared/widgets/page_template.dart';
 import '../../../../shared/widgets/app_text.dart';
-import '../../../../shared/widgets/animations/tappable_widget.dart';
 import '../../../../core/di/injection.dart';
+import '../../../../core/services/file_picker_service.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../bloc/transaction_detail_bloc.dart';
 import '../bloc/transaction_detail_event.dart';
@@ -16,8 +18,9 @@ import '../../domain/repositories/attachment_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../domain/entities/transaction.dart';
-import '../../domain/entities/attachment.dart';
 import '../../domain/entities/transaction_enums.dart';
+import '../widgets/inline_note_editor.dart';
+import '../widgets/inline_attachment_manager.dart';
 
 class TransactionDetailPage extends StatelessWidget {
   final int transactionId;
@@ -35,6 +38,9 @@ class TransactionDetailPage extends StatelessWidget {
         attachmentRepository: getIt<AttachmentRepository>(),
         categoryRepository: getIt<CategoryRepository>(),
         accountRepository: getIt<AccountRepository>(),
+        filePickerService: getIt<FilePickerService>(),
+        googleSignIn: getIt<GoogleSignIn>(),
+        imagePicker: getIt<ImagePicker>(),
       )..add(LoadTransactionDetail(transactionId)),
       child: const _TransactionDetailView(),
     );
@@ -63,7 +69,7 @@ class _TransactionDetailView extends StatelessWidget {
       },
       builder: (context, state) {
         return PageTemplate(
-          title: 'Transaction Details',
+          title: 'Transaction',
           actions: _buildAppBarActions(context, state),
           slivers: [
             if (state is TransactionDetailLoading)
@@ -116,15 +122,6 @@ class _TransactionDetailView extends StatelessWidget {
     if (state is! TransactionDetailLoaded) return [];
     
     return [
-      IconButton(
-        onPressed: () {
-          // TODO: Navigate to edit page
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Edit functionality coming soon')),
-          );
-        },
-        icon: const Icon(Icons.edit),
-      ),
       PopupMenuButton<String>(
         onSelected: (value) {
           final bloc = context.read<TransactionDetailBloc>();
@@ -275,14 +272,6 @@ class _TransactionDetailView extends StatelessWidget {
                 state.account?.name ?? 'Unknown',
                 Icons.account_balance_wallet,
               ),
-              if (state.transaction.note?.isNotEmpty == true) ...[
-                const SizedBox(height: 12),
-                _buildInfoRow(
-                  'Note',
-                  state.transaction.note!,
-                  Icons.note,
-                ),
-              ],
               if (state.transaction.isRecurring) ...[
                 const SizedBox(height: 12),
                 _buildInfoRow(
@@ -304,55 +293,26 @@ class _TransactionDetailView extends StatelessWidget {
         ),
       ),
 
-      // Attachments Section
-      if (state.attachments.isNotEmpty)
-        SliverToBoxAdapter(
-          child: Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    const AppText(
-                      'Attachments',
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).primaryColor.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: AppText(
-                        '${state.attachments.length}',
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        textColor: Theme.of(context).primaryColor,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                _buildAttachmentGrid(state.attachments),
-              ],
-            ),
-          ),
+      // Inline Note Editor
+      SliverToBoxAdapter(
+        child: InlineNoteEditor(
+          transactionId: state.transaction.id!,
+          initialNote: state.transaction.note,
+          isLoading: state.isNoteSaving,
         ),
+      ),
+
+      // Attachments Section
+      SliverToBoxAdapter(
+        child: InlineAttachmentManager(
+          transactionId: state.transaction.id!,
+          attachments: state.attachments,
+          isLoading: state.isAttachmentLoading,
+          isGoogleDriveAuthenticated: state.isGoogleDriveAuthenticated,
+          isAuthenticating: state.isAuthenticating,
+        ),
+      ),
+
 
       // Action Buttons
       if (state.transaction.availableActions.isNotEmpty)
@@ -398,58 +358,6 @@ class _TransactionDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildAttachmentGrid(List<Attachment> attachments) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-        childAspectRatio: 1,
-      ),
-      itemCount: attachments.length,
-      itemBuilder: (context, index) {
-        final attachment = attachments[index];
-        return TappableWidget(
-          onTap: () {
-            // TODO: Open attachment preview/download
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Opening ${attachment.fileName}')),
-            );
-          },
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.grey[100],
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: Colors.grey[300]!),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  attachment.isImage ? Icons.image : Icons.description,
-                  size: 32,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(height: 4),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: AppText(
-                    attachment.fileName,
-                    fontSize: 10,
-                    maxLines: 2,
-                    textAlign: TextAlign.center,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
 
   Widget _buildActionButtons(BuildContext context, Transaction transaction) {
     final actions = transaction.availableActions;
