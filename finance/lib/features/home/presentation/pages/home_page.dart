@@ -29,11 +29,11 @@ import '../../../../core/services/platform_service.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 import 'package:finance/features/transactions/presentation/widgets/transaction_list.dart';
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
-import 'package:finance/features/categories/domain/entities/category.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../navigation/presentation/bloc/navigation_bloc.dart';
+import '../../../accounts/presentation/bloc/account_selection_bloc.dart';
 
 // TransactionFilter enum is now imported from transaction_display_service.dart
 
@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late TextTheme _textTheme;
   late bool _isIOS;
 
-  int _selectedAccountIndex = 0;
   List<AccountTileData> _accountTiles = [];
   List<Budget> _budgets = [];
   List<TransactionCardData> _transactionCards = [];
@@ -108,6 +107,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     // Phase 5: Platform-optimized animation controller (Phase 3 pattern)
     _scrollController = ScrollController();
+
+    // Initialize AccountSelectionBloc
+    final accountSelectionBloc = getIt<AccountSelectionBloc>();
+    accountSelectionBloc.initialize();
 
     _loadAccounts();
     _loadBudgets();
@@ -310,9 +313,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /// Single handler for account selection
   void _onSelectAccount(int index) {
     if (mounted) {
-      setState(() {
-        _selectedAccountIndex = index;
-      });
+      final accountSelectionBloc = getIt<AccountSelectionBloc>();
+      accountSelectionBloc.add(AccountSelectionEvent.selectAccountByIndex(index: index));
     }
   }
 
@@ -446,37 +448,42 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      clipBehavior: Clip.none,
-      child: Row(
-        children: [
-          // Account cards from data
-          ..._accountTiles.asMap().entries.map((entry) {
-            final index = entry.key;
-            final tileData = entry.value;
+    return BlocBuilder<AccountSelectionBloc, AccountSelectionState>(
+      bloc: getIt<AccountSelectionBloc>(),
+      builder: (context, accountSelectionState) {
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          child: Row(
+            children: [
+              // Account cards from data
+              ..._accountTiles.asMap().entries.map((entry) {
+                final index = entry.key;
+                final tileData = entry.value;
 
-            return Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: AccountCard(
-                title: tileData.account.name,
-                amount: tileData.formattedBalance,
-                transactions: '${tileData.transactionCount} transactions',
-                color: tileData.account.color,
-                isSelected: _selectedAccountIndex == index,
-                index: index,
-                onSelected: _onSelectAccount,
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: AccountCard(
+                    title: tileData.account.name,
+                    amount: tileData.formattedBalance,
+                    transactions: '${tileData.transactionCount} transactions',
+                    color: tileData.account.color,
+                    isSelected: accountSelectionState.selectedIndex == index,
+                    index: index,
+                    onSelected: _onSelectAccount,
+                  ),
+                );
+              }),
+              // AddAccountCard at the end
+              AddAccountCard(
+                onTap: () {
+                  context.go(AppRoutes.accountCreate);
+                },
               ),
-            );
-          }),
-          // AddAccountCard at the end
-          AddAccountCard(
-            onTap: () {
-              context.go(AppRoutes.accountCreate);
-            },
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

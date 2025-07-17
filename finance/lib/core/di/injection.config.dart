@@ -21,6 +21,8 @@ import '../../features/accounts/domain/repositories/account_repository.dart'
     as _i706;
 import '../../features/accounts/presentation/bloc/account_create_bloc.dart'
     as _i923;
+import '../../features/accounts/presentation/bloc/account_selection_bloc.dart'
+    as _i396;
 import '../../features/budgets/data/repositories/budget_repository_impl.dart'
     as _i654;
 import '../../features/budgets/data/services/budget_auth_service.dart' as _i867;
@@ -124,10 +126,10 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc());
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
-    gh.lazySingleton<_i388.TransactionEventPublisher>(
-        () => _i388.TransactionEventPublisher());
     gh.lazySingleton<_i588.CRDTConflictResolver>(
         () => _i588.CRDTConflictResolver());
+    gh.lazySingleton<_i388.TransactionEventPublisher>(
+        () => _i388.TransactionEventPublisher());
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(
@@ -291,6 +293,10 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i375.BudgetFilterService>(),
           gh<_i706.AccountRepository>(),
           gh<_i266.CategoryRepository>(),
+        ));
+    gh.factory<_i396.AccountSelectionBloc>(() => _i396.AccountSelectionBloc(
+          gh<_i706.AccountRepository>(),
+          gh<_i653.CurrencyDisplayBloc>(),
         ));
     return this;
   }

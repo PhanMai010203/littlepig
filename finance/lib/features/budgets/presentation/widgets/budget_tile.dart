@@ -14,6 +14,7 @@ import '../../domain/entities/budget.dart';
 import '../bloc/budgets_bloc.dart';
 import '../bloc/budgets_state.dart';
 import '../bloc/budgets_event.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
 import 'animated_goo_background.dart';
 import 'budget_timeline.dart';
 import 'daily_allowance_label.dart';
@@ -251,28 +252,46 @@ class _BudgetHeaderContent extends StatelessWidget {
               duration: const Duration(milliseconds: 600),
               builder: (context, animatedRemaining) {
                 final isOverspent = animatedRemaining < 0;
-                final trailing = isOverspent
-                    ? 'budgets.overspent_of'.tr(namedArgs: {
-                        'amount': budget.amount.toStringAsFixed(0),
-                      })
-                    : 'budgets.left_of'.tr(namedArgs: {
-                        'amount': budget.amount.toStringAsFixed(0),
-                      });
+                return BlocBuilder<CurrencyDisplayBloc, CurrencyDisplayState>(
+                  builder: (context, currencyState) {
+                    return FutureBuilder<String>(
+                      future: context.read<CurrencyDisplayBloc>()
+                          .formatInDisplayCurrency(budget.amount, 'USD'),
+                      builder: (context, budgetSnapshot) {
+                        final budgetAmountFormatted = budgetSnapshot.data ?? budget.amount.toStringAsFixed(0);
+                        final trailing = isOverspent
+                            ? 'budgets.overspent_of'.tr(namedArgs: {
+                                'amount': budgetAmountFormatted,
+                              })
+                            : 'budgets.left_of'.tr(namedArgs: {
+                                'amount': budgetAmountFormatted,
+                              });
 
-                return RichText(
-                  text: TextSpan(
-                    style: theme.textTheme.bodyMedium,
-                    children: [
-                      TextSpan(
-                        text: '\$${animatedRemaining.abs().toStringAsFixed(0)}',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(
-                        text: ' $trailing',
-                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
-                      ),
-                    ],
-                  ),
+                        return FutureBuilder<String>(
+                          future: context.read<CurrencyDisplayBloc>()
+                              .formatInDisplayCurrency(animatedRemaining.abs(), 'USD'),
+                          builder: (context, snapshot) {
+                            final formattedAmount = snapshot.data ?? '\$${animatedRemaining.abs().toStringAsFixed(0)}';
+                            return RichText(
+                              text: TextSpan(
+                                style: theme.textTheme.bodyMedium,
+                                children: [
+                                  TextSpan(
+                                    text: formattedAmount,
+                                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                  TextSpan(
+                                    text: ' $trailing',
+                                    style: const TextStyle(fontSize: 13, fontWeight: FontWeight.normal),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
                 );
               },
             ),

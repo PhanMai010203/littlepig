@@ -23,6 +23,8 @@ import 'features/navigation/presentation/bloc/navigation_bloc.dart';
 import 'features/settings/presentation/bloc/settings_bloc.dart';
 import 'features/transactions/presentation/bloc/transactions_bloc.dart';
 import 'features/more/presentation/bloc/sync_bloc.dart';
+import 'features/currencies/presentation/bloc/currency_display_bloc.dart';
+import 'features/accounts/presentation/bloc/account_selection_bloc.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 void main() async {
@@ -101,6 +103,8 @@ void main() async {
             transactionsBloc: getIt<TransactionsBloc>(),
             budgetsBloc: getIt<BudgetsBloc>(),
             syncBloc: getIt<SyncBloc>(),
+            currencyDisplayBloc: getIt<CurrencyDisplayBloc>(),
+            accountSelectionBloc: getIt<AccountSelectionBloc>(),
           ),
         ),
       ),

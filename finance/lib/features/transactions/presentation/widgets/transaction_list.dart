@@ -12,6 +12,7 @@ import '../../../../features/categories/domain/entities/category.dart';
 import '../bloc/transactions_bloc.dart';
 import '../bloc/transactions_event.dart';
 import '../bloc/transactions_state.dart'; // Import for TransactionListItem types
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
 import '../../../../shared/utils/performance_optimization.dart';
@@ -217,10 +218,20 @@ class PaginatedTransactionList extends StatelessWidget {
             colorName: "textSecondary",
           ),
           if (item.transactionCount > 1)
-            AppText(
-              NumberFormat.currency(symbol: '\$').format(item.totalAmount),
-              fontWeight: FontWeight.bold,
-              colorName: "textSecondary",
+            BlocBuilder<CurrencyDisplayBloc, CurrencyDisplayState>(
+              builder: (context, currencyState) {
+                return FutureBuilder<String>(
+                  future: context.read<CurrencyDisplayBloc>()
+                      .formatInDisplayCurrency(item.totalAmount, 'USD'),
+                  builder: (context, snapshot) {
+                    return AppText(
+                      snapshot.data ?? NumberFormat.currency(symbol: '\$').format(item.totalAmount),
+                      fontWeight: FontWeight.bold,
+                      colorName: "textSecondary",
+                    );
+                  },
+                );
+              },
             ),
         ],
       ),
@@ -358,10 +369,25 @@ class TransactionTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                AppText(
-                  '${isIncome ? '+' : ''}${NumberFormat.currency(symbol: '\$').format(amount)}',
-                  fontWeight: FontWeight.bold,
-                  colorName: isIncome ? 'success' : 'error',
+                BlocBuilder<CurrencyDisplayBloc, CurrencyDisplayState>(
+                  builder: (context, currencyState) {
+                    return FutureBuilder<String>(
+                      future: context.read<CurrencyDisplayBloc>()
+                          .formatInDisplayCurrency(amount, 'USD'),
+                      builder: (context, snapshot) {
+                        String displayAmount = snapshot.data ?? '${NumberFormat.currency(symbol: '\$').format(amount)}';
+                        // Add sign for income
+                        if (isIncome && !displayAmount.startsWith('+')) {
+                          displayAmount = '+$displayAmount';
+                        }
+                        return AppText(
+                          displayAmount,
+                          fontWeight: FontWeight.bold,
+                          colorName: isIncome ? 'success' : 'error',
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
             ),
