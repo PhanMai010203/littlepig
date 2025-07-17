@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/transaction.dart';
@@ -15,7 +16,6 @@ import '../bloc/transactions_state.dart'; // Import for TransactionListItem type
 import '../../../../shared/utils/responsive_layout_builder.dart';
 import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../shared/utils/no_overscroll_behavior.dart';
-import '../../../../shared/widgets/animations/tappable_widget.dart';
 import '../../../../shared/widgets/dialogs/note_popup.dart';
 
 /// Widget that displays a list of transactions grouped by date
@@ -278,10 +278,11 @@ class TransactionTile extends StatelessWidget {
         type: MaterialType.card,
         elevation: 2.0,
         shadowColor: Colors.transparent,
-        child: TappableWidget(
+        child: GestureDetector(
           onTap: () {
             context.push('/transaction/${transaction.id}');
           },
+          onLongPressStart: (details) => _handleLongPressStart(context, details),
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Row(
@@ -368,5 +369,50 @@ class TransactionTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _handleLongPressStart(BuildContext context, LongPressStartDetails details) {
+    // Haptic feedback
+    HapticFeedback.mediumImpact();
+
+    // Show floating "Delete" note popup at fingertip position
+    NotePopup.show(
+      context,
+      'Delete',
+      details.globalPosition,
+      const Size(50, 50), // Approximate finger size
+      textColor: Colors.red,
+      onTap: () => _showDeleteConfirmation(context),
+    );
+  }
+
+  Future<void> _showDeleteConfirmation(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: AppText('Delete Transaction'),
+            content: AppText(
+              'Are you sure you want to delete "${transaction.title}"? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: AppText('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: AppText(
+                  'Delete',
+                  textColor: Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirmed && transaction.id != null && context.mounted) {
+      context.read<TransactionsBloc>().add(DeleteTransactionEvent(transaction.id!));
+    }
   }
 }
