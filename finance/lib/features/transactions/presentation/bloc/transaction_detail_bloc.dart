@@ -7,6 +7,7 @@ import 'package:path/path.dart' as path;
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/attachment_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
+import '../../../categories/domain/entities/category.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../../../core/services/file_picker_service.dart';
 import '../../domain/entities/attachment.dart';

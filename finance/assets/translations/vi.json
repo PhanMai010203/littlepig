@@ -70,7 +70,9 @@
     "state": {
       "completed": "Hoàn thành",
       "pending": "Đang chờ",
-      "scheduled": "Đã lên lịch"
+      "scheduled": "Đã lên lịch",
+      "cancelled": "Đã hủy",
+      "action_required": "Yêu cầu hành động"
     },
     "special_type": "Loại đặc biệt",
     "credit": "Tín dụng",
@@ -95,7 +97,24 @@
     "failed_to_select_photo": "Không thể chọn ảnh: {error}",
     "photos_selected": "Đã chọn {count} ảnh",
     "multiple_photos": "Nhiều ảnh",
-    "failed_to_select_photos": "Không thể chọn nhiều ảnh: {error}"
+    "failed_to_select_photos": "Không thể chọn nhiều ảnh: {error}",
+    "details": "Chi tiết",
+    "status": "Trạng thái",
+    "account": "Tài khoản",
+    "duplicate": "Sao chép",
+    "duplicate_functionality_coming_soon": "Tính năng sao chép sẽ sớm có",
+    "delete_transaction": "Xóa giao dịch",
+    "delete_confirmation": "Bạn có chắc muốn xóa \"{title}\"? Hành động này không thể hoàn tác.",
+    "one_time": "Một lần",
+    "actions": {
+      "pay": "Thanh toán",
+      "skip": "Bỏ qua",
+      "collect": "Thu thập",
+      "settle": "Giải quyết",
+      "edit": "Chỉnh sửa",
+      "delete": "Xóa",
+      "coming_soon": "Hành động {action} sẽ sớm có"
+    }
   },
 
   "budgets": {

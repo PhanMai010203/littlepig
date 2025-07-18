@@ -70,7 +70,9 @@
     "state": {
       "completed": "Completed",
       "pending": "Pending",
-      "scheduled": "Scheduled"
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled",
+      "action_required": "Action Required"
     },
     "special_type": "Special Type",
     "credit": "Credit",
@@ -95,7 +97,26 @@
     "failed_to_select_photo": "Failed to select photo: {error}",
     "photos_selected": "{count} photos selected",
     "multiple_photos": "Multiple photos",
-    "failed_to_select_photos": "Failed to select photos: {error}"
+    "failed_to_select_photos": "Failed to select photos: {error}",
+    "transaction_details": "Transaction Details",
+    "details": "Details",
+    "status": "Status",
+    "account": "Account",
+    "unknown": "Unknown",
+    "duplicate": "Duplicate",
+    "duplicate_functionality_coming_soon": "Duplicate functionality coming soon",
+    "delete_transaction": "Delete Transaction",
+    "delete_confirmation": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "one_time": "One-time",
+    "actions": {
+      "pay": "Pay",
+      "skip": "Skip",
+      "collect": "Collect",
+      "settle": "Settle",
+      "edit": "Edit",
+      "delete": "Delete",
+      "coming_soon": "{action} action coming soon"
+    }
   },
 
   "budgets": {

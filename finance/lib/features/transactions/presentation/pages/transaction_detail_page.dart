@@ -16,6 +16,7 @@ import '../bloc/transaction_detail_state.dart';
 import '../../domain/repositories/transaction_repository.dart';
 import '../../domain/repositories/attachment_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
+import '../../../categories/domain/entities/category.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_enums.dart';
@@ -69,7 +70,7 @@ class _TransactionDetailView extends StatelessWidget {
       },
       builder: (context, state) {
         return PageTemplate(
-          title: 'Transaction',
+          title: 'transactions.title'.tr(),
           actions: _buildAppBarActions(context, state),
           slivers: [
             if (state is TransactionDetailLoading)
@@ -103,7 +104,7 @@ class _TransactionDetailView extends StatelessWidget {
                                           ?.transaction
                                           .id ??
                                       0)),
-                          child: const AppText('Retry'),
+                          child: AppText('common.retry'.tr()),
                         ),
                       ],
                     ),
@@ -132,25 +133,25 @@ class _TransactionDetailView extends StatelessWidget {
             case 'duplicate':
               // TODO: Implement duplicate functionality
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Duplicate functionality coming soon')),
+                SnackBar(content: Text('transactions.duplicate_functionality_coming_soon'.tr())),
               );
               break;
           }
         },
         itemBuilder: (context) => [
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'duplicate',
             child: ListTile(
-              leading: Icon(Icons.copy),
-              title: Text('Duplicate'),
+              leading: const Icon(Icons.copy),
+              title: Text('transactions.duplicate'.tr()),
               contentPadding: EdgeInsets.zero,
             ),
           ),
-          const PopupMenuItem(
+          PopupMenuItem(
             value: 'delete',
             child: ListTile(
-              leading: Icon(Icons.delete, color: Colors.red),
-              title: Text('Delete', style: TextStyle(color: Colors.red)),
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: Text('transactions.delete'.tr(), style: const TextStyle(color: Colors.red)),
               contentPadding: EdgeInsets.zero,
             ),
           ),
@@ -185,20 +186,26 @@ class _TransactionDetailView extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: state.transaction.isIncome
-                          ? Colors.green.withValues(alpha: 0.1)
-                          : Colors.red.withValues(alpha: 0.1),
+                      color: state.category?.color.withValues(alpha: 0.1) ?? 
+                          (state.transaction.isIncome
+                              ? Colors.green.withValues(alpha: 0.1)
+                              : Colors.red.withValues(alpha: 0.1)),
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Icon(
-                      state.transaction.isIncome
-                          ? Icons.arrow_upward
-                          : Icons.arrow_downward,
-                      color: state.transaction.isIncome
-                          ? Colors.green
-                          : Colors.red,
-                      size: 24,
-                    ),
+                    child: state.category != null
+                        ? Text(
+                            state.category!.icon,
+                            style: const TextStyle(fontSize: 24),
+                          )
+                        : Icon(
+                            state.transaction.isIncome
+                                ? Icons.arrow_upward
+                                : Icons.arrow_downward,
+                            color: state.transaction.isIncome
+                                ? Colors.green
+                                : Colors.red,
+                            size: 24,
+                          ),
                   ),
                   const SizedBox(width: 16),
                   Expanded(
@@ -249,33 +256,29 @@ class _TransactionDetailView extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AppText(
-                'Details',
+              AppText(
+                'transactions.details'.tr(),
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
               const SizedBox(height: 16),
               _buildInfoRow(
-                'Date',
+                'common.date'.tr(),
                 DateFormat('MMM dd, yyyy').format(state.transaction.date),
                 Icons.calendar_today,
               ),
               const SizedBox(height: 12),
-              _buildInfoRow(
-                'Category',
-                state.category?.name ?? 'Unknown',
-                Icons.category,
-              ),
+              _buildCategoryRow(state.category),
               const SizedBox(height: 12),
               _buildInfoRow(
-                'Account',
-                state.account?.name ?? 'Unknown',
+                'transactions.account'.tr(),
+                state.account?.name ?? 'transactions.unknown'.tr(),
                 Icons.account_balance_wallet,
               ),
               if (state.transaction.isRecurring) ...[
                 const SizedBox(height: 12),
                 _buildInfoRow(
-                  'Recurrence',
+                  'transactions.recurrence'.tr(),
                   _getRecurrenceText(state.transaction.recurrence),
                   Icons.repeat,
                 ),
@@ -283,7 +286,7 @@ class _TransactionDetailView extends StatelessWidget {
               if (state.transaction.transactionState != TransactionState.completed) ...[
                 const SizedBox(height: 12),
                 _buildInfoRow(
-                  'Status',
+                  'transactions.status'.tr(),
                   _getTransactionStateText(state.transaction.transactionState),
                   Icons.info,
                 ),
@@ -358,6 +361,64 @@ class _TransactionDetailView extends StatelessWidget {
     );
   }
 
+  Widget _buildCategoryRow(Category? category) {
+    return Row(
+      children: [
+        Icon(Icons.category, size: 20, color: Colors.grey[600]),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                'transactions.category'.tr(),
+                fontSize: 12,
+                textColor: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+              const SizedBox(height: 2),
+              Row(
+                children: [
+                  if (category != null) ...[
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: category.color.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppText(
+                            category.icon,
+                            fontSize: 12,
+                          ),
+                          const SizedBox(width: 4),
+                          AppText(
+                            category.name,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            textColor: category.color,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ] else
+                    AppText(
+                      'common.unknown'.tr(),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      textColor: Colors.grey[600],
+                    ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
 
   Widget _buildActionButtons(BuildContext context, Transaction transaction) {
     final actions = transaction.availableActions;
@@ -380,31 +441,31 @@ class _TransactionDetailView extends StatelessWidget {
     switch (action) {
       case TransactionAction.pay:
         icon = Icons.payment;
-        label = 'Pay';
+        label = 'transactions.actions.pay'.tr();
         color = Colors.green;
         break;
       case TransactionAction.skip:
         icon = Icons.skip_next;
-        label = 'Skip';
+        label = 'transactions.actions.skip'.tr();
         color = Colors.orange;
         break;
       case TransactionAction.collect:
         icon = Icons.account_balance;
-        label = 'Collect';
+        label = 'transactions.actions.collect'.tr();
         color = Colors.blue;
         break;
       case TransactionAction.settle:
         icon = Icons.handshake;
-        label = 'Settle';
+        label = 'transactions.actions.settle'.tr();
         color = Colors.purple;
         break;
       case TransactionAction.edit:
         icon = Icons.edit;
-        label = 'Edit';
+        label = 'transactions.actions.edit'.tr();
         break;
       case TransactionAction.delete:
         icon = Icons.delete;
-        label = 'Delete';
+        label = 'transactions.actions.delete'.tr();
         color = Colors.red;
         break;
       default:
@@ -415,7 +476,7 @@ class _TransactionDetailView extends StatelessWidget {
       onPressed: () {
         // TODO: Implement action handlers
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$label action coming soon')),
+          SnackBar(content: Text('transactions.actions.coming_soon'.tr(namedArgs: {'action': label}))),
         );
       },
       icon: Icon(icon, size: 18),
@@ -434,30 +495,30 @@ class _TransactionDetailView extends StatelessWidget {
   String _getRecurrenceText(TransactionRecurrence recurrence) {
     switch (recurrence) {
       case TransactionRecurrence.daily:
-        return 'Daily';
+        return 'transactions.recurrence_daily'.tr();
       case TransactionRecurrence.weekly:
-        return 'Weekly';
+        return 'transactions.recurrence_weekly'.tr();
       case TransactionRecurrence.monthly:
-        return 'Monthly';
+        return 'transactions.recurrence_monthly'.tr();
       case TransactionRecurrence.yearly:
-        return 'Yearly';
+        return 'transactions.recurrence_yearly'.tr();
       case TransactionRecurrence.none:
-        return 'One-time';
+        return 'transactions.one_time'.tr();
     }
   }
 
   String _getTransactionStateText(TransactionState state) {
     switch (state) {
       case TransactionState.pending:
-        return 'Pending';
+        return 'transactions.state.pending'.tr();
       case TransactionState.scheduled:
-        return 'Scheduled';
+        return 'transactions.state.scheduled'.tr();
       case TransactionState.cancelled:
-        return 'Cancelled';
+        return 'transactions.state.cancelled'.tr();
       case TransactionState.actionRequired:
-        return 'Action Required';
+        return 'transactions.state.action_required'.tr();
       case TransactionState.completed:
-        return 'Completed';
+        return 'transactions.state.completed'.tr();
     }
   }
 
@@ -465,12 +526,12 @@ class _TransactionDetailView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Delete Transaction'),
-        content: Text('Are you sure you want to delete "${transaction.title}"? This action cannot be undone.'),
+        title: Text('transactions.delete_transaction'.tr()),
+        content: Text('transactions.delete_confirmation'.tr(namedArgs: {'title': transaction.title})),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text('common.cancel'.tr()),
           ),
           TextButton(
             onPressed: () {
@@ -478,7 +539,7 @@ class _TransactionDetailView extends StatelessWidget {
               bloc.add(DeleteTransactionDetail(transaction.id!));
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
+            child: Text('common.delete'.tr()),
           ),
         ],
       ),
