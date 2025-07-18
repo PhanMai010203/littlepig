@@ -6,6 +6,8 @@ import '../../domain/entities/transaction.dart';
 import '../../domain/entities/transaction_card_data.dart';
 import '../../domain/services/transaction_display_service.dart';
 import '../../../categories/domain/entities/category.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
+import '../../../../core/di/injection.dart';
 
 /// Implementation of the transaction display service
 /// 
@@ -95,7 +97,38 @@ class TransactionDisplayServiceImpl implements TransactionDisplayService {
   String formatTransactionAmount(Transaction transaction, {bool showSign = true}) {
     final amount = transaction.amount.abs(); // Always show positive number
     final sign = showSign ? (transaction.isIncome ? '+' : '') : '';
+    
+    // Try to get currency display bloc for consistent formatting
+    try {
+      final currencyBloc = getIt<CurrencyDisplayBloc>();
+      // For now, use synchronous formatting with display currency
+      // This is a temporary solution until we refactor to async formatting
+      if (currencyBloc.state.displayCurrency != 'USD') {
+        final convertedAmount = currencyBloc.convertToDisplayCurrency(amount, 'USD');
+        final symbol = _getCurrencySymbol(currencyBloc.state.displayCurrency);
+        return '$sign${NumberFormat.currency(symbol: symbol).format(convertedAmount)}';
+      }
+    } catch (e) {
+      // Fallback to USD if currency bloc is not available
+      debugPrint('Currency bloc not available, using USD fallback: $e');
+    }
+    
     return '$sign${NumberFormat.currency(symbol: '\$').format(amount)}';
+  }
+  
+  String _getCurrencySymbol(String currencyCode) {
+    switch (currencyCode) {
+      case 'USD':
+        return '\$';
+      case 'EUR':
+        return '€';
+      case 'JPY':
+        return '¥';
+      case 'GBP':
+        return '£';
+      default:
+        return '\$'; // Default to USD symbol
+    }
   }
 
   @override

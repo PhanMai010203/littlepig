@@ -14,7 +14,7 @@ part 'account_selection_bloc.freezed.dart';
 /// 
 /// This manages which account is currently selected across the app
 /// and automatically triggers currency display updates when account changes.
-@injectable
+@lazySingleton
 class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionState> {
   final AccountRepository _accountRepository;
   final CurrencyDisplayBloc _currencyDisplayBloc;
@@ -23,6 +23,7 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
     this._accountRepository,
     this._currencyDisplayBloc,
   ) : super(AccountSelectionStateX.initial) {
+    print('🏗️ AccountSelectionBloc constructor called');
     on<_LoadAccounts>(_onLoadAccounts);
     on<_SelectAccount>(_onSelectAccount);
     on<_SelectAccountByIndex>(_onSelectAccountByIndex);
@@ -47,6 +48,12 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
         availableAccounts: accounts,
         errorMessage: null,
       ));
+      
+      // Automatically select default account after loading
+      if (accounts.isNotEmpty && state.selectedAccount == null) {
+        print('DEBUG: Auto-selecting default account after loading');
+        add(const AccountSelectionEvent.initializeWithDefault());
+      }
     } catch (e) {
       print('DEBUG: Error loading accounts: $e');
       emit(state.copyWith(
@@ -171,6 +178,7 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
     print('DEBUG: State updated, selected index: ${state.selectedIndex}');
 
     // Trigger currency display update
+    print('💱 Dispatching CurrencyDisplayEvent.accountCurrencyChanged for currency: ${account.currency}');
     _currencyDisplayBloc.add(
       CurrencyDisplayEvent.accountCurrencyChanged(
         accountCurrency: account.currency,
@@ -178,16 +186,13 @@ class AccountSelectionBloc extends Bloc<AccountSelectionEvent, AccountSelectionS
       ),
     );
     
-    print('DEBUG: Currency display event dispatched for currency: ${account.currency}');
+    print('💱 Currency display event dispatched for currency: ${account.currency}');
   }
 
   /// Initialize the bloc with account loading and default selection
   Future<void> initialize() async {
-    print('DEBUG: initialize() called');
+    print('🚀 AccountSelectionBloc.initialize() called');
     add(const AccountSelectionEvent.loadAccounts());
-    
-    // Wait a bit for accounts to load, then select default
-    await Future.delayed(const Duration(milliseconds: 100));
-    add(const AccountSelectionEvent.initializeWithDefault());
+    // Default account will be auto-selected after loading
   }
 }

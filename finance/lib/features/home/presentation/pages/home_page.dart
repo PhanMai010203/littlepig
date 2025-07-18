@@ -112,9 +112,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final accountSelectionBloc = getIt<AccountSelectionBloc>();
     accountSelectionBloc.initialize();
 
-    _loadAccounts();
-    _loadBudgets();
-    _loadTransactions();
+    // Wait for AccountSelectionBloc to load accounts, then load our display data
+    Future.delayed(const Duration(milliseconds: 200), () {
+      _loadAccounts();
+      _loadBudgets();
+      _loadTransactions();
+    });
   }
 
   @override
@@ -135,8 +138,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   /// Loads accounts and assembles AccountTileData
   Future<void> _loadAccounts() async {
     try {
-      // 1. Retrieve all accounts
-      final accounts = await widget.accountRepository.getAllAccounts();
+      print('🔄 Loading accounts...');
+      // 1. Use AccountSelectionBloc's accounts to ensure consistency
+      final accountSelectionBloc = getIt<AccountSelectionBloc>();
+      final accounts = accountSelectionBloc.state.availableAccounts;
+      print('🔄 Found ${accounts.length} accounts from AccountSelectionBloc');
 
       // 2. For each account, get transaction count and formatted balance
       final List<AccountTileData> tiles = [];
@@ -147,12 +153,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             .getTransactionsByAccount(account.id!);
         final transactionCount = transactions.length;
 
-        // Format balance using AccountCurrencyExtension
+        // Format balance in account's native currency (not display currency)
+        // Account cards should always show each account in its own currency
+        print('💱 Formatting balance for account ${account.name}: ${account.balance} ${account.currency}');
         final formattedBalance = await account.formatBalance(
           widget.currencyRepository,
           showSymbol: true,
-          useCodeWithSymbol: true,
+          showCode: false,
         );
+        print('💱 Native currency formatted balance: $formattedBalance');
 
         tiles.add(AccountTileData(
           account: account,
@@ -167,6 +176,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           _isLoading = false;
           _errorMessage = null;
         });
+        print('✅ _accountTiles updated with ${tiles.length} tiles');
+        for (int i = 0; i < tiles.length; i++) {
+          print('   [$i] ${tiles[i].account.name} (ID: ${tiles[i].account.id})');
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -312,22 +325,27 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Single handler for account selection
   void _onSelectAccount(int index) {
-    print('DEBUG: _onSelectAccount called with index: $index');
+    print('🎯 _onSelectAccount called with index: $index');
+    print('🎯 _accountTiles length: ${_accountTiles.length}');
+    print('🎯 Widget mounted: $mounted');
+    
     if (mounted) {
       final accountSelectionBloc = getIt<AccountSelectionBloc>();
+      print('🎯 AccountSelectionBloc obtained successfully');
       
       // Get the account from our local data to find its ID
       if (index < _accountTiles.length) {
         final account = _accountTiles[index].account;
-        print('DEBUG: Selecting account: ${account.name} (ID: ${account.id})');
+        print('🎯 Selecting account: ${account.name} (ID: ${account.id})');
         
-        // Use selectAccount with the account ID instead of index
-        accountSelectionBloc.add(AccountSelectionEvent.selectAccount(accountId: account.id.toString()));
+        // Use selectAccountByIndex with the same index from the home page
+        accountSelectionBloc.add(AccountSelectionEvent.selectAccountByIndex(index: index));
+        print('🎯 AccountSelectionEvent.selectAccountByIndex dispatched');
       } else {
-        print('DEBUG: Index $index out of bounds for _accountTiles (length: ${_accountTiles.length})');
+        print('❌ Index $index out of bounds for _accountTiles (length: ${_accountTiles.length})');
       }
     } else {
-      print('DEBUG: Widget not mounted, skipping account selection');
+      print('❌ Widget not mounted, skipping account selection');
     }
   }
 
@@ -469,6 +487,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         return SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           clipBehavior: Clip.none,
+          physics: const ClampingScrollPhysics(),
           child: Row(
             children: [
               // Account cards from data - use the same data source for both display and selection

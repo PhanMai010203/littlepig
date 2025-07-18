@@ -297,10 +297,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i706.AccountRepository>(),
           gh<_i266.CategoryRepository>(),
         ));
-    gh.factory<_i396.AccountSelectionBloc>(() => _i396.AccountSelectionBloc(
-          gh<_i706.AccountRepository>(),
-          gh<_i653.CurrencyDisplayBloc>(),
-        ));
+    gh.lazySingleton<_i396.AccountSelectionBloc>(
+        () => _i396.AccountSelectionBloc(
+              gh<_i706.AccountRepository>(),
+              gh<_i653.CurrencyDisplayBloc>(),
+            ));
     return this;
   }
 }

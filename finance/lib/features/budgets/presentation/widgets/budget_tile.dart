@@ -271,7 +271,7 @@ class _BudgetHeaderContent extends StatelessWidget {
                           future: context.read<CurrencyDisplayBloc>()
                               .formatInDisplayCurrency(animatedRemaining.abs(), 'USD'),
                           builder: (context, snapshot) {
-                            final formattedAmount = snapshot.data ?? '\$${animatedRemaining.abs().toStringAsFixed(0)}';
+                            final formattedAmount = snapshot.data ?? animatedRemaining.abs().toStringAsFixed(0);
                             return RichText(
                               text: TextSpan(
                                 style: theme.textTheme.bodyMedium,
