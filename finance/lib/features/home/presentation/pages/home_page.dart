@@ -113,13 +113,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final accountSelectionBloc = getIt<AccountSelectionBloc>();
     accountSelectionBloc.initialize();
     
-    // Wait for AccountSelectionBloc to load accounts and select default, then initialize currency
-    Future.delayed(const Duration(milliseconds: 500), () {
-      _initializeCurrencyDisplay();
-      _loadAccounts();
-      _loadBudgets();
-      _loadTransactions();
-    });
+    // Wait for AccountSelectionBloc to actually load accounts before initializing currency
+    _waitForAccountSelectionThenInitialize();
   }
 
   @override
@@ -137,6 +132,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  /// Wait for AccountSelectionBloc to load accounts, then initialize everything
+  Future<void> _waitForAccountSelectionThenInitialize() async {
+    final accountSelectionBloc = getIt<AccountSelectionBloc>();
+    
+    // Wait for the AccountSelectionBloc to have loaded accounts
+    await for (final state in accountSelectionBloc.stream) {
+      if (state.availableAccounts.isNotEmpty) {
+        // Accounts are loaded, now initialize currency and load data
+        if (mounted) {
+          await _initializeCurrencyDisplay();
+          await _loadAccounts();
+          await _loadBudgets();
+          await _loadTransactions();
+        }
+        break; // Exit the stream subscription
+      }
+    }
+  }
+  
   /// Initialize CurrencyDisplayBloc with selected account's currency
   Future<void> _initializeCurrencyDisplay() async {
     try {
@@ -146,14 +160,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       // Check if an account is already selected
       final selectedAccount = accountSelectionBloc.state.selectedAccount;
       if (selectedAccount != null) {
-        print('💱 Initializing CurrencyDisplayBloc with selected account currency: ${selectedAccount.currency}');
         currencyDisplayBloc.add(CurrencyDisplayEvent.initialize(initialCurrency: selectedAccount.currency));
       } else {
-        print('💱 No account selected, initializing CurrencyDisplayBloc with default USD');
         currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
       }
     } catch (e) {
-      print('💱 Error initializing CurrencyDisplayBloc: $e');
       // Fallback initialization
       final currencyDisplayBloc = getIt<CurrencyDisplayBloc>();
       currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
@@ -180,13 +191,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
         // Format balance in account's native currency (not display currency)
         // Account cards should always show each account in its own currency
-        print('💱 Formatting balance for account ${account.name}: ${account.balance} ${account.currency}');
         final formattedBalance = await account.formatBalance(
           widget.currencyRepository,
           showSymbol: true,
           showCode: false,
         );
-        print('💱 Native currency formatted balance: $formattedBalance');
 
         tiles.add(AccountTileData(
           account: account,
@@ -361,7 +370,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       // Get the account from our local data to find its ID
       if (index < _accountTiles.length) {
         final account = _accountTiles[index].account;
-        print('🎯 Selecting account: ${account.name} (ID: ${account.id})');
+        // Account selected
         
         // Use selectAccountByIndex with the same index from the home page
         accountSelectionBloc.add(AccountSelectionEvent.selectAccountByIndex(index: index));
@@ -523,7 +532,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 // Check if this account matches the selected account from the bloc
                 final isSelected = accountSelectionState.selectedAccount?.id == tileData.account.id;
                 
-                print('DEBUG: Account ${tileData.account.name} (index: $index, id: ${tileData.account.id}) - isSelected: $isSelected');
+                // Account tile rendered
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 16),

@@ -37,14 +37,11 @@ class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayStat
     _AccountCurrencyChanged event,
     Emitter<CurrencyDisplayState> emit,
   ) async {
-    print('💱 CurrencyDisplayBloc - Account currency changed: ${event.accountCurrency}, accountId: ${event.accountId}');
-    print('💱 Current state before change - displayCurrency: ${state.displayCurrency}, selectedAccountId: ${state.selectedAccountId}');
     await _updateDisplayCurrency(
       event.accountCurrency,
       emit,
       selectedAccountId: event.accountId,
     );
-    print('💱 State after change - displayCurrency: ${state.displayCurrency}, selectedAccountId: ${state.selectedAccountId}');
   }
 
   /// Handle manual display currency change
@@ -94,11 +91,9 @@ class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayStat
             orElse: () => accounts.first,
           );
           initialCurrency = selectedAccount.currency;
-          print('💱 CurrencyDisplayBloc initialized with currency: $initialCurrency from account: ${selectedAccount.name}');
         }
       } catch (e) {
         // Fallback to USD if we can't get accounts
-        print('💱 CurrencyDisplayBloc initialization failed, using USD: $e');
         initialCurrency = 'USD';
       }
     }
@@ -112,11 +107,7 @@ class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayStat
     Emitter<CurrencyDisplayState> emit, {
     String? selectedAccountId,
   }) async {
-    print('💱 _updateDisplayCurrency called: newCurrency=$newCurrency, selectedAccountId=$selectedAccountId');
-    print('💱 Current state: displayCurrency=${state.displayCurrency}, selectedAccountId=${state.selectedAccountId}');
-    
     if (newCurrency == state.displayCurrency && selectedAccountId == state.selectedAccountId) {
-      print('💱 No change needed, returning early');
       return; // No change needed
     }
 
@@ -126,7 +117,6 @@ class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayStat
       displayCurrency: newCurrency,
       selectedAccountId: selectedAccountId ?? state.selectedAccountId,
     ));
-    print('💱 Currency display state updated to: $newCurrency');
 
     await _updateConversionCache(newCurrency, emit);
   }
@@ -171,8 +161,6 @@ class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayStat
         lastRateUpdate: DateTime.now(),
         errorMessage: null,
       ));
-      print('💱 Conversion cache updated for $displayCurrency - cache size: ${conversionRatesCache.length}');
-      print('💱 Sample rates: ${conversionRatesCache.entries.take(3).map((e) => '${e.key}: ${e.value}').join(', ')}');
     } catch (e) {
       emit(state.copyWith(
         isLoading: false,
@@ -199,18 +187,14 @@ class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayStat
     bool showCode = false,
     bool compact = false,
   }) async {
-    print('💱 formatInDisplayCurrency called: amount=$amount, fromCurrency=$fromCurrency, displayCurrency=${state.displayCurrency}');
     final convertedAmount = convertToDisplayCurrency(amount, fromCurrency);
-    print('💱 Converted amount: $convertedAmount');
     
-    final formatted = await _currencyService.formatAmount(
+    return await _currencyService.formatAmount(
       amount: convertedAmount,
       currencyCode: state.displayCurrency,
       showSymbol: showSymbol,
       showCode: showCode,
       compact: compact,
     );
-    print('💱 Formatted result: $formatted');
-    return formatted;
   }
 }
