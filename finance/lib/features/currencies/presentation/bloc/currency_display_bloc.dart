@@ -15,7 +15,7 @@ part 'currency_display_bloc.freezed.dart';
 /// This manages which currency all financial amounts should be displayed in
 /// across the app. When user switches accounts, this updates the display
 /// currency and triggers UI updates with converted amounts.
-@injectable
+@lazySingleton
 class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayState> {
   final CurrencyService _currencyService;
   final CurrencyRepository _currencyRepository;

@@ -248,7 +248,7 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
         ));
-    gh.factory<_i653.CurrencyDisplayBloc>(() => _i653.CurrencyDisplayBloc(
+    gh.lazySingleton<_i653.CurrencyDisplayBloc>(() => _i653.CurrencyDisplayBloc(
           gh<_i351.CurrencyService>(),
           gh<_i1056.CurrencyRepository>(),
           gh<_i706.AccountRepository>(),

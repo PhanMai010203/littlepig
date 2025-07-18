@@ -34,6 +34,7 @@ import '../../../../core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../navigation/presentation/bloc/navigation_bloc.dart';
 import '../../../accounts/presentation/bloc/account_selection_bloc.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
 
 // TransactionFilter enum is now imported from transaction_display_service.dart
 
@@ -111,6 +112,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Initialize AccountSelectionBloc
     final accountSelectionBloc = getIt<AccountSelectionBloc>();
     accountSelectionBloc.initialize();
+    
+    // Initialize CurrencyDisplayBloc
+    final currencyDisplayBloc = getIt<CurrencyDisplayBloc>();
+    currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
+    print('🚀 CurrencyDisplayBloc initialized');
 
     // Wait for AccountSelectionBloc to load accounts, then load our display data
     Future.delayed(const Duration(milliseconds: 200), () {
