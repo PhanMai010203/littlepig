@@ -65,7 +65,7 @@ dependencies:
   share_plus: ^10.0.0
   
   # Phase 3: Real-time updates and biometric authentication
-  local_auth: ^2.2.0
+  local_auth: ^2.3.0
   rxdart: ^0.28.0
   
   # Speech Recognition for AI Agent

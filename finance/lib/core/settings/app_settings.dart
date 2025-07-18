@@ -156,6 +156,10 @@ class AppSettings {
       'voiceVolume': 1.0,
       'voiceEnableHapticFeedback': true,
       'voiceEnablePartialResults': true,
+
+      // Biometric authentication settings
+      'biometricEnabled': false,
+      'biometricAppLock': false,
     };
   }
 
@@ -378,6 +382,23 @@ class AppSettings {
       setVoiceEnableHapticFeedback(settings.enableHapticFeedback),
       setVoiceEnablePartialResults(settings.enablePartialResults),
     ]);
+  }
+
+  /// Biometric authentication settings
+  static bool get biometricEnabled {
+    return get<bool>('biometricEnabled') ?? false;
+  }
+
+  static Future<void> setBiometricEnabled(bool enabled) async {
+    await set('biometricEnabled', enabled);
+  }
+
+  static bool get biometricAppLock {
+    return get<bool>('biometricAppLock') ?? false;
+  }
+
+  static Future<void> setBiometricAppLock(bool enabled) async {
+    await set('biometricAppLock', enabled);
   }
 
   /// Debug method to print all settings

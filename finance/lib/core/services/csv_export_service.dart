@@ -3,7 +3,6 @@ import 'package:csv/csv.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:injectable/injectable.dart';
-import 'package:intl/intl.dart';
 
 import '../settings/app_settings.dart';
 import '../../features/transactions/domain/entities/transaction.dart';
@@ -13,7 +12,14 @@ import '../../features/budgets/domain/entities/budget.dart';
 
 @lazySingleton
 class CsvExportService {
-  final DateFormat _dateFormatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+  // Use a simple date formatter that doesn't require locale initialization
+  String _formatDate(DateTime dateTime) {
+    return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}:${dateTime.second.toString().padLeft(2, '0')}';
+  }
+  
+  String _formatDateOnly(DateTime dateTime) {
+    return '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
+  }
 
   /// Export app settings to CSV
   Future<void> exportSettingsToCSV() async {
@@ -36,7 +42,7 @@ class CsvExportService {
         setting['key'],
         setting['value'],
         setting['type'],
-        _dateFormatter.format(DateTime.now()),
+        _formatDate(DateTime.now()),
         AppSettings.getWithDefault('lastVersion', '1.0.0'),
       ]),
     ];
@@ -53,7 +59,8 @@ class CsvExportService {
     List<Budget>? budgets,
   }) async {
     final directory = await getTemporaryDirectory();
-    final timestamp = DateFormat('yyyy-MM-dd_HH-mm-ss').format(DateTime.now());
+    final now = DateTime.now();
+    final timestamp = '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_${now.hour.toString().padLeft(2, '0')}-${now.minute.toString().padLeft(2, '0')}-${now.second.toString().padLeft(2, '0')}';
     final exportDir = Directory('${directory.path}/finance_export_$timestamp');
     await exportDir.create();
 
@@ -66,7 +73,7 @@ class CsvExportService {
       ['Category', 'Setting Key', 'Setting Value', 'Data Type', 'Export Date', 'App Version'],
       ...settingsData.map((s) => [
         s['category'], s['key'], s['value'], s['type'],
-        _dateFormatter.format(DateTime.now()),
+        _formatDate(DateTime.now()),
         AppSettings.getWithDefault('lastVersion', '1.0.0'),
       ]),
     ]);
@@ -221,19 +228,19 @@ class CsvExportService {
         t.title,
         t.note ?? '',
         t.amount.toString(),
-        _dateFormatter.format(t.date),
+        _formatDate(t.date),
         t.categoryId.toString(),
         t.accountId.toString(),
         t.transactionType.toString(),
         t.specialType?.toString() ?? '',
         t.recurrence.toString(),
         t.periodLength?.toString() ?? '',
-        t.endDate != null ? _dateFormatter.format(t.endDate!) : '',
+        t.endDate != null ? _formatDate(t.endDate!) : '',
         t.transactionState.toString(),
         t.paid.toString(),
         t.skipPaid.toString(),
-        _dateFormatter.format(t.createdAt),
-        _dateFormatter.format(t.updatedAt),
+        _formatDate(t.createdAt),
+        _formatDate(t.updatedAt),
         t.syncId,
       ]),
     ];
@@ -262,8 +269,8 @@ class CsvExportService {
         a.currency,
         a.isDefault.toString(),
         '0x${a.color.toARGB32().toRadixString(16)}',
-        _dateFormatter.format(a.createdAt),
-        _dateFormatter.format(a.updatedAt),
+        _formatDate(a.createdAt),
+        _formatDate(a.updatedAt),
         a.syncId,
       ]),
     ];
@@ -292,8 +299,8 @@ class CsvExportService {
         '0x${c.color.toARGB32().toRadixString(16)}',
         c.isExpense.toString(),
         c.isDefault.toString(),
-        _dateFormatter.format(c.createdAt),
-        _dateFormatter.format(c.updatedAt),
+        _formatDate(c.createdAt),
+        _formatDate(c.updatedAt),
         c.syncId,
       ]),
     ];
@@ -330,16 +337,16 @@ class CsvExportService {
         b.spent.toString(),
         (b.amount - b.spent).toString(),
         b.period.toString(),
-        _dateFormatter.format(b.startDate),
-        _dateFormatter.format(b.endDate),
+        _formatDate(b.startDate),
+        _formatDate(b.endDate),
         b.categoryId?.toString() ?? '',
         b.excludeDebtCreditInstallments.toString(),
         b.excludeObjectiveInstallments.toString(),
         b.normalizeToCurrency ?? '',
         b.isIncomeBudget.toString(),
         b.isActive.toString(),
-        _dateFormatter.format(b.createdAt),
-        _dateFormatter.format(b.updatedAt),
+        _formatDate(b.createdAt),
+        _formatDate(b.updatedAt),
         b.syncId,
       ]),
     ];

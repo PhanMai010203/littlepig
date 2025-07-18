@@ -95,6 +95,8 @@ import '../../services/finance_service.dart' as _i19;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
 import '../events/transaction_event_publisher.dart' as _i388;
+import '../services/app_lock_service.dart' as _i165;
+import '../services/biometric_auth_service.dart' as _i919;
 import '../services/csv_export_service.dart' as _i455;
 import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
@@ -135,6 +137,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
     gh.lazySingleton<_i455.CsvExportService>(() => _i455.CsvExportService());
+    gh.lazySingleton<_i919.BiometricAuthService>(
+        () => _i919.BiometricAuthService());
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(
         () => _i222.CurrencyLocalDataSourceImpl());
     gh.lazySingleton<_i527.BudgetUpdateService>(
@@ -160,6 +164,8 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.testDatabaseService,
       registerFor: {_test},
     );
+    gh.singleton<_i165.AppLockService>(
+        () => _i165.AppLockService(gh<_i919.BiometricAuthService>()));
     gh.lazySingleton<_i982.AppDatabase>(
       () => registerModule.testAppDatabase(gh<_i665.DatabaseService>()),
       registerFor: {_test},

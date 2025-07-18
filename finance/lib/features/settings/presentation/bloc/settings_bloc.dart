@@ -20,6 +20,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
           autoBackupEnabled: false,
           notificationsEnabled: true,
           hapticFeedbackEnabled: true,
+          biometricEnabled: false,
+          biometricAppLockEnabled: false,
         )) {
     on<_LoadSettings>(_onLoadSettings);
     on<_ThemeModeChanged>(_onThemeModeChanged);
@@ -27,6 +29,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<_AutoBackupToggled>(_onAutoBackupToggled);
     on<_NotificationsToggled>(_onNotificationsToggled);
     on<_HapticFeedbackToggled>(_onHapticFeedbackToggled);
+    on<_BiometricToggled>(_onBiometricToggled);
+    on<_BiometricAppLockToggled>(_onBiometricAppLockToggled);
     on<_ExportSettings>(_onExportSettings);
     on<_ExportAllData>(_onExportAllData);
     on<_ExportTransactions>(_onExportTransactions);
@@ -48,6 +52,8 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       notificationsEnabled:
           AppSettings.getWithDefault<bool>('notificationsEnabled', true),
       hapticFeedbackEnabled: AppSettings.hapticFeedback,
+      biometricEnabled: AppSettings.biometricEnabled,
+      biometricAppLockEnabled: AppSettings.biometricAppLock,
     ));
   }
 
@@ -246,5 +252,21 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
         exportError: 'Failed to export budgets: ${e.toString()}',
       ));
     }
+  }
+
+  void _onBiometricToggled(
+    _BiometricToggled event,
+    Emitter<SettingsState> emit,
+  ) {
+    emit(state.copyWith(biometricEnabled: event.enabled));
+    AppSettings.setBiometricEnabled(event.enabled);
+  }
+
+  void _onBiometricAppLockToggled(
+    _BiometricAppLockToggled event,
+    Emitter<SettingsState> emit,
+  ) {
+    emit(state.copyWith(biometricAppLockEnabled: event.enabled));
+    AppSettings.setBiometricAppLock(event.enabled);
   }
 }

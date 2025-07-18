@@ -9,6 +9,8 @@ import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/material_you.dart';
+import '../../../../core/services/biometric_auth_service.dart';
+import '../../../../core/di/injection.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/language_selector.dart';
 import '../../../../core/services/dialog_service.dart';
@@ -97,6 +99,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       );
                 },
               ),
+              _buildDivider(),
+
+              // Security & Biometrics Section
+              _buildSectionHeader('Security & Biometrics'),
+              _buildBiometricSettings(state),
               _buildDivider(),
 
               // Data Export Section
@@ -499,6 +506,115 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         );
       },
+    );
+  }
+
+  /// Biometric Authentication Settings
+  Widget _buildBiometricSettings(SettingsState state) {
+    return Column(
+      children: [
+        // Biometric Authentication Toggle
+        FutureBuilder<bool>(
+          future: _checkBiometricAvailability(),
+          builder: (context, snapshot) {
+            final isAvailable = snapshot.data ?? false;
+            final isLoading = snapshot.connectionState == ConnectionState.waiting;
+            
+            return SwitchListTile(
+              secondary: Icon(
+                Icons.fingerprint,
+                color: isAvailable 
+                    ? getColor(context, 'primary')
+                    : getColor(context, 'textLight'),
+              ),
+              title: const Text('Biometric Authentication'),
+              subtitle: Text(
+                isLoading 
+                    ? 'Checking availability...'
+                    : isAvailable 
+                        ? 'Use biometric authentication for security'
+                        : 'Not available on this device',
+              ),
+              value: isAvailable ? state.biometricEnabled : false,
+              onChanged: isAvailable ? (value) {
+                context.read<SettingsBloc>().add(
+                  SettingsEvent.biometricToggled(value),
+                );
+              } : null,
+            );
+          },
+        ),
+        
+        // App Lock Toggle (only show if biometric is enabled)
+        if (state.biometricEnabled)
+          SwitchListTile(
+            secondary: Icon(
+              Icons.lock,
+              color: getColor(context, 'primary'),
+            ),
+            title: const Text('App Lock'),
+            subtitle: const Text('Lock app when minimized'),
+            value: state.biometricAppLockEnabled,
+            onChanged: (value) {
+              context.read<SettingsBloc>().add(
+                SettingsEvent.biometricAppLockToggled(value),
+              );
+            },
+          ),
+        
+        // Biometric Info Card (only show if biometric is enabled)
+        if (state.biometricEnabled)
+          FutureBuilder<String>(
+            future: _getBiometricDescription(),
+            builder: (context, snapshot) {
+              final description = snapshot.data ?? 'Loading...';
+              
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: getColor(context, 'surfaceContainer'),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: getColor(context, 'primary').withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      color: getColor(context, 'primary'),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Available Biometrics',
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: getColor(context, 'primary'),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            description,
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: getColor(context, 'textLight'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+      ],
     );
   }
 
@@ -1296,5 +1412,27 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
       ],
     );
+  }
+
+  /// Check if biometric authentication is available
+  Future<bool> _checkBiometricAvailability() async {
+    try {
+      final biometricService = getIt<BiometricAuthService>();
+      return await biometricService.isBiometricAvailable();
+    } catch (e) {
+      debugPrint('Error checking biometric availability: $e');
+      return false;
+    }
+  }
+
+  /// Get biometric description
+  Future<String> _getBiometricDescription() async {
+    try {
+      final biometricService = getIt<BiometricAuthService>();
+      return await biometricService.getBiometricDescription();
+    } catch (e) {
+      debugPrint('Error getting biometric description: $e');
+      return 'Unable to get biometric information';
+    }
   }
 }

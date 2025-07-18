@@ -10,6 +10,7 @@ import '../features/transactions/domain/repositories/transaction_repository.dart
 import '../features/currencies/domain/repositories/currency_repository.dart';
 import '../core/theme/app_theme.dart';
 import '../core/settings/app_settings.dart';
+import '../core/widgets/app_lock_wrapper.dart';
 import '../features/budgets/presentation/bloc/budgets_bloc.dart';
 import '../features/navigation/presentation/bloc/navigation_bloc.dart';
 import '../features/settings/presentation/bloc/settings_bloc.dart';
@@ -174,16 +175,18 @@ class _MainAppState extends State<MainApp> {
           child: BlocBuilder<SettingsBloc, SettingsState>(
             builder: (context, settingsState) {
               return ResumeTextFieldFocus(
-                child: MaterialApp.router(
-                  title: 'finance_app'.tr(),
-                  debugShowCheckedModeBanner: false,
-                  theme: AppTheme.light(),
-                  darkTheme: AppTheme.dark(),
-                  themeMode: settingsState.themeMode,
-                  routerConfig: AppRouter.router,
-                  locale: context.locale,
-                  supportedLocales: context.supportedLocales,
-                  localizationsDelegates: context.localizationDelegates,
+                child: AppLockWrapper(
+                  child: MaterialApp.router(
+                    title: 'finance_app'.tr(),
+                    debugShowCheckedModeBanner: false,
+                    theme: AppTheme.light(),
+                    darkTheme: AppTheme.dark(),
+                    themeMode: settingsState.themeMode,
+                    routerConfig: AppRouter.router,
+                    locale: context.locale,
+                    supportedLocales: context.supportedLocales,
+                    localizationsDelegates: context.localizationDelegates,
+                  ),
                 ),
               );
             },
