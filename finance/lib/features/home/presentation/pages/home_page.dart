@@ -113,13 +113,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     final accountSelectionBloc = getIt<AccountSelectionBloc>();
     accountSelectionBloc.initialize();
     
-    // Initialize CurrencyDisplayBloc
-    final currencyDisplayBloc = getIt<CurrencyDisplayBloc>();
-    currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
-    print('🚀 CurrencyDisplayBloc initialized');
-
-    // Wait for AccountSelectionBloc to load accounts, then load our display data
-    Future.delayed(const Duration(milliseconds: 200), () {
+    // Wait for AccountSelectionBloc to load accounts and select default, then initialize currency
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _initializeCurrencyDisplay();
       _loadAccounts();
       _loadBudgets();
       _loadTransactions();
@@ -139,6 +135,29 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Initialize CurrencyDisplayBloc with selected account's currency
+  Future<void> _initializeCurrencyDisplay() async {
+    try {
+      final accountSelectionBloc = getIt<AccountSelectionBloc>();
+      final currencyDisplayBloc = getIt<CurrencyDisplayBloc>();
+      
+      // Check if an account is already selected
+      final selectedAccount = accountSelectionBloc.state.selectedAccount;
+      if (selectedAccount != null) {
+        print('💱 Initializing CurrencyDisplayBloc with selected account currency: ${selectedAccount.currency}');
+        currencyDisplayBloc.add(CurrencyDisplayEvent.initialize(initialCurrency: selectedAccount.currency));
+      } else {
+        print('💱 No account selected, initializing CurrencyDisplayBloc with default USD');
+        currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
+      }
+    } catch (e) {
+      print('💱 Error initializing CurrencyDisplayBloc: $e');
+      // Fallback initialization
+      final currencyDisplayBloc = getIt<CurrencyDisplayBloc>();
+      currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
+    }
   }
 
   /// Loads accounts and assembles AccountTileData

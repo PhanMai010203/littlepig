@@ -83,15 +83,22 @@ class CurrencyDisplayBloc extends Bloc<CurrencyDisplayEvent, CurrencyDisplayStat
   ) async {
     String initialCurrency = event.initialCurrency ?? 'USD';
     
-    // Try to get the first account's currency as default
+    // Try to get the selected account's currency first, then fallback to first account
     if (event.initialCurrency == null) {
       try {
         final accounts = await _accountRepository.getAllAccounts();
         if (accounts.isNotEmpty) {
-          initialCurrency = accounts.first.currency;
+          // Check if there's a default/selected account
+          final selectedAccount = accounts.firstWhere(
+            (account) => account.isDefault,
+            orElse: () => accounts.first,
+          );
+          initialCurrency = selectedAccount.currency;
+          print('💱 CurrencyDisplayBloc initialized with currency: $initialCurrency from account: ${selectedAccount.name}');
         }
       } catch (e) {
         // Fallback to USD if we can't get accounts
+        print('💱 CurrencyDisplayBloc initialization failed, using USD: $e');
         initialCurrency = 'USD';
       }
     }
