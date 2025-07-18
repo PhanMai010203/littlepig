@@ -95,6 +95,7 @@ import '../../services/finance_service.dart' as _i19;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
 import '../events/transaction_event_publisher.dart' as _i388;
+import '../services/csv_export_service.dart' as _i455;
 import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
 import '../sync/crdt_conflict_resolver.dart' as _i588;
@@ -124,7 +125,6 @@ extension GetItInjectableX on _i174.GetIt {
       preResolve: true,
     );
     gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
-    gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc());
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
     gh.lazySingleton<_i183.ImagePicker>(() => registerModule.imagePicker);
@@ -134,6 +134,7 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i388.TransactionEventPublisher());
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
+    gh.lazySingleton<_i455.CsvExportService>(() => _i455.CsvExportService());
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(
         () => _i222.CurrencyLocalDataSourceImpl());
     gh.lazySingleton<_i527.BudgetUpdateService>(
@@ -142,6 +143,8 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i279.BudgetDisplayService>(
         () => _i70.BudgetDisplayServiceImpl());
+    gh.factory<_i585.SettingsBloc>(
+        () => _i585.SettingsBloc(gh<_i455.CsvExportService>()));
     gh.lazySingleton<_i349.ExchangeRateLocalDataSource>(
         () => _i349.ExchangeRateLocalDataSourceImpl());
     gh.lazySingleton<_i888.TransactionDisplayService>(

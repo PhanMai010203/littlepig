@@ -99,6 +99,11 @@ class _SettingsPageState extends State<SettingsPage> {
               ),
               _buildDivider(),
 
+              // Data Export Section
+              _buildSectionHeader('Data Export'),
+              _buildExportSection(state),
+              _buildDivider(),
+
               // Notifications Section
               _buildSectionHeader('Notifications'),
               SwitchListTile(
@@ -1152,6 +1157,144 @@ class _SettingsPageState extends State<SettingsPage> {
       showCloseButton: true,
       barrierDismissible: true,
       animationType: DialogService.defaultPopupAnimation,
+    );
+  }
+
+  Widget _buildExportSection(SettingsState state) {
+    return Column(
+      children: [
+        if (state.isExporting)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                const CircularProgressIndicator(),
+                const SizedBox(height: 8),
+                Text(
+                  state.exportStatus ?? 'Exporting...',
+                  style: const TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
+          )
+        else if (state.exportStatus != null)
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.all(12.0),
+            decoration: BoxDecoration(
+              color: Colors.green.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(color: Colors.green.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    state.exportStatus!,
+                    style: const TextStyle(color: Colors.green),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else if (state.exportError != null)
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            padding: const EdgeInsets.all(12.0),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8.0),
+              border: Border.all(color: Colors.red.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                Icon(Icons.error, color: Colors.red),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    state.exportError!,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ListTile(
+          leading: const Icon(Icons.settings),
+          title: const Text('Export Settings'),
+          subtitle: const Text('Export app settings and preferences'),
+          trailing: const Icon(Icons.download),
+          onTap: state.isExporting ? null : () {
+            context.read<SettingsBloc>().add(
+              const SettingsEvent.exportSettings(),
+            );
+          },
+        ),
+        ListTile(
+          leading: const Icon(Icons.all_inclusive),
+          title: const Text('Export All Data'),
+          subtitle: const Text('Export all app data (settings, transactions, etc.)'),
+          trailing: const Icon(Icons.download),
+          onTap: state.isExporting ? null : () {
+            context.read<SettingsBloc>().add(
+              const SettingsEvent.exportAllData(),
+            );
+          },
+        ),
+        ExpansionTile(
+          leading: const Icon(Icons.more_horiz),
+          title: const Text('Individual Data Export'),
+          subtitle: const Text('Export specific data types'),
+          children: [
+            ListTile(
+              leading: const Icon(Icons.receipt),
+              title: const Text('Transactions'),
+              subtitle: const Text('Export transaction history'),
+              trailing: const Icon(Icons.download),
+              onTap: state.isExporting ? null : () {
+                context.read<SettingsBloc>().add(
+                  const SettingsEvent.exportTransactions(),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.account_balance),
+              title: const Text('Accounts'),
+              subtitle: const Text('Export account information'),
+              trailing: const Icon(Icons.download),
+              onTap: state.isExporting ? null : () {
+                context.read<SettingsBloc>().add(
+                  const SettingsEvent.exportAccounts(),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.category),
+              title: const Text('Categories'),
+              subtitle: const Text('Export category data'),
+              trailing: const Icon(Icons.download),
+              onTap: state.isExporting ? null : () {
+                context.read<SettingsBloc>().add(
+                  const SettingsEvent.exportCategories(),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.pie_chart),
+              title: const Text('Budgets'),
+              subtitle: const Text('Export budget information'),
+              trailing: const Icon(Icons.download),
+              onTap: state.isExporting ? null : () {
+                context.read<SettingsBloc>().add(
+                  const SettingsEvent.exportBudgets(),
+                );
+              },
+            ),
+          ],
+        ),
+      ],
     );
   }
 }
