@@ -17,6 +17,7 @@ import '../../features/agent/domain/entities/speech_service.dart';
 import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
 import '../../features/more/presentation/pages/sync_page.dart';
+import '../../features/more/presentation/pages/sheep_premium_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/domain/repositories/attachment_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
@@ -126,6 +127,18 @@ class AppRouter {
         pageBuilder: (context, state) =>
             AppPageTransitions.platformTransitionPage(
           child: const SyncPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+
+      // Premium page
+      GoRoute(
+        path: AppRoutes.premium,
+        name: AppRoutes.premium,
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
+          child: const SheepPremiumPage(),
           name: state.name,
           key: state.pageKey,
         ),

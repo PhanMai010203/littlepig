@@ -145,7 +145,7 @@ class AppSettings {
       // AI Agent settings
       'geminiApiKey': dotenv.env['GEMINI_API_KEY'] ?? '', // Load from environment
       'aiEnabled': dotenv.env['AI_ENABLED']?.toLowerCase() == 'true', // Load from environment
-      'aiModel': dotenv.env['AI_MODEL'] ?? 'gemini-1.5-pro', // Load from environment
+      'aiModel': 'gemini-2.5-flash', // Load from environment
       'aiTemperature': double.tryParse(dotenv.env['AI_TEMPERATURE'] ?? '0.3') ?? 0.3, // Load from environment
       'aiMaxTokens': int.tryParse(dotenv.env['AI_MAX_TOKENS'] ?? '4000') ?? 4000, // Load from environment
 

@@ -43,6 +43,15 @@ class MorePage extends StatelessWidget {
               );
             },
           ),
+          const _SectionHeader(title: 'Premium'),
+          _MenuItem(
+            icon: Icons.star,
+            title: 'Sheep Pro',
+            subtitle: 'Unlock premium features and support development',
+            onTap: () {
+              context.push('/premium');
+            },
+          ),
           const _SectionHeader(title: 'Data & Sync'),
           _SyncMenuItem(
             onTap: () {
