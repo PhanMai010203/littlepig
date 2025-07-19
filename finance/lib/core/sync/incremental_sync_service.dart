@@ -584,7 +584,7 @@ class IncrementalSyncService implements SyncService {
       debugPrint('📁 Sync folder ID: $syncFolderId');
       
       debugPrint('🔍 Looking for event files from other devices...');
-      List<drive.File> eventFiles;
+      List<drive.File> eventFiles = [];
       
       // Try file discovery with retry logic for eventual consistency
       int retryCount = 0;
@@ -801,7 +801,7 @@ class IncrementalSyncService implements SyncService {
       debugPrint('📁 Sync folder ID: $syncFolderId');
       
       debugPrint('🔍 Looking for event files from other devices...');
-      List<drive.File> eventFiles;
+      List<drive.File> eventFiles = [];
       
       // Try file discovery with retry logic for eventual consistency
       int retryCount = 0;
@@ -1214,7 +1214,7 @@ class IncrementalSyncService implements SyncService {
       
       if (isSignedIn) {
         try {
-          final authHeaders = await account!.authHeaders;
+          final authHeaders = await account.authHeaders;
           final client = authenticatedClient(
             http.Client(),
             AccessCredentials(
@@ -1234,13 +1234,11 @@ class IncrementalSyncService implements SyncService {
           // Get all files in sync folder
           final allFiles = await driveApi.files.list(
             q: "'$syncFolderId' in parents and trashed=false",
-            fields: 'files(id,name,createdTime,modifiedTime,size)',
           );
           
           // Get event files specifically
           final eventFiles = await driveApi.files.list(
             q: "name contains 'events_' and name contains '.json' and '$syncFolderId' in parents and trashed=false",
-            fields: 'files(id,name,createdTime,modifiedTime,size)',
           );
           
           cloudDiagnostics = {
@@ -1367,10 +1365,10 @@ class IncrementalSyncService implements SyncService {
         eventIds,
       );
 
-      print('✅ PHASE 4.4: Batch marked ${events.length} events as synced');
+      debugPrint('✅ PHASE 4.4: Batch marked ${events.length} events as synced');
     } catch (e) {
       // ✅ PHASE 4.4: Enhanced fallback strategy with detailed error handling
-      print('Warning: Batch update failed, trying individual updates: $e');
+      debugPrint('Warning: Batch update failed, trying individual updates: $e');
 
       int successCount = 0;
       for (final event in events) {
@@ -1386,12 +1384,12 @@ class IncrementalSyncService implements SyncService {
             successCount++;
           }
         } catch (individualError) {
-          print(
+          debugPrint(
               'Failed to mark event ${event.eventId} as synced: $individualError');
         }
       }
 
-      print(
+      debugPrint(
           '✅ PHASE 4.4: Individual fallback completed: $successCount/${events.length} events marked');
     }
   }
@@ -1477,7 +1475,6 @@ class IncrementalSyncService implements SyncService {
       debugPrint('🔍 Listing ALL files in sync folder...');
       final allFiles = await driveApi.files.list(
         q: "'$syncFolderId' in parents and trashed=false",
-        fields: 'files(id,name,createdTime,modifiedTime,size)',
       );
       
       debugPrint('🔍 Total files in sync folder: ${allFiles.files?.length ?? 0}');
@@ -1494,7 +1491,6 @@ class IncrementalSyncService implements SyncService {
       debugPrint('🔍 Searching for event files...');
       final eventFiles = await driveApi.files.list(
         q: "name contains 'events_' and name contains '.json' and '$syncFolderId' in parents and trashed=false",
-        fields: 'files(id,name,createdTime,modifiedTime,size)',
       );
 
       debugPrint('🔍 Event files found by query: ${eventFiles.files?.length ?? 0}');
@@ -1516,7 +1512,7 @@ class IncrementalSyncService implements SyncService {
                 
                 // Multiple checks to be more robust
                 final exactMatch = fileName.startsWith('events_$_deviceId');
-                final containsDeviceId = fileName.contains(_deviceId!);
+                final containsDeviceId = fileName.contains(_deviceId ?? '');
                 
                 debugPrint('🔍 Checking "$fileName":');
                 debugPrint('   - exactMatch: $exactMatch');
@@ -1632,7 +1628,7 @@ class IncrementalSyncService implements SyncService {
       }
     } catch (e) {
       // Log error but don't fail the entire sync
-      print('Failed to apply event ${event.eventId}: $e');
+      debugPrint('Failed to apply event ${event.eventId}: $e');
       return false;
     }
   }
@@ -1653,7 +1649,7 @@ class IncrementalSyncService implements SyncService {
         return true;
       case ConflictResolutionType.manualResolution:
         // Log for manual review
-        print(
+        debugPrint(
             'Manual resolution required for ${baseEvent.tableName}:${baseEvent.recordId} - ${resolution.reason}');
         return false;
     }
@@ -1953,7 +1949,7 @@ class IncrementalSyncService implements SyncService {
       );
     } catch (e) {
       // Non-critical - log but don't fail sync
-      print('Failed to cleanup event file ${file.name}: $e');
+      debugPrint('Failed to cleanup event file ${file.name}: $e');
     }
   }
 
