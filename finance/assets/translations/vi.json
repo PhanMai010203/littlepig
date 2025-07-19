@@ -316,7 +316,8 @@
     "permanently_locked_out": "Xác thực vĩnh viễn bị khóa",
     "not_available_or_enabled": "Xác thực sinh trắc học không khả dụng hoặc chưa được bật",
     "not_available_on_device": "Xác thực sinh trắc học không khả dụng trên thiết bị",
-    "no_biometrics_enrolled": "Chưa đăng ký sinh trắc học trên thiết bị"
+    "no_biometrics_enrolled": "Chưa đăng ký sinh trắc học trên thiết bị",
+    "unlock_with_biometric": "Mở khóa bằng sinh trắc học"
   },
 
   "common": {

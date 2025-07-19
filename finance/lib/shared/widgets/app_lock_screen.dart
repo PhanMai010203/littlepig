@@ -47,11 +47,6 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
     );
     
     _loadAvailableBiometrics();
-    
-    // Auto-trigger authentication on screen load
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _authenticate();
-    });
   }
 
   @override
@@ -375,7 +370,7 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
                           ),
                         const SizedBox(width: 12),
                         Text(
-                          _isAuthenticating ? 'biometric.authenticating'.tr() : 'common.retry'.tr(),
+                          _isAuthenticating ? 'biometric.authenticating'.tr() : 'biometric.unlock_with_biometric'.tr(),
                           style: theme.textTheme.labelLarge?.copyWith(
                             color: colorScheme.onPrimary,
                             fontWeight: FontWeight.w600,

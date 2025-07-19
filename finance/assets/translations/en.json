@@ -263,6 +263,8 @@
     "biometric_auth": "Biometric Authentication",
     "passcode_lock": "Passcode Lock",
 
+
+
     "data": "Data",
     "export_data": "Export Data",
     "import_data": "Import Data",
@@ -313,7 +315,8 @@
     "permanently_locked_out": "Authentication permanently locked out",
     "not_available_or_enabled": "Biometric authentication not available or not enabled",
     "not_available_on_device": "Biometric authentication not available on device",
-    "no_biometrics_enrolled": "No biometrics enrolled on device"
+    "no_biometrics_enrolled": "No biometrics enrolled on device",
+    "unlock_with_biometric": "Unlock with Biometric"
   },
 
   "common": {
