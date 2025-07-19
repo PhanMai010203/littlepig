@@ -136,8 +136,8 @@
     "create": "Create new budget",
     "empty": "No budgets found. Create one!",
     "details_coming": "Budget details coming soon for {name}",
-    "overspent_of": "overspent of ${amount}",
-    "left_of": "left of ${amount}",
+    "overspent_of": "overspent of {amount}",
+    "left_of": "left of {amount}",
     "today": "Today",
     "expense_budget": "Expense Budget",
     "savings_budget": "Savings Budget",
@@ -432,6 +432,8 @@
   "more": {
     "sections": {
       "account": "Account",
+      "security": "Security & Biometrics",
+      "data_export": "Data Export",
       "data_sync": "Data & Sync",
       "analytics": "Analytics",
       "developer": "Developer",
@@ -458,12 +460,41 @@
       "about_subtitle": "App version and information"
     },
     "actions": {
-      "profile_tapped": "Profile tapped",
+      "profile_tapped": "Profile management coming soon",
       "notifications_tapped": "Notifications tapped",
       "reports_tapped": "Reports tapped",
       "goals_tapped": "Goals tapped",
       "help_tapped": "Help tapped",
       "about_tapped": "About tapped"
+    },
+    "biometric": {
+      "title": "Biometric Authentication",
+      "use_biometric_security": "Use biometric authentication for security",
+      "not_available_device": "Not available on this device",
+      "checking_availability": "Checking availability...",
+      "authenticating": "Authenticating...",
+      "app_lock": "App Lock",
+      "app_lock_subtitle": "Lock app when minimized",
+      "available_biometrics": "Available Biometrics",
+      "loading": "Loading...",
+      "unable_to_get_info": "Unable to get biometric information"
+    },
+    "export": {
+      "exporting": "Exporting...",
+      "export_settings": "Export Settings",
+      "export_settings_subtitle": "Export app settings and preferences",
+      "export_all_data": "Export All Data",
+      "export_all_data_subtitle": "Export all app data (settings, transactions, etc.)",
+      "individual_data_export": "Individual Data Export",
+      "individual_data_export_subtitle": "Export specific data types",
+      "export_transactions": "Transactions",
+      "export_transactions_subtitle": "Export transaction history",
+      "export_accounts": "Accounts",
+      "export_accounts_subtitle": "Export account information",
+      "export_categories": "Categories",
+      "export_categories_subtitle": "Export category data",
+      "export_budgets": "Budgets",
+      "export_budgets_subtitle": "Export budget information"
     }
   },
 

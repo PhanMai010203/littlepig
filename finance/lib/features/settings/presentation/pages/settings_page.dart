@@ -9,8 +9,6 @@ import '../../../../core/settings/app_settings.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/material_you.dart';
-import '../../../../core/services/biometric_auth_service.dart';
-import '../../../../core/di/injection.dart';
 import '../../../../shared/widgets/app_text.dart';
 import '../../../../shared/widgets/language_selector.dart';
 import '../../../../core/services/dialog_service.dart';
@@ -59,23 +57,30 @@ class _SettingsPageState extends State<SettingsPage> {
               _buildDivider(),
 
               // Text Section
+              /*
               _buildSectionHeader('Text'),
               _buildFontSelector(),
               _buildContrastSetting(),
               _buildDivider(),
+              */
 
               // Accessibility Section
+              /*
               _buildSectionHeader('Accessibility'),
               _buildReduceAnimationsSetting(),
               _buildHapticFeedbackSetting(),
               _buildDivider(),
+              */
 
               // Animation Framework Section (Phase 6.1)
+              /*
               _buildSectionHeader('Animations'),
               _buildAnimationFrameworkSettings(),
               _buildDivider(),
+              */
 
               // Data & Privacy Section
+              /*
               _buildSectionHeader('Data & Privacy'),
               SwitchListTile(
                 secondary: const Icon(Icons.analytics),
@@ -100,18 +105,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               _buildDivider(),
-
-              // Security & Biometrics Section
-              _buildSectionHeader('Security & Biometrics'),
-              _buildBiometricSettings(state),
-              _buildDivider(),
-
-              // Data Export Section
-              _buildSectionHeader('Data Export'),
-              _buildExportSection(state),
-              _buildDivider(),
+              */
 
               // Notifications Section
+              /*
               _buildSectionHeader('Notifications'),
               SwitchListTile(
                 secondary: const Icon(Icons.notifications),
@@ -125,15 +122,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               _buildDivider(),
+              */
 
               // Debug Section (Phase 6.2)
+              /*
               _buildSectionHeader('Debug & Performance'),
               _buildPerformanceMonitorTile(),
               _buildPerformanceMetricsTile(),
               _buildResetMetricsTile(),
               _buildDivider(),
+              */
 
               // App Info Section
+              /*
               _buildSectionHeader('App Info'),
               const ListTile(
                 leading: Icon(Icons.info),
@@ -146,6 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 subtitle: Text('1'),
               ),
               _buildAboutTile(),
+              */
             ],
           );
         },
@@ -509,165 +511,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  /// Biometric Authentication Settings
-  Widget _buildBiometricSettings(SettingsState state) {
-    return Column(
-      children: [
-        // Biometric Authentication Toggle
-        FutureBuilder<bool>(
-          future: _checkBiometricAvailability(),
-          builder: (context, snapshot) {
-            final isAvailable = snapshot.data ?? false;
-            final isLoading = snapshot.connectionState == ConnectionState.waiting;
-            
-            return Column(
-              children: [
-                SwitchListTile(
-                  secondary: state.isBiometricAuthenticating
-                      ? SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              getColor(context, 'primary'),
-                            ),
-                          ),
-                        )
-                      : Icon(
-                          Icons.fingerprint,
-                          color: isAvailable 
-                              ? getColor(context, 'primary')
-                              : getColor(context, 'textLight'),
-                        ),
-                  title: const Text('Biometric Authentication'),
-                  subtitle: Text(
-                    state.isBiometricAuthenticating
-                        ? 'Authenticating...'
-                        : isLoading 
-                            ? 'Checking availability...'
-                            : isAvailable 
-                                ? 'Use biometric authentication for security'
-                                : 'Not available on this device',
-                  ),
-                  value: isAvailable ? state.biometricEnabled : false,
-                  onChanged: (isAvailable && !state.isBiometricAuthenticating) ? (value) {
-                    context.read<SettingsBloc>().add(
-                      SettingsEvent.biometricToggled(value),
-                    );
-                  } : null,
-                ),
-                
-                // Show authentication error if any
-                if (state.biometricAuthError != null)
-                  Container(
-                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: getColor(context, 'error').withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: getColor(context, 'error').withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.error_outline,
-                          size: 20,
-                          color: getColor(context, 'error'),
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            state.biometricAuthError!,
-                            style: TextStyle(
-                              color: getColor(context, 'error'),
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            );
-          },
-        ),
-        
-        // App Lock Toggle (only show if biometric is enabled)
-        if (state.biometricEnabled)
-          SwitchListTile(
-            secondary: Icon(
-              Icons.lock,
-              color: getColor(context, 'primary'),
-            ),
-            title: const Text('App Lock'),
-            subtitle: const Text('Lock app when minimized'),
-            value: state.biometricAppLockEnabled,
-            onChanged: (value) {
-              context.read<SettingsBloc>().add(
-                SettingsEvent.biometricAppLockToggled(value),
-              );
-            },
-          ),
-        
-        // Biometric Info Card (only show if biometric is enabled)
-        if (state.biometricEnabled)
-          FutureBuilder<String>(
-            future: _getBiometricDescription(),
-            builder: (context, snapshot) {
-              final description = snapshot.data ?? 'Loading...';
-              
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: getColor(context, 'surfaceContainer'),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: getColor(context, 'primary').withOpacity(0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      color: getColor(context, 'primary'),
-                      size: 20,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Available Biometrics',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: getColor(context, 'primary'),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            description,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: getColor(context, 'textLight'),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-      ],
-    );
-  }
+
 
   /// Phase 6.1: Enhanced Animation Framework Settings
   Widget _buildAnimationFrameworkSettings() {
@@ -1327,163 +1171,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-  Widget _buildExportSection(SettingsState state) {
-    return Column(
-      children: [
-        if (state.isExporting)
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                const CircularProgressIndicator(),
-                const SizedBox(height: 8),
-                Text(
-                  state.exportStatus ?? 'Exporting...',
-                  style: const TextStyle(fontSize: 14),
-                ),
-              ],
-            ),
-          )
-        else if (state.exportStatus != null)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: Colors.green.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(color: Colors.green.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.check_circle, color: Colors.green),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    state.exportStatus!,
-                    style: const TextStyle(color: Colors.green),
-                  ),
-                ),
-              ],
-            ),
-          )
-        else if (state.exportError != null)
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            padding: const EdgeInsets.all(12.0),
-            decoration: BoxDecoration(
-              color: Colors.red.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8.0),
-              border: Border.all(color: Colors.red.withOpacity(0.3)),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.error, color: Colors.red),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    state.exportError!,
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ListTile(
-          leading: const Icon(Icons.settings),
-          title: const Text('Export Settings'),
-          subtitle: const Text('Export app settings and preferences'),
-          trailing: const Icon(Icons.download),
-          onTap: state.isExporting ? null : () {
-            context.read<SettingsBloc>().add(
-              const SettingsEvent.exportSettings(),
-            );
-          },
-        ),
-        ListTile(
-          leading: const Icon(Icons.all_inclusive),
-          title: const Text('Export All Data'),
-          subtitle: const Text('Export all app data (settings, transactions, etc.)'),
-          trailing: const Icon(Icons.download),
-          onTap: state.isExporting ? null : () {
-            context.read<SettingsBloc>().add(
-              const SettingsEvent.exportAllData(),
-            );
-          },
-        ),
-        ExpansionTile(
-          leading: const Icon(Icons.more_horiz),
-          title: const Text('Individual Data Export'),
-          subtitle: const Text('Export specific data types'),
-          children: [
-            ListTile(
-              leading: const Icon(Icons.receipt),
-              title: const Text('Transactions'),
-              subtitle: const Text('Export transaction history'),
-              trailing: const Icon(Icons.download),
-              onTap: state.isExporting ? null : () {
-                context.read<SettingsBloc>().add(
-                  const SettingsEvent.exportTransactions(),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.account_balance),
-              title: const Text('Accounts'),
-              subtitle: const Text('Export account information'),
-              trailing: const Icon(Icons.download),
-              onTap: state.isExporting ? null : () {
-                context.read<SettingsBloc>().add(
-                  const SettingsEvent.exportAccounts(),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.category),
-              title: const Text('Categories'),
-              subtitle: const Text('Export category data'),
-              trailing: const Icon(Icons.download),
-              onTap: state.isExporting ? null : () {
-                context.read<SettingsBloc>().add(
-                  const SettingsEvent.exportCategories(),
-                );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.pie_chart),
-              title: const Text('Budgets'),
-              subtitle: const Text('Export budget information'),
-              trailing: const Icon(Icons.download),
-              onTap: state.isExporting ? null : () {
-                context.read<SettingsBloc>().add(
-                  const SettingsEvent.exportBudgets(),
-                );
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
 
-  /// Check if biometric authentication is available
-  Future<bool> _checkBiometricAvailability() async {
-    try {
-      final biometricService = getIt<BiometricAuthService>();
-      return await biometricService.isBiometricAvailable();
-    } catch (e) {
-      debugPrint('Error checking biometric availability: $e');
-      return false;
-    }
-  }
 
-  /// Get biometric description
-  Future<String> _getBiometricDescription() async {
-    try {
-      final biometricService = getIt<BiometricAuthService>();
-      return await biometricService.getBiometricDescription();
-    } catch (e) {
-      debugPrint('Error getting biometric description: $e');
-      return 'Unable to get biometric information';
-    }
-  }
+
 }

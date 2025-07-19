@@ -54,7 +54,7 @@ class TransactionList extends StatelessWidget {
     if (selectedMonthTransactions.isEmpty) {
       return SliverFillRemaining(
         child: Center(
-          child: AppText('No transactions for this month.'),
+          child: AppText('home.no_transactions_this_month'.tr()),
         ),
       );
     }
@@ -192,7 +192,7 @@ class PaginatedTransactionList extends StatelessWidget {
         noItemsFoundIndicatorBuilder: (context) => Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
-            child: AppText('No transactions for this month.'),
+            child: AppText('home.no_transactions_this_month'.tr()),
           ),
         ),
         noMoreItemsIndicatorBuilder: (context) => const Center(

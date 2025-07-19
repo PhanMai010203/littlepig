@@ -456,15 +456,34 @@ class IncrementalSyncService implements SyncService {
           final event = unsyncedEvents[i];
           try {
             debugPrint('🔍 Testing event $i: eventId=${event.eventId}, sequenceNumber=${event.sequenceNumber} (${event.sequenceNumber.runtimeType}), timestamp=${event.timestamp} (${event.timestamp.runtimeType})');
+            
+            // Extra debugging for timestamp issues
+            if (event.timestamp.toString().contains(' ')) {
+              debugPrint('🚨 Event $i has problematic timestamp format: "${event.timestamp}"');
+            }
+            
             SyncEvent.fromEventLog(event);
             debugPrint('✅ Event $i processed successfully');
           } catch (eventError) {
             debugPrint('❌ Problem with event $i: eventId=${event.eventId}, timestamp=${event.timestamp}, sequenceNumber=${event.sequenceNumber}, error=$eventError');
+            debugPrint('❌ Event data fields:');
+            debugPrint('   - eventId: ${event.eventId} (${event.eventId.runtimeType})');
+            debugPrint('   - deviceId: ${event.deviceId} (${event.deviceId.runtimeType})');
+            debugPrint('   - tableNameField: ${event.tableNameField} (${event.tableNameField.runtimeType})');
+            debugPrint('   - recordId: ${event.recordId} (${event.recordId.runtimeType})');
+            debugPrint('   - operation: ${event.operation} (${event.operation.runtimeType})');
+            debugPrint('   - data: ${event.data} (${event.data.runtimeType})');
+            debugPrint('   - timestamp: ${event.timestamp} (${event.timestamp.runtimeType})');
+            debugPrint('   - sequenceNumber: ${event.sequenceNumber} (${event.sequenceNumber.runtimeType})');
+            debugPrint('   - hash: ${event.hash} (${event.hash.runtimeType})');
+            debugPrint('   - isSynced: ${event.isSynced} (${event.isSynced.runtimeType})');
+            
             if (eventError is FormatException) {
               debugPrint('🔢 RADIX 10 ERROR in event $i:');
               debugPrint('   - message: ${eventError.message}');
               debugPrint('   - source: ${eventError.source}');
               debugPrint('   - offset: ${eventError.offset}');
+              debugPrint('🔧 The source "${eventError.source}" is being parsed as int but it\'s a datetime string!');
             }
           }
         }
@@ -753,7 +772,8 @@ class IncrementalSyncService implements SyncService {
       ..where((t) => t.key.equals('last_sync_time'));
     final result = await query.getSingleOrNull();
     if (result != null) {
-      return DateTime.parse(result.value);
+      debugPrint('🕒 Raw last sync time value: "${result.value}"');
+      return SafeParsing.parseDateTime(result.value);
     }
     return null;
   }
@@ -961,7 +981,13 @@ class IncrementalSyncService implements SyncService {
       
       for (int i = 0; i < sampleRows.length; i++) {
         final row = sampleRows[i];
-        debugPrint('🔍 Sample row $i: event_id=${row.data['event_id']}, timestamp="${row.data['timestamp']}", type=${row.data['type']}');
+        final timestamp = row.data['timestamp'];
+        debugPrint('🔍 Sample row $i: event_id=${row.data['event_id']}, timestamp="$timestamp", type=${row.data['type']}');
+        
+        // Check if this specific timestamp would cause a radix 10 error
+        if (timestamp is String && timestamp.contains(' ')) {
+          debugPrint('🚨 Found problematic timestamp: "$timestamp" - contains space, could cause radix 10 error');
+        }
       }
 
       // Count rows that have TEXT timestamps (should be INTEGER for Drift)

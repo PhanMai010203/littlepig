@@ -31,13 +31,28 @@ class SyncEvent {
 
   /// Create from database event log entry
   factory SyncEvent.fromEventLog(SyncEventLogData eventLog) {
+    debugPrint('🔧 SyncEvent.fromEventLog: Creating from eventId=${eventLog.eventId}');
+    debugPrint('🔧 Raw data field: "${eventLog.data}" (${eventLog.data.runtimeType})');
+    debugPrint('🔧 Raw timestamp field: "${eventLog.timestamp}" (${eventLog.timestamp.runtimeType})');
+    debugPrint('🔧 Raw sequenceNumber field: "${eventLog.sequenceNumber}" (${eventLog.sequenceNumber.runtimeType})');
+    
+    Map<String, dynamic> parsedData;
+    try {
+      parsedData = jsonDecode(eventLog.data);
+      debugPrint('🔧 Successfully parsed JSON data');
+    } catch (jsonError) {
+      debugPrint('❌ JSON decode error: $jsonError');
+      debugPrint('❌ Problematic data: "${eventLog.data}"');
+      rethrow;
+    }
+    
     return SyncEvent(
       eventId: eventLog.eventId,
       deviceId: eventLog.deviceId,
       tableName: eventLog.tableNameField,
       recordId: eventLog.recordId,
       operation: eventLog.operation,
-      data: jsonDecode(eventLog.data),
+      data: parsedData,
       timestamp: eventLog.timestamp,
       sequenceNumber: eventLog.sequenceNumber,
       hash: eventLog.hash,

@@ -89,16 +89,16 @@ class SheepPremiumPage extends StatelessWidget {
                                 title: 'premium.features.unlimited_color_picker.title'.tr(),
                                 description: 'premium.features.unlimited_color_picker.description'.tr(),
                               ),
-                              _PremiumFeature(
-                                icon: Icons.analytics,
-                                title: 'premium.features.advanced_analytics.title'.tr(),
-                                description: 'premium.features.advanced_analytics.description'.tr(),
-                              ),
-                              _PremiumFeature(
-                                icon: Icons.sync,
-                                title: 'premium.features.premium_sync.title'.tr(),
-                                description: 'premium.features.premium_sync.description'.tr(),
-                              ),
+                              // _PremiumFeature(
+                              //   icon: Icons.analytics,
+                              //   title: 'premium.features.advanced_analytics.title'.tr(),
+                              //   description: 'premium.features.advanced_analytics.description'.tr(),
+                              // ),
+                              // _PremiumFeature(
+                              //   icon: Icons.sync,
+                              //   title: 'premium.features.premium_sync.title'.tr(),
+                              //   description: 'premium.features.premium_sync.description'.tr(),
+                              // ),
                             ],
                           ),
                         ),
