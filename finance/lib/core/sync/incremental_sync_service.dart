@@ -14,6 +14,7 @@ import 'sync_service.dart';
 import 'sync_event.dart';
 import 'crdt_conflict_resolver.dart';
 import '../database/app_database.dart';
+import '../utils/safe_parsing.dart';
 import 'google_drive_sync_service.dart';
 
 /// Incremental sync service using event sourcing
@@ -442,13 +443,29 @@ class IncrementalSyncService implements SyncService {
         debugPrint('❌ ERROR creating SyncEvent from EventLog: $e');
         debugPrint('📍 Stack trace: $stackTrace');
         
+        // Check if it's a FormatException (radix 10 error)
+        if (e is FormatException) {
+          debugPrint('🔢 RADIX 10 ERROR detected in SyncEvent creation!');
+          debugPrint('   - FormatException message: ${e.message}');
+          debugPrint('   - FormatException source: ${e.source}');
+          debugPrint('   - FormatException offset: ${e.offset}');
+        }
+        
         // Log details about each problematic event
         for (int i = 0; i < unsyncedEvents.length; i++) {
           final event = unsyncedEvents[i];
           try {
+            debugPrint('🔍 Testing event $i: eventId=${event.eventId}, sequenceNumber=${event.sequenceNumber} (${event.sequenceNumber.runtimeType}), timestamp=${event.timestamp} (${event.timestamp.runtimeType})');
             SyncEvent.fromEventLog(event);
+            debugPrint('✅ Event $i processed successfully');
           } catch (eventError) {
-            debugPrint('❌ Problem with event $i: eventId=${event.eventId}, timestamp=${event.timestamp}, error=$eventError');
+            debugPrint('❌ Problem with event $i: eventId=${event.eventId}, timestamp=${event.timestamp}, sequenceNumber=${event.sequenceNumber}, error=$eventError');
+            if (eventError is FormatException) {
+              debugPrint('🔢 RADIX 10 ERROR in event $i:');
+              debugPrint('   - message: ${eventError.message}');
+              debugPrint('   - source: ${eventError.source}');
+              debugPrint('   - offset: ${eventError.offset}');
+            }
           }
         }
         rethrow;
@@ -492,12 +509,13 @@ class IncrementalSyncService implements SyncService {
       debugPrint('❌ FATAL ERROR in syncToCloud: $e');
       debugPrint('📍 Full stack trace: $stackTrace');
       
-      // Check if it's a FormatException specifically
+      // Check if it's a FormatException specifically (radix 10 error)
       if (e is FormatException) {
-        debugPrint('🔢 FormatException details:');
-        debugPrint('   - message: ${e.message}');
-        debugPrint('   - source: ${e.source}');
-        debugPrint('   - offset: ${e.offset}');
+        debugPrint('🔢 RADIX 10 ERROR DETECTED in syncToCloud!');
+        debugPrint('   - FormatException message: ${e.message}');
+        debugPrint('   - FormatException source: ${e.source}');
+        debugPrint('   - FormatException offset: ${e.offset}');
+        debugPrint('🔧 This error has been improved with debug information. Please provide this debug output to the developer.');
       }
       
       _statusController.add(SyncStatus.error);
@@ -516,7 +534,10 @@ class IncrementalSyncService implements SyncService {
 
   @override
   Future<SyncResult> syncFromCloud() async {
+    debugPrint('📥 Starting syncFromCloud...');
+    
     if (_isSyncing) {
+      debugPrint('❌ Sync already in progress, aborting download');
       return SyncResult(
         success: false,
         error: 'Sync already in progress',
@@ -528,13 +549,18 @@ class IncrementalSyncService implements SyncService {
 
     _isSyncing = true;
     _statusController.add(SyncStatus.downloading);
+    debugPrint('🔄 Set sync status to downloading, _isSyncing = true');
 
     try {
+      debugPrint('🔑 Checking authentication...');
       final account = _googleSignIn.currentUser;
       if (account == null) {
+        debugPrint('❌ Not signed in, cannot download');
         throw Exception('Not signed in');
       }
+      debugPrint('✅ Authenticated as: ${account.email}');
 
+      debugPrint('🔐 Getting auth headers...');
       final authHeaders = await account.authHeaders;
       final client = authenticatedClient(
         http.Client(),
@@ -549,34 +575,86 @@ class IncrementalSyncService implements SyncService {
       );
 
       final driveApi = drive.DriveApi(client);
+      debugPrint('✅ Google Drive API client created');
 
       // Download event files from other devices
+      debugPrint('📁 Ensuring sync folder exists...');
       final syncFolderId = await _ensureFolderExists(
           driveApi, GoogleDriveSyncService.SYNC_FOLDER);
-      final eventFiles =
-          await _getEventFilesFromOtherDevices(driveApi, syncFolderId);
-
-      int appliedEvents = 0;
-
-      if (eventFiles.isNotEmpty) {
-        _statusController.add(SyncStatus.merging);
-
-        for (final file in eventFiles) {
-          final eventBatch = await _downloadAndParseEventBatch(driveApi, file);
-          final applied = await _applyEventBatch(eventBatch);
-          appliedEvents += applied;
-
-          // Clean up processed event file
-          await _cleanupProcessedEventFile(driveApi, file);
+      debugPrint('📁 Sync folder ID: $syncFolderId');
+      
+      debugPrint('🔍 Looking for event files from other devices...');
+      List<drive.File> eventFiles;
+      
+      // Try file discovery with retry logic for eventual consistency
+      int retryCount = 0;
+      const maxRetries = 3;
+      const retryDelay = Duration(seconds: 2);
+      
+      while (retryCount < maxRetries) {
+        eventFiles = await _getEventFilesFromOtherDevices(driveApi, syncFolderId);
+        
+        if (eventFiles.isNotEmpty) {
+          debugPrint('✅ Found ${eventFiles.length} files on attempt ${retryCount + 1}');
+          break;
+        }
+        
+        retryCount++;
+        if (retryCount < maxRetries) {
+          debugPrint('⏳ No files found on attempt $retryCount/$maxRetries, retrying in ${retryDelay.inSeconds}s...');
+          await Future.delayed(retryDelay);
+        } else {
+          debugPrint('ℹ️ No files found after $maxRetries attempts');
         }
       }
 
+      debugPrint('📋 Found ${eventFiles.length} event files to process');
+      int appliedEvents = 0;
+
+      if (eventFiles.isNotEmpty) {
+        debugPrint('🔄 Setting status to merging...');
+        _statusController.add(SyncStatus.merging);
+
+        for (int i = 0; i < eventFiles.length; i++) {
+          final file = eventFiles[i];
+          debugPrint('📥 Processing file ${i + 1}/${eventFiles.length}: "${file.name}"');
+          
+          try {
+            final eventBatch = await _downloadAndParseEventBatch(driveApi, file);
+            debugPrint('📦 Downloaded event batch with ${eventBatch.events.length} events');
+            
+            final applied = await _applyEventBatch(eventBatch);
+            debugPrint('✅ Applied $applied events from "${file.name}"');
+            appliedEvents += applied;
+
+            // Clean up processed event file
+            debugPrint('🧹 Cleaning up processed file "${file.name}"');
+            await _cleanupProcessedEventFile(driveApi, file);
+          } catch (fileError, fileStackTrace) {
+            debugPrint('❌ Error processing file "${file.name}": $fileError');
+            debugPrint('📍 File error stack trace: $fileStackTrace');
+            // Continue with other files even if one fails
+          }
+        }
+      } else {
+        debugPrint('ℹ️ No event files found from other devices');
+        debugPrint('ℹ️ This could mean:');
+        debugPrint('   - No other devices have uploaded events');
+        debugPrint('   - Files were already processed and cleaned up');
+        debugPrint('   - There is a file discovery issue');
+        debugPrint('   - Device ID filtering is too aggressive');
+      }
+
       client.close();
+      debugPrint('🔒 Closed Google Drive API client');
 
       // Update last sync time
+      debugPrint('🕒 Updating last sync time...');
       await _updateLastSyncTime(DateTime.now());
 
       _statusController.add(SyncStatus.completed);
+      debugPrint('✅ syncFromCloud completed successfully');
+      debugPrint('📊 Total events applied: $appliedEvents');
 
       return SyncResult(
         success: true,
@@ -584,7 +662,19 @@ class IncrementalSyncService implements SyncService {
         downloadedCount: appliedEvents,
         timestamp: DateTime.now(),
       );
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('❌ FATAL ERROR in syncFromCloud: $e');
+      debugPrint('📍 Full stack trace: $stackTrace');
+      
+      // Check if it's a specific type of error
+      if (e.toString().contains('not found') || e.toString().contains('404')) {
+        debugPrint('🔍 Folder or file not found error - may be first time sync');
+      } else if (e.toString().contains('auth') || e.toString().contains('401')) {
+        debugPrint('🔑 Authentication error - may need to re-sign in');
+      } else if (e.toString().contains('quota') || e.toString().contains('limit')) {
+        debugPrint('⚠️ Rate limit or quota error - should retry later');
+      }
+      
       _statusController.add(SyncStatus.error);
       return SyncResult(
         success: false,
@@ -596,16 +686,57 @@ class IncrementalSyncService implements SyncService {
     } finally {
       _isSyncing = false;
       _statusController.add(SyncStatus.idle);
+      debugPrint('🔄 Reset _isSyncing = false, status = idle');
     }
   }
 
   @override
   Future<SyncResult> performFullSync() async {
+    debugPrint('🔄 Starting performFullSync...');
+    
+    // Check if any sync is already in progress
+    if (_isSyncing) {
+      debugPrint('❌ Another sync operation is already in progress');
+      return SyncResult(
+        success: false,
+        error: 'Sync already in progress',
+        uploadedCount: 0,
+        downloadedCount: 0,
+        timestamp: DateTime.now(),
+      );
+    }
+    
     // First sync to cloud, then sync from cloud
+    debugPrint('📤 Phase 1: Uploading local changes...');
     final uploadResult = await syncToCloud();
-    if (!uploadResult.success) return uploadResult;
+    if (!uploadResult.success) {
+      debugPrint('❌ Upload phase failed, aborting full sync');
+      return uploadResult;
+    }
+    
+    debugPrint('✅ Upload phase completed - uploaded ${uploadResult.uploadedCount} items');
+    
+    // Add delay to handle Google Drive eventual consistency
+    // Google Drive may take time to make uploaded files available for listing
+    if (uploadResult.uploadedCount > 0) {
+      debugPrint('⏳ Adding delay for Google Drive consistency (uploaded ${uploadResult.uploadedCount} items)...');
+      await Future.delayed(const Duration(seconds: 3));
+      debugPrint('✅ Consistency delay completed');
+    }
 
-    final downloadResult = await syncFromCloud();
+    debugPrint('📥 Phase 2: Downloading remote changes...');
+    
+    // For download phase, we need to work around the _isSyncing check
+    // since we're still in the middle of a full sync operation
+    final downloadResult = await _syncFromCloudInternal();
+    
+    if (downloadResult.success) {
+      debugPrint('✅ Download phase completed - downloaded ${downloadResult.downloadedCount} items');
+    } else {
+      debugPrint('❌ Download phase failed: ${downloadResult.error}');
+    }
+
+    debugPrint('🏁 Full sync completed - uploaded: ${uploadResult.uploadedCount}, downloaded: ${downloadResult.downloadedCount}');
 
     return SyncResult(
       success: downloadResult.success,
@@ -629,25 +760,186 @@ class IncrementalSyncService implements SyncService {
 
   // ============ PRIVATE METHODS ============
 
-  Future<String> _getOrCreateDeviceId() async {
-    final query = _database.select(_database.syncMetadataTable)
-      ..where((t) => t.key.equals('device_id'));
-    final result = await query.getSingleOrNull();
+  /// Internal sync from cloud method that doesn't check _isSyncing flag
+  /// Used by performFullSync to avoid conflicts with the sync state management
+  Future<SyncResult> _syncFromCloudInternal() async {
+    debugPrint('📥 Starting _syncFromCloudInternal (bypassing _isSyncing check)...');
+    
+    // We don't set _isSyncing here since it's already set by the parent operation
+    _statusController.add(SyncStatus.downloading);
 
-    if (result != null) {
-      return result.value;
+    try {
+      debugPrint('🔑 Checking authentication...');
+      final account = _googleSignIn.currentUser;
+      if (account == null) {
+        debugPrint('❌ Not signed in, cannot download');
+        throw Exception('Not signed in');
+      }
+      debugPrint('✅ Authenticated as: ${account.email}');
+
+      debugPrint('🔐 Getting auth headers...');
+      final authHeaders = await account.authHeaders;
+      final client = authenticatedClient(
+        http.Client(),
+        AccessCredentials(
+          AccessToken(
+              'Bearer',
+              authHeaders['Authorization']?.split(' ')[1] ?? '',
+              DateTime.now().toUtc().add(const Duration(hours: 1))),
+          null,
+          _scopes,
+        ),
+      );
+
+      final driveApi = drive.DriveApi(client);
+      debugPrint('✅ Google Drive API client created');
+
+      // Download event files from other devices
+      debugPrint('📁 Ensuring sync folder exists...');
+      final syncFolderId = await _ensureFolderExists(
+          driveApi, GoogleDriveSyncService.SYNC_FOLDER);
+      debugPrint('📁 Sync folder ID: $syncFolderId');
+      
+      debugPrint('🔍 Looking for event files from other devices...');
+      List<drive.File> eventFiles;
+      
+      // Try file discovery with retry logic for eventual consistency
+      int retryCount = 0;
+      const maxRetries = 3;
+      const retryDelay = Duration(seconds: 2);
+      
+      while (retryCount < maxRetries) {
+        eventFiles = await _getEventFilesFromOtherDevices(driveApi, syncFolderId);
+        
+        if (eventFiles.isNotEmpty) {
+          debugPrint('✅ Found ${eventFiles.length} files on attempt ${retryCount + 1}');
+          break;
+        }
+        
+        retryCount++;
+        if (retryCount < maxRetries) {
+          debugPrint('⏳ No files found on attempt $retryCount/$maxRetries, retrying in ${retryDelay.inSeconds}s...');
+          await Future.delayed(retryDelay);
+        } else {
+          debugPrint('ℹ️ No files found after $maxRetries attempts');
+        }
+      }
+
+      debugPrint('📋 Found ${eventFiles.length} event files to process');
+      int appliedEvents = 0;
+
+      if (eventFiles.isNotEmpty) {
+        debugPrint('🔄 Setting status to merging...');
+        _statusController.add(SyncStatus.merging);
+
+        for (int i = 0; i < eventFiles.length; i++) {
+          final file = eventFiles[i];
+          debugPrint('📥 Processing file ${i + 1}/${eventFiles.length}: "${file.name}"');
+          
+          try {
+            final eventBatch = await _downloadAndParseEventBatch(driveApi, file);
+            debugPrint('📦 Downloaded event batch with ${eventBatch.events.length} events');
+            
+            final applied = await _applyEventBatch(eventBatch);
+            debugPrint('✅ Applied $applied events from "${file.name}"');
+            appliedEvents += applied;
+
+            // Clean up processed event file
+            debugPrint('🧹 Cleaning up processed file "${file.name}"');
+            await _cleanupProcessedEventFile(driveApi, file);
+          } catch (fileError, fileStackTrace) {
+            debugPrint('❌ Error processing file "${file.name}": $fileError');
+            debugPrint('📍 File error stack trace: $fileStackTrace');
+            // Continue with other files even if one fails
+          }
+        }
+      } else {
+        debugPrint('ℹ️ No event files found from other devices');
+        debugPrint('ℹ️ This could mean:');
+        debugPrint('   - No other devices have uploaded events');
+        debugPrint('   - Files were already processed and cleaned up');
+        debugPrint('   - There is a file discovery issue');
+        debugPrint('   - Device ID filtering is too aggressive');
+      }
+
+      client.close();
+      debugPrint('🔒 Closed Google Drive API client');
+
+      // Update last sync time
+      debugPrint('🕒 Updating last sync time...');
+      await _updateLastSyncTime(DateTime.now());
+
+      _statusController.add(SyncStatus.completed);
+      debugPrint('✅ _syncFromCloudInternal completed successfully');
+      debugPrint('📊 Total events applied: $appliedEvents');
+
+      return SyncResult(
+        success: true,
+        uploadedCount: 0,
+        downloadedCount: appliedEvents,
+        timestamp: DateTime.now(),
+      );
+    } catch (e, stackTrace) {
+      debugPrint('❌ FATAL ERROR in _syncFromCloudInternal: $e');
+      debugPrint('📍 Full stack trace: $stackTrace');
+      
+      // Check if it's a specific type of error
+      if (e.toString().contains('not found') || e.toString().contains('404')) {
+        debugPrint('🔍 Folder or file not found error - may be first time sync');
+      } else if (e.toString().contains('auth') || e.toString().contains('401')) {
+        debugPrint('🔑 Authentication error - may need to re-sign in');
+      } else if (e.toString().contains('quota') || e.toString().contains('limit')) {
+        debugPrint('⚠️ Rate limit or quota error - should retry later');
+      }
+      
+      _statusController.add(SyncStatus.error);
+      return SyncResult(
+        success: false,
+        error: e.toString(),
+        uploadedCount: 0,
+        downloadedCount: 0,
+        timestamp: DateTime.now(),
+      );
     }
+    // Note: We don't reset _isSyncing here since it's managed by the parent operation
+  }
 
-    // Create new device ID
-    final deviceId = 'device_${DateTime.now().millisecondsSinceEpoch}';
-    await _database.into(_database.syncMetadataTable).insert(
-          SyncMetadataTableCompanion.insert(
-            key: 'device_id',
-            value: deviceId,
-          ),
-        );
+  Future<String> _getOrCreateDeviceId() async {
+    debugPrint('🔧 _getOrCreateDeviceId: Getting or creating device ID...');
+    
+    try {
+      final query = _database.select(_database.syncMetadataTable)
+        ..where((t) => t.key.equals('device_id'));
+      final result = await query.getSingleOrNull();
 
-    return deviceId;
+      if (result != null) {
+        debugPrint('✅ Found existing device ID: ${result.value}');
+        debugPrint('🔧 Device ID last updated: ${result.updatedAt}');
+        return result.value;
+      }
+
+      // Create new device ID
+      final deviceId = 'device_${DateTime.now().millisecondsSinceEpoch}';
+      debugPrint('🆕 Creating new device ID: $deviceId');
+      
+      await _database.into(_database.syncMetadataTable).insert(
+            SyncMetadataTableCompanion.insert(
+              key: 'device_id',
+              value: deviceId,
+            ),
+          );
+
+      debugPrint('✅ New device ID created and saved: $deviceId');
+      return deviceId;
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error in _getOrCreateDeviceId: $e');
+      debugPrint('📍 Stack trace: $stackTrace');
+      
+      // Fallback: create a temporary device ID for this session
+      final fallbackId = 'device_temp_${DateTime.now().millisecondsSinceEpoch}';
+      debugPrint('🚨 Using fallback device ID: $fallbackId');
+      return fallbackId;
+    }
   }
 
   /// Converts legacy timestamp strings that use a space separator (e.g. "2025-07-14 09:35:13")
@@ -678,7 +970,7 @@ class IncrementalSyncService implements SyncService {
       ).getSingle();
       debugPrint('🕑 Rows with TEXT timestamps: ${textTimestamps.data['cnt']}');
 
-      if ((textTimestamps.data['cnt'] as int? ?? 0) > 0) {
+      if (SafeParsing.parseInt(textTimestamps.data['cnt']) > 0) {
         debugPrint('🔧 Converting TEXT timestamps to Unix timestamps...');
         
         // Test the conversion on one row first
@@ -751,7 +1043,7 @@ class IncrementalSyncService implements SyncService {
         final countBefore = await _database.customSelect(
           "SELECT COUNT(*) AS cnt FROM sync_event_log WHERE typeof(timestamp) = 'text'"
         ).getSingle();
-        debugPrint('🧹 Rows to delete: ${countBefore.data['cnt']}');
+        debugPrint('🧹 Rows to delete: ${SafeParsing.parseInt(countBefore.data['cnt'])}');
         
         await _database.customStatement('''
           DELETE FROM sync_event_log WHERE typeof(timestamp) = 'text';
@@ -760,7 +1052,7 @@ class IncrementalSyncService implements SyncService {
         final countAfter = await _database.customSelect(
           "SELECT COUNT(*) AS cnt FROM sync_event_log"
         ).getSingle();
-        debugPrint('🧹 Total rows remaining after cleanup: ${countAfter.data['cnt']}');
+        debugPrint('🧹 Total rows remaining after cleanup: ${SafeParsing.parseInt(countAfter.data['cnt'])}');
       } catch (cleanupError, cleanupStackTrace) {
         debugPrint('❌ Cleanup also failed: $cleanupError');
         debugPrint('📍 Cleanup stack trace: $cleanupStackTrace');
@@ -891,8 +1183,8 @@ class IncrementalSyncService implements SyncService {
       final diagnostics = {
         'triggers_found': triggerQuery.length,
         'trigger_names': triggerQuery.map((row) => row.data['name']).toList(),
-        'total_sync_events': eventCount.data['count'] ?? 0,
-        'unsynced_events': unsyncedCount.data['count'] ?? 0,
+        'total_sync_events': SafeParsing.parseInt(eventCount.data['count']),
+        'unsynced_events': SafeParsing.parseInt(unsyncedCount.data['count']),
         'is_signed_in': isSignedIn,
         'user_email': userEmail,
         'device_id': _deviceId,
@@ -906,6 +1198,114 @@ class IncrementalSyncService implements SyncService {
       return {
         'error': e.toString(),
         'sync_status': 'error',
+      };
+    }
+  }
+
+  /// Enhanced diagnostic method for troubleshooting full sync issues
+  Future<Map<String, dynamic>> getFullSyncDiagnostics() async {
+    try {
+      debugPrint('🔬 Running full sync diagnostics...');
+      
+      final account = _googleSignIn.currentUser;
+      final isSignedIn = account != null;
+      
+      Map<String, dynamic> cloudDiagnostics = {};
+      
+      if (isSignedIn) {
+        try {
+          final authHeaders = await account!.authHeaders;
+          final client = authenticatedClient(
+            http.Client(),
+            AccessCredentials(
+              AccessToken(
+                  'Bearer',
+                  authHeaders['Authorization']?.split(' ')[1] ?? '',
+                  DateTime.now().toUtc().add(const Duration(hours: 1))),
+              null,
+              _scopes,
+            ),
+          );
+
+          final driveApi = drive.DriveApi(client);
+          final syncFolderId = await _ensureFolderExists(
+              driveApi, GoogleDriveSyncService.SYNC_FOLDER);
+          
+          // Get all files in sync folder
+          final allFiles = await driveApi.files.list(
+            q: "'$syncFolderId' in parents and trashed=false",
+            fields: 'files(id,name,createdTime,modifiedTime,size)',
+          );
+          
+          // Get event files specifically
+          final eventFiles = await driveApi.files.list(
+            q: "name contains 'events_' and name contains '.json' and '$syncFolderId' in parents and trashed=false",
+            fields: 'files(id,name,createdTime,modifiedTime,size)',
+          );
+          
+          cloudDiagnostics = {
+            'cloud_folder_id': syncFolderId,
+            'total_files_in_folder': allFiles.files?.length ?? 0,
+            'event_files_found': eventFiles.files?.length ?? 0,
+            'event_file_names': eventFiles.files?.map((f) => f.name).toList() ?? [],
+            'all_file_names': allFiles.files?.map((f) => f.name).toList() ?? [],
+          };
+          
+          client.close();
+        } catch (cloudError) {
+          cloudDiagnostics = {
+            'cloud_error': cloudError.toString(),
+          };
+        }
+      }
+
+      // Check database triggers exist
+      final triggerQuery = await _database.customSelect('''
+        SELECT name FROM sqlite_master 
+        WHERE type = 'trigger' AND name LIKE '%_sync_event%'
+      ''').get();
+      
+      // Count sync events
+      final eventCount = await _database.customSelect('''
+        SELECT COUNT(*) as count FROM sync_event_log
+      ''').getSingle();
+      
+      // Count unsynced events
+      final unsyncedCount = await _database.customSelect('''
+        SELECT COUNT(*) as count FROM sync_event_log WHERE is_synced = false
+      ''').getSingle();
+      
+      final diagnostics = {
+        // Authentication info
+        'is_signed_in': isSignedIn,
+        'user_email': account?.email,
+        'device_id': _deviceId,
+        
+        // Local database state
+        'triggers_found': triggerQuery.length,
+        'trigger_names': triggerQuery.map((row) => row.data['name']).toList(),
+        'total_sync_events': SafeParsing.parseInt(eventCount.data['count']),
+        'unsynced_events': SafeParsing.parseInt(unsyncedCount.data['count']),
+        
+        // Cloud state
+        ...cloudDiagnostics,
+        
+        // Sync state
+        'is_syncing': _isSyncing,
+        'sync_status': 'diagnostic_complete',
+        
+        // Timestamps
+        'diagnostic_timestamp': DateTime.now().toIso8601String(),
+      };
+      
+      debugPrint('🔬 Full sync diagnostics: $diagnostics');
+      return diagnostics;
+    } catch (e) {
+      debugPrint('❌ Error getting full sync diagnostics: $e');
+      return {
+        'error': e.toString(),
+        'sync_status': 'diagnostic_error',
+        'diagnostic_timestamp': DateTime.now().toIso8601String(),
       };
     }
   }
@@ -1068,15 +1468,103 @@ class IncrementalSyncService implements SyncService {
     drive.DriveApi driveApi,
     String syncFolderId,
   ) async {
-    final eventFiles = await driveApi.files.list(
-      q: "name contains 'events_' and name contains '.json' and '$syncFolderId' in parents and trashed=false",
-    );
+    debugPrint('🔍 _getEventFilesFromOtherDevices: Starting file discovery...');
+    debugPrint('🔍 Current device ID: $_deviceId');
+    debugPrint('🔍 Sync folder ID: $syncFolderId');
+    
+    try {
+      // First, list ALL files in the sync folder for debugging
+      debugPrint('🔍 Listing ALL files in sync folder...');
+      final allFiles = await driveApi.files.list(
+        q: "'$syncFolderId' in parents and trashed=false",
+        fields: 'files(id,name,createdTime,modifiedTime,size)',
+      );
+      
+      debugPrint('🔍 Total files in sync folder: ${allFiles.files?.length ?? 0}');
+      if (allFiles.files != null && allFiles.files!.isNotEmpty) {
+        for (int i = 0; i < allFiles.files!.length; i++) {
+          final file = allFiles.files![i];
+          debugPrint('🔍 File $i: "${file.name}" (created: ${file.createdTime}, size: ${file.size})');
+        }
+      } else {
+        debugPrint('🔍 No files found in sync folder at all!');
+      }
 
-    // Filter out our own device's files
-    return eventFiles.files
-            ?.where((file) => !file.name!.startsWith('events_$_deviceId'))
-            .toList() ??
-        [];
+      // Now search for event files specifically
+      debugPrint('🔍 Searching for event files...');
+      final eventFiles = await driveApi.files.list(
+        q: "name contains 'events_' and name contains '.json' and '$syncFolderId' in parents and trashed=false",
+        fields: 'files(id,name,createdTime,modifiedTime,size)',
+      );
+
+      debugPrint('🔍 Event files found by query: ${eventFiles.files?.length ?? 0}');
+      if (eventFiles.files != null && eventFiles.files!.isNotEmpty) {
+        for (int i = 0; i < eventFiles.files!.length; i++) {
+          final file = eventFiles.files![i];
+          debugPrint('🔍 Event file $i: "${file.name}" (created: ${file.createdTime})');
+        }
+      }
+
+      // Filter out our own device's files with improved logic
+      debugPrint('🔍 Filtering out our own device files...');
+      debugPrint('🔍 Current device ID for filtering: $_deviceId');
+      debugPrint('🔍 Expected own file prefix: events_$_deviceId');
+      
+      final filteredFiles = eventFiles.files
+              ?.where((file) {
+                final fileName = file.name ?? '';
+                
+                // Multiple checks to be more robust
+                final exactMatch = fileName.startsWith('events_$_deviceId');
+                final containsDeviceId = fileName.contains(_deviceId!);
+                
+                debugPrint('🔍 Checking "$fileName":');
+                debugPrint('   - exactMatch: $exactMatch');
+                debugPrint('   - containsDeviceId: $containsDeviceId');
+                
+                // Only exclude if it's definitely our file
+                final shouldExclude = exactMatch;
+                debugPrint('   - shouldExclude: $shouldExclude');
+                
+                return !shouldExclude;
+              })
+              .toList() ??
+          [];
+
+      debugPrint('🔍 Files after filtering: ${filteredFiles.length}');
+      for (int i = 0; i < filteredFiles.length; i++) {
+        final file = filteredFiles[i];
+        debugPrint('🔍 Filtered file $i: "${file.name}" (created: ${file.createdTime})');
+      }
+      
+      // Additional safety check - if we have no filtered files but had event files, investigate
+      if (filteredFiles.isEmpty && (eventFiles.files?.isNotEmpty ?? false)) {
+        debugPrint('⚠️ WARNING: Had ${eventFiles.files!.length} event files but 0 after filtering!');
+        debugPrint('⚠️ This suggests the device ID filtering may be too aggressive.');
+        debugPrint('⚠️ Investigating device ID consistency...');
+        
+        // Show device ID analysis
+        for (final file in eventFiles.files!) {
+          final fileName = file.name ?? '';
+          debugPrint('⚠️ File "$fileName" vs device "$_deviceId"');
+          if (fileName.startsWith('events_')) {
+            final parts = fileName.substring(7).split('_'); // Remove "events_" prefix
+            if (parts.isNotEmpty) {
+              final fileDeviceId = parts[0];
+              debugPrint('⚠️   File device ID: "$fileDeviceId"');
+              debugPrint('⚠️   Current device ID: "$_deviceId"');
+              debugPrint('⚠️   Match: ${fileDeviceId == _deviceId}');
+            }
+          }
+        }
+      }
+
+      return filteredFiles;
+    } catch (e, stackTrace) {
+      debugPrint('❌ Error in _getEventFilesFromOtherDevices: $e');
+      debugPrint('📍 Stack trace: $stackTrace');
+      rethrow;
+    }
   }
 
   Future<SyncEventBatch> _downloadAndParseEventBatch(

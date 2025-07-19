@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../database/app_database.dart';
+import '../utils/safe_parsing.dart';
 
 /// Represents a synchronization event that can be applied across devices
 class SyncEvent {
@@ -45,17 +47,19 @@ class SyncEvent {
 
   /// Create from JSON (for network transmission)
   factory SyncEvent.fromJson(Map<String, dynamic> json) {
+    debugPrint('🔧 SyncEvent.fromJson: Parsing event with eventId=${json['eventId']}, sequenceNumber=${json['sequenceNumber']} (type: ${json['sequenceNumber'].runtimeType})');
+    
     return SyncEvent(
-      eventId: json['eventId'],
-      deviceId: json['deviceId'],
-      tableName: json['tableName'],
-      recordId: json['recordId'],
-      operation: json['operation'],
-      data: Map<String, dynamic>.from(json['data']),
-      timestamp: DateTime.parse(json['timestamp']),
-      sequenceNumber: json['sequenceNumber'],
-      hash: json['hash'],
-      isSynced: json['isSynced'] ?? false,
+      eventId: json['eventId'] ?? '',
+      deviceId: json['deviceId'] ?? '',
+      tableName: json['tableName'] ?? '',
+      recordId: json['recordId'] ?? '',
+      operation: json['operation'] ?? '',
+      data: json['data'] != null ? Map<String, dynamic>.from(json['data']) : {},
+      timestamp: SafeParsing.parseDateTime(json['timestamp']),
+      sequenceNumber: SafeParsing.parseInt(json['sequenceNumber']),
+      hash: json['hash'] ?? '',
+      isSynced: SafeParsing.parseBool(json['isSynced']),
     );
   }
 
