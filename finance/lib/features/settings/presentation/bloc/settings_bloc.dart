@@ -4,6 +4,10 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/services/csv_export_service.dart';
+import '../../../transactions/domain/repositories/transaction_repository.dart';
+import '../../../accounts/domain/repositories/account_repository.dart';
+import '../../../categories/domain/repositories/category_repository.dart';
+import '../../../budgets/domain/repositories/budget_repository.dart';
 
 part 'settings_event.dart';
 part 'settings_state.dart';
@@ -12,8 +16,18 @@ part 'settings_bloc.freezed.dart';
 @injectable
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final CsvExportService _csvExportService;
+  final TransactionRepository _transactionRepository;
+  final AccountRepository _accountRepository;
+  final CategoryRepository _categoryRepository;
+  final BudgetRepository _budgetRepository;
 
-  SettingsBloc(this._csvExportService)
+  SettingsBloc(
+    this._csvExportService,
+    this._transactionRepository,
+    this._accountRepository,
+    this._categoryRepository,
+    this._budgetRepository,
+  )
       : super(const SettingsState(
           themeMode: ThemeMode.system,
           analyticsEnabled: true,
@@ -129,15 +143,40 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   ) async {
     emit(state.copyWith(
       isExporting: true,
-      exportStatus: 'Exporting all data...',
+      exportStatus: 'Fetching all data...',
       exportError: null,
     ));
 
     try {
-      await _csvExportService.exportAllDataToCSV();
+      // Fetch all data from repositories
+      emit(state.copyWith(exportStatus: 'Fetching transactions...'));
+      final transactions = await _transactionRepository.getAllTransactions();
+      
+      emit(state.copyWith(exportStatus: 'Fetching accounts...'));
+      final accounts = await _accountRepository.getAllAccounts();
+      
+      emit(state.copyWith(exportStatus: 'Fetching categories...'));
+      final categories = await _categoryRepository.getAllCategories();
+      
+      emit(state.copyWith(exportStatus: 'Fetching budgets...'));
+      final budgets = await _budgetRepository.getAllBudgets();
+      
+      final totalRecords = transactions.length + accounts.length + categories.length + budgets.length;
+      
+      emit(state.copyWith(
+        exportStatus: 'Exporting $totalRecords records...',
+      ));
+      
+      await _csvExportService.exportAllDataToCSV(
+        transactions: transactions,
+        accounts: accounts,
+        categories: categories,
+        budgets: budgets,
+      );
+      
       emit(state.copyWith(
         isExporting: false,
-        exportStatus: 'All data exported successfully!',
+        exportStatus: 'Successfully exported all data! (${transactions.length} transactions, ${accounts.length} accounts, ${categories.length} categories, ${budgets.length} budgets)',
         exportError: null,
       ));
     } catch (e) {
@@ -155,16 +194,22 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   ) async {
     emit(state.copyWith(
       isExporting: true,
-      exportStatus: 'Exporting transactions...',
+      exportStatus: 'Fetching transactions...',
       exportError: null,
     ));
 
     try {
-      // Note: This would need to be connected to transaction repository
-      // For now, we'll just show a placeholder message
+      final transactions = await _transactionRepository.getAllTransactions();
+      
+      emit(state.copyWith(
+        exportStatus: 'Exporting ${transactions.length} transactions...',
+      ));
+      
+      await _csvExportService.exportTransactionsToCSV(transactions);
+      
       emit(state.copyWith(
         isExporting: false,
-        exportStatus: 'Transaction export feature coming soon!',
+        exportStatus: 'Successfully exported ${transactions.length} transactions!',
         exportError: null,
       ));
     } catch (e) {
@@ -182,15 +227,22 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   ) async {
     emit(state.copyWith(
       isExporting: true,
-      exportStatus: 'Exporting accounts...',
+      exportStatus: 'Fetching accounts...',
       exportError: null,
     ));
 
     try {
-      // Note: This would need to be connected to account repository
+      final accounts = await _accountRepository.getAllAccounts();
+      
+      emit(state.copyWith(
+        exportStatus: 'Exporting ${accounts.length} accounts...',
+      ));
+      
+      await _csvExportService.exportAccountsToCSV(accounts);
+      
       emit(state.copyWith(
         isExporting: false,
-        exportStatus: 'Account export feature coming soon!',
+        exportStatus: 'Successfully exported ${accounts.length} accounts!',
         exportError: null,
       ));
     } catch (e) {
@@ -208,15 +260,22 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   ) async {
     emit(state.copyWith(
       isExporting: true,
-      exportStatus: 'Exporting categories...',
+      exportStatus: 'Fetching categories...',
       exportError: null,
     ));
 
     try {
-      // Note: This would need to be connected to category repository
+      final categories = await _categoryRepository.getAllCategories();
+      
+      emit(state.copyWith(
+        exportStatus: 'Exporting ${categories.length} categories...',
+      ));
+      
+      await _csvExportService.exportCategoriesToCSV(categories);
+      
       emit(state.copyWith(
         isExporting: false,
-        exportStatus: 'Category export feature coming soon!',
+        exportStatus: 'Successfully exported ${categories.length} categories!',
         exportError: null,
       ));
     } catch (e) {
@@ -234,15 +293,22 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   ) async {
     emit(state.copyWith(
       isExporting: true,
-      exportStatus: 'Exporting budgets...',
+      exportStatus: 'Fetching budgets...',
       exportError: null,
     ));
 
     try {
-      // Note: This would need to be connected to budget repository
+      final budgets = await _budgetRepository.getAllBudgets();
+      
+      emit(state.copyWith(
+        exportStatus: 'Exporting ${budgets.length} budgets...',
+      ));
+      
+      await _csvExportService.exportBudgetsToCSV(budgets);
+      
       emit(state.copyWith(
         isExporting: false,
-        exportStatus: 'Budget export feature coming soon!',
+        exportStatus: 'Successfully exported ${budgets.length} budgets!',
         exportError: null,
       ));
     } catch (e) {
