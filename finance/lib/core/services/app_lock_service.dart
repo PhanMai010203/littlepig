@@ -18,7 +18,9 @@ class AppLockService with WidgetsBindingObserver {
   DateTime? _lastBackgroundTime;
   
   // Grace period for inactive state before locking (to avoid locking on notification pulldown, etc.)
-  static const Duration _inactiveGracePeriod = Duration(seconds: 2);
+  // Set to a very long period - we primarily rely on paused state for actual app exit
+  // This allows users to interact with notifications, popups, etc. without triggering app lock
+  static const Duration _inactiveGracePeriod = Duration(minutes: 2);
   Timer? _inactiveTimer;
   AppLifecycleState? _lastLifecycleState;
   
@@ -88,25 +90,43 @@ class AppLockService with WidgetsBindingObserver {
       return true; // Already unlocked
     }
 
+    // If already authenticating, wait a bit and try again instead of failing immediately
     if (_isAuthenticatingSubject.value) {
-      return false; // Already authenticating
+      debugPrint('Authentication already in progress, waiting...');
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Check again after delay
+      if (_isAuthenticatingSubject.value) {
+        debugPrint('Authentication still in progress after delay, resetting state');
+        _isAuthenticatingSubject.add(false);
+      }
     }
 
     _isAuthenticatingSubject.add(true);
     
     try {
-      final bool authenticated = await _biometricAuthService.quickAuthenticate();
+      // Add timeout to prevent infinite hanging
+      final bool authenticated = await _biometricAuthService.quickAuthenticate()
+          .timeout(
+            const Duration(seconds: 30),
+            onTimeout: () {
+              debugPrint('Biometric authentication timed out');
+              return false;
+            },
+          );
       
       if (authenticated) {
         unlockApp();
         return true;
       } else {
+        debugPrint('Authentication failed or was cancelled');
         return false;
       }
     } catch (e) {
       debugPrint('Authentication error: $e');
       return false;
     } finally {
+      // Always reset authentication state
       _isAuthenticatingSubject.add(false);
     }
   }
@@ -127,16 +147,16 @@ class AppLockService with WidgetsBindingObserver {
     switch (state) {
       case AppLifecycleState.paused:
         // Paused means the app is definitely backgrounded (home button, app switcher)
-        // Lock immediately without grace period
-        debugPrint('App paused - locking immediately');
+        // This is the most reliable indicator of actual app exit - lock immediately
+        debugPrint('App paused - locking immediately (user exited app)');
         _cancelInactiveTimer();
         _onAppBackgrounded();
         break;
         
       case AppLifecycleState.inactive:
         // Inactive can be temporary (notification pulldown, popup, etc.) or actual backgrounding
-        // Use a grace period to differentiate
-        debugPrint('App inactive - starting grace period before locking');
+        // Use a very long grace period - we mainly rely on paused state for real backgrounding
+        debugPrint('App inactive - starting extended grace period before locking');
         _startInactiveTimer();
         break;
         
@@ -148,10 +168,10 @@ class AppLockService with WidgetsBindingObserver {
         
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
-        // These states indicate the app is definitely backgrounded
-        debugPrint('App detached/hidden - locking immediately');
-        _cancelInactiveTimer();
-        _onAppBackgrounded();
+        // These states can sometimes be triggered by system overlays
+        // Use grace period instead of immediate locking to be safe
+        debugPrint('App detached/hidden - starting grace period before locking');
+        _startInactiveTimer();
         break;
     }
     
@@ -190,7 +210,7 @@ class AppLockService with WidgetsBindingObserver {
   void _startInactiveTimer() {
     _cancelInactiveTimer(); // Cancel any existing timer
     
-    debugPrint('Starting inactive grace period timer (${_inactiveGracePeriod.inSeconds}s)');
+    debugPrint('Starting inactive grace period timer (${_inactiveGracePeriod.inMinutes}m)');
     _inactiveTimer = Timer(_inactiveGracePeriod, () {
       debugPrint('Inactive grace period expired - locking app');
       _onAppBackgrounded();
@@ -234,5 +254,11 @@ class AppLockService with WidgetsBindingObserver {
     return await _biometricAuthService.authenticate(
       reason: 'Please authenticate to continue',
     );
+  }
+
+  /// Reset authentication state (used when stuck in authenticating state)
+  void resetAuthenticationState() {
+    debugPrint('Resetting authentication state');
+    _isAuthenticatingSubject.add(false);
   }
 }
