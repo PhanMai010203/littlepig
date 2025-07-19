@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -31,8 +30,6 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
   List<BiometricType> _availableBiometrics = [];
   late AnimationController _pulseController;
   late AnimationController _errorController;
-  Timer? _authenticationTimeoutTimer;
-  bool _showResetButton = false;
 
   @override
   void initState() {
@@ -61,7 +58,6 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
   void dispose() {
     _pulseController.dispose();
     _errorController.dispose();
-    _authenticationTimeoutTimer?.cancel();
     super.dispose();
   }
 
@@ -77,97 +73,52 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
   }
 
   Future<void> _authenticate() async {
-    if (_isAuthenticating) {
-      debugPrint('Authentication already in progress, ignoring request');
-      return;
-    }
+    if (_isAuthenticating) return;
 
     setState(() {
       _isAuthenticating = true;
       _errorMessage = '';
-      _showResetButton = false;
-    });
-
-    // Start timeout timer to show reset button if authentication gets stuck
-    _authenticationTimeoutTimer?.cancel();
-    _authenticationTimeoutTimer = Timer(const Duration(seconds: 15), () {
-      if (mounted && _isAuthenticating) {
-        setState(() {
-          _showResetButton = true;
-        });
-      }
     });
 
     try {
-      // Add timeout to prevent UI from being stuck
-      final bool authenticated = await widget.appLockService.authenticateAndUnlock()
-          .timeout(
-            const Duration(seconds: 35), // Slightly longer than service timeout
-            onTimeout: () {
-              debugPrint('UI authentication timed out');
-              return false;
-            },
-          );
+      final bool authenticated = await widget.appLockService.authenticateAndUnlock();
       
-      if (mounted) {
-        if (authenticated) {
-          // Add haptic feedback for successful authentication
-          HapticFeedback.lightImpact();
-          
-          // Call the unlock callback
-          widget.onUnlocked?.call();
-        } else {
-          setState(() {
-            _errorMessage = 'biometric.authentication_failed'.tr();
-          });
-          
-          // Trigger error animation
-          _errorController.forward().then((_) {
-            if (mounted) _errorController.reverse();
-          });
-          
-          // Add haptic feedback for failed authentication
-          HapticFeedback.vibrate();
-        }
-      }
-    } catch (e) {
-      debugPrint('Authentication exception: $e');
-      if (mounted) {
+      if (authenticated) {
+        // Add haptic feedback for successful authentication
+        HapticFeedback.lightImpact();
+        
+        // Call the unlock callback
+        widget.onUnlocked?.call();
+      } else {
         setState(() {
-          _errorMessage = 'biometric.authentication_error'.tr(args: [e.toString()]);
+          _errorMessage = 'biometric.authentication_failed'.tr();
         });
         
         // Trigger error animation
         _errorController.forward().then((_) {
-          if (mounted) _errorController.reverse();
+          _errorController.reverse();
         });
         
-        // Add haptic feedback for error
+        // Add haptic feedback for failed authentication
         HapticFeedback.vibrate();
       }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'biometric.authentication_error'.tr(args: [e.toString()]);
+      });
+      
+      // Trigger error animation
+      _errorController.forward().then((_) {
+        _errorController.reverse();
+      });
+      
+      // Add haptic feedback for error
+      HapticFeedback.vibrate();
     } finally {
-      _authenticationTimeoutTimer?.cancel();
-      if (mounted) {
-        setState(() {
-          _isAuthenticating = false;
-          _showResetButton = false;
-        });
-      }
+      setState(() {
+        _isAuthenticating = false;
+      });
     }
-  }
-
-  void _resetAuthenticationState() {
-    _authenticationTimeoutTimer?.cancel();
-    widget.appLockService.resetAuthenticationState();
-    
-    setState(() {
-      _isAuthenticating = false;
-      _showResetButton = false;
-      _errorMessage = 'biometric.reset_authentication'.tr();
-    });
-    
-    // Add haptic feedback
-    HapticFeedback.lightImpact();
   }
 
   Widget _buildBiometricIcon() {
@@ -435,47 +386,6 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
                   ),
                 ),
               ),
-              
-              // Reset Button (shown when authentication gets stuck)
-              if (_showResetButton)
-                Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: FadeIn(
-                    child: TappableWidget(
-                      onTap: _resetAuthenticationState,
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        decoration: BoxDecoration(
-                          color: colorScheme.surface,
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: colorScheme.outline.withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.refresh,
-                              color: colorScheme.onSurface.withOpacity(0.7),
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'biometric.reset_button'.tr(),
-                              style: theme.textTheme.labelMedium?.copyWith(
-                                color: colorScheme.onSurface.withOpacity(0.7),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
               
               const Spacer(),
             ],
