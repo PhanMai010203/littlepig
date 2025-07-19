@@ -97,7 +97,7 @@ class BiometricAuthService {
       return didAuthenticate;
     } on PlatformException catch (e) {
       print('Authentication error: ${e.code} - ${e.message}');
-      return _handleAuthenticationError(e);
+      return _handleAuthenticationError(e); 
     } catch (e) {
       print('Unexpected authentication error: $e');
       return false;

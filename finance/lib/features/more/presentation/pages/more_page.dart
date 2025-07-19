@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../widgets/sync_status_compact_widget.dart';
+import '../widgets/sheep_premium_banner.dart';
 
 class MorePage extends StatelessWidget {
   const MorePage({super.key});
@@ -14,6 +15,12 @@ class MorePage extends StatelessWidget {
       ),
       body: ListView(
         children: [
+          // Premium Banner at top
+          const Padding(
+            padding: EdgeInsets.only(bottom: 8.0),
+            child: SheepPremiumBanner(),
+          ),
+          
           const _SectionHeader(title: 'Account'),
           _MenuItem(
             icon: Icons.person,
@@ -41,15 +48,6 @@ class MorePage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Notifications tapped')),
               );
-            },
-          ),
-          const _SectionHeader(title: 'Premium'),
-          _MenuItem(
-            icon: Icons.star,
-            title: 'Sheep Pro',
-            subtitle: 'Unlock premium features and support development',
-            onTap: () {
-              context.push('/premium');
             },
           ),
           const _SectionHeader(title: 'Data & Sync'),
