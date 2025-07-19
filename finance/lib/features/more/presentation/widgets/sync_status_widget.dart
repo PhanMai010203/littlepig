@@ -195,7 +195,8 @@ class SyncStatusWidget extends StatelessWidget {
     } else if (difference.inDays < 7) {
       return 'sync.days_ago'.tr(args: [difference.inDays.toString()]);
     } else {
-      return DateFormat.yMMMd().format(lastSyncTime!);
+      final dateFormat = DateFormat('sync.date_format'.tr());
+      return dateFormat.format(lastSyncTime!);
     }
   }
 }

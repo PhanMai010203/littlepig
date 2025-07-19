@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 import 'sheep_premium_background.dart';
 import 'sheep_pro_banner.dart';
@@ -64,7 +65,7 @@ class SheepPremiumBanner extends StatelessWidget {
                               const SheepProBanner(),
                               const SizedBox(height: 4),
                               Text(
-                                'Budget like a pro with Sheep Pro',
+                                'premium.subtitle'.tr(),
                                 style: TextStyle(
                                   fontSize: 15,
                                   color: Colors.black,

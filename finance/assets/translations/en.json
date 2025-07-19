@@ -508,6 +508,7 @@
     "minutes_ago": "{0} minutes ago",
     "hours_ago": "{0} hours ago",
     "days_ago": "{0} days ago",
+    "date_format": "MMM d, yyyy",
     "uploaded_count": "{0} uploaded",
     "downloaded_count": "{0} downloaded",
     "uploading_progress": "Uploading changes",
@@ -540,5 +541,49 @@
     "sign_in_failed": "Sign in failed",
     "sign_out_failed": "Sign out failed",
     "sync_completed": "Sync completed"
+  },
+
+  "premium": {
+    "title": "Sheep Pro",
+    "subtitle": "Budget like a pro with Sheep Pro",
+    "features": {
+      "support_developer": {
+        "title": "Support the Developer",
+        "description": "Help support continued development and new features"
+      },
+      "unlimited_budgets": {
+        "title": "Unlimited Budgets & Goals",
+        "description": "Create as many budgets and financial goals as you need"
+      },
+      "past_budget_periods": {
+        "title": "Past Budget Periods",
+        "description": "View and analyze your historical budget data"
+      },
+      "unlimited_color_picker": {
+        "title": "Unlimited Color Picker",
+        "description": "Customize your budget categories with any color"
+      },
+      "advanced_analytics": {
+        "title": "Advanced Analytics",
+        "description": "Get detailed insights into your spending patterns"
+      },
+      "premium_sync": {
+        "title": "Premium Sync Features",
+        "description": "Enhanced cloud synchronization capabilities"
+      }
+    },
+    "subscription": {
+      "yearly": "Yearly",
+      "monthly": "Monthly",
+      "lifetime": "Lifetime",
+      "yearly_price": "$19.99",
+      "yearly_original_price": "$59.88",
+      "monthly_price": "$4.99",
+      "lifetime_price": "$49.99"
+    },
+    "purchase": {
+      "title": "{plan} Purchase",
+      "demo_message": "This is a demo. In a real app, this would initiate the {plan} purchase flow."
+    }
   }
 }

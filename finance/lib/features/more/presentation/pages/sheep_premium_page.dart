@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../widgets/sheep_premium_background.dart';
 import '../widgets/sheep_pro_banner.dart';
 
@@ -49,7 +50,7 @@ class SheepPremiumPage extends StatelessWidget {
                             const SheepProBanner(large: true),
                             const SizedBox(height: 4),
                             Text(
-                              'Budget like a pro with Sheep Pro',
+                              'premium.subtitle'.tr(),
                               style: TextStyle(
                                 fontSize: 16,
                                 color: Colors.black,
@@ -70,33 +71,33 @@ class SheepPremiumPage extends StatelessWidget {
                             children: [
                               _PremiumFeature(
                                 icon: Icons.favorite,
-                                title: 'Support the Developer',
-                                description: 'Help support continued development and new features',
+                                title: 'premium.features.support_developer.title'.tr(),
+                                description: 'premium.features.support_developer.description'.tr(),
                               ),
                               _PremiumFeature(
                                 icon: Icons.donut_small,
-                                title: 'Unlimited Budgets & Goals',
-                                description: 'Create as many budgets and financial goals as you need',
+                                title: 'premium.features.unlimited_budgets.title'.tr(),
+                                description: 'premium.features.unlimited_budgets.description'.tr(),
                               ),
                               _PremiumFeature(
                                 icon: Icons.history,
-                                title: 'Past Budget Periods',
-                                description: 'View and analyze your historical budget data',
+                                title: 'premium.features.past_budget_periods.title'.tr(),
+                                description: 'premium.features.past_budget_periods.description'.tr(),
                               ),
                               _PremiumFeature(
                                 icon: Icons.color_lens,
-                                title: 'Unlimited Color Picker',
-                                description: 'Customize your budget categories with any color',
+                                title: 'premium.features.unlimited_color_picker.title'.tr(),
+                                description: 'premium.features.unlimited_color_picker.description'.tr(),
                               ),
                               _PremiumFeature(
                                 icon: Icons.analytics,
-                                title: 'Advanced Analytics',
-                                description: 'Get detailed insights into your spending patterns',
+                                title: 'premium.features.advanced_analytics.title'.tr(),
+                                description: 'premium.features.advanced_analytics.description'.tr(),
                               ),
                               _PremiumFeature(
                                 icon: Icons.sync,
-                                title: 'Premium Sync Features',
-                                description: 'Enhanced cloud synchronization capabilities',
+                                title: 'premium.features.premium_sync.title'.tr(),
+                                description: 'premium.features.premium_sync.description'.tr(),
                               ),
                             ],
                           ),
@@ -201,21 +202,21 @@ class _SubscriptionOptions extends StatelessWidget {
       child: Column(
         children: [
           _SubscriptionOption(
-            label: 'Yearly',
-            price: '\$19.99',
-            originalPrice: '\$59.88',
-            onTap: () => _showPurchaseDialog(context, 'Yearly'),
+            label: 'premium.subscription.yearly'.tr(),
+            price: 'premium.subscription.yearly_price'.tr(),
+            originalPrice: 'premium.subscription.yearly_original_price'.tr(),
+            onTap: () => _showPurchaseDialog(context, 'premium.subscription.yearly'.tr()),
             extraPadding: const EdgeInsets.only(top: 6.5),
           ),
           _SubscriptionOption(
-            label: 'Monthly',
-            price: '\$4.99',
-            onTap: () => _showPurchaseDialog(context, 'Monthly'),
+            label: 'premium.subscription.monthly'.tr(),
+            price: 'premium.subscription.monthly_price'.tr(),
+            onTap: () => _showPurchaseDialog(context, 'premium.subscription.monthly'.tr()),
           ),
           _SubscriptionOption(
-            label: 'Lifetime',
-            price: '\$49.99',
-            onTap: () => _showPurchaseDialog(context, 'Lifetime'),
+            label: 'premium.subscription.lifetime'.tr(),
+            price: 'premium.subscription.lifetime_price'.tr(),
+            onTap: () => _showPurchaseDialog(context, 'premium.subscription.lifetime'.tr()),
             extraPadding: const EdgeInsets.only(bottom: 6.5),
           ),
         ],
@@ -227,12 +228,12 @@ class _SubscriptionOptions extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('$plan Purchase'),
-        content: Text('This is a demo. In a real app, this would initiate the $plan purchase flow.'),
+        title: Text('premium.purchase.title'.tr(namedArgs: {'plan': plan})),
+        content: Text('premium.purchase.demo_message'.tr(namedArgs: {'plan': plan})),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text('common.ok'.tr()),
           ),
         ],
       ),

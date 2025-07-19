@@ -482,6 +482,7 @@
     "minutes_ago": "{0} phút trước",
     "hours_ago": "{0} giờ trước",
     "days_ago": "{0} ngày trước",
+    "date_format": "d MMM, yyyy",
     "uploaded_count": "Đã tải lên {0}",
     "downloaded_count": "Đã tải xuống {0}",
     "uploading_progress": "Đang tải lên thay đổi",
@@ -507,6 +508,7 @@
     "sync_error_occurred": "Đã xảy ra lỗi đồng bộ",
     "sync_completed": "Đồng bộ hoàn tất",
     "not_signed_in": "Chưa đăng nhập",
+    "sign_in_required": "Đăng nhập Google Drive để bật đồng bộ",
     "sign_in_to_enable_sync": "Đăng nhập Google Drive để bật đồng bộ",
     "cancel": "Hủy"
   },
@@ -639,5 +641,49 @@
     "unknown_date": "Ngày không xác định",
     "general": "Chung",
     "unknown_account": "Tài khoản không xác định"
+  },
+
+  "premium": {
+    "title": "Sheep Pro",
+    "subtitle": "Quản lý ngân sách như một chuyên gia với Sheep Pro",
+    "features": {
+      "support_developer": {
+        "title": "Hỗ trợ nhà phát triển",
+        "description": "Giúp hỗ trợ việc phát triển liên tục và các tính năng mới"
+      },
+      "unlimited_budgets": {
+        "title": "Ngân sách và mục tiêu không giới hạn",
+        "description": "Tạo nhiều ngân sách và mục tiêu tài chính tùy ý"
+      },
+      "past_budget_periods": {
+        "title": "Chu kỳ ngân sách quá khứ",
+        "description": "Xem và phân tích dữ liệu ngân sách lịch sử của bạn"
+      },
+      "unlimited_color_picker": {
+        "title": "Bảng màu không giới hạn",
+        "description": "Tùy chỉnh danh mục ngân sách với bất kỳ màu nào"
+      },
+      "advanced_analytics": {
+        "title": "Phân tích nâng cao",
+        "description": "Nhận thông tin chi tiết về các mô hình chi tiêu của bạn"
+      },
+      "premium_sync": {
+        "title": "Tính năng đồng bộ cao cấp",
+        "description": "Khả năng đồng bộ hóa đám mây nâng cao"
+      }
+    },
+    "subscription": {
+      "yearly": "Hàng năm",
+      "monthly": "Hàng tháng",
+      "lifetime": "Trọn đời",
+      "yearly_price": "$19.99",
+      "yearly_original_price": "$59.88",
+      "monthly_price": "$4.99",
+      "lifetime_price": "$49.99"
+    },
+    "purchase": {
+      "title": "Mua {plan}",
+      "demo_message": "Đây là bản demo. Trong ứng dụng thực tế, điều này sẽ bắt đầu quy trình mua {plan}."
+    }
   }
 }
