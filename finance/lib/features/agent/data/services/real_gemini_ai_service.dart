@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 import '../../domain/entities/ai_response.dart';
 import '../../domain/entities/ai_tool_call.dart';
@@ -1387,7 +1388,7 @@ Remember: You have access to the user's complete financial data through your too
       final transaction = transactions[i] as Map<String, dynamic>;
       final amount = transaction['amount'] ?? 0.0;
       final description = transaction['description'] ?? 'Unknown';
-      final date = transaction['date'] ?? 'Unknown date';
+      final date = transaction['date'] ?? 'ai_chat.unknown_date'.tr();
       
       response += '💰 ${amount >= 0 ? '+' : ''}${amount.toStringAsFixed(2)} - $description ($date)\n';
     }

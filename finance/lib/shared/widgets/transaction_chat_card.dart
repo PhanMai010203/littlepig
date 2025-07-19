@@ -18,10 +18,10 @@ class TransactionChatCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     
     final amount = (transaction['amount'] as num?)?.toDouble() ?? 0.0;
-    final description = transaction['description'] as String? ?? 'Unknown Transaction';
-    final date = transaction['date'] as String? ?? 'Unknown Date';
-    final category = transaction['category'] as String? ?? 'General';
-    final accountName = transaction['account'] as String? ?? 'Unknown Account';
+    final description = transaction['description'] as String? ?? 'ai_chat.unknown_transaction'.tr();
+    final date = transaction['date'] as String? ?? 'ai_chat.unknown_date'.tr();
+    final category = transaction['category'] as String? ?? 'ai_chat.general'.tr();
+    final accountName = transaction['account'] as String? ?? 'ai_chat.unknown_account'.tr();
     
     final isIncome = amount > 0;
     final amountColor = isIncome ? Colors.green : Colors.red;
@@ -259,7 +259,7 @@ class TransactionListChatWidget extends StatelessWidget {
                   ),
                   if (onTransactionTap != null)
                     Text(
-                      'Tap to view details',
+                      'transactions.transaction_details'.tr(),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: colorScheme.primary,
                         fontStyle: FontStyle.italic,

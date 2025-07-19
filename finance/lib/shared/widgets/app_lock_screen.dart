@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../../core/services/app_lock_service.dart';
 import '../../core/services/biometric_auth_service.dart';
 import 'animations/tappable_widget.dart';
@@ -90,7 +91,7 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
         widget.onUnlocked?.call();
       } else {
         setState(() {
-          _errorMessage = 'Authentication failed. Please try again.';
+          _errorMessage = 'biometric.authentication_failed'.tr();
         });
         
         // Trigger error animation
@@ -103,7 +104,7 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Authentication error: ${e.toString()}';
+        _errorMessage = 'biometric.authentication_error'.tr(args: [e.toString()]);
       });
       
       // Trigger error animation
@@ -158,46 +159,44 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
 
   String _getBiometricTitle() {
     if (_availableBiometrics.isEmpty) {
-      return 'Unlock Required';
+      return 'biometric.unlock_required_title'.tr();
     }
 
     if (_availableBiometrics.contains(BiometricType.face)) {
-      return 'Face ID';
+      return 'biometric.face_id'.tr();
     } else if (_availableBiometrics.contains(BiometricType.fingerprint)) {
-      return 'Fingerprint';
+      return 'biometric.fingerprint'.tr();
     } else if (_availableBiometrics.contains(BiometricType.iris)) {
-      return 'Iris Scan';
+      return 'biometric.iris_scan'.tr();
     }
 
-    return 'Biometric Authentication';
+    return 'biometric.authentication_title'.tr();
   }
 
   String _getBiometricSubtitle() {
     if (_availableBiometrics.isEmpty) {
-      return 'Please set up biometric authentication to use this feature';
+      return 'biometric.setup_description'.tr();
     }
 
     if (_availableBiometrics.contains(BiometricType.face)) {
-      return 'Look at your device to unlock';
+      return 'biometric.face_unlock_hint'.tr();
     } else if (_availableBiometrics.contains(BiometricType.fingerprint)) {
-      return 'Touch the fingerprint sensor to unlock';
+      return 'biometric.touch_sensor_unlock_hint'.tr();
     } else if (_availableBiometrics.contains(BiometricType.iris)) {
-      return 'Look at the camera to unlock';
+      return 'biometric.iris_unlock_hint'.tr();
     }
 
-    return 'Use biometric authentication to unlock';
+    return 'biometric.authenticate_reason_unlock'.tr();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Directionality(
-      textDirection: TextDirection.ltr,
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-        ),
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+      ),
         home: Builder(
           builder: (context) {
             final theme = Theme.of(context);
@@ -241,7 +240,7 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
               FadeIn(
                 delay: const Duration(milliseconds: 600),
                 child: Text(
-                  'Finance',
+                  'app_name'.tr(),
                   style: theme.textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: colorScheme.onSurface,
@@ -376,7 +375,7 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
                           ),
                         const SizedBox(width: 12),
                         Text(
-                          _isAuthenticating ? 'Authenticating...' : 'Try Again',
+                          _isAuthenticating ? 'biometric.authenticating'.tr() : 'common.retry'.tr(),
                           style: theme.textTheme.labelLarge?.copyWith(
                             color: colorScheme.onPrimary,
                             fontWeight: FontWeight.w600,
@@ -395,7 +394,6 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
       ));
           },
         ),
-      ),
-    );
+      );
   }
 }
