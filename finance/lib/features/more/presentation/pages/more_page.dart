@@ -21,89 +21,89 @@ class MorePage extends StatelessWidget {
             child: SheepPremiumBanner(),
           ),
           
-          const _SectionHeader(title: 'Account'),
+          const _SectionHeader(title: 'more.sections.account'),
           _MenuItem(
             icon: Icons.person,
-            title: 'Profile',
-            subtitle: 'Manage your profile information',
+            title: 'more.items.profile',
+            subtitle: 'more.items.profile_subtitle',
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Profile tapped')),
+                SnackBar(content: Text('more.actions.profile_tapped'.tr())),
               );
             },
           ),
           _MenuItem(
             icon: Icons.settings,
-            title: 'Settings',
-            subtitle: 'App preferences and configurations',
+            title: 'more.items.settings',
+            subtitle: 'more.items.settings_subtitle',
             onTap: () {
               context.push('/settings');
             },
           ),
           _MenuItem(
             icon: Icons.notifications,
-            title: 'Notifications',
-            subtitle: 'Manage notification preferences',
+            title: 'more.items.notifications',
+            subtitle: 'more.items.notifications_subtitle',
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Notifications tapped')),
+                SnackBar(content: Text('more.actions.notifications_tapped'.tr())),
               );
             },
           ),
-          const _SectionHeader(title: 'Data & Sync'),
+          const _SectionHeader(title: 'more.sections.data_sync'),
           _SyncMenuItem(
             onTap: () {
               context.push('/sync');
             },
           ),
-          const _SectionHeader(title: 'Analytics'),
+          const _SectionHeader(title: 'more.sections.analytics'),
           _MenuItem(
             icon: Icons.analytics,
-            title: 'Reports',
-            subtitle: 'View detailed financial reports',
+            title: 'more.items.reports',
+            subtitle: 'more.items.reports_subtitle',
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Reports tapped')),
+                SnackBar(content: Text('more.actions.reports_tapped'.tr())),
               );
             },
           ),
           _MenuItem(
             icon: Icons.trending_up,
-            title: 'Goals',
-            subtitle: 'Track your financial goals',
+            title: 'more.items.goals',
+            subtitle: 'more.items.goals_subtitle',
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Goals tapped')),
+                SnackBar(content: Text('more.actions.goals_tapped'.tr())),
               );
             },
           ),
-          const _SectionHeader(title: 'Developer'),
+          const _SectionHeader(title: 'more.sections.developer'),
           _MenuItem(
             icon: Icons.developer_mode,
-            title: 'Framework Demo',
-            subtitle: 'Explore all framework capabilities',
+            title: 'more.items.framework_demo',
+            subtitle: 'more.items.framework_demo_subtitle',
             onTap: () {
               context.push('/demo');
             },
           ),
-          const _SectionHeader(title: 'Support'),
+          const _SectionHeader(title: 'more.sections.support'),
           _MenuItem(
             icon: Icons.help,
-            title: 'Help & Support',
-            subtitle: 'Get help and contact support',
+            title: 'more.items.help_support',
+            subtitle: 'more.items.help_support_subtitle',
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Help tapped')),
+                SnackBar(content: Text('more.actions.help_tapped'.tr())),
               );
             },
           ),
           _MenuItem(
             icon: Icons.info,
-            title: 'About',
-            subtitle: 'App version and information',
+            title: 'more.items.about',
+            subtitle: 'more.items.about_subtitle',
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('About tapped')),
+                SnackBar(content: Text('more.actions.about_tapped'.tr())),
               );
             },
           ),
@@ -123,7 +123,7 @@ class _SectionHeader extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 8),
       child: Text(
-        title,
+        title.tr(),
         style: Theme.of(context).textTheme.titleSmall?.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w600,
@@ -161,8 +161,8 @@ class _MenuItem extends StatelessWidget {
           size: 20,
         ),
       ),
-      title: Text(title),
-      subtitle: Text(subtitle),
+      title: Text(title.tr()),
+      subtitle: Text(subtitle.tr()),
       trailing: const Icon(Icons.chevron_right),
       onTap: onTap,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -190,11 +190,11 @@ class _SyncMenuItem extends StatelessWidget {
           size: 20,
         ),
       ),
-      title: const Text('Sync'),
+      title: Text('more.items.sync'.tr()),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Manage data synchronization and backup'),
+          Text('more.items.sync_subtitle'.tr()),
           const SizedBox(height: 4),
           const SyncStatusCompactWidget(),
         ],

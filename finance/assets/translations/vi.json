@@ -515,35 +515,41 @@
   },
 
   "more": {
-    "section_account": "Tài khoản",
-    "section_data_sync": "Dữ liệu & Đồng bộ",
-    "section_analytics": "Phân tích",
-    "section_developer": "Nhà phát triển",
-    "section_support": "Hỗ trợ",
-    "profile": "Hồ sơ cá nhân",
-    "profile_subtitle": "Quản lý thông tin cá nhân của bạn",
-    "profile_tapped": "Đã nhấn vào Hồ sơ cá nhân",
-    "settings": "Cài đặt",
-    "settings_subtitle": "Tùy chỉnh và cấu hình ứng dụng",
-    "notifications": "Thông báo",
-    "notifications_subtitle": "Quản lý tùy chọn thông báo",
-    "notifications_tapped": "Đã nhấn vào Thông báo",
-    "sync": "Đồng bộ",
-    "sync_subtitle": "Quản lý đồng bộ hóa và sao lưu dữ liệu",
-    "reports": "Báo cáo",
-    "reports_subtitle": "Xem báo cáo tài chính chi tiết",
-    "reports_tapped": "Đã nhấn vào Báo cáo",
-    "goals": "Mục tiêu",
-    "goals_subtitle": "Theo dõi mục tiêu tài chính của bạn",
-    "goals_tapped": "Đã nhấn vào Mục tiêu",
-    "framework_demo": "Trình diễn Framework",
-    "framework_demo_subtitle": "Khám phá tất cả khả năng của framework",
-    "help_support": "Trợ giúp & Hỗ trợ",
-    "help_support_subtitle": "Nhận trợ giúp và liên hệ hỗ trợ",
-    "help_tapped": "Đã nhấn vào Trợ giúp",
-    "about": "Giới thiệu",
-    "about_subtitle": "Phiên bản ứng dụng và thông tin",
-    "about_tapped": "Đã nhấn vào Giới thiệu"
+    "sections": {
+      "account": "Tài khoản",
+      "data_sync": "Dữ liệu & Đồng bộ",
+      "analytics": "Phân tích",
+      "developer": "Nhà phát triển",
+      "support": "Hỗ trợ"
+    },
+    "items": {
+      "profile": "Hồ sơ cá nhân",
+      "profile_subtitle": "Quản lý thông tin cá nhân của bạn",
+      "settings": "Cài đặt",
+      "settings_subtitle": "Tùy chỉnh và cấu hình ứng dụng",
+      "notifications": "Thông báo",
+      "notifications_subtitle": "Quản lý tùy chọn thông báo",
+      "sync": "Đồng bộ",
+      "sync_subtitle": "Quản lý đồng bộ hóa và sao lưu dữ liệu",
+      "reports": "Báo cáo",
+      "reports_subtitle": "Xem báo cáo tài chính chi tiết",
+      "goals": "Mục tiêu",
+      "goals_subtitle": "Theo dõi mục tiêu tài chính của bạn",
+      "framework_demo": "Trình diễn Framework",
+      "framework_demo_subtitle": "Khám phá tất cả khả năng của framework",
+      "help_support": "Trợ giúp & Hỗ trợ",
+      "help_support_subtitle": "Nhận trợ giúp và liên hệ hỗ trợ",
+      "about": "Giới thiệu",
+      "about_subtitle": "Phiên bản ứng dụng và thông tin"
+    },
+    "actions": {
+      "profile_tapped": "Đã nhấn vào Hồ sơ cá nhân",
+      "notifications_tapped": "Đã nhấn vào Thông báo",
+      "reports_tapped": "Đã nhấn vào Báo cáo",
+      "goals_tapped": "Đã nhấn vào Mục tiêu",
+      "help_tapped": "Đã nhấn vào Trợ giúp",
+      "about_tapped": "Đã nhấn vào Giới thiệu"
+    }
   },
 
   "agent": {
@@ -677,10 +683,10 @@
       "yearly": "Hàng năm",
       "monthly": "Hàng tháng",
       "lifetime": "Trọn đời",
-      "yearly_price": "$19.99",
-      "yearly_original_price": "$59.88",
-      "monthly_price": "$4.99",
-      "lifetime_price": "$49.99"
+      "yearly_price": "đ489.000",
+      "yearly_original_price": "$799.000",
+      "monthly_price": "đ120.000",
+      "lifetime_price": "đ829.000"
     },
     "purchase": {
       "title": "Mua {plan}",

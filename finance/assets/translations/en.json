@@ -429,6 +429,44 @@
     "save": "Save"
   },
 
+  "more": {
+    "sections": {
+      "account": "Account",
+      "data_sync": "Data & Sync",
+      "analytics": "Analytics",
+      "developer": "Developer",
+      "support": "Support"
+    },
+    "items": {
+      "profile": "Profile",
+      "profile_subtitle": "Manage your profile information",
+      "settings": "Settings",
+      "settings_subtitle": "App preferences and configurations",
+      "notifications": "Notifications",
+      "notifications_subtitle": "Manage notification preferences",
+      "sync": "Sync",
+      "sync_subtitle": "Manage data synchronization and backup",
+      "reports": "Reports",
+      "reports_subtitle": "View detailed financial reports",
+      "goals": "Goals",
+      "goals_subtitle": "Track your financial goals",
+      "framework_demo": "Framework Demo",
+      "framework_demo_subtitle": "Explore all framework capabilities",
+      "help_support": "Help & Support",
+      "help_support_subtitle": "Get help and contact support",
+      "about": "About",
+      "about_subtitle": "App version and information"
+    },
+    "actions": {
+      "profile_tapped": "Profile tapped",
+      "notifications_tapped": "Notifications tapped",
+      "reports_tapped": "Reports tapped",
+      "goals_tapped": "Goals tapped",
+      "help_tapped": "Help tapped",
+      "about_tapped": "About tapped"
+    }
+  },
+
   "agent": {
     "welcome_title": "Meet your AI Assistant",
     "welcome_subtitle": "Get personalized insights and smart recommendations for your finances",
