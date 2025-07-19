@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/drive/v3.dart' as drive;
 import 'package:googleapis_auth/auth_io.dart';
@@ -171,17 +172,28 @@ class AttachmentRepositoryImpl
 
   @override
   Future<void> uploadToGoogleDrive(Attachment attachment) async {
+    debugPrint('☁️ [AttachmentRepository] uploadToGoogleDrive called');
+    debugPrint('☁️ [AttachmentRepository] attachment.id: ${attachment.id}');
+    debugPrint('☁️ [AttachmentRepository] attachment.fileName: ${attachment.fileName}');
+    debugPrint('☁️ [AttachmentRepository] attachment.filePath: ${attachment.filePath}');
+    debugPrint('☁️ [AttachmentRepository] attachment.syncId: ${attachment.syncId}');
+    
     if (attachment.filePath == null) {
+      debugPrint('❌ [AttachmentRepository] File path is null');
       throw Exception('File path is null');
     }
 
     final account = _googleSignIn.currentUser;
     if (account == null) {
+      debugPrint('❌ [AttachmentRepository] Not signed in to Google');
       throw Exception('Not signed in to Google');
     }
 
     final file = File(attachment.filePath!);
-    if (!await file.exists()) {
+    final fileExists = await file.exists();
+    debugPrint('☁️ [AttachmentRepository] File exists: $fileExists');
+    if (!fileExists) {
+      debugPrint('❌ [AttachmentRepository] File does not exist: ${attachment.filePath}');
       throw Exception('File does not exist');
     }
 
@@ -234,19 +246,33 @@ class AttachmentRepositoryImpl
 
       final media = drive.Media(file.openRead(), file.lengthSync());
 
+      debugPrint('☁️ [AttachmentRepository] Uploading file to Google Drive...');
       final uploadedFile = await driveApi.files.create(
         driveFile,
         uploadMedia: media,
       );
 
+      debugPrint('✅ [AttachmentRepository] File uploaded successfully');
+      debugPrint('✅ [AttachmentRepository] Google Drive file ID: ${uploadedFile.id}');
+
+      // Generate Google Drive link
+      final googleDriveLink = uploadedFile.id != null 
+          ? 'https://drive.google.com/file/d/${uploadedFile.id}/view'
+          : null;
+      
+      debugPrint('✅ [AttachmentRepository] Generated Google Drive link: $googleDriveLink');
+
       // Update attachment with Google Drive info
       final updatedAttachment = attachment.copyWith(
         googleDriveFileId: uploadedFile.id,
+        googleDriveLink: googleDriveLink,
         isUploaded: true,
         updatedAt: DateTime.now(),
       );
 
+      debugPrint('✅ [AttachmentRepository] Updating attachment with Google Drive info...');
       await updateAttachment(updatedAttachment);
+      debugPrint('✅ [AttachmentRepository] Attachment updated successfully');
     } finally {
       client.close();
     }
@@ -354,18 +380,30 @@ class AttachmentRepositoryImpl
   Future<Attachment> compressAndStoreFile(
       String filePath, int transactionId, String fileName,
       {bool isCapturedFromCamera = false}) async {
+    debugPrint('🔄 [AttachmentRepository] compressAndStoreFile called');
+    debugPrint('🔄 [AttachmentRepository] filePath: $filePath');
+    debugPrint('🔄 [AttachmentRepository] transactionId: $transactionId');
+    debugPrint('🔄 [AttachmentRepository] fileName: $fileName');
+    debugPrint('🔄 [AttachmentRepository] isCapturedFromCamera: $isCapturedFromCamera');
+    
     File file = File(filePath);
+    debugPrint('🔄 [AttachmentRepository] Original file exists: ${await file.exists()}');
 
     // Compress if it's an image captured from camera
     if (isCapturedFromCamera && _isImageFile(fileName)) {
+      debugPrint('🔄 [AttachmentRepository] Compressing image...');
       file = await _compressImage(file);
+      debugPrint('🔄 [AttachmentRepository] Compressed file path: ${file.path}');
+      debugPrint('🔄 [AttachmentRepository] Compressed file exists: ${await file.exists()}');
     }
 
     final fileStats = await file.stat();
     final mimeType = mime(fileName);
     final deviceId = await _getDeviceId();
 
-    return Attachment(
+    debugPrint('🔄 [AttachmentRepository] File stats - size: ${fileStats.size}, mimeType: $mimeType');
+
+    final attachment = Attachment(
       transactionId: transactionId,
       fileName: fileName,
       filePath: file.path,
@@ -382,6 +420,9 @@ class AttachmentRepositoryImpl
           : null,
       syncId: _uuid.v4(),
     );
+
+    debugPrint('🔄 [AttachmentRepository] Created attachment with syncId: ${attachment.syncId}');
+    return attachment;
   }
 
   @override
@@ -589,8 +630,16 @@ class AttachmentRepositoryImpl
 
   Future<void> _updateAttachmentWithDriveInfo(
       Attachment attachment, drive.File driveFile) async {
+    final googleDriveLink = driveFile.id != null 
+        ? 'https://drive.google.com/file/d/${driveFile.id}/view'
+        : null;
+    
+    debugPrint('✅ [AttachmentRepository] Updating with existing Drive file: ${driveFile.id}');
+    debugPrint('✅ [AttachmentRepository] Generated Google Drive link: $googleDriveLink');
+    
     final updatedAttachment = attachment.copyWith(
       googleDriveFileId: driveFile.id,
+      googleDriveLink: googleDriveLink,
       isUploaded: true,
       updatedAt: DateTime.now(),
     );

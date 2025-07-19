@@ -13,4 +13,14 @@ class SettingsEvent with _$SettingsEvent {
       _NotificationsToggled;
   const factory SettingsEvent.hapticFeedbackToggled(bool enabled) =
       _HapticFeedbackToggled;
+  const factory SettingsEvent.biometricToggled(bool enabled) =
+      _BiometricToggled;
+  const factory SettingsEvent.biometricAppLockToggled(bool enabled) =
+      _BiometricAppLockToggled;
+  const factory SettingsEvent.exportSettings() = _ExportSettings;
+  const factory SettingsEvent.exportAllData() = _ExportAllData;
+  const factory SettingsEvent.exportTransactions() = _ExportTransactions;
+  const factory SettingsEvent.exportAccounts() = _ExportAccounts;
+  const factory SettingsEvent.exportCategories() = _ExportCategories;
+  const factory SettingsEvent.exportBudgets() = _ExportBudgets;
 }

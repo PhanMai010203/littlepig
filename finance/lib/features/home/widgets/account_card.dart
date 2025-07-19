@@ -26,6 +26,7 @@ class AccountCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print('🏗️ AccountCard build - index: $index, title: $title, isSelected: $isSelected');
     // Calculate dynamic width based on the amount text to avoid overflow.
     const double baseWidth = 170.0;
     const double horizontalPadding =
@@ -47,7 +48,11 @@ class AccountCard extends StatelessWidget {
     final double cardWidth = math.max(baseWidth, calculatedWidth);
 
     return GestureDetector(
-      onTap: () => onSelected(index),
+      onTap: () {
+        print('🔥 AccountCard onTap called - index: $index, title: $title');
+        onSelected(index);
+      },
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         clipBehavior: Clip.hardEdge,

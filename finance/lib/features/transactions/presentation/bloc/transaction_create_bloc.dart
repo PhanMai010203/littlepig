@@ -14,6 +14,7 @@ import '../../../accounts/domain/entities/account.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../../budgets/domain/entities/budget.dart';
 import '../../../budgets/domain/repositories/budget_repository.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
 import 'transaction_create_event.dart';
 import 'transaction_create_state.dart';
 
@@ -24,6 +25,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
   final AccountRepository _accountRepository;
   final BudgetRepository _budgetRepository;
   final AttachmentRepository _attachmentRepository;
+  final CurrencyDisplayBloc _currencyDisplayBloc;
 
   TransactionCreateBloc(
     this._transactionRepository,
@@ -31,6 +33,7 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
     this._accountRepository,
     this._budgetRepository,
     this._attachmentRepository,
+    this._currencyDisplayBloc,
   ) : super(TransactionCreateInitial()) {
     on<LoadInitialData>(_onLoadInitialData);
     on<UpdateTitle>(_onUpdateTitle);
@@ -165,6 +168,14 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
       final currentState = state as TransactionCreateLoaded;
       emit(currentState.copyWith(selectedAccount: event.account));
       add(ValidateForm());
+      
+      // Update currency display when account changes
+      _currencyDisplayBloc.add(
+        CurrencyDisplayEvent.accountCurrencyChanged(
+          accountCurrency: event.account.currency,
+          accountId: event.account.id?.toString() ?? '',
+        ),
+      );
     }
   }
 
@@ -411,17 +422,31 @@ class TransactionCreateBloc extends Bloc<TransactionCreateEvent, TransactionCrea
   Future<void> _processAttachments(int transactionId, List<AttachmentData> attachments) async {
     for (final attachment in attachments) {
       try {
-        // Note: This would typically involve creating an Attachment entity and saving it
-        // For now, we'll log the attachment processing
         debugPrint('Processing attachment: ${attachment.fileName} for transaction $transactionId');
         
-        // In a real implementation, you would:
-        // 1. Create Attachment entity
-        // 2. Compress and store file if needed
-        // 3. Upload to Google Drive
-        // 4. Save attachment record to database
+        // 1. Create Attachment entity using repository compression and storage
+        final attachmentEntity = await _attachmentRepository.compressAndStoreFile(
+          attachment.filePath,
+          transactionId,
+          attachment.fileName,
+          isCapturedFromCamera: attachment.isCapturedFromCamera,
+        );
         
-        // await _attachmentRepository.createAttachment(attachmentEntity);
+        // 2. Save attachment record to database
+        final createdAttachment = await _attachmentRepository.createAttachment(attachmentEntity);
+        
+        // 3. Upload to Google Drive in background
+        try {
+          await _attachmentRepository.uploadToGoogleDrive(createdAttachment);
+          debugPrint('✅ [TransactionCreateBloc] Google Drive upload successful for: ${attachment.fileName}');
+        } catch (uploadError) {
+          debugPrint('❌ [TransactionCreateBloc] Google Drive upload failed for: ${attachment.fileName}');
+          debugPrint('❌ [TransactionCreateBloc] Upload error: $uploadError');
+          // Don't fail the entire transaction creation - just log the error
+          // The file is still saved locally and can be uploaded later
+        }
+        
+        debugPrint('Successfully processed attachment: ${attachment.fileName}');
       } catch (e) {
         debugPrint('Failed to process attachment ${attachment.fileName}: $e');
         // Continue with other attachments even if one fails

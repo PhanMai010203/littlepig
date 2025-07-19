@@ -8,5 +8,12 @@ class SettingsState with _$SettingsState {
     required bool autoBackupEnabled,
     required bool notificationsEnabled,
     required bool hapticFeedbackEnabled,
+    required bool biometricEnabled,
+    required bool biometricAppLockEnabled,
+    @Default(false) bool isExporting,
+    @Default(null) String? exportStatus,
+    @Default(null) String? exportError,
+    @Default(false) bool isBiometricAuthenticating,
+    @Default(null) String? biometricAuthError,
   }) = _SettingsState;
 }

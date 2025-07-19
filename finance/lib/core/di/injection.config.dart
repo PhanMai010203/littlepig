@@ -12,6 +12,7 @@
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:google_sign_in/google_sign_in.dart' as _i116;
 import 'package:http/http.dart' as _i519;
+import 'package:image_picker/image_picker.dart' as _i183;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
@@ -21,6 +22,8 @@ import '../../features/accounts/domain/repositories/account_repository.dart'
     as _i706;
 import '../../features/accounts/presentation/bloc/account_create_bloc.dart'
     as _i923;
+import '../../features/accounts/presentation/bloc/account_selection_bloc.dart'
+    as _i396;
 import '../../features/budgets/data/repositories/budget_repository_impl.dart'
     as _i654;
 import '../../features/budgets/data/services/budget_auth_service.dart' as _i867;
@@ -56,11 +59,18 @@ import '../../features/currencies/data/datasources/exchange_rate_remote_data_sou
     as _i771;
 import '../../features/currencies/data/repositories/currency_repository_impl.dart'
     as _i575;
+import '../../features/currencies/data/services/currency_intelligence_service_impl.dart'
+    as _i888;
 import '../../features/currencies/domain/repositories/currency_repository.dart'
     as _i1056;
+import '../../features/currencies/domain/services/currency_intelligence_service.dart'
+    as _i91;
 import '../../features/currencies/domain/usecases/exchange_rate_operations.dart'
     as _i116;
 import '../../features/currencies/domain/usecases/get_currencies.dart' as _i126;
+import '../../features/currencies/presentation/bloc/currency_display_bloc.dart'
+    as _i653;
+import '../../features/more/presentation/bloc/sync_bloc.dart' as _i259;
 import '../../features/navigation/presentation/bloc/navigation_bloc.dart'
     as _i162;
 import '../../features/settings/presentation/bloc/settings_bloc.dart' as _i585;
@@ -85,6 +95,9 @@ import '../../services/finance_service.dart' as _i19;
 import '../database/app_database.dart' as _i982;
 import '../database/migrations/schema_cleanup_migration.dart' as _i201;
 import '../events/transaction_event_publisher.dart' as _i388;
+import '../services/app_lock_service.dart' as _i165;
+import '../services/biometric_auth_service.dart' as _i919;
+import '../services/csv_export_service.dart' as _i455;
 import '../services/database_service.dart' as _i665;
 import '../services/file_picker_service.dart' as _i108;
 import '../sync/crdt_conflict_resolver.dart' as _i588;
@@ -114,15 +127,18 @@ extension GetItInjectableX on _i174.GetIt {
       preResolve: true,
     );
     gh.factory<_i162.NavigationBloc>(() => _i162.NavigationBloc());
-    gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc());
     gh.lazySingleton<_i116.GoogleSignIn>(() => registerModule.googleSignIn);
     gh.lazySingleton<_i519.Client>(() => registerModule.httpClient);
-    gh.lazySingleton<_i588.CRDTConflictResolver>(
-        () => _i588.CRDTConflictResolver());
+    gh.lazySingleton<_i183.ImagePicker>(() => registerModule.imagePicker);
     gh.lazySingleton<_i388.TransactionEventPublisher>(
         () => _i388.TransactionEventPublisher());
+    gh.lazySingleton<_i588.CRDTConflictResolver>(
+        () => _i588.CRDTConflictResolver());
     gh.lazySingleton<_i867.BudgetAuthService>(() => _i867.BudgetAuthService());
     gh.lazySingleton<_i871.BudgetCsvService>(() => _i871.BudgetCsvService());
+    gh.lazySingleton<_i919.BiometricAuthService>(
+        () => _i919.BiometricAuthService());
+    gh.lazySingleton<_i455.CsvExportService>(() => _i455.CsvExportService());
     gh.lazySingleton<_i222.CurrencyLocalDataSource>(
         () => _i222.CurrencyLocalDataSourceImpl());
     gh.lazySingleton<_i527.BudgetUpdateService>(
@@ -146,6 +162,8 @@ extension GetItInjectableX on _i174.GetIt {
       () => registerModule.testDatabaseService,
       registerFor: {_test},
     );
+    gh.singleton<_i165.AppLockService>(
+        () => _i165.AppLockService(gh<_i919.BiometricAuthService>()));
     gh.lazySingleton<_i982.AppDatabase>(
       () => registerModule.testAppDatabase(gh<_i665.DatabaseService>()),
       registerFor: {_test},
@@ -183,12 +201,15 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i654.BudgetRepositoryImpl(gh<_i982.AppDatabase>()));
     gh.lazySingleton<_i706.AccountRepository>(
         () => _i126.AccountRepositoryImpl(gh<_i982.AppDatabase>()));
-    await gh.factoryAsync<_i767.IncrementalSyncService>(
-      () => registerModule.incrementalSyncService(gh<_i982.AppDatabase>()),
-      preResolve: true,
-    );
     await gh.factoryAsync<_i465.GoogleDriveSyncService>(
       () => registerModule.googleDriveSyncService(gh<_i982.AppDatabase>()),
+      preResolve: true,
+    );
+    await gh.factoryAsync<_i767.IncrementalSyncService>(
+      () => registerModule.incrementalSyncService(
+        gh<_i982.AppDatabase>(),
+        gh<_i460.SharedPreferences>(),
+      ),
       preResolve: true,
     );
     gh.lazySingleton<_i664.AttachmentRepository>(
@@ -220,6 +241,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1056.CurrencyRepository>(),
           gh<_i706.AccountRepository>(),
         ));
+    gh.lazySingleton<_i259.SyncBloc>(
+        () => _i259.SyncBloc(gh<_i520.SyncService>()));
     gh.lazySingleton<_i108.FilePickerService>(() => _i108.FilePickerService(
           gh<_i664.AttachmentRepository>(),
           gh<_i116.GoogleSignIn>(),
@@ -232,13 +255,24 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i520.SyncService>(),
           gh<_i351.CurrencyService>(),
         ));
-    gh.factory<_i612.TransactionCreateBloc>(() => _i612.TransactionCreateBloc(
+    gh.factory<_i585.SettingsBloc>(() => _i585.SettingsBloc(
+          gh<_i455.CsvExportService>(),
+          gh<_i919.BiometricAuthService>(),
           gh<_i421.TransactionRepository>(),
-          gh<_i266.CategoryRepository>(),
           gh<_i706.AccountRepository>(),
+          gh<_i266.CategoryRepository>(),
           gh<_i1021.BudgetRepository>(),
-          gh<_i664.AttachmentRepository>(),
         ));
+    gh.lazySingleton<_i653.CurrencyDisplayBloc>(() => _i653.CurrencyDisplayBloc(
+          gh<_i351.CurrencyService>(),
+          gh<_i1056.CurrencyRepository>(),
+          gh<_i706.AccountRepository>(),
+        ));
+    gh.lazySingleton<_i91.CurrencyIntelligenceService>(
+        () => _i888.CurrencyIntelligenceServiceImpl(
+              gh<_i351.CurrencyService>(),
+              gh<_i706.AccountRepository>(),
+            ));
     gh.factory<_i923.AccountCreateBloc>(() => _i923.AccountCreateBloc(
           gh<_i706.AccountRepository>(),
           gh<_i351.CurrencyService>(),
@@ -251,6 +285,14 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i351.CurrencyService>(),
               gh<_i871.BudgetCsvService>(),
             ));
+    gh.factory<_i612.TransactionCreateBloc>(() => _i612.TransactionCreateBloc(
+          gh<_i421.TransactionRepository>(),
+          gh<_i266.CategoryRepository>(),
+          gh<_i706.AccountRepository>(),
+          gh<_i1021.BudgetRepository>(),
+          gh<_i664.AttachmentRepository>(),
+          gh<_i653.CurrencyDisplayBloc>(),
+        ));
     gh.lazySingleton<_i527.BudgetUpdateService>(
       () => _i249.BudgetUpdateServiceImpl(
         gh<_i1021.BudgetRepository>(),
@@ -270,6 +312,11 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i706.AccountRepository>(),
           gh<_i266.CategoryRepository>(),
         ));
+    gh.lazySingleton<_i396.AccountSelectionBloc>(
+        () => _i396.AccountSelectionBloc(
+              gh<_i706.AccountRepository>(),
+              gh<_i653.CurrencyDisplayBloc>(),
+            ));
     return this;
   }
 }

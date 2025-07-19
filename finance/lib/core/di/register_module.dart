@@ -2,6 +2,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:http/http.dart' as http;
 import 'package:injectable/injectable.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../services/database_service.dart';
 import '../database/app_database.dart';
@@ -24,6 +25,7 @@ abstract class RegisterModule {
   @lazySingleton
   GoogleSignIn get googleSignIn => GoogleSignIn(scopes: [
         'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive.appdata',
       ]);
 
   /// Provides HTTP client for network operations
@@ -55,8 +57,11 @@ abstract class RegisterModule {
   /// Provides IncrementalSyncService with async initialization
   /// Uses @preResolve to handle the async initialize() call
   @preResolve
-  Future<IncrementalSyncService> incrementalSyncService(AppDatabase database) async {
-    final service = IncrementalSyncService(database);
+  Future<IncrementalSyncService> incrementalSyncService(
+    AppDatabase database,
+    SharedPreferences prefs,
+  ) async {
+    final service = IncrementalSyncService(database, prefs);
     await service.initialize();
     return service;
   }
@@ -74,4 +79,8 @@ abstract class RegisterModule {
   /// Uses IncrementalSyncService as the default implementation
   @lazySingleton
   SyncService syncService(IncrementalSyncService service) => service;
+
+  /// Provides ImagePicker instance
+  @lazySingleton
+  ImagePicker get imagePicker => ImagePicker();
 }

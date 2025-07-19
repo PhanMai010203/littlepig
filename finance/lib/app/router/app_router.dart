@@ -12,17 +12,23 @@ import '../../features/budgets/presentation/pages/budgets_page.dart';
 import '../../features/currencies/domain/repositories/currency_repository.dart';
 import '../../features/home/presentation/pages/home_page.dart';
 import '../../features/more/presentation/pages/more_page.dart';
+import '../../features/agent/presentation/pages/ai_chat_screen.dart';
+import '../../features/agent/domain/entities/speech_service.dart';
 import '../../features/navigation/presentation/widgets/main_shell.dart';
 import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/more/presentation/pages/sync_page.dart';
+import '../../features/more/presentation/pages/sheep_premium_page.dart';
 import '../../features/transactions/domain/repositories/transaction_repository.dart';
 import '../../features/transactions/domain/repositories/attachment_repository.dart';
 import '../../features/transactions/presentation/pages/transactions_page.dart';
 import '../../features/budgets/presentation/pages/budget_create_page.dart';
 import '../../features/transactions/presentation/pages/transaction_create_page.dart';
+import '../../features/transactions/presentation/pages/transaction_detail_page.dart';
 import '../../features/accounts/presentation/pages/account_create_page.dart';
 import '../../features/budgets/presentation/bloc/budget_creation_bloc.dart';
 import '../../features/transactions/presentation/bloc/transaction_create_bloc.dart';
 import '../../features/accounts/presentation/bloc/account_create_bloc.dart';
+import '../../features/currencies/presentation/bloc/currency_display_bloc.dart';
 import 'app_routes.dart';
 import 'page_transitions.dart';
 // Add these imports for demo pages
@@ -71,6 +77,16 @@ class AppRouter {
             ),
           ),
           GoRoute(
+            path: AppRoutes.agent,
+            name: AppRoutes.agent,
+            pageBuilder: (context, state) =>
+                AppPageTransitions.noTransitionPage(
+              child: const AIChatScreen(),
+              name: state.name,
+              key: state.pageKey,
+            ),
+          ),
+          GoRoute(
             path: AppRoutes.budgets,
             name: AppRoutes.budgets,
             pageBuilder: (context, state) =>
@@ -99,6 +115,30 @@ class AppRouter {
         pageBuilder: (context, state) =>
             AppPageTransitions.platformTransitionPage(
           child: const SettingsPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+
+      // Sync page
+      GoRoute(
+        path: AppRoutes.sync,
+        name: AppRoutes.sync,
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
+          child: const SyncPage(),
+          name: state.name,
+          key: state.pageKey,
+        ),
+      ),
+
+      // Premium page
+      GoRoute(
+        path: AppRoutes.premium,
+        name: AppRoutes.premium,
+        pageBuilder: (context, state) =>
+            AppPageTransitions.platformTransitionPage(
+          child: const SheepPremiumPage(),
           name: state.name,
           key: state.pageKey,
         ),
@@ -139,6 +179,7 @@ class AppRouter {
                 getIt<AccountRepository>(),
                 getIt<BudgetRepository>(),
                 getIt<AttachmentRepository>(),
+                getIt<CurrencyDisplayBloc>(),
               ),
               child: const TransactionCreatePage(),
             ),
@@ -164,15 +205,15 @@ class AppRouter {
       // Example of custom transition routes
       // These demonstrate different transition types available
 
-      // Slide transition example (future transaction details page)
+      // Transaction detail page
       GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
         path: '/transaction/:id',
         name: 'transaction_detail',
         pageBuilder: (context, state) {
-          final transactionId = state.pathParameters['id']!;
-          // This is a placeholder - you would create the actual TransactionDetailPage
+          final transactionId = int.parse(state.pathParameters['id']!);
           return AppPageTransitions.slideTransitionPage(
-            child: _buildPlaceholderPage('Transaction $transactionId'),
+            child: TransactionDetailPage(transactionId: transactionId),
             name: state.name,
             key: state.pageKey,
             direction: SlideDirection.fromRight,

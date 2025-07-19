@@ -24,6 +24,14 @@ mixin _$SettingsEvent {
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
     required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -34,6 +42,14 @@ mixin _$SettingsEvent {
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
     TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -44,6 +60,14 @@ mixin _$SettingsEvent {
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
     TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -56,6 +80,15 @@ mixin _$SettingsEvent {
     required TResult Function(_NotificationsToggled value) notificationsToggled,
     required TResult Function(_HapticFeedbackToggled value)
         hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -66,6 +99,14 @@ mixin _$SettingsEvent {
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
     TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
@@ -76,6 +117,14 @@ mixin _$SettingsEvent {
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
     TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -149,6 +198,14 @@ class _$LoadSettingsImpl implements _LoadSettings {
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
     required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
   }) {
     return loadSettings();
   }
@@ -162,6 +219,14 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
     TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
   }) {
     return loadSettings?.call();
   }
@@ -175,6 +240,14 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
     TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
     required TResult orElse(),
   }) {
     if (loadSettings != null) {
@@ -193,6 +266,15 @@ class _$LoadSettingsImpl implements _LoadSettings {
     required TResult Function(_NotificationsToggled value) notificationsToggled,
     required TResult Function(_HapticFeedbackToggled value)
         hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
   }) {
     return loadSettings(this);
   }
@@ -206,6 +288,14 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
     TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
   }) {
     return loadSettings?.call(this);
   }
@@ -219,6 +309,14 @@ class _$LoadSettingsImpl implements _LoadSettings {
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
     TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
     required TResult orElse(),
   }) {
     if (loadSettings != null) {
@@ -308,6 +406,14 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
     required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
   }) {
     return themeModeChanged(themeMode);
   }
@@ -321,6 +427,14 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
     TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
   }) {
     return themeModeChanged?.call(themeMode);
   }
@@ -334,6 +448,14 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
     TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
     required TResult orElse(),
   }) {
     if (themeModeChanged != null) {
@@ -352,6 +474,15 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     required TResult Function(_NotificationsToggled value) notificationsToggled,
     required TResult Function(_HapticFeedbackToggled value)
         hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
   }) {
     return themeModeChanged(this);
   }
@@ -365,6 +496,14 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
     TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
   }) {
     return themeModeChanged?.call(this);
   }
@@ -378,6 +517,14 @@ class _$ThemeModeChangedImpl implements _ThemeModeChanged {
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
     TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
     required TResult orElse(),
   }) {
     if (themeModeChanged != null) {
@@ -475,6 +622,14 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
     required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
   }) {
     return analyticsToggled(enabled);
   }
@@ -488,6 +643,14 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
     TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
   }) {
     return analyticsToggled?.call(enabled);
   }
@@ -501,6 +664,14 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
     TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
     required TResult orElse(),
   }) {
     if (analyticsToggled != null) {
@@ -519,6 +690,15 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     required TResult Function(_NotificationsToggled value) notificationsToggled,
     required TResult Function(_HapticFeedbackToggled value)
         hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
   }) {
     return analyticsToggled(this);
   }
@@ -532,6 +712,14 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
     TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
   }) {
     return analyticsToggled?.call(this);
   }
@@ -545,6 +733,14 @@ class _$AnalyticsToggledImpl implements _AnalyticsToggled {
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
     TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
     required TResult orElse(),
   }) {
     if (analyticsToggled != null) {
@@ -641,6 +837,14 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
     required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
   }) {
     return autoBackupToggled(enabled);
   }
@@ -654,6 +858,14 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
     TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
   }) {
     return autoBackupToggled?.call(enabled);
   }
@@ -667,6 +879,14 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
     TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
     required TResult orElse(),
   }) {
     if (autoBackupToggled != null) {
@@ -685,6 +905,15 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     required TResult Function(_NotificationsToggled value) notificationsToggled,
     required TResult Function(_HapticFeedbackToggled value)
         hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
   }) {
     return autoBackupToggled(this);
   }
@@ -698,6 +927,14 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
     TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
   }) {
     return autoBackupToggled?.call(this);
   }
@@ -711,6 +948,14 @@ class _$AutoBackupToggledImpl implements _AutoBackupToggled {
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
     TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
     required TResult orElse(),
   }) {
     if (autoBackupToggled != null) {
@@ -809,6 +1054,14 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
     required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
   }) {
     return notificationsToggled(enabled);
   }
@@ -822,6 +1075,14 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
     TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
   }) {
     return notificationsToggled?.call(enabled);
   }
@@ -835,6 +1096,14 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
     TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
     required TResult orElse(),
   }) {
     if (notificationsToggled != null) {
@@ -853,6 +1122,15 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     required TResult Function(_NotificationsToggled value) notificationsToggled,
     required TResult Function(_HapticFeedbackToggled value)
         hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
   }) {
     return notificationsToggled(this);
   }
@@ -866,6 +1144,14 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
     TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
   }) {
     return notificationsToggled?.call(this);
   }
@@ -879,6 +1165,14 @@ class _$NotificationsToggledImpl implements _NotificationsToggled {
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
     TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
     required TResult orElse(),
   }) {
     if (notificationsToggled != null) {
@@ -977,6 +1271,14 @@ class _$HapticFeedbackToggledImpl implements _HapticFeedbackToggled {
     required TResult Function(bool enabled) autoBackupToggled,
     required TResult Function(bool enabled) notificationsToggled,
     required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
   }) {
     return hapticFeedbackToggled(enabled);
   }
@@ -990,6 +1292,14 @@ class _$HapticFeedbackToggledImpl implements _HapticFeedbackToggled {
     TResult? Function(bool enabled)? autoBackupToggled,
     TResult? Function(bool enabled)? notificationsToggled,
     TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
   }) {
     return hapticFeedbackToggled?.call(enabled);
   }
@@ -1003,6 +1313,14 @@ class _$HapticFeedbackToggledImpl implements _HapticFeedbackToggled {
     TResult Function(bool enabled)? autoBackupToggled,
     TResult Function(bool enabled)? notificationsToggled,
     TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
     required TResult orElse(),
   }) {
     if (hapticFeedbackToggled != null) {
@@ -1021,6 +1339,15 @@ class _$HapticFeedbackToggledImpl implements _HapticFeedbackToggled {
     required TResult Function(_NotificationsToggled value) notificationsToggled,
     required TResult Function(_HapticFeedbackToggled value)
         hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
   }) {
     return hapticFeedbackToggled(this);
   }
@@ -1034,6 +1361,14 @@ class _$HapticFeedbackToggledImpl implements _HapticFeedbackToggled {
     TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult? Function(_NotificationsToggled value)? notificationsToggled,
     TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
   }) {
     return hapticFeedbackToggled?.call(this);
   }
@@ -1047,6 +1382,14 @@ class _$HapticFeedbackToggledImpl implements _HapticFeedbackToggled {
     TResult Function(_AutoBackupToggled value)? autoBackupToggled,
     TResult Function(_NotificationsToggled value)? notificationsToggled,
     TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
     required TResult orElse(),
   }) {
     if (hapticFeedbackToggled != null) {
@@ -1070,12 +1413,1526 @@ abstract class _HapticFeedbackToggled implements SettingsEvent {
 }
 
 /// @nodoc
+abstract class _$$BiometricToggledImplCopyWith<$Res> {
+  factory _$$BiometricToggledImplCopyWith(_$BiometricToggledImpl value,
+          $Res Function(_$BiometricToggledImpl) then) =
+      __$$BiometricToggledImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({bool enabled});
+}
+
+/// @nodoc
+class __$$BiometricToggledImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$BiometricToggledImpl>
+    implements _$$BiometricToggledImplCopyWith<$Res> {
+  __$$BiometricToggledImplCopyWithImpl(_$BiometricToggledImpl _value,
+      $Res Function(_$BiometricToggledImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? enabled = null,
+  }) {
+    return _then(_$BiometricToggledImpl(
+      null == enabled
+          ? _value.enabled
+          : enabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$BiometricToggledImpl implements _BiometricToggled {
+  const _$BiometricToggledImpl(this.enabled);
+
+  @override
+  final bool enabled;
+
+  @override
+  String toString() {
+    return 'SettingsEvent.biometricToggled(enabled: $enabled)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BiometricToggledImpl &&
+            (identical(other.enabled, enabled) || other.enabled == enabled));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, enabled);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BiometricToggledImplCopyWith<_$BiometricToggledImpl> get copyWith =>
+      __$$BiometricToggledImplCopyWithImpl<_$BiometricToggledImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return biometricToggled(enabled);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return biometricToggled?.call(enabled);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (biometricToggled != null) {
+      return biometricToggled(enabled);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return biometricToggled(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return biometricToggled?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (biometricToggled != null) {
+      return biometricToggled(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _BiometricToggled implements SettingsEvent {
+  const factory _BiometricToggled(final bool enabled) = _$BiometricToggledImpl;
+
+  bool get enabled;
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$BiometricToggledImplCopyWith<_$BiometricToggledImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$BiometricAppLockToggledImplCopyWith<$Res> {
+  factory _$$BiometricAppLockToggledImplCopyWith(
+          _$BiometricAppLockToggledImpl value,
+          $Res Function(_$BiometricAppLockToggledImpl) then) =
+      __$$BiometricAppLockToggledImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({bool enabled});
+}
+
+/// @nodoc
+class __$$BiometricAppLockToggledImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$BiometricAppLockToggledImpl>
+    implements _$$BiometricAppLockToggledImplCopyWith<$Res> {
+  __$$BiometricAppLockToggledImplCopyWithImpl(
+      _$BiometricAppLockToggledImpl _value,
+      $Res Function(_$BiometricAppLockToggledImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? enabled = null,
+  }) {
+    return _then(_$BiometricAppLockToggledImpl(
+      null == enabled
+          ? _value.enabled
+          : enabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$BiometricAppLockToggledImpl implements _BiometricAppLockToggled {
+  const _$BiometricAppLockToggledImpl(this.enabled);
+
+  @override
+  final bool enabled;
+
+  @override
+  String toString() {
+    return 'SettingsEvent.biometricAppLockToggled(enabled: $enabled)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BiometricAppLockToggledImpl &&
+            (identical(other.enabled, enabled) || other.enabled == enabled));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, enabled);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BiometricAppLockToggledImplCopyWith<_$BiometricAppLockToggledImpl>
+      get copyWith => __$$BiometricAppLockToggledImplCopyWithImpl<
+          _$BiometricAppLockToggledImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return biometricAppLockToggled(enabled);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return biometricAppLockToggled?.call(enabled);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (biometricAppLockToggled != null) {
+      return biometricAppLockToggled(enabled);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return biometricAppLockToggled(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return biometricAppLockToggled?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (biometricAppLockToggled != null) {
+      return biometricAppLockToggled(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _BiometricAppLockToggled implements SettingsEvent {
+  const factory _BiometricAppLockToggled(final bool enabled) =
+      _$BiometricAppLockToggledImpl;
+
+  bool get enabled;
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$BiometricAppLockToggledImplCopyWith<_$BiometricAppLockToggledImpl>
+      get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$ExportSettingsImplCopyWith<$Res> {
+  factory _$$ExportSettingsImplCopyWith(_$ExportSettingsImpl value,
+          $Res Function(_$ExportSettingsImpl) then) =
+      __$$ExportSettingsImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ExportSettingsImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$ExportSettingsImpl>
+    implements _$$ExportSettingsImplCopyWith<$Res> {
+  __$$ExportSettingsImplCopyWithImpl(
+      _$ExportSettingsImpl _value, $Res Function(_$ExportSettingsImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ExportSettingsImpl implements _ExportSettings {
+  const _$ExportSettingsImpl();
+
+  @override
+  String toString() {
+    return 'SettingsEvent.exportSettings()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ExportSettingsImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return exportSettings();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return exportSettings?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportSettings != null) {
+      return exportSettings();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return exportSettings(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return exportSettings?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportSettings != null) {
+      return exportSettings(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ExportSettings implements SettingsEvent {
+  const factory _ExportSettings() = _$ExportSettingsImpl;
+}
+
+/// @nodoc
+abstract class _$$ExportAllDataImplCopyWith<$Res> {
+  factory _$$ExportAllDataImplCopyWith(
+          _$ExportAllDataImpl value, $Res Function(_$ExportAllDataImpl) then) =
+      __$$ExportAllDataImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ExportAllDataImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$ExportAllDataImpl>
+    implements _$$ExportAllDataImplCopyWith<$Res> {
+  __$$ExportAllDataImplCopyWithImpl(
+      _$ExportAllDataImpl _value, $Res Function(_$ExportAllDataImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ExportAllDataImpl implements _ExportAllData {
+  const _$ExportAllDataImpl();
+
+  @override
+  String toString() {
+    return 'SettingsEvent.exportAllData()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ExportAllDataImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return exportAllData();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return exportAllData?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportAllData != null) {
+      return exportAllData();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return exportAllData(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return exportAllData?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportAllData != null) {
+      return exportAllData(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ExportAllData implements SettingsEvent {
+  const factory _ExportAllData() = _$ExportAllDataImpl;
+}
+
+/// @nodoc
+abstract class _$$ExportTransactionsImplCopyWith<$Res> {
+  factory _$$ExportTransactionsImplCopyWith(_$ExportTransactionsImpl value,
+          $Res Function(_$ExportTransactionsImpl) then) =
+      __$$ExportTransactionsImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ExportTransactionsImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$ExportTransactionsImpl>
+    implements _$$ExportTransactionsImplCopyWith<$Res> {
+  __$$ExportTransactionsImplCopyWithImpl(_$ExportTransactionsImpl _value,
+      $Res Function(_$ExportTransactionsImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ExportTransactionsImpl implements _ExportTransactions {
+  const _$ExportTransactionsImpl();
+
+  @override
+  String toString() {
+    return 'SettingsEvent.exportTransactions()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ExportTransactionsImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return exportTransactions();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return exportTransactions?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportTransactions != null) {
+      return exportTransactions();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return exportTransactions(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return exportTransactions?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportTransactions != null) {
+      return exportTransactions(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ExportTransactions implements SettingsEvent {
+  const factory _ExportTransactions() = _$ExportTransactionsImpl;
+}
+
+/// @nodoc
+abstract class _$$ExportAccountsImplCopyWith<$Res> {
+  factory _$$ExportAccountsImplCopyWith(_$ExportAccountsImpl value,
+          $Res Function(_$ExportAccountsImpl) then) =
+      __$$ExportAccountsImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ExportAccountsImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$ExportAccountsImpl>
+    implements _$$ExportAccountsImplCopyWith<$Res> {
+  __$$ExportAccountsImplCopyWithImpl(
+      _$ExportAccountsImpl _value, $Res Function(_$ExportAccountsImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ExportAccountsImpl implements _ExportAccounts {
+  const _$ExportAccountsImpl();
+
+  @override
+  String toString() {
+    return 'SettingsEvent.exportAccounts()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ExportAccountsImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return exportAccounts();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return exportAccounts?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportAccounts != null) {
+      return exportAccounts();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return exportAccounts(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return exportAccounts?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportAccounts != null) {
+      return exportAccounts(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ExportAccounts implements SettingsEvent {
+  const factory _ExportAccounts() = _$ExportAccountsImpl;
+}
+
+/// @nodoc
+abstract class _$$ExportCategoriesImplCopyWith<$Res> {
+  factory _$$ExportCategoriesImplCopyWith(_$ExportCategoriesImpl value,
+          $Res Function(_$ExportCategoriesImpl) then) =
+      __$$ExportCategoriesImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ExportCategoriesImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$ExportCategoriesImpl>
+    implements _$$ExportCategoriesImplCopyWith<$Res> {
+  __$$ExportCategoriesImplCopyWithImpl(_$ExportCategoriesImpl _value,
+      $Res Function(_$ExportCategoriesImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ExportCategoriesImpl implements _ExportCategories {
+  const _$ExportCategoriesImpl();
+
+  @override
+  String toString() {
+    return 'SettingsEvent.exportCategories()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ExportCategoriesImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return exportCategories();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return exportCategories?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportCategories != null) {
+      return exportCategories();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return exportCategories(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return exportCategories?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportCategories != null) {
+      return exportCategories(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ExportCategories implements SettingsEvent {
+  const factory _ExportCategories() = _$ExportCategoriesImpl;
+}
+
+/// @nodoc
+abstract class _$$ExportBudgetsImplCopyWith<$Res> {
+  factory _$$ExportBudgetsImplCopyWith(
+          _$ExportBudgetsImpl value, $Res Function(_$ExportBudgetsImpl) then) =
+      __$$ExportBudgetsImplCopyWithImpl<$Res>;
+}
+
+/// @nodoc
+class __$$ExportBudgetsImplCopyWithImpl<$Res>
+    extends _$SettingsEventCopyWithImpl<$Res, _$ExportBudgetsImpl>
+    implements _$$ExportBudgetsImplCopyWith<$Res> {
+  __$$ExportBudgetsImplCopyWithImpl(
+      _$ExportBudgetsImpl _value, $Res Function(_$ExportBudgetsImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SettingsEvent
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+
+class _$ExportBudgetsImpl implements _ExportBudgets {
+  const _$ExportBudgetsImpl();
+
+  @override
+  String toString() {
+    return 'SettingsEvent.exportBudgets()';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType && other is _$ExportBudgetsImpl);
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() loadSettings,
+    required TResult Function(ThemeMode themeMode) themeModeChanged,
+    required TResult Function(bool enabled) analyticsToggled,
+    required TResult Function(bool enabled) autoBackupToggled,
+    required TResult Function(bool enabled) notificationsToggled,
+    required TResult Function(bool enabled) hapticFeedbackToggled,
+    required TResult Function(bool enabled) biometricToggled,
+    required TResult Function(bool enabled) biometricAppLockToggled,
+    required TResult Function() exportSettings,
+    required TResult Function() exportAllData,
+    required TResult Function() exportTransactions,
+    required TResult Function() exportAccounts,
+    required TResult Function() exportCategories,
+    required TResult Function() exportBudgets,
+  }) {
+    return exportBudgets();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function()? loadSettings,
+    TResult? Function(ThemeMode themeMode)? themeModeChanged,
+    TResult? Function(bool enabled)? analyticsToggled,
+    TResult? Function(bool enabled)? autoBackupToggled,
+    TResult? Function(bool enabled)? notificationsToggled,
+    TResult? Function(bool enabled)? hapticFeedbackToggled,
+    TResult? Function(bool enabled)? biometricToggled,
+    TResult? Function(bool enabled)? biometricAppLockToggled,
+    TResult? Function()? exportSettings,
+    TResult? Function()? exportAllData,
+    TResult? Function()? exportTransactions,
+    TResult? Function()? exportAccounts,
+    TResult? Function()? exportCategories,
+    TResult? Function()? exportBudgets,
+  }) {
+    return exportBudgets?.call();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function()? loadSettings,
+    TResult Function(ThemeMode themeMode)? themeModeChanged,
+    TResult Function(bool enabled)? analyticsToggled,
+    TResult Function(bool enabled)? autoBackupToggled,
+    TResult Function(bool enabled)? notificationsToggled,
+    TResult Function(bool enabled)? hapticFeedbackToggled,
+    TResult Function(bool enabled)? biometricToggled,
+    TResult Function(bool enabled)? biometricAppLockToggled,
+    TResult Function()? exportSettings,
+    TResult Function()? exportAllData,
+    TResult Function()? exportTransactions,
+    TResult Function()? exportAccounts,
+    TResult Function()? exportCategories,
+    TResult Function()? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportBudgets != null) {
+      return exportBudgets();
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_LoadSettings value) loadSettings,
+    required TResult Function(_ThemeModeChanged value) themeModeChanged,
+    required TResult Function(_AnalyticsToggled value) analyticsToggled,
+    required TResult Function(_AutoBackupToggled value) autoBackupToggled,
+    required TResult Function(_NotificationsToggled value) notificationsToggled,
+    required TResult Function(_HapticFeedbackToggled value)
+        hapticFeedbackToggled,
+    required TResult Function(_BiometricToggled value) biometricToggled,
+    required TResult Function(_BiometricAppLockToggled value)
+        biometricAppLockToggled,
+    required TResult Function(_ExportSettings value) exportSettings,
+    required TResult Function(_ExportAllData value) exportAllData,
+    required TResult Function(_ExportTransactions value) exportTransactions,
+    required TResult Function(_ExportAccounts value) exportAccounts,
+    required TResult Function(_ExportCategories value) exportCategories,
+    required TResult Function(_ExportBudgets value) exportBudgets,
+  }) {
+    return exportBudgets(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_LoadSettings value)? loadSettings,
+    TResult? Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult? Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult? Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult? Function(_NotificationsToggled value)? notificationsToggled,
+    TResult? Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult? Function(_BiometricToggled value)? biometricToggled,
+    TResult? Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult? Function(_ExportSettings value)? exportSettings,
+    TResult? Function(_ExportAllData value)? exportAllData,
+    TResult? Function(_ExportTransactions value)? exportTransactions,
+    TResult? Function(_ExportAccounts value)? exportAccounts,
+    TResult? Function(_ExportCategories value)? exportCategories,
+    TResult? Function(_ExportBudgets value)? exportBudgets,
+  }) {
+    return exportBudgets?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_LoadSettings value)? loadSettings,
+    TResult Function(_ThemeModeChanged value)? themeModeChanged,
+    TResult Function(_AnalyticsToggled value)? analyticsToggled,
+    TResult Function(_AutoBackupToggled value)? autoBackupToggled,
+    TResult Function(_NotificationsToggled value)? notificationsToggled,
+    TResult Function(_HapticFeedbackToggled value)? hapticFeedbackToggled,
+    TResult Function(_BiometricToggled value)? biometricToggled,
+    TResult Function(_BiometricAppLockToggled value)? biometricAppLockToggled,
+    TResult Function(_ExportSettings value)? exportSettings,
+    TResult Function(_ExportAllData value)? exportAllData,
+    TResult Function(_ExportTransactions value)? exportTransactions,
+    TResult Function(_ExportAccounts value)? exportAccounts,
+    TResult Function(_ExportCategories value)? exportCategories,
+    TResult Function(_ExportBudgets value)? exportBudgets,
+    required TResult orElse(),
+  }) {
+    if (exportBudgets != null) {
+      return exportBudgets(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _ExportBudgets implements SettingsEvent {
+  const factory _ExportBudgets() = _$ExportBudgetsImpl;
+}
+
+/// @nodoc
 mixin _$SettingsState {
   ThemeMode get themeMode => throw _privateConstructorUsedError;
   bool get analyticsEnabled => throw _privateConstructorUsedError;
   bool get autoBackupEnabled => throw _privateConstructorUsedError;
   bool get notificationsEnabled => throw _privateConstructorUsedError;
   bool get hapticFeedbackEnabled => throw _privateConstructorUsedError;
+  bool get biometricEnabled => throw _privateConstructorUsedError;
+  bool get biometricAppLockEnabled => throw _privateConstructorUsedError;
+  bool get isExporting => throw _privateConstructorUsedError;
+  String? get exportStatus => throw _privateConstructorUsedError;
+  String? get exportError => throw _privateConstructorUsedError;
+  bool get isBiometricAuthenticating => throw _privateConstructorUsedError;
+  String? get biometricAuthError => throw _privateConstructorUsedError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -1095,7 +2952,14 @@ abstract class $SettingsStateCopyWith<$Res> {
       bool analyticsEnabled,
       bool autoBackupEnabled,
       bool notificationsEnabled,
-      bool hapticFeedbackEnabled});
+      bool hapticFeedbackEnabled,
+      bool biometricEnabled,
+      bool biometricAppLockEnabled,
+      bool isExporting,
+      String? exportStatus,
+      String? exportError,
+      bool isBiometricAuthenticating,
+      String? biometricAuthError});
 }
 
 /// @nodoc
@@ -1118,6 +2982,13 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
     Object? autoBackupEnabled = null,
     Object? notificationsEnabled = null,
     Object? hapticFeedbackEnabled = null,
+    Object? biometricEnabled = null,
+    Object? biometricAppLockEnabled = null,
+    Object? isExporting = null,
+    Object? exportStatus = freezed,
+    Object? exportError = freezed,
+    Object? isBiometricAuthenticating = null,
+    Object? biometricAuthError = freezed,
   }) {
     return _then(_value.copyWith(
       themeMode: null == themeMode
@@ -1140,6 +3011,34 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
           ? _value.hapticFeedbackEnabled
           : hapticFeedbackEnabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      biometricEnabled: null == biometricEnabled
+          ? _value.biometricEnabled
+          : biometricEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      biometricAppLockEnabled: null == biometricAppLockEnabled
+          ? _value.biometricAppLockEnabled
+          : biometricAppLockEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isExporting: null == isExporting
+          ? _value.isExporting
+          : isExporting // ignore: cast_nullable_to_non_nullable
+              as bool,
+      exportStatus: freezed == exportStatus
+          ? _value.exportStatus
+          : exportStatus // ignore: cast_nullable_to_non_nullable
+              as String?,
+      exportError: freezed == exportError
+          ? _value.exportError
+          : exportError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      isBiometricAuthenticating: null == isBiometricAuthenticating
+          ? _value.isBiometricAuthenticating
+          : isBiometricAuthenticating // ignore: cast_nullable_to_non_nullable
+              as bool,
+      biometricAuthError: freezed == biometricAuthError
+          ? _value.biometricAuthError
+          : biometricAuthError // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -1157,7 +3056,14 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
       bool analyticsEnabled,
       bool autoBackupEnabled,
       bool notificationsEnabled,
-      bool hapticFeedbackEnabled});
+      bool hapticFeedbackEnabled,
+      bool biometricEnabled,
+      bool biometricAppLockEnabled,
+      bool isExporting,
+      String? exportStatus,
+      String? exportError,
+      bool isBiometricAuthenticating,
+      String? biometricAuthError});
 }
 
 /// @nodoc
@@ -1178,6 +3084,13 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
     Object? autoBackupEnabled = null,
     Object? notificationsEnabled = null,
     Object? hapticFeedbackEnabled = null,
+    Object? biometricEnabled = null,
+    Object? biometricAppLockEnabled = null,
+    Object? isExporting = null,
+    Object? exportStatus = freezed,
+    Object? exportError = freezed,
+    Object? isBiometricAuthenticating = null,
+    Object? biometricAuthError = freezed,
   }) {
     return _then(_$SettingsStateImpl(
       themeMode: null == themeMode
@@ -1200,6 +3113,34 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
           ? _value.hapticFeedbackEnabled
           : hapticFeedbackEnabled // ignore: cast_nullable_to_non_nullable
               as bool,
+      biometricEnabled: null == biometricEnabled
+          ? _value.biometricEnabled
+          : biometricEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      biometricAppLockEnabled: null == biometricAppLockEnabled
+          ? _value.biometricAppLockEnabled
+          : biometricAppLockEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isExporting: null == isExporting
+          ? _value.isExporting
+          : isExporting // ignore: cast_nullable_to_non_nullable
+              as bool,
+      exportStatus: freezed == exportStatus
+          ? _value.exportStatus
+          : exportStatus // ignore: cast_nullable_to_non_nullable
+              as String?,
+      exportError: freezed == exportError
+          ? _value.exportError
+          : exportError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      isBiometricAuthenticating: null == isBiometricAuthenticating
+          ? _value.isBiometricAuthenticating
+          : isBiometricAuthenticating // ignore: cast_nullable_to_non_nullable
+              as bool,
+      biometricAuthError: freezed == biometricAuthError
+          ? _value.biometricAuthError
+          : biometricAuthError // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -1212,7 +3153,14 @@ class _$SettingsStateImpl implements _SettingsState {
       required this.analyticsEnabled,
       required this.autoBackupEnabled,
       required this.notificationsEnabled,
-      required this.hapticFeedbackEnabled});
+      required this.hapticFeedbackEnabled,
+      required this.biometricEnabled,
+      required this.biometricAppLockEnabled,
+      this.isExporting = false,
+      this.exportStatus = null,
+      this.exportError = null,
+      this.isBiometricAuthenticating = false,
+      this.biometricAuthError = null});
 
   @override
   final ThemeMode themeMode;
@@ -1224,10 +3172,29 @@ class _$SettingsStateImpl implements _SettingsState {
   final bool notificationsEnabled;
   @override
   final bool hapticFeedbackEnabled;
+  @override
+  final bool biometricEnabled;
+  @override
+  final bool biometricAppLockEnabled;
+  @override
+  @JsonKey()
+  final bool isExporting;
+  @override
+  @JsonKey()
+  final String? exportStatus;
+  @override
+  @JsonKey()
+  final String? exportError;
+  @override
+  @JsonKey()
+  final bool isBiometricAuthenticating;
+  @override
+  @JsonKey()
+  final String? biometricAuthError;
 
   @override
   String toString() {
-    return 'SettingsState(themeMode: $themeMode, analyticsEnabled: $analyticsEnabled, autoBackupEnabled: $autoBackupEnabled, notificationsEnabled: $notificationsEnabled, hapticFeedbackEnabled: $hapticFeedbackEnabled)';
+    return 'SettingsState(themeMode: $themeMode, analyticsEnabled: $analyticsEnabled, autoBackupEnabled: $autoBackupEnabled, notificationsEnabled: $notificationsEnabled, hapticFeedbackEnabled: $hapticFeedbackEnabled, biometricEnabled: $biometricEnabled, biometricAppLockEnabled: $biometricAppLockEnabled, isExporting: $isExporting, exportStatus: $exportStatus, exportError: $exportError, isBiometricAuthenticating: $isBiometricAuthenticating, biometricAuthError: $biometricAuthError)';
   }
 
   @override
@@ -1244,12 +3211,40 @@ class _$SettingsStateImpl implements _SettingsState {
             (identical(other.notificationsEnabled, notificationsEnabled) ||
                 other.notificationsEnabled == notificationsEnabled) &&
             (identical(other.hapticFeedbackEnabled, hapticFeedbackEnabled) ||
-                other.hapticFeedbackEnabled == hapticFeedbackEnabled));
+                other.hapticFeedbackEnabled == hapticFeedbackEnabled) &&
+            (identical(other.biometricEnabled, biometricEnabled) ||
+                other.biometricEnabled == biometricEnabled) &&
+            (identical(
+                    other.biometricAppLockEnabled, biometricAppLockEnabled) ||
+                other.biometricAppLockEnabled == biometricAppLockEnabled) &&
+            (identical(other.isExporting, isExporting) ||
+                other.isExporting == isExporting) &&
+            (identical(other.exportStatus, exportStatus) ||
+                other.exportStatus == exportStatus) &&
+            (identical(other.exportError, exportError) ||
+                other.exportError == exportError) &&
+            (identical(other.isBiometricAuthenticating,
+                    isBiometricAuthenticating) ||
+                other.isBiometricAuthenticating == isBiometricAuthenticating) &&
+            (identical(other.biometricAuthError, biometricAuthError) ||
+                other.biometricAuthError == biometricAuthError));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, themeMode, analyticsEnabled,
-      autoBackupEnabled, notificationsEnabled, hapticFeedbackEnabled);
+  int get hashCode => Object.hash(
+      runtimeType,
+      themeMode,
+      analyticsEnabled,
+      autoBackupEnabled,
+      notificationsEnabled,
+      hapticFeedbackEnabled,
+      biometricEnabled,
+      biometricAppLockEnabled,
+      isExporting,
+      exportStatus,
+      exportError,
+      isBiometricAuthenticating,
+      biometricAuthError);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -1266,7 +3261,14 @@ abstract class _SettingsState implements SettingsState {
       required final bool analyticsEnabled,
       required final bool autoBackupEnabled,
       required final bool notificationsEnabled,
-      required final bool hapticFeedbackEnabled}) = _$SettingsStateImpl;
+      required final bool hapticFeedbackEnabled,
+      required final bool biometricEnabled,
+      required final bool biometricAppLockEnabled,
+      final bool isExporting,
+      final String? exportStatus,
+      final String? exportError,
+      final bool isBiometricAuthenticating,
+      final String? biometricAuthError}) = _$SettingsStateImpl;
 
   @override
   ThemeMode get themeMode;
@@ -1278,6 +3280,20 @@ abstract class _SettingsState implements SettingsState {
   bool get notificationsEnabled;
   @override
   bool get hapticFeedbackEnabled;
+  @override
+  bool get biometricEnabled;
+  @override
+  bool get biometricAppLockEnabled;
+  @override
+  bool get isExporting;
+  @override
+  String? get exportStatus;
+  @override
+  String? get exportError;
+  @override
+  bool get isBiometricAuthenticating;
+  @override
+  String? get biometricAuthError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.

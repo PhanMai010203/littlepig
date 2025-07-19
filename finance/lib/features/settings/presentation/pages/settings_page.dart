@@ -57,23 +57,30 @@ class _SettingsPageState extends State<SettingsPage> {
               _buildDivider(),
 
               // Text Section
+              /*
               _buildSectionHeader('Text'),
               _buildFontSelector(),
               _buildContrastSetting(),
               _buildDivider(),
+              */
 
               // Accessibility Section
+              /*
               _buildSectionHeader('Accessibility'),
               _buildReduceAnimationsSetting(),
               _buildHapticFeedbackSetting(),
               _buildDivider(),
+              */
 
               // Animation Framework Section (Phase 6.1)
+              /*
               _buildSectionHeader('Animations'),
               _buildAnimationFrameworkSettings(),
               _buildDivider(),
+              */
 
               // Data & Privacy Section
+              /*
               _buildSectionHeader('Data & Privacy'),
               SwitchListTile(
                 secondary: const Icon(Icons.analytics),
@@ -98,8 +105,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               _buildDivider(),
+              */
 
               // Notifications Section
+              /*
               _buildSectionHeader('Notifications'),
               SwitchListTile(
                 secondary: const Icon(Icons.notifications),
@@ -113,15 +122,19 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               _buildDivider(),
+              */
 
               // Debug Section (Phase 6.2)
+              /*
               _buildSectionHeader('Debug & Performance'),
               _buildPerformanceMonitorTile(),
               _buildPerformanceMetricsTile(),
               _buildResetMetricsTile(),
               _buildDivider(),
+              */
 
               // App Info Section
+              /*
               _buildSectionHeader('App Info'),
               const ListTile(
                 leading: Icon(Icons.info),
@@ -134,6 +147,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 subtitle: Text('1'),
               ),
               _buildAboutTile(),
+              */
             ],
           );
         },
@@ -496,6 +510,8 @@ class _SettingsPageState extends State<SettingsPage> {
       },
     );
   }
+
+
 
   /// Phase 6.1: Enhanced Animation Framework Settings
   Widget _buildAnimationFrameworkSettings() {
@@ -1154,4 +1170,8 @@ class _SettingsPageState extends State<SettingsPage> {
       animationType: DialogService.defaultPopupAnimation,
     );
   }
+
+
+
+
 }

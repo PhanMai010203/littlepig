@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../database/app_database.dart';
+import '../utils/safe_parsing.dart';
 
 /// Represents a synchronization event that can be applied across devices
 class SyncEvent {
@@ -29,13 +31,28 @@ class SyncEvent {
 
   /// Create from database event log entry
   factory SyncEvent.fromEventLog(SyncEventLogData eventLog) {
+    debugPrint('🔧 SyncEvent.fromEventLog: Creating from eventId=${eventLog.eventId}');
+    debugPrint('🔧 Raw data field: "${eventLog.data}" (${eventLog.data.runtimeType})');
+    debugPrint('🔧 Raw timestamp field: "${eventLog.timestamp}" (${eventLog.timestamp.runtimeType})');
+    debugPrint('🔧 Raw sequenceNumber field: "${eventLog.sequenceNumber}" (${eventLog.sequenceNumber.runtimeType})');
+    
+    Map<String, dynamic> parsedData;
+    try {
+      parsedData = jsonDecode(eventLog.data);
+      debugPrint('🔧 Successfully parsed JSON data');
+    } catch (jsonError) {
+      debugPrint('❌ JSON decode error: $jsonError');
+      debugPrint('❌ Problematic data: "${eventLog.data}"');
+      rethrow;
+    }
+    
     return SyncEvent(
       eventId: eventLog.eventId,
       deviceId: eventLog.deviceId,
       tableName: eventLog.tableNameField,
       recordId: eventLog.recordId,
       operation: eventLog.operation,
-      data: jsonDecode(eventLog.data),
+      data: parsedData,
       timestamp: eventLog.timestamp,
       sequenceNumber: eventLog.sequenceNumber,
       hash: eventLog.hash,
@@ -45,17 +62,19 @@ class SyncEvent {
 
   /// Create from JSON (for network transmission)
   factory SyncEvent.fromJson(Map<String, dynamic> json) {
+    debugPrint('🔧 SyncEvent.fromJson: Parsing event with eventId=${json['eventId']}, sequenceNumber=${json['sequenceNumber']} (type: ${json['sequenceNumber'].runtimeType})');
+    
     return SyncEvent(
-      eventId: json['eventId'],
-      deviceId: json['deviceId'],
-      tableName: json['tableName'],
-      recordId: json['recordId'],
-      operation: json['operation'],
-      data: Map<String, dynamic>.from(json['data']),
-      timestamp: DateTime.parse(json['timestamp']),
-      sequenceNumber: json['sequenceNumber'],
-      hash: json['hash'],
-      isSynced: json['isSynced'] ?? false,
+      eventId: json['eventId'] ?? '',
+      deviceId: json['deviceId'] ?? '',
+      tableName: json['tableName'] ?? '',
+      recordId: json['recordId'] ?? '',
+      operation: json['operation'] ?? '',
+      data: json['data'] != null ? Map<String, dynamic>.from(json['data']) : {},
+      timestamp: SafeParsing.parseDateTime(json['timestamp']),
+      sequenceNumber: SafeParsing.parseInt(json['sequenceNumber']),
+      hash: json['hash'] ?? '',
+      isSynced: SafeParsing.parseBool(json['isSynced']),
     );
   }
 

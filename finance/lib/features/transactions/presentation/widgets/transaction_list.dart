@@ -3,6 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
+import 'package:go_router/go_router.dart';
+import 'package:flutter/services.dart';
 
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/transaction.dart';
@@ -10,11 +12,11 @@ import '../../../../features/categories/domain/entities/category.dart';
 import '../bloc/transactions_bloc.dart';
 import '../bloc/transactions_event.dart';
 import '../bloc/transactions_state.dart'; // Import for TransactionListItem types
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
 // Phase 5 imports
 import '../../../../shared/utils/responsive_layout_builder.dart';
 import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../shared/utils/no_overscroll_behavior.dart';
-import '../../../../shared/widgets/animations/tappable_widget.dart';
 import '../../../../shared/widgets/dialogs/note_popup.dart';
 
 /// Widget that displays a list of transactions grouped by date
@@ -52,7 +54,7 @@ class TransactionList extends StatelessWidget {
     if (selectedMonthTransactions.isEmpty) {
       return SliverFillRemaining(
         child: Center(
-          child: AppText('No transactions for this month.'),
+          child: AppText('home.no_transactions_this_month'.tr()),
         ),
       );
     }
@@ -190,7 +192,7 @@ class PaginatedTransactionList extends StatelessWidget {
         noItemsFoundIndicatorBuilder: (context) => Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
-            child: AppText('No transactions for this month.'),
+            child: AppText('home.no_transactions_this_month'.tr()),
           ),
         ),
         noMoreItemsIndicatorBuilder: (context) => const Center(
@@ -216,10 +218,20 @@ class PaginatedTransactionList extends StatelessWidget {
             colorName: "textSecondary",
           ),
           if (item.transactionCount > 1)
-            AppText(
-              NumberFormat.currency(symbol: '\$').format(item.totalAmount),
-              fontWeight: FontWeight.bold,
-              colorName: "textSecondary",
+            BlocBuilder<CurrencyDisplayBloc, CurrencyDisplayState>(
+              builder: (context, currencyState) {
+                return FutureBuilder<String>(
+                  future: context.read<CurrencyDisplayBloc>()
+                      .formatInDisplayCurrency(item.totalAmount, 'USD'),
+                  builder: (context, snapshot) {
+                    return AppText(
+                      snapshot.data ?? NumberFormat.currency(symbol: '\$').format(item.totalAmount),
+                      fontWeight: FontWeight.bold,
+                      colorName: "textSecondary",
+                    );
+                  },
+                );
+              },
             ),
         ],
       ),
@@ -277,10 +289,11 @@ class TransactionTile extends StatelessWidget {
         type: MaterialType.card,
         elevation: 2.0,
         shadowColor: Colors.transparent,
-        child: TappableWidget(
+        child: GestureDetector(
           onTap: () {
-            // TODO: Navigate to transaction details
+            context.push('/transaction/${transaction.id}');
           },
+          onLongPressStart: (details) => _handleLongPressStart(context, details),
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Row(
@@ -356,10 +369,25 @@ class TransactionTile extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 4),
-                AppText(
-                  '${isIncome ? '+' : ''}${NumberFormat.currency(symbol: '\$').format(amount)}',
-                  fontWeight: FontWeight.bold,
-                  colorName: isIncome ? 'success' : 'error',
+                BlocBuilder<CurrencyDisplayBloc, CurrencyDisplayState>(
+                  builder: (context, currencyState) {
+                    return FutureBuilder<String>(
+                      future: context.read<CurrencyDisplayBloc>()
+                          .formatInDisplayCurrency(amount, 'USD'),
+                      builder: (context, snapshot) {
+                        String displayAmount = snapshot.data ?? '${NumberFormat.currency(symbol: '\$').format(amount)}';
+                        // Add sign for income
+                        if (isIncome && !displayAmount.startsWith('+')) {
+                          displayAmount = '+$displayAmount';
+                        }
+                        return AppText(
+                          displayAmount,
+                          fontWeight: FontWeight.bold,
+                          colorName: isIncome ? 'success' : 'error',
+                        );
+                      },
+                    );
+                  },
                 ),
               ],
             ),
@@ -367,5 +395,50 @@ class TransactionTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void _handleLongPressStart(BuildContext context, LongPressStartDetails details) {
+    // Haptic feedback
+    HapticFeedback.mediumImpact();
+
+    // Show floating "Delete" note popup at fingertip position
+    NotePopup.show(
+      context,
+      'Delete',
+      details.globalPosition,
+      const Size(50, 50), // Approximate finger size
+      textColor: Colors.red,
+      onTap: () => _showDeleteConfirmation(context),
+    );
+  }
+
+  Future<void> _showDeleteConfirmation(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: AppText('Delete Transaction'),
+            content: AppText(
+              'Are you sure you want to delete "${transaction.title}"? This action cannot be undone.',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: AppText('Cancel'),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: AppText(
+                  'Delete',
+                  textColor: Colors.red,
+                ),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (confirmed && transaction.id != null && context.mounted) {
+      context.read<TransactionsBloc>().add(DeleteTransactionEvent(transaction.id!));
+    }
   }
 }

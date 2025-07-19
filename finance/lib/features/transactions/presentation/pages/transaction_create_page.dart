@@ -21,6 +21,8 @@ import '../bloc/transaction_create_state.dart';
 import '../../domain/entities/transaction_enums.dart';
 import '../../../categories/domain/entities/category.dart';
 import '../../../accounts/domain/entities/account.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
+import '../../../accounts/presentation/bloc/account_selection_bloc.dart';
 import '../../../../core/di/injection.dart';
 
 
@@ -203,10 +205,10 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
   }
 
 
-  String _formatCurrency(double amount) {
+  String _formatCurrency(double amount, {String? currency}) {
     return NumberFormat.currency(
       locale: 'en_US',
-      symbol: '\$',
+      symbol: currency ?? '\$',
       decimalDigits: 2,
     ).format(amount);
   }
@@ -441,8 +443,15 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<TransactionCreateBloc>(
-      create: (context) => _bloc,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<TransactionCreateBloc>(
+          create: (context) => _bloc,
+        ),
+        BlocProvider<CurrencyDisplayBloc>.value(
+          value: context.read<CurrencyDisplayBloc>(),
+        ),
+      ],
       child: BlocListener<TransactionCreateBloc, TransactionCreateState>(
         listener: (context, state) {
           if (state is TransactionCreateSuccess) {
@@ -665,7 +674,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
             ),
           ),
           child: AppText(
-            _formatCurrency(state.amount ?? 0.0),
+            _formatCurrency(state.amount ?? 0.0, currency: state.selectedAccount?.currency),
             fontSize: 48,
             fontWeight: FontWeight.bold,
           ),
@@ -1030,7 +1039,7 @@ class _TransactionCreatePageState extends State<TransactionCreatePage>
               
               return ListTile(
                 title: AppText(budget.name),
-                subtitle: AppText(_formatCurrency(budget.amount)),
+                subtitle: AppText(_formatCurrency(budget.amount, currency: state.selectedAccount?.currency)),
                 enabled: !isAlreadyLinked,
                 onTap: isAlreadyLinked
                     ? null

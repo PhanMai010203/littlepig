@@ -1,9 +1,10 @@
 {
-  "finance_app": "Finance App",
-  "app_name": "Personal Finance",
+  "finance_app": "Sheep",
+  "app_name": "Sheep",
   "navigation": {
     "home": "Home",
     "transactions": "Transactions",
+    "agent": "AI Assistant",
     "budgets": "Budgets",
     "more": "More",
     "customize_title": "Customize Navigation",
@@ -69,7 +70,9 @@
     "state": {
       "completed": "Completed",
       "pending": "Pending",
-      "scheduled": "Scheduled"
+      "scheduled": "Scheduled",
+      "cancelled": "Cancelled",
+      "action_required": "Action Required"
     },
     "special_type": "Special Type",
     "credit": "Credit",
@@ -94,7 +97,26 @@
     "failed_to_select_photo": "Failed to select photo: {error}",
     "photos_selected": "{count} photos selected",
     "multiple_photos": "Multiple photos",
-    "failed_to_select_photos": "Failed to select photos: {error}"
+    "failed_to_select_photos": "Failed to select photos: {error}",
+    "transaction_details": "Transaction Details",
+    "details": "Details",
+    "status": "Status",
+    "account": "Account",
+    "unknown": "Unknown",
+    "duplicate": "Duplicate",
+    "duplicate_functionality_coming_soon": "Duplicate functionality coming soon",
+    "delete_transaction": "Delete Transaction",
+    "delete_confirmation": "Are you sure you want to delete \"{title}\"? This action cannot be undone.",
+    "one_time": "One-time",
+    "actions": {
+      "pay": "Pay",
+      "skip": "Skip",
+      "collect": "Collect",
+      "settle": "Settle",
+      "edit": "Edit",
+      "delete": "Delete",
+      "coming_soon": "{action} action coming soon"
+    }
   },
 
   "budgets": {
@@ -114,8 +136,8 @@
     "create": "Create new budget",
     "empty": "No budgets found. Create one!",
     "details_coming": "Budget details coming soon for {name}",
-    "overspent_of": "overspent of ${amount}",
-    "left_of": "left of ${amount}",
+    "overspent_of": "overspent of {amount}",
+    "left_of": "left of {amount}",
     "today": "Today",
     "expense_budget": "Expense Budget",
     "savings_budget": "Savings Budget",
@@ -130,6 +152,7 @@
     "no_categories_excluded": "No categories excluded",
     "categories_excluded": "categories excluded",
     "disabled_by_exclude": "Disabled by exclude mode",
+    "daily_allowance_label": "You can spend \\${}/day for {} more days",
 
     "form": {
       "create_new_budget": "Create New Budget",
@@ -240,6 +263,8 @@
     "biometric_auth": "Biometric Authentication",
     "passcode_lock": "Passcode Lock",
 
+
+
     "data": "Data",
     "export_data": "Export Data",
     "import_data": "Import Data",
@@ -248,6 +273,50 @@
 
     "color_picker_title": "Choose Color",
     "color_picker_subtitle": "Select your preferred accent color"
+  },
+
+  "biometric": {
+    "authentication_title": "Biometric Authentication",
+    "enable_security_title": "Enable Biometric Security",
+    "unlock_app_title": "Unlock App",
+    "biometric_required_title": "Biometric Required",
+    "unlock_required_title": "Unlock Required",
+    "device_credentials_required_title": "Device Credentials Required",
+    "cancel_button": "Cancel",
+    "settings_button": "Settings",
+    "authenticate_reason_default": "Please authenticate to access the app",
+    "authenticate_reason_setup": "Authenticate to enable biometric security for this app",
+    "authenticate_reason_unlock": "Unlock the app to continue",
+    "setup_description": "Please set up biometric authentication in your device settings",
+    "touch_sensor_hint": "Touch sensor",
+    "touch_sensor_unlock_hint": "Touch sensor to unlock app",
+    "touch_sensor_setup_hint": "Touch sensor to enable biometric security",
+    "not_recognized": "Biometric not recognized, try again",
+    "authentication_successful": "Biometric authentication successful",
+    "security_enabled_successful": "Biometric security enabled successfully",
+    "unlock_successful": "App unlocked successfully",
+    "authentication_failed": "Authentication failed. Please try again.",
+    "authentication_error": "Authentication error: {0}",
+    "authenticating": "Authenticating...",
+    "face_unlock_hint": "Look at your device to unlock",
+    "iris_unlock_hint": "Look at the camera to unlock",
+    "device_credentials_setup_description": "Please set up device credentials in your device settings",
+    "locked_out": "Biometric authentication is locked out. Please try again later.",
+    "no_biometric_available": "No biometric authentication available",
+    "face_id": "Face ID",
+    "fingerprint": "Fingerprint",
+    "iris": "Iris",
+    "iris_scan": "Iris Scan",
+    "strong_biometric": "Strong biometric",
+    "weak_biometric": "Weak biometric",
+    "not_available": "Biometric authentication not available",
+    "not_enrolled": "No biometrics enrolled",
+    "temporarily_locked_out": "Authentication temporarily locked out",
+    "permanently_locked_out": "Authentication permanently locked out",
+    "not_available_or_enabled": "Biometric authentication not available or not enabled",
+    "not_available_on_device": "Biometric authentication not available on device",
+    "no_biometrics_enrolled": "No biometrics enrolled on device",
+    "unlock_with_biometric": "Unlock with Biometric"
   },
 
   "common": {
@@ -296,7 +365,8 @@
     "select": "Select",
     "choose": "Choose",
     "optional": "Optional",
-    "required": "Required"
+    "required": "Required",
+    "unknown": "Unknown"
   },
 
   "errors": {
@@ -357,5 +427,235 @@
   "actions": {
     "cancel": "Cancel",
     "save": "Save"
+  },
+
+  "more": {
+    "sections": {
+      "account": "Account",
+      "security": "Security & Biometrics",
+      "data_export": "Data Export",
+      "data_sync": "Data & Sync",
+      "analytics": "Analytics",
+      "developer": "Developer",
+      "support": "Support"
+    },
+    "items": {
+      "profile": "Profile",
+      "profile_subtitle": "Manage your profile information",
+      "settings": "Settings",
+      "settings_subtitle": "App preferences and configurations",
+      "notifications": "Notifications",
+      "notifications_subtitle": "Manage notification preferences",
+      "sync": "Sync",
+      "sync_subtitle": "Manage data synchronization and backup",
+      "reports": "Reports",
+      "reports_subtitle": "View detailed financial reports",
+      "goals": "Goals",
+      "goals_subtitle": "Track your financial goals",
+      "framework_demo": "Framework Demo",
+      "framework_demo_subtitle": "Explore all framework capabilities",
+      "help_support": "Help & Support",
+      "help_support_subtitle": "Get help and contact support",
+      "about": "About",
+      "about_subtitle": "App version and information"
+    },
+    "actions": {
+      "profile_tapped": "Profile management coming soon",
+      "notifications_tapped": "Notifications tapped",
+      "reports_tapped": "Reports tapped",
+      "goals_tapped": "Goals tapped",
+      "help_tapped": "Help tapped",
+      "about_tapped": "About tapped"
+    },
+    "biometric": {
+      "title": "Biometric Authentication",
+      "use_biometric_security": "Use biometric authentication for security",
+      "not_available_device": "Not available on this device",
+      "checking_availability": "Checking availability...",
+      "authenticating": "Authenticating...",
+      "app_lock": "App Lock",
+      "app_lock_subtitle": "Lock app when minimized",
+      "available_biometrics": "Available Biometrics",
+      "loading": "Loading...",
+      "unable_to_get_info": "Unable to get biometric information"
+    },
+    "export": {
+      "exporting": "Exporting...",
+      "export_settings": "Export Settings",
+      "export_settings_subtitle": "Export app settings and preferences",
+      "export_all_data": "Export All Data",
+      "export_all_data_subtitle": "Export all app data (settings, transactions, etc.)",
+      "individual_data_export": "Individual Data Export",
+      "individual_data_export_subtitle": "Export specific data types",
+      "export_transactions": "Transactions",
+      "export_transactions_subtitle": "Export transaction history",
+      "export_accounts": "Accounts",
+      "export_accounts_subtitle": "Export account information",
+      "export_categories": "Categories",
+      "export_categories_subtitle": "Export category data",
+      "export_budgets": "Budgets",
+      "export_budgets_subtitle": "Export budget information"
+    }
+  },
+
+  "agent": {
+    "welcome_title": "Meet your AI Assistant",
+    "welcome_subtitle": "Get personalized insights and smart recommendations for your finances",
+    "features_title": "What I can help you with",
+    "feature_analysis_title": "Smart Analysis",
+    "feature_analysis_subtitle": "Analyze your spending patterns and trends",
+    "feature_insights_title": "Personalized Insights", 
+    "feature_insights_subtitle": "Get tailored advice based on your financial habits",
+    "feature_predictions_title": "Future Predictions",
+    "feature_predictions_subtitle": "Forecast your expenses and plan better",
+    "chat_placeholder_title": "Ready to Chat",
+    "chat_placeholder_subtitle": "Start a conversation to get personalized financial advice and insights",
+    "start_chat": "Start Conversation",
+    "coming_soon": "AI features coming soon!",
+    "chat_assistant": "AI Assistant",
+    "voice_support": "Voice Support",
+    "bilingual_support": "Bilingual",
+    "sample_user_message": "How much did I spend on food this month?",
+    "sample_ai_message": "You spent $245 on food this month, which is 12% less than last month. Great job staying within your budget!",
+    "start_listening": "Start Listening",
+    "stop_listening": "Stop Listening",
+    "switch_language": "Switch Language",
+    "listening": "Listening...",
+    "no_messages": "Start a conversation",
+    "type_message": "Type a message...",
+    "welcome_message": "Hello! I'm your AI finance assistant. How can I help you today?",
+    "greeting_response": "Hello! I'm here to help you with your finances. You can ask me about your spending, budgets, or any financial advice.",
+    "balance_response": "I'd be happy to help you check your balance! Based on your recent transactions, your current balance looks healthy.",
+    "expense_response": "Let me analyze your recent expenses. You've been doing well with keeping track of your spending patterns.",
+    "budget_response": "Your budgets are an important part of financial planning. I can help you review and optimize them.",
+    "help_response": "I can help you with: checking balances, analyzing expenses, budget planning, financial insights, and answering questions about your spending patterns.",
+    "default_response": "That's an interesting question! I'm here to help with your finances. You can ask me about expenses, budgets, balances, or financial planning."
+  },
+
+  "sync": {
+    "title": "Data Sync",
+    "refresh": "Refresh",
+    "show_details": "Show Details",
+    "sync_completed_successfully": "Sync completed successfully",
+    "retry": "Retry",
+    "signing_in": "Signing in...",
+    "authentication_required": "Authentication Required",
+    "sign_in_to_google": "Sign in to Google",
+    "sign_in": "Sign In",
+    "manual_sync": "Manual Sync",
+    "full_sync": "Full Sync",
+    "upload_only": "Upload Only",
+    "download_only": "Download Only",
+    "success": "Success",
+    "failed": "Failed",
+    "uploaded": "Uploaded:",
+    "downloaded": "Downloaded:",
+    "error_details": "Error Details",
+    "sign_in_description": "Sign in to your Google account to enable automatic data synchronization and backup across all your devices.",
+    "sign_out_confirmation": "Are you sure you want to sign out? You will need to sign in again to sync your data.",
+    "about_sync": "About Sync",
+    "cloud_storage": "Cloud Storage",
+    "google_drive_integration": "Secure Google Drive integration",
+    "data_security": "Data Security",
+    "encrypted_transmission": "Encrypted data transmission",
+    "multi_device": "Multi-Device",
+    "sync_across_devices": "Sync across all your devices",
+    "not_signed_in": "Not signed in",
+    "sign_in_required": "Sign in to Google Drive to enable sync",
+    "ready": "Ready to sync",
+    "uploading": "Uploading",
+    "downloading": "Downloading",
+    "merging": "Merging",
+    "completed": "Sync completed",
+    "error": "Sync error",
+    "connected_to_drive": "Connected to Google Drive",
+    "uploading_changes": "Uploading your changes...",
+    "downloading_changes": "Downloading new changes...",
+    "merging_changes": "Merging changes...",
+    "sync_successful": "Sync completed successfully",
+    "sync_failed": "Sync failed",
+    "last_sync": "Last sync: {0}",
+    "never": "Never",
+    "just_now": "Just now",
+    "minutes_ago": "{0} minutes ago",
+    "hours_ago": "{0} hours ago",
+    "days_ago": "{0} days ago",
+    "date_format": "MMM d, yyyy",
+    "uploaded_count": "{0} uploaded",
+    "downloaded_count": "{0} downloaded",
+    "uploading_progress": "Uploading changes",
+    "downloading_progress": "Downloading changes",
+    "merging_progress": "Merging changes",
+    "syncing": "Syncing",
+    "conflicts_detected": "Sync conflicts detected",
+    "conflicts_count": "{0} conflicts need resolution",
+    "more_conflicts": "and {0} more conflicts",
+    "view_details": "View Details",
+    "resolve_all": "Resolve All",
+    "resolve_conflict": "Resolve",
+    "conflict_description": "Modified locally on {0} and remotely on {1}",
+    "conflict_details": "Conflict Details",
+    "keep_local": "Keep Local",
+    "use_remote": "Use Remote",
+    "signed_in_as": "Signed in as",
+    "sign_out": "Sign Out",
+    "sign_in_to_enable_sync": "Sign in to Google Drive to enable sync",
+    "cancel": "Cancel",
+    "operation_failed": "Sync operation failed",
+    "conflict_resolution_failed": "Failed to resolve conflict",
+    "bulk_resolution_failed": "Failed to resolve all conflicts",
+    "sync_error_occurred": "Sync error occurred",
+    "section_account": "Account",
+    "section_controls": "Sync Controls",
+    "section_last_result": "Last Sync Result",
+    "section_info": "Information",
+    "initialization_failed": "Initialization failed",
+    "sign_in_failed": "Sign in failed",
+    "sign_out_failed": "Sign out failed",
+    "sync_completed": "Sync completed"
+  },
+
+  "premium": {
+    "title": "Sheep Pro",
+    "subtitle": "Budget like a pro with Sheep Pro",
+    "features": {
+      "support_developer": {
+        "title": "Support the Developer",
+        "description": "Help support continued development and new features"
+      },
+      "unlimited_budgets": {
+        "title": "Unlimited Budgets & Goals",
+        "description": "Create as many budgets and financial goals as you need"
+      },
+      "past_budget_periods": {
+        "title": "Past Budget Periods",
+        "description": "View and analyze your historical budget data"
+      },
+      "unlimited_color_picker": {
+        "title": "Unlimited Color Picker",
+        "description": "Customize your budget categories with any color"
+      },
+      "advanced_analytics": {
+        "title": "Advanced Analytics",
+        "description": "Get detailed insights into your spending patterns"
+      },
+      "premium_sync": {
+        "title": "Premium Sync Features",
+        "description": "Enhanced cloud synchronization capabilities"
+      }
+    },
+    "subscription": {
+      "yearly": "Yearly",
+      "monthly": "Monthly",
+      "lifetime": "Lifetime",
+      "yearly_price": "$19.99",
+      "yearly_original_price": "$59.88",
+      "monthly_price": "$4.99",
+      "lifetime_price": "$49.99"
+    },
+    "purchase": {
+      "title": "{plan} Purchase",
+      "demo_message": "This is a demo. In a real app, this would initiate the {plan} purchase flow."
+    }
   }
 }

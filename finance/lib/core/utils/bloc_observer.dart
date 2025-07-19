@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../features/accounts/presentation/bloc/account_selection_bloc.dart';
 
 /// Custom BlocObserver for debugging and monitoring bloc events
 class AppBlocObserver extends BlocObserver {
@@ -19,13 +20,16 @@ class AppBlocObserver extends BlocObserver {
   @override
   void onChange(BlocBase bloc, Change change) {
     super.onChange(bloc, change);
-    log('onChange -- ${bloc.runtimeType}, $change');
+    // log('onChange -- ${bloc.runtimeType}, $change');
   }
 
   @override
   void onTransition(Bloc bloc, Transition transition) {
     super.onTransition(bloc, transition);
-    log('onTransition -- ${bloc.runtimeType}, $transition');
+    // Only log transition for debugging specific blocs, not AccountSelectionBloc
+    if (bloc.runtimeType != AccountSelectionBloc) {
+      // log('onTransition -- ${bloc.runtimeType}, $transition');
+    }
   }
 
   @override

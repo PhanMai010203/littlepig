@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/widgets/app_text.dart';
 import '../../domain/entities/transaction.dart';
@@ -9,6 +10,8 @@ import '../bloc/transactions_state.dart';
 // Phase 5 imports
 import '../../../../shared/utils/performance_optimization.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
+import '../../../../core/di/injection.dart';
 
 /// Widget that displays transaction summary (income, expenses, net) for a selected month
 class TransactionSummary extends StatelessWidget {
@@ -200,11 +203,24 @@ Widget _buildSummaryItem({
 
   if (text == '=') {
     // For net, combine the '=' and the amount.
-    return AppText(
-      '= ${NumberFormat.currency(symbol: '\$').format(amount)}',
-      fontSize: 12,
-      fontWeight: FontWeight.bold,
-      colorName: colorName,
+    return BlocBuilder<CurrencyDisplayBloc, CurrencyDisplayState>(
+      bloc: getIt<CurrencyDisplayBloc>(),
+      builder: (context, currencyState) {
+        return FutureBuilder<String>(
+          future: currencyState.isLoading
+              ? Future.value('= ${NumberFormat.currency(symbol: '\$').format(amount)}')
+              : getIt<CurrencyDisplayBloc>().formatInDisplayCurrency(amount, 'USD'),
+          builder: (context, snapshot) {
+            final formattedAmount = snapshot.data ?? '${NumberFormat.currency(symbol: '\$').format(amount)}';
+            return AppText(
+              '= $formattedAmount',
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              colorName: colorName,
+            );
+          },
+        );
+      },
     );
   }
 
@@ -225,11 +241,24 @@ Widget _buildSummaryItem({
     children: [
       iconWidget,
       const SizedBox(width: 0),
-      AppText(
-        NumberFormat.currency(symbol: '\$').format(amount.abs()),
-        fontSize: 12,
-        fontWeight: FontWeight.bold,
-        colorName: colorName,
+      BlocBuilder<CurrencyDisplayBloc, CurrencyDisplayState>(
+        bloc: getIt<CurrencyDisplayBloc>(),
+        builder: (context, currencyState) {
+          return FutureBuilder<String>(
+            future: currencyState.isLoading
+                ? Future.value(NumberFormat.currency(symbol: '\$').format(amount.abs()))
+                : getIt<CurrencyDisplayBloc>().formatInDisplayCurrency(amount.abs(), 'USD'),
+            builder: (context, snapshot) {
+              final formattedAmount = snapshot.data ?? NumberFormat.currency(symbol: '\$').format(amount.abs());
+              return AppText(
+                formattedAmount,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                colorName: colorName,
+              );
+            },
+          );
+        },
       ),
     ],
   );

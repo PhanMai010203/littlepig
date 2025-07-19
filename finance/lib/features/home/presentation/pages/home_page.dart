@@ -29,11 +29,12 @@ import '../../../../core/services/platform_service.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 import 'package:finance/features/transactions/presentation/widgets/transaction_list.dart';
 import 'package:finance/features/transactions/domain/entities/transaction.dart';
-import 'package:finance/features/categories/domain/entities/category.dart';
 import '../../../../app/router/app_routes.dart';
 import '../../../../core/di/injection.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../navigation/presentation/bloc/navigation_bloc.dart';
+import '../../../accounts/presentation/bloc/account_selection_bloc.dart';
+import '../../../currencies/presentation/bloc/currency_display_bloc.dart';
 
 // TransactionFilter enum is now imported from transaction_display_service.dart
 
@@ -82,7 +83,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   late TextTheme _textTheme;
   late bool _isIOS;
 
-  int _selectedAccountIndex = 0;
   List<AccountTileData> _accountTiles = [];
   List<Budget> _budgets = [];
   List<TransactionCardData> _transactionCards = [];
@@ -109,9 +109,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     // Phase 5: Platform-optimized animation controller (Phase 3 pattern)
     _scrollController = ScrollController();
 
-    _loadAccounts();
-    _loadBudgets();
-    _loadTransactions();
+    // Initialize AccountSelectionBloc
+    final accountSelectionBloc = getIt<AccountSelectionBloc>();
+    accountSelectionBloc.initialize();
+    
+    // Wait for AccountSelectionBloc to actually load accounts before initializing currency
+    _waitForAccountSelectionThenInitialize();
   }
 
   @override
@@ -129,11 +132,53 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.dispose();
   }
 
+  /// Wait for AccountSelectionBloc to load accounts, then initialize everything
+  Future<void> _waitForAccountSelectionThenInitialize() async {
+    final accountSelectionBloc = getIt<AccountSelectionBloc>();
+    
+    // Wait for the AccountSelectionBloc to have loaded accounts
+    await for (final state in accountSelectionBloc.stream) {
+      if (state.availableAccounts.isNotEmpty) {
+        // Accounts are loaded, now initialize currency and load data
+        if (mounted) {
+          await _initializeCurrencyDisplay();
+          await _loadAccounts();
+          await _loadBudgets();
+          await _loadTransactions();
+        }
+        break; // Exit the stream subscription
+      }
+    }
+  }
+  
+  /// Initialize CurrencyDisplayBloc with selected account's currency
+  Future<void> _initializeCurrencyDisplay() async {
+    try {
+      final accountSelectionBloc = getIt<AccountSelectionBloc>();
+      final currencyDisplayBloc = getIt<CurrencyDisplayBloc>();
+      
+      // Check if an account is already selected
+      final selectedAccount = accountSelectionBloc.state.selectedAccount;
+      if (selectedAccount != null) {
+        currencyDisplayBloc.add(CurrencyDisplayEvent.initialize(initialCurrency: selectedAccount.currency));
+      } else {
+        currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
+      }
+    } catch (e) {
+      // Fallback initialization
+      final currencyDisplayBloc = getIt<CurrencyDisplayBloc>();
+      currencyDisplayBloc.add(const CurrencyDisplayEvent.initialize());
+    }
+  }
+
   /// Loads accounts and assembles AccountTileData
   Future<void> _loadAccounts() async {
     try {
-      // 1. Retrieve all accounts
-      final accounts = await widget.accountRepository.getAllAccounts();
+      print('🔄 Loading accounts...');
+      // 1. Use AccountSelectionBloc's accounts to ensure consistency
+      final accountSelectionBloc = getIt<AccountSelectionBloc>();
+      final accounts = accountSelectionBloc.state.availableAccounts;
+      print('🔄 Found ${accounts.length} accounts from AccountSelectionBloc');
 
       // 2. For each account, get transaction count and formatted balance
       final List<AccountTileData> tiles = [];
@@ -144,11 +189,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             .getTransactionsByAccount(account.id!);
         final transactionCount = transactions.length;
 
-        // Format balance using AccountCurrencyExtension
+        // Format balance in account's native currency (not display currency)
+        // Account cards should always show each account in its own currency
         final formattedBalance = await account.formatBalance(
           widget.currencyRepository,
           showSymbol: true,
-          useCodeWithSymbol: true,
+          showCode: false,
         );
 
         tiles.add(AccountTileData(
@@ -158,16 +204,24 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ));
       }
 
-      setState(() {
-        _accountTiles = tiles;
-        _isLoading = false;
-        _errorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _accountTiles = tiles;
+          _isLoading = false;
+          _errorMessage = null;
+        });
+        print('✅ _accountTiles updated with ${tiles.length} tiles');
+        for (int i = 0; i < tiles.length; i++) {
+          print('   [$i] ${tiles[i].account.name} (ID: ${tiles[i].account.id})');
+        }
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Failed to load accounts: ${e.toString()}';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Failed to load accounts: ${e.toString()}';
+        });
+      }
 
       // Show error feedback to user
       if (mounted) {
@@ -187,16 +241,20 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       // Retrieve active budgets as Budget entities
       final budgets = await widget.budgetRepository.getActiveBudgets();
 
-      setState(() {
-        _budgets = budgets;
-        _isBudgetsLoading = false;
-        _budgetsErrorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _budgets = budgets;
+          _isBudgetsLoading = false;
+          _budgetsErrorMessage = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isBudgetsLoading = false;
-        _budgetsErrorMessage = 'Failed to load budgets: ${e.toString()}';
-      });
+      if (mounted) {
+        setState(() {
+          _isBudgetsLoading = false;
+          _budgetsErrorMessage = 'Failed to load budgets: ${e.toString()}';
+        });
+      }
 
       // Show error feedback to user
       if (mounted) {
@@ -212,10 +270,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Loads transactions and prepares them for display
   Future<void> _loadTransactions() async {
-    setState(() {
-      _isTransactionsLoading = true;
-      _transactionsErrorMessage = null;
-    });
+    if (mounted) {
+      setState(() {
+        _isTransactionsLoading = true;
+        _transactionsErrorMessage = null;
+      });
+    }
     
     // Clear cache for fresh data load
     _cachedCurrentMonthTransactions = null;
@@ -299,17 +359,38 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   /// Single handler for account selection
   void _onSelectAccount(int index) {
-    setState(() {
-      _selectedAccountIndex = index;
-    });
+    print('🎯 _onSelectAccount called with index: $index');
+    print('🎯 _accountTiles length: ${_accountTiles.length}');
+    print('🎯 Widget mounted: $mounted');
+    
+    if (mounted) {
+      final accountSelectionBloc = getIt<AccountSelectionBloc>();
+      print('🎯 AccountSelectionBloc obtained successfully');
+      
+      // Get the account from our local data to find its ID
+      if (index < _accountTiles.length) {
+        final account = _accountTiles[index].account;
+        // Account selected
+        
+        // Use selectAccountByIndex with the same index from the home page
+        accountSelectionBloc.add(AccountSelectionEvent.selectAccountByIndex(index: index));
+        print('🎯 AccountSelectionEvent.selectAccountByIndex dispatched');
+      } else {
+        print('❌ Index $index out of bounds for _accountTiles (length: ${_accountTiles.length})');
+      }
+    } else {
+      print('❌ Widget not mounted, skipping account selection');
+    }
   }
 
   /// Handler for transaction filter selection
   void _onTransactionFilterChanged(TransactionFilter filter) {
-    setState(() {
-      _selectedTransactionFilter = filter;
-    });
-    _applyTransactionFilter();
+    if (mounted) {
+      setState(() {
+        _selectedTransactionFilter = filter;
+      });
+      _applyTransactionFilter();
+    }
   }
 
   @override
@@ -432,37 +513,50 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       );
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      clipBehavior: Clip.none,
-      child: Row(
-        children: [
-          // Account cards from data
-          ..._accountTiles.asMap().entries.map((entry) {
-            final index = entry.key;
-            final tileData = entry.value;
+    return BlocBuilder<AccountSelectionBloc, AccountSelectionState>(
+      bloc: getIt<AccountSelectionBloc>(),
+      builder: (context, accountSelectionState) {
+        print('DEBUG: BlocBuilder rebuild - selectedIndex: ${accountSelectionState.selectedIndex}, accounts: ${accountSelectionState.availableAccounts.length}');
+        
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          physics: const ClampingScrollPhysics(),
+          child: Row(
+            children: [
+              // Account cards from data - use the same data source for both display and selection
+              ..._accountTiles.asMap().entries.map((entry) {
+                final index = entry.key;
+                final tileData = entry.value;
 
-            return Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: AccountCard(
-                title: tileData.account.name,
-                amount: tileData.formattedBalance,
-                transactions: '${tileData.transactionCount} transactions',
-                color: tileData.account.color,
-                isSelected: _selectedAccountIndex == index,
-                index: index,
-                onSelected: _onSelectAccount,
+                // Check if this account matches the selected account from the bloc
+                final isSelected = accountSelectionState.selectedAccount?.id == tileData.account.id;
+                
+                // Account tile rendered
+
+                return Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: AccountCard(
+                    title: tileData.account.name,
+                    amount: tileData.formattedBalance,
+                    transactions: '${tileData.transactionCount} transactions',
+                    color: tileData.account.color,
+                    isSelected: isSelected,
+                    index: index,
+                    onSelected: _onSelectAccount,
+                  ),
+                );
+              }),
+              // AddAccountCard at the end
+              AddAccountCard(
+                onTap: () {
+                  context.go(AppRoutes.accountCreate);
+                },
               ),
-            );
-          }),
-          // AddAccountCard at the end
-          AddAccountCard(
-            onTap: () {
-              context.go(AppRoutes.accountCreate);
-            },
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

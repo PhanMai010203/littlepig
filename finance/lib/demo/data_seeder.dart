@@ -226,18 +226,6 @@ class DataSeeder {
         true,
         const Color(0xFF2196F3)
       ), // Blue
-      // Savings with higher balance
-      (
-        'Savings Account',
-        15000.0,
-        'USD',
-        false,
-        const Color(0xFF4CAF50)
-      ), // Green
-      // Cash wallet with smaller amount
-      ('Cash Wallet', 200.0, 'USD', false, const Color(0xFF795548)), // Brown
-      // Credit card with negative balance (debt)
-      ('Credit Card', -850.0, 'USD', false, const Color(0xFFF44336)), // Red
       // Foreign currency accounts
       (
         'Euro Travel Fund',
@@ -658,21 +646,6 @@ class DataSeeder {
           // No walletFks = manual mode
           isIncomeBudget: false,
         ),
-        Budget(
-          name: 'Freelance Income Target',
-          amount: 2000.0,
-          spent: 800.0,
-          categoryId: null,
-          period: BudgetPeriod.monthly,
-          startDate: startOfMonth,
-          endDate: endOfMonth,
-          isActive: true,
-          createdAt: now,
-          updatedAt: now,
-          syncId: 'demo-budget-freelance-income-${_uuid.v4()}',
-          // No walletFks = manual mode
-          isIncomeBudget: true, // Income budget
-        ),
       ];
 
       // 2. Automatic Budgets (track all transactions from specific accounts/categories)
@@ -698,38 +671,7 @@ class DataSeeder {
           excludeDebtCreditInstallments: true,
           isIncomeBudget: false,
         ),
-        Budget(
-          name: 'Transportation Monthly - Đi lại hàng tháng',
-          amount: 200.0,
-          spent: 45.0, // Gas expense
-          categoryId: transportCategory.id,
-          period: BudgetPeriod.monthly,
-          startDate: startOfMonth,
-          endDate: endOfMonth,
-          isActive: true,
-          createdAt: now,
-          updatedAt: now,
-          syncId: 'demo-budget-transport-auto-${_uuid.v4()}',
-          walletFks: allAccountIds, // Track all accounts
-          excludeDebtCreditInstallments: true,
-          isIncomeBudget: false,
-        ),
-        Budget(
-          name: 'Entertainment & Subscriptions',
-          amount: 100.0,
-          spent: 25.98, // Netflix + Spotify
-          categoryId: entertainmentCategory.id,
-          period: BudgetPeriod.monthly,
-          startDate: startOfMonth,
-          endDate: endOfMonth,
-          isActive: true,
-          createdAt: now,
-          updatedAt: now,
-          syncId: 'demo-budget-entertainment-auto-${_uuid.v4()}',
-          walletFks: [checkingAccountId],
-          excludeDebtCreditInstallments: false,
-          isIncomeBudget: false,
-        ),
+       
       ];
 
       // Create all budgets
