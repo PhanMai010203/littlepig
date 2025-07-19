@@ -28,7 +28,7 @@ class AppBlocObserver extends BlocObserver {
     super.onTransition(bloc, transition);
     // Only log transition for debugging specific blocs, not AccountSelectionBloc
     if (bloc.runtimeType != AccountSelectionBloc) {
-      log('onTransition -- ${bloc.runtimeType}, $transition');
+      // log('onTransition -- ${bloc.runtimeType}, $transition');
     }
   }
 

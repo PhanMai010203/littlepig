@@ -190,10 +190,20 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    
-    return Scaffold(
+    return Directionality(
+      textDirection: TextDirection.ltr,
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        ),
+        home: Builder(
+          builder: (context) {
+            final theme = Theme.of(context);
+            final colorScheme = theme.colorScheme;
+            
+            return Scaffold(
       backgroundColor: colorScheme.surface,
       body: SafeArea(
         child: Padding(
@@ -381,6 +391,9 @@ class _AppLockScreenState extends State<AppLockScreen> with TickerProviderStateM
               const Spacer(),
             ],
           ),
+        ),
+      ));
+          },
         ),
       ),
     );
