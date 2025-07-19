@@ -4,6 +4,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
 import 'package:local_auth_android/local_auth_android.dart';
 import 'package:local_auth_darwin/local_auth_darwin.dart';
+import 'package:easy_localization/easy_localization.dart';
 import '../settings/app_settings.dart';
 
 @lazySingleton
@@ -59,36 +60,36 @@ class BiometricAuthService {
       // Check if biometric is available and enabled
       final bool isSetup = await isBiometricSetup();
       if (!isSetup) {
-        print('Biometric authentication not available or not enabled');
+        print('biometric.not_available_or_enabled'.tr());
         return false;
       }
 
       // Perform authentication
       final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: reason ?? 'Please authenticate to access the app',
+        localizedReason: reason ?? 'biometric.authenticate_reason_default'.tr(),
         options: AuthenticationOptions(
           biometricOnly: biometricOnly,
           stickyAuth: stickyAuth,
           useErrorDialogs: true,
         ),
-        authMessages: const <AuthMessages>[
+        authMessages: <AuthMessages>[
           AndroidAuthMessages(
-            signInTitle: 'Biometric Authentication',
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-            biometricHint: 'Touch sensor',
-            biometricNotRecognized: 'Biometric not recognized, try again',
-            biometricRequiredTitle: 'Biometric Required',
-            biometricSuccess: 'Biometric authentication successful',
-            deviceCredentialsRequiredTitle: 'Device Credentials Required',
-            deviceCredentialsSetupDescription: 'Please set up device credentials in your device settings',
+            signInTitle: 'biometric.authentication_title'.tr(),
+            cancelButton: 'biometric.cancel_button'.tr(),
+            goToSettingsButton: 'biometric.settings_button'.tr(),
+            goToSettingsDescription: 'biometric.setup_description'.tr(),
+            biometricHint: 'biometric.touch_sensor_hint'.tr(),
+            biometricNotRecognized: 'biometric.not_recognized'.tr(),
+            biometricRequiredTitle: 'biometric.biometric_required_title'.tr(),
+            biometricSuccess: 'biometric.authentication_successful'.tr(),
+            deviceCredentialsRequiredTitle: 'biometric.device_credentials_required_title'.tr(),
+            deviceCredentialsSetupDescription: 'biometric.device_credentials_setup_description'.tr(),
           ),
           IOSAuthMessages(
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-            lockOut: 'Biometric authentication is locked out. Please try again later.',
+            cancelButton: 'biometric.cancel_button'.tr(),
+            goToSettingsButton: 'biometric.settings_button'.tr(),
+            goToSettingsDescription: 'biometric.setup_description'.tr(),
+            lockOut: 'biometric.locked_out'.tr(),
           ),
         ],
       );
@@ -113,43 +114,43 @@ class BiometricAuthService {
       // Only check if biometric is available on device (not app setting)
       final bool isAvailable = await isBiometricAvailable();
       if (!isAvailable) {
-        print('Biometric authentication not available on device');
+        print('biometric.not_available_on_device'.tr());
         return false;
       }
 
       // Check if biometrics are enrolled
       final List<BiometricType> availableBiometrics = await getAvailableBiometrics();
       if (availableBiometrics.isEmpty) {
-        print('No biometrics enrolled on device');
+        print('biometric.no_biometrics_enrolled'.tr());
         return false;
       }
 
       // Perform authentication
       final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: reason ?? 'Authenticate to enable biometric security for this app',
+        localizedReason: reason ?? 'biometric.authenticate_reason_setup'.tr(),
         options: AuthenticationOptions(
           biometricOnly: biometricOnly,
           stickyAuth: stickyAuth,
           useErrorDialogs: true,
         ),
-        authMessages: const <AuthMessages>[
+        authMessages: <AuthMessages>[
           AndroidAuthMessages(
-            signInTitle: 'Enable Biometric Security',
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-            biometricHint: 'Touch sensor to enable biometric security',
-            biometricNotRecognized: 'Biometric not recognized, try again',
-            biometricRequiredTitle: 'Biometric Required',
-            biometricSuccess: 'Biometric security enabled successfully',
-            deviceCredentialsRequiredTitle: 'Device Credentials Required',
-            deviceCredentialsSetupDescription: 'Please set up device credentials in your device settings',
+            signInTitle: 'biometric.enable_security_title'.tr(),
+            cancelButton: 'biometric.cancel_button'.tr(),
+            goToSettingsButton: 'biometric.settings_button'.tr(),
+            goToSettingsDescription: 'biometric.setup_description'.tr(),
+            biometricHint: 'biometric.touch_sensor_setup_hint'.tr(),
+            biometricNotRecognized: 'biometric.not_recognized'.tr(),
+            biometricRequiredTitle: 'biometric.biometric_required_title'.tr(),
+            biometricSuccess: 'biometric.security_enabled_successful'.tr(),
+            deviceCredentialsRequiredTitle: 'biometric.device_credentials_required_title'.tr(),
+            deviceCredentialsSetupDescription: 'biometric.device_credentials_setup_description'.tr(),
           ),
           IOSAuthMessages(
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-            lockOut: 'Biometric authentication is locked out. Please try again later.',
+            cancelButton: 'biometric.cancel_button'.tr(),
+            goToSettingsButton: 'biometric.settings_button'.tr(),
+            goToSettingsDescription: 'biometric.setup_description'.tr(),
+            lockOut: 'biometric.locked_out'.tr(),
           ),
         ],
       );
@@ -168,16 +169,16 @@ class BiometricAuthService {
   bool _handleAuthenticationError(PlatformException e) {
     switch (e.code) {
       case auth_error.notAvailable:
-        print('Biometric authentication not available');
+        print('biometric.not_available'.tr());
         return false;
       case auth_error.notEnrolled:
-        print('No biometrics enrolled');
+        print('biometric.not_enrolled'.tr());
         return false;
       case auth_error.lockedOut:
-        print('Authentication temporarily locked out');
+        print('biometric.temporarily_locked_out'.tr());
         return false;
       case auth_error.permanentlyLockedOut:
-        print('Authentication permanently locked out');
+        print('biometric.permanently_locked_out'.tr());
         return false;
       default:
         print('Authentication error: ${e.code} - ${e.message}');
@@ -191,43 +192,43 @@ class BiometricAuthService {
       // Use device-level authentication for app unlock
       final bool isAvailable = await isBiometricAvailable();
       if (!isAvailable) {
-        print('Biometric authentication not available on device');
+        print('biometric.not_available_on_device'.tr());
         return false;
       }
 
       // Check if biometrics are enrolled
       final List<BiometricType> availableBiometrics = await getAvailableBiometrics();
       if (availableBiometrics.isEmpty) {
-        print('No biometrics enrolled on device');
+        print('biometric.no_biometrics_enrolled'.tr());
         return false;
       }
 
       // Perform authentication
       final bool didAuthenticate = await _localAuth.authenticate(
-        localizedReason: 'Unlock the app to continue',
+        localizedReason: 'biometric.authenticate_reason_unlock'.tr(),
         options: const AuthenticationOptions(
           biometricOnly: true,
           stickyAuth: false,
           useErrorDialogs: true,
         ),
-        authMessages: const <AuthMessages>[
+        authMessages: <AuthMessages>[
           AndroidAuthMessages(
-            signInTitle: 'Unlock App',
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-            biometricHint: 'Touch sensor to unlock app',
-            biometricNotRecognized: 'Biometric not recognized, try again',
-            biometricRequiredTitle: 'Unlock Required',
-            biometricSuccess: 'App unlocked successfully',
-            deviceCredentialsRequiredTitle: 'Device Credentials Required',
-            deviceCredentialsSetupDescription: 'Please set up device credentials in your device settings',
+            signInTitle: 'biometric.unlock_app_title'.tr(),
+            cancelButton: 'biometric.cancel_button'.tr(),
+            goToSettingsButton: 'biometric.settings_button'.tr(),
+            goToSettingsDescription: 'biometric.setup_description'.tr(),
+            biometricHint: 'biometric.touch_sensor_unlock_hint'.tr(),
+            biometricNotRecognized: 'biometric.not_recognized'.tr(),
+            biometricRequiredTitle: 'biometric.unlock_required_title'.tr(),
+            biometricSuccess: 'biometric.unlock_successful'.tr(),
+            deviceCredentialsRequiredTitle: 'biometric.device_credentials_required_title'.tr(),
+            deviceCredentialsSetupDescription: 'biometric.device_credentials_setup_description'.tr(),
           ),
           IOSAuthMessages(
-            cancelButton: 'Cancel',
-            goToSettingsButton: 'Settings',
-            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
-            lockOut: 'Biometric authentication is locked out. Please try again later.',
+            cancelButton: 'biometric.cancel_button'.tr(),
+            goToSettingsButton: 'biometric.settings_button'.tr(),
+            goToSettingsDescription: 'biometric.setup_description'.tr(),
+            lockOut: 'biometric.locked_out'.tr(),
           ),
         ],
       );
@@ -263,7 +264,7 @@ class BiometricAuthService {
     final List<BiometricType> biometrics = await getAvailableBiometrics();
     
     if (biometrics.isEmpty) {
-      return 'No biometric authentication available';
+      return 'biometric.no_biometric_available'.tr();
     }
 
     final List<String> descriptions = [];
@@ -271,19 +272,19 @@ class BiometricAuthService {
     for (final BiometricType biometric in biometrics) {
       switch (biometric) {
         case BiometricType.face:
-          descriptions.add('Face ID');
+          descriptions.add('biometric.face_id'.tr());
           break;
         case BiometricType.fingerprint:
-          descriptions.add('Fingerprint');
+          descriptions.add('biometric.fingerprint'.tr());
           break;
         case BiometricType.iris:
-          descriptions.add('Iris');
+          descriptions.add('biometric.iris'.tr());
           break;
         case BiometricType.strong:
-          descriptions.add('Strong biometric');
+          descriptions.add('biometric.strong_biometric'.tr());
           break;
         case BiometricType.weak:
-          descriptions.add('Weak biometric');
+          descriptions.add('biometric.weak_biometric'.tr());
           break;
       }
     }
