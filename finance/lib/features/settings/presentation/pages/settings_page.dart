@@ -18,6 +18,7 @@ import '../../../../core/services/animation_performance_service.dart';
 import '../../../../shared/widgets/animations/tappable_widget.dart';
 import '../../../../shared/widgets/animations/animation_performance_monitor.dart';
 import '../../../../shared/widgets/animations/animation_utils.dart';
+import '../../../more/presentation/widgets/sheep_premium_banner.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -41,6 +42,12 @@ class _SettingsPageState extends State<SettingsPage> {
         builder: (context, state) {
           return ListView(
             children: [
+              // Premium Banner
+              const Padding(
+                padding: EdgeInsets.only(bottom: 8.0),
+                child: SheepPremiumBanner(),
+              ),
+              
               // Theme Section
               _buildSectionHeader('settings.theme'.tr()),
               _buildThemeModeSetting(),

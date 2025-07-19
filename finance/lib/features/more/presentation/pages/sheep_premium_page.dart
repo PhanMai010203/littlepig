@@ -38,7 +38,7 @@ class SheepPremiumPage extends StatelessWidget {
                 
                 // Premium content
                 Expanded(
-                  child: Padding(
+                  child: SingleChildScrollView(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
