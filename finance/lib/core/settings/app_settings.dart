@@ -102,10 +102,38 @@ class AppSettings {
     final merged = Map<String, dynamic>.from(defaults);
 
     loaded.forEach((key, value) {
-      merged[key] = value;
+      // Special handling for AI model to clean up invalid model names
+      if (key == 'aiModel' && value is String) {
+        final cleanedModel = _cleanupAiModel(value);
+        merged[key] = cleanedModel;
+      } else {
+        merged[key] = value;
+      }
     });
 
     return merged;
+  }
+
+  /// Clean up invalid AI model names (remove API prefixes and fix deprecated models)
+  static String _cleanupAiModel(String modelName) {
+    // Remove 'models/' prefix if present
+    if (modelName.startsWith('models/')) {
+      modelName = modelName.substring('models/'.length);
+    }
+    
+    // Fix deprecated model names
+    const modelMappings = {
+      'gemini-2.5-flash-preview-04-17': 'gemini-2.5-flash',
+      'gemini-2.0-flash-thinking-exp-01-21': 'gemini-2.0-flash-thinking-exp',
+      'gemini-1.5-pro-preview': 'gemini-1.5-pro',
+      'gemini-1.5-flash-preview': 'gemini-1.5-flash',
+    };
+    
+    // Check if the model name needs to be mapped to a valid one
+    final cleanedModel = modelMappings[modelName] ?? modelName;
+    
+    debugPrint('[AppSettings] Cleaned AI model: "$modelName" -> "$cleanedModel"');
+    return cleanedModel;
   }
 
   /// Default settings - customize these for your app
@@ -288,7 +316,8 @@ class AppSettings {
   }
 
   static String get aiModel {
-    return get<String>('aiModel') ?? 'gemini-1.5-pro';
+    final rawModel = get<String>('aiModel') ?? 'gemini-1.5-pro';
+    return _cleanupAiModel(rawModel);
   }
 
   static Future<void> setAiModel(String model) async {
