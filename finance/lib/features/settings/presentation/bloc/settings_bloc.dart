@@ -4,6 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import '../../../../core/settings/app_settings.dart';
 import '../../../../core/services/csv_export_service.dart';
+import '../../../../core/services/biometric_auth_service.dart';
 import '../../../transactions/domain/repositories/transaction_repository.dart';
 import '../../../accounts/domain/repositories/account_repository.dart';
 import '../../../categories/domain/repositories/category_repository.dart';
@@ -16,6 +17,7 @@ part 'settings_bloc.freezed.dart';
 @injectable
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final CsvExportService _csvExportService;
+  final BiometricAuthService _biometricAuthService;
   final TransactionRepository _transactionRepository;
   final AccountRepository _accountRepository;
   final CategoryRepository _categoryRepository;
@@ -23,6 +25,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
 
   SettingsBloc(
     this._csvExportService,
+    this._biometricAuthService,
     this._transactionRepository,
     this._accountRepository,
     this._categoryRepository,
@@ -320,12 +323,67 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     }
   }
 
-  void _onBiometricToggled(
+  Future<void> _onBiometricToggled(
     _BiometricToggled event,
     Emitter<SettingsState> emit,
-  ) {
-    emit(state.copyWith(biometricEnabled: event.enabled));
-    AppSettings.setBiometricEnabled(event.enabled);
+  ) async {
+    if (event.enabled) {
+      // User wants to enable biometrics - require authentication first
+      emit(state.copyWith(
+        isBiometricAuthenticating: true,
+        biometricAuthError: null,
+      ));
+
+      try {
+        // Check if biometric is available
+        final isAvailable = await _biometricAuthService.isBiometricAvailable();
+        if (!isAvailable) {
+          emit(state.copyWith(
+            isBiometricAuthenticating: false,
+            biometricAuthError: 'Biometric authentication is not available on this device',
+            biometricEnabled: false,
+          ));
+          return;
+        }
+
+        // Trigger native biometric authentication for setup
+        final authenticated = await _biometricAuthService.authenticateForSetup(
+          reason: 'Authenticate to enable biometric lock for this app',
+          biometricOnly: true,
+        );
+
+        if (authenticated) {
+          // Authentication successful - enable the setting
+          emit(state.copyWith(
+            isBiometricAuthenticating: false,
+            biometricEnabled: true,
+            biometricAuthError: null,
+          ));
+          await AppSettings.setBiometricEnabled(true);
+        } else {
+          // Authentication failed - keep disabled
+          emit(state.copyWith(
+            isBiometricAuthenticating: false,
+            biometricEnabled: false,
+            biometricAuthError: 'Authentication failed. Biometric lock remains disabled to prevent lockout.',
+          ));
+        }
+      } catch (e) {
+        // Handle any errors during authentication
+        emit(state.copyWith(
+          isBiometricAuthenticating: false,
+          biometricEnabled: false,
+          biometricAuthError: 'Failed to authenticate: ${e.toString()}',
+        ));
+      }
+    } else {
+      // User wants to disable biometrics - no authentication required
+      emit(state.copyWith(
+        biometricEnabled: false,
+        biometricAuthError: null,
+      ));
+      await AppSettings.setBiometricEnabled(false);
+    }
   }
 
   void _onBiometricAppLockToggled(

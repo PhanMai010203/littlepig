@@ -520,27 +520,78 @@ class _SettingsPageState extends State<SettingsPage> {
             final isAvailable = snapshot.data ?? false;
             final isLoading = snapshot.connectionState == ConnectionState.waiting;
             
-            return SwitchListTile(
-              secondary: Icon(
-                Icons.fingerprint,
-                color: isAvailable 
-                    ? getColor(context, 'primary')
-                    : getColor(context, 'textLight'),
-              ),
-              title: const Text('Biometric Authentication'),
-              subtitle: Text(
-                isLoading 
-                    ? 'Checking availability...'
-                    : isAvailable 
-                        ? 'Use biometric authentication for security'
-                        : 'Not available on this device',
-              ),
-              value: isAvailable ? state.biometricEnabled : false,
-              onChanged: isAvailable ? (value) {
-                context.read<SettingsBloc>().add(
-                  SettingsEvent.biometricToggled(value),
-                );
-              } : null,
+            return Column(
+              children: [
+                SwitchListTile(
+                  secondary: state.isBiometricAuthenticating
+                      ? SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              getColor(context, 'primary'),
+                            ),
+                          ),
+                        )
+                      : Icon(
+                          Icons.fingerprint,
+                          color: isAvailable 
+                              ? getColor(context, 'primary')
+                              : getColor(context, 'textLight'),
+                        ),
+                  title: const Text('Biometric Authentication'),
+                  subtitle: Text(
+                    state.isBiometricAuthenticating
+                        ? 'Authenticating...'
+                        : isLoading 
+                            ? 'Checking availability...'
+                            : isAvailable 
+                                ? 'Use biometric authentication for security'
+                                : 'Not available on this device',
+                  ),
+                  value: isAvailable ? state.biometricEnabled : false,
+                  onChanged: (isAvailable && !state.isBiometricAuthenticating) ? (value) {
+                    context.read<SettingsBloc>().add(
+                      SettingsEvent.biometricToggled(value),
+                    );
+                  } : null,
+                ),
+                
+                // Show authentication error if any
+                if (state.biometricAuthError != null)
+                  Container(
+                    margin: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: getColor(context, 'error').withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: getColor(context, 'error').withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.error_outline,
+                          size: 20,
+                          color: getColor(context, 'error'),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            state.biometricAuthError!,
+                            style: TextStyle(
+                              color: getColor(context, 'error'),
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+              ],
             );
           },
         ),

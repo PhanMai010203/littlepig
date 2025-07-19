@@ -2931,6 +2931,8 @@ mixin _$SettingsState {
   bool get isExporting => throw _privateConstructorUsedError;
   String? get exportStatus => throw _privateConstructorUsedError;
   String? get exportError => throw _privateConstructorUsedError;
+  bool get isBiometricAuthenticating => throw _privateConstructorUsedError;
+  String? get biometricAuthError => throw _privateConstructorUsedError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -2955,7 +2957,9 @@ abstract class $SettingsStateCopyWith<$Res> {
       bool biometricAppLockEnabled,
       bool isExporting,
       String? exportStatus,
-      String? exportError});
+      String? exportError,
+      bool isBiometricAuthenticating,
+      String? biometricAuthError});
 }
 
 /// @nodoc
@@ -2983,6 +2987,8 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
     Object? isExporting = null,
     Object? exportStatus = freezed,
     Object? exportError = freezed,
+    Object? isBiometricAuthenticating = null,
+    Object? biometricAuthError = freezed,
   }) {
     return _then(_value.copyWith(
       themeMode: null == themeMode
@@ -3025,6 +3031,14 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
           ? _value.exportError
           : exportError // ignore: cast_nullable_to_non_nullable
               as String?,
+      isBiometricAuthenticating: null == isBiometricAuthenticating
+          ? _value.isBiometricAuthenticating
+          : isBiometricAuthenticating // ignore: cast_nullable_to_non_nullable
+              as bool,
+      biometricAuthError: freezed == biometricAuthError
+          ? _value.biometricAuthError
+          : biometricAuthError // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -3047,7 +3061,9 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
       bool biometricAppLockEnabled,
       bool isExporting,
       String? exportStatus,
-      String? exportError});
+      String? exportError,
+      bool isBiometricAuthenticating,
+      String? biometricAuthError});
 }
 
 /// @nodoc
@@ -3073,6 +3089,8 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
     Object? isExporting = null,
     Object? exportStatus = freezed,
     Object? exportError = freezed,
+    Object? isBiometricAuthenticating = null,
+    Object? biometricAuthError = freezed,
   }) {
     return _then(_$SettingsStateImpl(
       themeMode: null == themeMode
@@ -3115,6 +3133,14 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
           ? _value.exportError
           : exportError // ignore: cast_nullable_to_non_nullable
               as String?,
+      isBiometricAuthenticating: null == isBiometricAuthenticating
+          ? _value.isBiometricAuthenticating
+          : isBiometricAuthenticating // ignore: cast_nullable_to_non_nullable
+              as bool,
+      biometricAuthError: freezed == biometricAuthError
+          ? _value.biometricAuthError
+          : biometricAuthError // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -3132,7 +3158,9 @@ class _$SettingsStateImpl implements _SettingsState {
       required this.biometricAppLockEnabled,
       this.isExporting = false,
       this.exportStatus = null,
-      this.exportError = null});
+      this.exportError = null,
+      this.isBiometricAuthenticating = false,
+      this.biometricAuthError = null});
 
   @override
   final ThemeMode themeMode;
@@ -3157,10 +3185,16 @@ class _$SettingsStateImpl implements _SettingsState {
   @override
   @JsonKey()
   final String? exportError;
+  @override
+  @JsonKey()
+  final bool isBiometricAuthenticating;
+  @override
+  @JsonKey()
+  final String? biometricAuthError;
 
   @override
   String toString() {
-    return 'SettingsState(themeMode: $themeMode, analyticsEnabled: $analyticsEnabled, autoBackupEnabled: $autoBackupEnabled, notificationsEnabled: $notificationsEnabled, hapticFeedbackEnabled: $hapticFeedbackEnabled, biometricEnabled: $biometricEnabled, biometricAppLockEnabled: $biometricAppLockEnabled, isExporting: $isExporting, exportStatus: $exportStatus, exportError: $exportError)';
+    return 'SettingsState(themeMode: $themeMode, analyticsEnabled: $analyticsEnabled, autoBackupEnabled: $autoBackupEnabled, notificationsEnabled: $notificationsEnabled, hapticFeedbackEnabled: $hapticFeedbackEnabled, biometricEnabled: $biometricEnabled, biometricAppLockEnabled: $biometricAppLockEnabled, isExporting: $isExporting, exportStatus: $exportStatus, exportError: $exportError, isBiometricAuthenticating: $isBiometricAuthenticating, biometricAuthError: $biometricAuthError)';
   }
 
   @override
@@ -3188,7 +3222,12 @@ class _$SettingsStateImpl implements _SettingsState {
             (identical(other.exportStatus, exportStatus) ||
                 other.exportStatus == exportStatus) &&
             (identical(other.exportError, exportError) ||
-                other.exportError == exportError));
+                other.exportError == exportError) &&
+            (identical(other.isBiometricAuthenticating,
+                    isBiometricAuthenticating) ||
+                other.isBiometricAuthenticating == isBiometricAuthenticating) &&
+            (identical(other.biometricAuthError, biometricAuthError) ||
+                other.biometricAuthError == biometricAuthError));
   }
 
   @override
@@ -3203,7 +3242,9 @@ class _$SettingsStateImpl implements _SettingsState {
       biometricAppLockEnabled,
       isExporting,
       exportStatus,
-      exportError);
+      exportError,
+      isBiometricAuthenticating,
+      biometricAuthError);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -3225,7 +3266,9 @@ abstract class _SettingsState implements SettingsState {
       required final bool biometricAppLockEnabled,
       final bool isExporting,
       final String? exportStatus,
-      final String? exportError}) = _$SettingsStateImpl;
+      final String? exportError,
+      final bool isBiometricAuthenticating,
+      final String? biometricAuthError}) = _$SettingsStateImpl;
 
   @override
   ThemeMode get themeMode;
@@ -3247,6 +3290,10 @@ abstract class _SettingsState implements SettingsState {
   String? get exportStatus;
   @override
   String? get exportError;
+  @override
+  bool get isBiometricAuthenticating;
+  @override
+  String? get biometricAuthError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.

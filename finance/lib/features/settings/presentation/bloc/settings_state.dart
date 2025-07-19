@@ -13,5 +13,7 @@ class SettingsState with _$SettingsState {
     @Default(false) bool isExporting,
     @Default(null) String? exportStatus,
     @Default(null) String? exportError,
+    @Default(false) bool isBiometricAuthenticating,
+    @Default(null) String? biometricAuthError,
   }) = _SettingsState;
 }

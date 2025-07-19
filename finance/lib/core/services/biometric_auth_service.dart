@@ -103,6 +103,67 @@ class BiometricAuthService {
     }
   }
 
+  /// Authenticate for initial setup - bypasses app setting check
+  Future<bool> authenticateForSetup({
+    String? reason,
+    bool biometricOnly = true,
+    bool stickyAuth = true,
+  }) async {
+    try {
+      // Only check if biometric is available on device (not app setting)
+      final bool isAvailable = await isBiometricAvailable();
+      if (!isAvailable) {
+        print('Biometric authentication not available on device');
+        return false;
+      }
+
+      // Check if biometrics are enrolled
+      final List<BiometricType> availableBiometrics = await getAvailableBiometrics();
+      if (availableBiometrics.isEmpty) {
+        print('No biometrics enrolled on device');
+        return false;
+      }
+
+      // Perform authentication
+      final bool didAuthenticate = await _localAuth.authenticate(
+        localizedReason: reason ?? 'Authenticate to enable biometric security for this app',
+        options: AuthenticationOptions(
+          biometricOnly: biometricOnly,
+          stickyAuth: stickyAuth,
+          useErrorDialogs: true,
+        ),
+        authMessages: const <AuthMessages>[
+          AndroidAuthMessages(
+            signInTitle: 'Enable Biometric Security',
+            cancelButton: 'Cancel',
+            goToSettingsButton: 'Settings',
+            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
+            biometricHint: 'Touch sensor to enable biometric security',
+            biometricNotRecognized: 'Biometric not recognized, try again',
+            biometricRequiredTitle: 'Biometric Required',
+            biometricSuccess: 'Biometric security enabled successfully',
+            deviceCredentialsRequiredTitle: 'Device Credentials Required',
+            deviceCredentialsSetupDescription: 'Please set up device credentials in your device settings',
+          ),
+          IOSAuthMessages(
+            cancelButton: 'Cancel',
+            goToSettingsButton: 'Settings',
+            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
+            lockOut: 'Biometric authentication is locked out. Please try again later.',
+          ),
+        ],
+      );
+
+      return didAuthenticate;
+    } on PlatformException catch (e) {
+      print('Setup authentication error: ${e.code} - ${e.message}');
+      return _handleAuthenticationError(e);
+    } catch (e) {
+      print('Unexpected setup authentication error: $e');
+      return false;
+    }
+  }
+
   /// Handle authentication errors
   bool _handleAuthenticationError(PlatformException e) {
     switch (e.code) {
