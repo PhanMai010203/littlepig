@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:injectable/injectable.dart';
 import 'package:rxdart/rxdart.dart';
@@ -15,6 +16,11 @@ class AppLockService with WidgetsBindingObserver {
   // Private variables
   bool _isInitialized = false;
   DateTime? _lastBackgroundTime;
+  
+  // Grace period for inactive state before locking (to avoid locking on notification pulldown, etc.)
+  static const Duration _inactiveGracePeriod = Duration(seconds: 2);
+  Timer? _inactiveTimer;
+  AppLifecycleState? _lastLifecycleState;
   
   AppLockService(this._biometricAuthService);
 
@@ -43,6 +49,7 @@ class AppLockService with WidgetsBindingObserver {
   /// Dispose the service
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _cancelInactiveTimer();
     _isLockedSubject.close();
     _isAuthenticatingSubject.close();
   }
@@ -109,24 +116,46 @@ class AppLockService with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
     
+    debugPrint('App lifecycle state changed: $_lastLifecycleState -> $state');
+    
     // Only process if app lock is enabled
     if (!AppSettings.biometricAppLock || !AppSettings.biometricEnabled) {
+      _lastLifecycleState = state;
       return;
     }
 
     switch (state) {
       case AppLifecycleState.paused:
-      case AppLifecycleState.inactive:
+        // Paused means the app is definitely backgrounded (home button, app switcher)
+        // Lock immediately without grace period
+        debugPrint('App paused - locking immediately');
+        _cancelInactiveTimer();
         _onAppBackgrounded();
         break;
+        
+      case AppLifecycleState.inactive:
+        // Inactive can be temporary (notification pulldown, popup, etc.) or actual backgrounding
+        // Use a grace period to differentiate
+        debugPrint('App inactive - starting grace period before locking');
+        _startInactiveTimer();
+        break;
+        
       case AppLifecycleState.resumed:
+        // App is back in foreground
+        debugPrint('App resumed');
         _onAppResumed();
         break;
+        
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
+        // These states indicate the app is definitely backgrounded
+        debugPrint('App detached/hidden - locking immediately');
+        _cancelInactiveTimer();
         _onAppBackgrounded();
         break;
     }
+    
+    _lastLifecycleState = state;
   }
 
   /// Handle app going to background
@@ -143,6 +172,9 @@ class AppLockService with WidgetsBindingObserver {
     final DateTime now = DateTime.now();
     debugPrint('App resumed at: $now');
     
+    // Cancel any pending inactive timer since app is now resumed
+    _cancelInactiveTimer();
+    
     // If app was backgrounded and app lock is enabled, check if we need authentication
     if (_lastBackgroundTime != null && AppSettings.biometricAppLock) {
       final Duration timeSinceBackground = now.difference(_lastBackgroundTime!);
@@ -151,6 +183,26 @@ class AppLockService with WidgetsBindingObserver {
       // App is already locked from _onAppBackgrounded(), no need to lock again
       // The user will need to authenticate to unlock
       debugPrint('App requires authentication to unlock');
+    }
+  }
+
+  /// Start timer for delayed locking on inactive state
+  void _startInactiveTimer() {
+    _cancelInactiveTimer(); // Cancel any existing timer
+    
+    debugPrint('Starting inactive grace period timer (${_inactiveGracePeriod.inSeconds}s)');
+    _inactiveTimer = Timer(_inactiveGracePeriod, () {
+      debugPrint('Inactive grace period expired - locking app');
+      _onAppBackgrounded();
+    });
+  }
+
+  /// Cancel the inactive timer
+  void _cancelInactiveTimer() {
+    if (_inactiveTimer != null) {
+      debugPrint('Cancelling inactive timer');
+      _inactiveTimer!.cancel();
+      _inactiveTimer = null;
     }
   }
 
