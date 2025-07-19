@@ -143,14 +143,14 @@ class AppLockService with WidgetsBindingObserver {
     final DateTime now = DateTime.now();
     debugPrint('App resumed at: $now');
     
-    // If app was backgrounded and app lock is enabled, require authentication
+    // If app was backgrounded and app lock is enabled, check if we need authentication
     if (_lastBackgroundTime != null && AppSettings.biometricAppLock) {
       final Duration timeSinceBackground = now.difference(_lastBackgroundTime!);
       debugPrint('Time since background: ${timeSinceBackground.inSeconds} seconds');
       
-      // For now, always require authentication regardless of time
-      // In the future, we could add a timeout setting
-      lockApp();
+      // App is already locked from _onAppBackgrounded(), no need to lock again
+      // The user will need to authenticate to unlock
+      debugPrint('App requires authentication to unlock');
     }
   }
 

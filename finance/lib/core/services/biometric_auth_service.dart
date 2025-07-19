@@ -187,11 +187,59 @@ class BiometricAuthService {
 
   /// Quick authentication check for app lock
   Future<bool> quickAuthenticate() async {
-    return await authenticate(
-      reason: 'Unlock the app to continue',
-      biometricOnly: true,
-      stickyAuth: false,
-    );
+    try {
+      // Use device-level authentication for app unlock
+      final bool isAvailable = await isBiometricAvailable();
+      if (!isAvailable) {
+        print('Biometric authentication not available on device');
+        return false;
+      }
+
+      // Check if biometrics are enrolled
+      final List<BiometricType> availableBiometrics = await getAvailableBiometrics();
+      if (availableBiometrics.isEmpty) {
+        print('No biometrics enrolled on device');
+        return false;
+      }
+
+      // Perform authentication
+      final bool didAuthenticate = await _localAuth.authenticate(
+        localizedReason: 'Unlock the app to continue',
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: false,
+          useErrorDialogs: true,
+        ),
+        authMessages: const <AuthMessages>[
+          AndroidAuthMessages(
+            signInTitle: 'Unlock App',
+            cancelButton: 'Cancel',
+            goToSettingsButton: 'Settings',
+            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
+            biometricHint: 'Touch sensor to unlock app',
+            biometricNotRecognized: 'Biometric not recognized, try again',
+            biometricRequiredTitle: 'Unlock Required',
+            biometricSuccess: 'App unlocked successfully',
+            deviceCredentialsRequiredTitle: 'Device Credentials Required',
+            deviceCredentialsSetupDescription: 'Please set up device credentials in your device settings',
+          ),
+          IOSAuthMessages(
+            cancelButton: 'Cancel',
+            goToSettingsButton: 'Settings',
+            goToSettingsDescription: 'Please set up biometric authentication in your device settings',
+            lockOut: 'Biometric authentication is locked out. Please try again later.',
+          ),
+        ],
+      );
+
+      return didAuthenticate;
+    } on PlatformException catch (e) {
+      print('Quick authentication error: ${e.code} - ${e.message}');
+      return _handleAuthenticationError(e);
+    } catch (e) {
+      print('Unexpected quick authentication error: $e');
+      return false;
+    }
   }
 
   /// Check if app lock is enabled
