@@ -283,6 +283,12 @@ class _AIChatScreenState extends State<AIChatScreen> {
           _isAITyping = false;
           _lastError = null;
         });
+        
+        // Automatically speak the completed AI response
+        if (accumulatedResponse.isNotEmpty) {
+          debugPrint('🔊 AI Chat - Auto-speaking completed AI response');
+          _speakMessage(accumulatedResponse);
+        }
       }
 
     } catch (e) {
@@ -369,6 +375,10 @@ class _AIChatScreenState extends State<AIChatScreen> {
       setState(() {
         _messages.add(aiMessage);
       });
+      
+      // Automatically speak the simulated AI response
+      debugPrint('🔊 AI Chat - Auto-speaking simulated AI response');
+      _speakMessage(aiResponse);
     }
 
     _scrollToBottom();
@@ -453,13 +463,17 @@ class _AIChatScreenState extends State<AIChatScreen> {
 
 
   Future<void> _speakMessage(String message) async {
+    debugPrint('🔊 AI Chat - _speakMessage called with: "${message.substring(0, message.length.clamp(0, 50))}${message.length > 50 ? "..." : ""}"');
+    
     if (_nativeVoiceService == null) {
-      debugPrint('⚠️ AI Chat - Native voice service not available');
+      debugPrint('❌ AI Chat - Native voice service not available (null)');
       return;
     }
 
+    debugPrint('🔊 AI Chat - Voice service is available, checking initialization...');
+    debugPrint('🔊 AI Chat - Voice service initialized: ${_nativeVoiceService!.isInitialized}');
+
     try {
-      debugPrint('🔊 AI Chat - Speaking message: "$message"');
       // Clean the message text for TTS (remove special formatting)
       String cleanMessage = message
           .replaceAll(RegExp(r'\[TRANSACTIONS_DATA\].*?\[/TRANSACTIONS_DATA\]', dotAll: true), '')
@@ -467,11 +481,85 @@ class _AIChatScreenState extends State<AIChatScreen> {
           .replaceAll(RegExp(r'\s+'), ' ')
           .trim();
       
+      debugPrint('🔊 AI Chat - Cleaned message: "${cleanMessage.substring(0, cleanMessage.length.clamp(0, 100))}${cleanMessage.length > 100 ? "..." : ""}"');
+      
       if (cleanMessage.isNotEmpty) {
-        await _nativeVoiceService!.speak(cleanMessage);
+        debugPrint('🔊 AI Chat - Calling voice service speak method...');
+        final voiceSettings = AppSettings.getVoiceSettings();
+        debugPrint('🔊 AI Chat - Voice settings: language=${voiceSettings.language}, rate=${voiceSettings.speechRate}, volume=${voiceSettings.volume}');
+        
+        final response = await _nativeVoiceService!.speak(cleanMessage, settings: voiceSettings);
+        debugPrint('🔊 AI Chat - Voice service speak completed with status: ${response.status}');
+        
+        if (response.status == VoiceResponseStatus.error) {
+          debugPrint('❌ AI Chat - TTS failed with error: ${response.metadata?['error']}');
+        }
+      } else {
+        debugPrint('⚠️ AI Chat - Cleaned message is empty, skipping TTS');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('❌ AI Chat - Error speaking message: $e');
+      debugPrint('❌ AI Chat - Stack trace: $stackTrace');
+    }
+  }
+
+  Future<void> _testTTS() async {
+    debugPrint('🔊 AI Chat - Test TTS button pressed');
+    
+    if (_nativeVoiceService == null) {
+      debugPrint('❌ AI Chat - Voice service not available for test');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Voice service not available')),
+        );
+      }
+      return;
+    }
+
+    try {
+      debugPrint('🔊 AI Chat - Running TTS test...');
+      final voiceSettings = AppSettings.getVoiceSettings();
+      
+      // Test with different languages based on current setting
+      String testMessage;
+      if (voiceSettings.language.startsWith('vi')) {
+        testMessage = "Xin chào! Đây là thử nghiệm giọng nói tiếng Việt.";
+      } else if (voiceSettings.language.startsWith('es')) {
+        testMessage = "¡Hola! Esta es una prueba de voz en español.";
+      } else if (voiceSettings.language.startsWith('fr')) {
+        testMessage = "Bonjour! Ceci est un test de voix en français.";
+      } else {
+        testMessage = "Hello! This is a voice test message. TTS is working correctly.";
+      }
+      
+      debugPrint('🔊 AI Chat - Test message: "$testMessage"');
+      debugPrint('🔊 AI Chat - Language setting: ${voiceSettings.language}');
+      
+      final response = await _nativeVoiceService!.speak(testMessage, settings: voiceSettings);
+      
+      if (response.status == VoiceResponseStatus.completed) {
+        debugPrint('✅ AI Chat - TTS test completed successfully');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('TTS test completed successfully!')),
+          );
+        }
+      } else {
+        debugPrint('❌ AI Chat - TTS test failed with status: ${response.status}');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('TTS test failed: ${response.metadata?['error'] ?? 'Unknown error'}')),
+          );
+        }
+      }
+    } catch (e, stackTrace) {
+      debugPrint('❌ AI Chat - TTS test error: $e');
+      debugPrint('❌ AI Chat - Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('TTS test error: $e')),
+        );
+      }
     }
   }
 
@@ -563,6 +651,14 @@ class _AIChatScreenState extends State<AIChatScreen> {
               icon: Icon(Icons.refresh),
               tooltip: 'Retry AI Service',
             ),
+          IconButton(
+            onPressed: _nativeVoiceService != null ? () => _testTTS() : null,
+            icon: Icon(
+              Icons.volume_up,
+              color: colorScheme.secondary,
+            ),
+            tooltip: 'Test TTS',
+          ),
           IconButton(
             onPressed: _nativeVoiceService != null ? () => _showVoiceSettings(context) : null,
             icon: Icon(

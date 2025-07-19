@@ -466,39 +466,77 @@ class FlutterNativeVoiceService implements NativeVoiceService {
     final responseId = _uuid.v4();
     
     try {
-      debugPrint('$_logTag - Speaking: "$text"');
+      debugPrint('$_logTag - 🔊 SPEAK CALLED - Text: "${text.substring(0, text.length.clamp(0, 50))}${text.length > 50 ? "..." : ""}"');
+      debugPrint('$_logTag - 🔧 Initialization status: $_isInitialized');
+      debugPrint('$_logTag - 🔧 Current settings: language=${effectiveSettings.language}, rate=${effectiveSettings.speechRate}, pitch=${effectiveSettings.pitch}, volume=${effectiveSettings.volume}');
+      
+      // Check if TTS is available
+      final ttsAvailable = await isTextToSpeechAvailable;
+      debugPrint('$_logTag - 🔧 TTS available: $ttsAvailable');
+      
+      if (!ttsAvailable) {
+        debugPrint('$_logTag - ❌ TTS not available, skipping speak operation');
+        return VoiceResponse(
+          id: responseId,
+          text: text,
+          language: effectiveSettings.language,
+          timestamp: DateTime.now(),
+          status: VoiceResponseStatus.error,
+          metadata: {'error': 'TTS not available on this device'},
+        );
+      }
       
       // Update TTS settings if provided, handling auto language detection
       if (settings != null) {
+        debugPrint('$_logTag - 🔧 Updating TTS settings...');
         if (settings.language == 'auto') {
+          debugPrint('$_logTag - 🔧 Auto language detection enabled, detecting language...');
           // Detect language from text before speaking
           final langCode = await _languageIdentifier.identifyLanguage(text);
+          debugPrint('$_logTag - 🔧 Detected language: $langCode');
           if (langCode != 'und' && langCode.isNotEmpty) {
+            debugPrint('$_logTag - 🔧 Setting TTS language to detected: $langCode');
             await _tts.setLanguage(langCode);
+          } else {
+            debugPrint('$_logTag - ⚠️ Language detection failed, using current settings');
           }
           // else, use the last known or default language
         } else {
-        await _tts.setLanguage(settings.language);
+          debugPrint('$_logTag - 🔧 Setting TTS language to specified: ${settings.language}');
+          await _tts.setLanguage(settings.language);
         }
+        debugPrint('$_logTag - 🔧 Setting speech rate: ${settings.speechRate}');
         await _tts.setSpeechRate(settings.speechRate);
+        debugPrint('$_logTag - 🔧 Setting pitch: ${settings.pitch}');
         await _tts.setPitch(settings.pitch);
+        debugPrint('$_logTag - 🔧 Setting volume: ${settings.volume}');
         await _tts.setVolume(settings.volume);
+      } else {
+        debugPrint('$_logTag - 🔧 Using current settings (no settings override provided)');
       }
       
       // Set voice engine if specified
       if (voiceEngine != null && Platform.isAndroid) {
+        debugPrint('$_logTag - 🔧 Setting voice engine: $voiceEngine');
         await _tts.setEngine(voiceEngine);
       }
       
       // Trigger haptic feedback if enabled
       if (effectiveSettings.enableHapticFeedback) {
+        debugPrint('$_logTag - 🔧 Triggering haptic feedback');
         HapticFeedback.lightImpact();
       }
       
-      // Speak the text
-      final result = await _tts.speak(text);
+      // Get current TTS state for debugging
+      final currentLanguages = await getAvailableTtsLanguages();
+      debugPrint('$_logTag - 🔧 Available TTS languages: ${currentLanguages.take(5).join(", ")}${currentLanguages.length > 5 ? "... (${currentLanguages.length} total)" : ""}');
       
-      return VoiceResponse(
+      // Speak the text
+      debugPrint('$_logTag - 🔊 Calling _tts.speak() with text length: ${text.length}');
+      final result = await _tts.speak(text);
+      debugPrint('$_logTag - 🔊 _tts.speak() returned result: $result');
+      
+      final response = VoiceResponse(
         id: responseId,
         text: text,
         speechRate: effectiveSettings.speechRate,
@@ -512,13 +550,19 @@ class FlutterNativeVoiceService implements NativeVoiceService {
         metadata: {
           'engine': voiceEngine,
           'result': result,
+          'ttsAvailable': ttsAvailable,
         },
       );
       
-    } catch (e) {
-      debugPrint('$_logTag - Error speaking: $e');
+      debugPrint('$_logTag - 🔊 Speak operation completed with status: ${response.status}');
+      return response;
+      
+    } catch (e, stackTrace) {
+      debugPrint('$_logTag - ❌ Error speaking: $e');
+      debugPrint('$_logTag - ❌ Stack trace: $stackTrace');
       _eventController.add(VoiceServiceErrorEvent(
         error: 'Failed to speak text: $e',
+        stackTrace: stackTrace.toString(),
         timestamp: DateTime.now(),
       ));
       
@@ -528,7 +572,10 @@ class FlutterNativeVoiceService implements NativeVoiceService {
         language: effectiveSettings.language,
         timestamp: DateTime.now(),
         status: VoiceResponseStatus.error,
-        metadata: {'error': e.toString()},
+        metadata: {
+          'error': e.toString(),
+          'stackTrace': stackTrace.toString(),
+        },
       );
     }
   }
